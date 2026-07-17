@@ -50,3 +50,7 @@ lib/core/config/env.local.dart
 sentry.properties
 
 sentry.properties
+
+/graphify-out
+
+/build

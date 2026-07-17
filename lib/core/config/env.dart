@@ -116,8 +116,8 @@ class Env {
 
   static String get firebaseAppId => _firebaseOverride(
         'FIREBASE_APP_ID',
-        '1:942102607123:android:2b709642cb7ab7a48096e6',
-        '1:579224507592:android:ce14086cc2ea677d4981fd',
+        '1:942102607123:android:59cc3922258a64d28096e6',
+        '1:579224507592:android:eaa8cdda265bc0914981fd',
       );
 
   static String get firebaseMessagingSenderId => _firebaseOverride(

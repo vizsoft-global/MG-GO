@@ -1,4 +1,4 @@
-package com.musallam.dpd_userapp.duty_overlay
+package com.musallam_delivery.app.duty_overlay
 
 import android.app.Activity
 import android.content.Context

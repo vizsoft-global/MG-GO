@@ -1,4 +1,4 @@
-package com.musallam.dpd_userapp.duty_overlay
+package com.musallam_delivery.app.duty_overlay
 
 import android.app.Activity
 import android.content.Context
@@ -15,8 +15,8 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
-import com.musallam.dpd_userapp.MainActivity
-import com.musallam.dpd_userapp.R
+import com.musallam_delivery.app.MainActivity
+import com.musallam_delivery.app.R
 import kotlin.math.abs
 
 object DutyOverlayController {

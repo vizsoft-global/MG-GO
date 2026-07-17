@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:942102607123:android:2b709642cb7ab7a48096e6",
+        "mobilesdk_app_id": "1:942102607123:android:59cc3922258a64d28096e6",
         "android_client_info": {
-          "package_name": "kw.musallam.delivery"
+          "package_name": "com.musallam_delivery.app"
         }
       },
       "oauth_client": [],

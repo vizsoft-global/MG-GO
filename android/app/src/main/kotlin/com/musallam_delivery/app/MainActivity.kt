@@ -1,4 +1,4 @@
-package com.musallam.dpd_userapp
+package com.musallam_delivery.app
 
 import android.app.Activity
 import android.content.Intent
@@ -7,7 +7,7 @@ import android.provider.Settings
 import android.view.WindowManager
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import com.musallam.dpd_userapp.duty_overlay.DutyOverlayPlugin
+import com.musallam_delivery.app.duty_overlay.DutyOverlayPlugin
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
