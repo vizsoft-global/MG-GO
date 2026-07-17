@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:579224507592:android:eaa8cdda265bc0914981fd",
+        "android_client_info": {
+          "package_name": "com.musallam_delivery.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDm2hMXvmb7f-OdmPZUPfTzOpm4hGMhh1A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:579224507592:android:ce14086cc2ea677d4981fd",
         "android_client_info": {
           "package_name": "kw.musallam.delivery"
