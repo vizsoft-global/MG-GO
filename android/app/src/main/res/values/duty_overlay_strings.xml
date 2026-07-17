@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="duty_floating_bubble_desc">In — tap to return to Musallam</string>
+    <string name="duty_gps_lock_message">Turn GPS on to continue while In</string>
+    <string name="duty_open_gps_button">Open location settings</string>
+</resources>

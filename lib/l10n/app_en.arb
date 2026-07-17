@@ -1,0 +1,942 @@
+{
+  "@@locale": "en",
+  "appTitleDefault": "Musallam Delivery",
+  "appSubtitleDefault": "Delivery Partner",
+  "loginHintDefault": "Enter your ID and passcode from admin",
+  "maintenanceMessageDefault": "The driver app is temporarily unavailable. Please try again later.",
+  "tryAgain": "Try again",
+  "cancel": "Cancel",
+  "ok": "OK",
+  "exit": "Exit",
+  "signOut": "Sign out",
+  "signOutQuestion": "Sign out?",
+  "comingSoon": "Coming Soon",
+  "comingSoonMessage": "{featureName} is coming soon.",
+  "@comingSoonMessage": {
+    "placeholders": {
+      "featureName": {
+        "type": "String"
+      }
+    }
+  },
+  "somethingWentWrong": "Something went wrong. Please try again.",
+  "sessionExpired": "Session expired. Please sign in again.",
+  "serverUpdateRequired": "Server update required. Contact support.",
+  "contactAdmin": "Contact your admin for details.",
+  "contactSupport": "Contact support.",
+  "notificationFallback": "Notification",
+  "justNow": "just now",
+  "now": "now",
+  "minutesAgo": "{minutes}m ago",
+  "@minutesAgo": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "hoursAgo": "{hours}h ago",
+  "@hoursAgo": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "daysAgo": "{days}d ago",
+  "@daysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "paid": "Paid",
+  "approved": "Approved",
+  "pending": "Pending",
+  "verified": "Verified",
+  "rejected": "Rejected",
+  "underReview": "Under Review",
+  "yes": "yes",
+  "no": "no",
+  "notProvided": "Not provided",
+  "driverFallback": "Driver",
+  "orderIdPrefix": "Order #{orderId}",
+  "@orderIdPrefix": {
+    "placeholders": {
+      "orderId": {
+        "type": "String"
+      }
+    }
+  },
+  "deliverySingular": "Delivery",
+  "deliveryPlural": "Deliveries",
+  "deliveriesCount": "{count, plural, =1{1 Delivery} other{{count} Deliveries}}",
+  "@deliveriesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "takePhoto": "Take photo",
+  "chooseImageSource": "Choose Image Source",
+  "chooseFromGallery": "Choose from gallery",
+  "imgLabel": "IMG",
+  "required": "Required",
+  "uploadingProgress": "Uploading… {percent}%",
+  "@uploadingProgress": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "readyToUpload": "Ready to upload",
+  "readyToUploadWithSizeKb": "{sizeKb} KB · Ready to upload",
+  "@readyToUploadWithSizeKb": {
+    "placeholders": {
+      "sizeKb": {
+        "type": "String"
+      }
+    }
+  },
+  "readyToUploadWithSizeMb": "{sizeMb} MB · Ready to upload",
+  "@readyToUploadWithSizeMb": {
+    "placeholders": {
+      "sizeMb": {
+        "type": "String"
+      }
+    }
+  },
+  "fileEmpty": "File is empty",
+  "fileTooLarge10Mb": "Image must be 10 MB or smaller",
+  "fileTooLarge2Mb": "Profile image must be 2 MB or smaller",
+  "imagesAllowedOnly": "Only JPG, PNG, or WebP images are allowed",
+  "english": "English",
+  "arabic": "Arabic",
+  "language": "Language",
+  "selectLanguage": "Select language",
+  "signIn": "Sign in",
+  "driverId": "Driver ID",
+  "employeeId": "Employee ID",
+  "passcode": "Passcode",
+  "passcodeHint": "6-digit code from your admin panel",
+  "continueButton": "Continue",
+  "rememberMe": "Remember me",
+  "deviceConflictTitle": "Already signed in elsewhere",
+  "deviceConflictMessage": "This account is active on another device. You can continue using that device or sign in here instead.",
+  "deviceConflictActiveLabel": "Active device: {device}",
+  "@deviceConflictActiveLabel": {
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+  "deviceConflictLastSeen": "Last active: {date} at {time}",
+  "@deviceConflictLastSeen": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "deviceConflictUnknownDevice": "Unknown device",
+  "deviceConflictContinueButton": "Continue on other device",
+  "deviceConflictSignInHereButton": "Sign in here",
+  "signedInOnAnotherDeviceToast": "Signed in on another device. Please sign in again.",
+  "enterDriverId": "Enter your 5-digit driver ID.",
+  "enterEmployeeId": "Enter your 4–8 digit employee ID.",
+  "enterPasscode": "Enter your 6-digit passcode.",
+  "authNotConfigured": "App is not configured. Add SUPABASE_ANON_KEY when running.",
+  "authInvalidCredentials": "Invalid employee ID or passcode. Please try again.",
+  "authDriverNotActive": "Your driver account is not active yet. Contact your admin.",
+  "authDriverSuspended": "Your driver account has been suspended. Contact your administrator.",
+  "authStaffNotAllowed": "This account is for the admin panel only.",
+  "authProfileSyncFailed": "Signed in but profile setup failed. Contact support.",
+  "tabHome": "Home",
+  "tabDeliveries": "Deliveries",
+  "tabEarnings": "Earnings",
+  "tabVehicle": "Vehicle",
+  "tabProfile": "Profile",
+  "exitAppQuestion": "Exit app?",
+  "exitAppMessage": "You are offline and checked out. Exit the app?",
+  "offlineMode": "Offline mode",
+  "offlineModeDescription": "Your changes are saved on the device and will sync automatically once you're back online.",
+  "accessBlocked": "Access blocked",
+  "accountBlockedDefault": "Your account has been blocked. Contact your admin for details.",
+  "backToSignIn": "Back to sign in",
+  "underMaintenance": "Under maintenance",
+  "pullDownToRefresh": "Pull down to refresh",
+  "developerModeDetectedTitle": "Developer mode detected",
+  "developerModeDetectedMessage": "Developer options are enabled on this device. This activity has been recorded.",
+  "mockLocationDetectedTitle": "Mock location detected",
+  "mockLocationDetectedMessage": "A mock location setting is enabled on this device. This has been recorded.",
+  "fakeGpsDetectedTitle": "Fake GPS detected",
+  "fakeGpsDetectedMessage": "Fake GPS is detected. Delivery and location actions are blocked until it is turned off.",
+  "fakeGpsBlockedAction": "Fake GPS detected. Turn off mock location and try again.",
+  "screenCaptureBlockedTitle": "Screen capture blocked",
+  "screenCaptureBlockedMessage": "Screenshots and screen recording are not allowed. This attempt has been recorded.",
+  "sosComingSoon": "SOS coming soon",
+  "couldNotStartDuty": "Could not clock in",
+  "couldNotUpdateDutyStatus": "Could not update In/Out status",
+  "currentSpeed": "Current speed",
+  "distanceToday": "Distance today",
+  "speedValue": "{speed} km/h",
+  "@speedValue": {
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
+  "distanceValue": "{distance} km",
+  "@distanceValue": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "welcomeBack": "Welcome back,",
+  "online": "In",
+  "offline": "Out",
+  "sos": "SOS",
+  "bonusOnTrackDefault": "You're on track — keep delivering to unlock bonuses",
+  "addDelivery": "Add Delivery",
+  "startDuty": "Clock in",
+  "thisWeeksProgress": "This Week's Progress",
+  "week": "Week",
+  "earnings": "Earnings",
+  "onlineTime": "Time in",
+  "weeklyBumperBonus": "Weekly Bumper Bonus",
+  "deliveredOrders": "Delivered Orders:",
+  "fewMoreToUnlock": "Just a few more to unlock your reward 💰",
+  "weeklyBonusUnlockedCelebration": "Weekly bonus unlocked 🎉",
+  "weeklyBonusUnlocked": "Weekly bonus unlocked!",
+  "weeklyBonusUnlockedShort": "Weekly bonus unlocked",
+  "deliveriesAwayFromBonus": "You're {remaining} {remaining, plural, =1{delivery} other{deliveries}} away from {reward} KWD bonus",
+  "@deliveriesAwayFromBonus": {
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      },
+      "reward": {
+        "type": "String"
+      }
+    }
+  },
+  "deliverMoreToUnlockKd": "Deliver {remaining} more orders to unlock KD {reward} guaranteed",
+  "@deliverMoreToUnlockKd": {
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      },
+      "reward": {
+        "type": "String"
+      }
+    }
+  },
+  "weeklyBonusDefault": "Weekly Bonus",
+  "deliveryRuleDefault": "Delivery rule",
+  "deliveryRules": "Delivery Rules",
+  "allVerifiedCountTowardIncentives": "All verified deliveries count toward incentives",
+  "countsTowardIncentiveDeliveries": "Counts toward incentive deliveries",
+  "outsideDeliveryAreaReturnSoon": "Outside zone. Return soon.",
+  "outsideDeliveryAreaReturnAfterDelivery": "Outside zone. Return within 20 minutes.",
+  "zoneTimeoutCheckedOut": "You were checked out for staying outside your delivery area too long.",
+  "completeMoreEarnMore": "Complete more. Earn more.",
+  "liveBonusQuestsToday": "Live bonus quests for today",
+  "viewAll": "View all",
+  "extraMore": "+{count} more",
+  "@extraMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "completed": "Completed",
+  "noActiveQuestsRightNow": "No active quests right now",
+  "tapToSeeAllOffers": "Tap to see all incentive offers — fresh ones drop every week.",
+  "questUnlockedEarned": "Quest unlocked — earned {amount}",
+  "@questUnlockedEarned": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "keepDeliveringEveryOrderPays": "Keep delivering — every order pays out",
+  "keepDeliveringToEarnBonus": "Keep delivering to earn this bonus",
+  "remainingMoreToMaxEarnedSoFar": "{remaining} more to max — earned so far {amount}",
+  "@remainingMoreToMaxEarnedSoFar": {
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "remainingMoreToUnlock": "{remaining} more to unlock {amount}",
+  "@remainingMoreToUnlock": {
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "unlockReward": "Unlock {amount}",
+  "@unlockReward": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "perDeliveryRate": "× {rate} / delivery",
+  "@perDeliveryRate": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "periodToday": "Today",
+  "periodThisWeek": "This week",
+  "periodThisMonth": "This month",
+  "periodThisPeriod": "This period",
+  "importantNotifications": "Important Notifications",
+  "couldNotLoadNotifications": "Couldn't load notifications.",
+  "allCaughtUpShort": "You're all caught up.",
+  "markAllRead": "Mark all read",
+  "viewMore": "View More",
+  "couldNotLoadHomeDashboard": "Could not load home dashboard",
+  "readyForDuty": "Ready to clock in",
+  "beforeYouGoOnline": "Before you clock in",
+  "startDutyChecksSubtitle": "Complete these checks once to start tracking while In.",
+  "goOnlineChecksSubtitle": "You are still clocked in. Fix anything below, then go In.",
+  "goOnline": "Go In",
+  "refreshChecks": "Refresh checks",
+  "allChecksPassed": "All required checks passed ({ok}/{total}).",
+  "@allChecksPassed": {
+    "placeholders": {
+      "ok": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "someChecksPassed": "{ok} of {total} required checks passed — tap a row to fix.",
+  "@someChecksPassed": {
+    "placeholders": {
+      "ok": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "permissionLocationServicesTitle": "Location services",
+  "permissionLocationServicesDesc": "GPS must be enabled for zone tracking while In.",
+  "permissionLocationAccessTitle": "Location access",
+  "permissionLocationAccessDesc": "Allow precise location while using the app.",
+  "permissionBackgroundLocationTitle": "Background location",
+  "permissionBackgroundLocationDesc": "Recommended so tracking continues when the app is minimized.",
+  "permissionNotificationsTitle": "Notifications",
+  "permissionNotificationsDesc": "Required for the In foreground service.",
+  "permissionBatteryOptimizationTitle": "Battery optimization",
+  "permissionBatteryOptimizationDesc": "Exclude the app from battery restrictions while In.",
+  "permissionCameraTitle": "Camera",
+  "permissionCameraDesc": "Needed to photograph delivery proof.",
+  "openLocationSettings": "Open location settings",
+  "openBatterySettings": "Open battery settings",
+  "openAppSettings": "Open app settings",
+  "allow": "Allow",
+  "goOffline": "Clock out",
+  "onDutyTapToOpen": "In — tap to open",
+  "onDutySignInAgain": "In — sign in again",
+  "onDutyTurnOnGps": "In — turn on GPS",
+  "onDutyLocationPermissionNeeded": "In — location permission needed",
+  "onDutyStationaryGpsPaused": "In — stationary (GPS paused)",
+  "onDutyLocationUpdateFailed": "In — location update failed",
+  "checkedOutInactive5Min": "Clocked out — inactive for 5 min",
+  "onDutyAutoCheckoutFailed": "In — auto clock out failed",
+  "onDutyGoOfflineFailed": "In — clock out failed",
+  "onDutyFakeGpsDetected": "In — fake GPS detected",
+  "inZone": "In zone",
+  "outOfZone": "Out of zone",
+  "outsideDeliveryArea": "Outside zone",
+  "onDuty": "In",
+  "moving": "Moving",
+  "deliveryLogged": "Delivery logged",
+  "idle": "Idle",
+  "onDutyTrackingChannelName": "In tracking",
+  "onDutyTrackingChannelDesc": "Shows while you are In for GPS tracking.",
+  "mustBeOnDutyToReportLocation": "You must be In to report location.",
+  "couldNotReportLocation": "Could not report location",
+  "locationReportFailed": "Location report failed",
+  "pendingDeliveriesWaitingToSync": "{count} pending deliveries waiting to sync",
+  "@pendingDeliveriesWaitingToSync": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "couldNotLoadDeliveries": "Could not load deliveries",
+  "pendingDeliveries": "Pending Deliveries",
+  "noPendingDeliveries": "No pending deliveries",
+  "pendingSyncedSummary": "Pending: {pending} · Synced: {synced}",
+  "@pendingSyncedSummary": {
+    "placeholders": {
+      "pending": {
+        "type": "int"
+      },
+      "synced": {
+        "type": "int"
+      }
+    }
+  },
+  "noDeliveriesAdded": "No deliveries added",
+  "startAddingDeliveries": "Start adding your deliveries to track your work",
+  "addOrders": "Add orders",
+  "imageFormatsMax10Mb": "JPG, PNG, or WebP · max 10 MB",
+  "checkingYourLocation": "Checking your location…",
+  "orderId": "Order ID",
+  "orderIdHint": "e.g. 12345",
+  "uploadOrderProof": "Upload Order Proof",
+  "takePhotoOrChooseGallery": "Take photo or choose from gallery",
+  "imageFormatsMax10MbShort": "JPG, PNG, WebP · max 10 MB",
+  "markAsDelivered": "Mark as Delivered",
+  "orderIdRequired": "Order ID is required",
+  "deliverySavedOffline": "Delivery saved offline",
+  "deliveryAddedSuccessfully": "Delivery added successfully",
+  "deliveryWillSyncWhenOnline": "This entry will sync automatically when internet returns.",
+  "keepGoingEveryDeliveryCounts": "Keep going - every delivery counts!",
+  "addAnotherDelivery": "Add Another Delivery",
+  "offlineModePendingSync": "Offline mode active: pending sync",
+  "backToDeliveries": "Back to Deliveries",
+  "deliveryDetails": "Delivery details",
+  "status": "Status",
+  "submitted": "Submitted",
+  "partner": "Partner",
+  "deliveryProof": "Delivery proof",
+  "noProofImageUploaded": "No proof image uploaded",
+  "couldNotLoadProofImage": "Could not load proof image",
+  "couldNotDisplayImage": "Could not display image",
+  "selectDate": "Select date",
+  "selectedDayVerifiedOrders": "Selected day verified orders: {count}",
+  "@selectedDayVerifiedOrders": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "thisMonthVerifiedOrders": "This month verified orders: {count}",
+  "@thisMonthVerifiedOrders": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "apply": "Apply",
+  "today": "Today",
+  "pleaseSignInAgain": "Please sign in again",
+  "accountNotActive": "Your account is not active",
+  "outsideAllowedDeliveryArea": "You are outside the allowed delivery area. Move closer to your zone or an assigned restaurant.",
+  "gpsRequiredForDelivery": "GPS location is required to log a delivery",
+  "zoneNotConfigured": "Your zone is not configured. Contact admin.",
+  "noRestaurantsAssigned": "No restaurants assigned. Contact admin.",
+  "moveWithinRangeToLog": "Move within {range} of {target} to log a delivery.",
+  "@moveWithinRangeToLog": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "outsideRangeDetails": "You are {distance} outside range (within {range} of {target}).",
+  "@outsideRangeDetails": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      },
+      "range": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "yourZone": "your zone",
+  "assignedRestaurant": "an assigned restaurant",
+  "accountNotSetupAsDriver": "Your account is not set up as a driver.",
+  "couldNotLoadDeliveryLocationRules": "Could not load delivery location rules. Pull to refresh or try again.",
+  "notSignedIn": "Not signed in",
+  "proofImageMissing": "Proof image is missing",
+  "proofImageNotFound": "Proof image not found",
+  "cannotViewProofImage": "You cannot view this proof image",
+  "couldNotLoadEarnings": "Could not load earnings",
+  "performanceSummary": "Performance Summary",
+  "totalDeliveries": "Total Deliveries",
+  "workingDays": "Working Days",
+  "attendance": "Attendance",
+  "incentives": "Incentives",
+  "reimbursements": "Reimbursements",
+  "deductions": "Deductions",
+  "extraEarnings": "Extra Earnings",
+  "dailyEarnings": "Daily Earnings",
+  "noEarningsActivityThisMonth": "No earnings activity this month.",
+  "deliveryCountSubtitle": "{count, plural, =1{1 delivery} other{{count} deliveries}}",
+  "@deliveryCountSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bonusesApplied": "{count} bonuses applied",
+  "@bonusesApplied": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bonusSuffix": "bonus",
+  "deductionsComingSoonTitle": "Deductions",
+  "deductionsComingSoonBody": "Coming soon — a detailed breakdown of any loans or penalties applied to your earnings.",
+  "payslipHistory": "Payslip History",
+  "latestFirst": "Latest first",
+  "noPayslipsYet": "No payslips yet. Once your operations team approves a payout, it will appear here.",
+  "deliveriesInPeriod": "{count} deliveries",
+  "@deliveriesInPeriod": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deliveriesInPayoutPeriod": "{count} deliveries in this period",
+  "@deliveriesInPayoutPeriod": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activeOffers": "Active Offers",
+  "noActiveIncentivesRightNow": "No active incentives right now",
+  "checkBackLaterIncentives": "Check back later — your operations team configures incentive rules from the admin panel.",
+  "couldNotLoadExtraEarnings": "Could not load extra earnings",
+  "progress": "Progress",
+  "bonusDefault": "Bonus",
+  "incentiveDefault": "Incentive",
+  "upToAmount": "up to {amount}",
+  "@upToAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "perDeliveryAmount": "{amount}/delivery",
+  "@perDeliveryAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "completeDeliveriesScope": "Complete {target} deliveries{scope} {period}",
+  "@completeDeliveriesScope": {
+    "placeholders": {
+      "target": {
+        "type": "int"
+      },
+      "scope": {
+        "type": "String"
+      },
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "earnRewardsScope": "Earn rewards{scope} {period}",
+  "@earnRewardsScope": {
+    "placeholders": {
+      "scope": {
+        "type": "String"
+      },
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "periodTodayLower": "today",
+  "periodThisWeekLower": "this week",
+  "periodThisMonthLower": "this month",
+  "periodThisPeriodLower": "this period",
+  "fromScope": "from {scope}",
+  "@fromScope": {
+    "placeholders": {
+      "scope": {
+        "type": "String"
+      }
+    }
+  },
+  "forScope": "for {scope}",
+  "@forScope": {
+    "placeholders": {
+      "scope": {
+        "type": "String"
+      }
+    }
+  },
+  "netEarnings": "Net earnings",
+  "eligibleDeliveries": "Eligible deliveries",
+  "basePay": "Base pay",
+  "noDeliveriesLoggedThisDay": "No deliveries logged this day.",
+  "incentiveRules": "Incentive rules",
+  "noIncentiveRulesPaidThisDay": "No incentive rules paid out this day.",
+  "overrideRuleApplied": "Override rule applied — final incentive {amount}",
+  "@overrideRuleApplied": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "eligibleDeliveriesProgress": "{current} / {target} eligible deliveries",
+  "@eligibleDeliveriesProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "eligibleDeliveriesCount": "{count} eligible deliveries",
+  "@eligibleDeliveriesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "couldNotLoadThisDay": "Could not load this day",
+  "payslip": "Payslip",
+  "netPayable": "Net payable",
+  "paidAt": "Paid {date} at {time}",
+  "@paidAt": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "breakdown": "Breakdown",
+  "loanDeduction": "Loan deduction",
+  "penalty": "Penalty",
+  "adjustment": "Adjustment",
+  "notes": "Notes",
+  "detailedSnapshot": "Detailed snapshot",
+  "frozenAtApproval": "Frozen at the time this payout was approved.",
+  "couldNotLoadThisPayslip": "Could not load this payslip",
+  "payslipNoLongerAvailable": "This payslip is no longer available.",
+  "couldNotLoadAttendance": "Could not load attendance",
+  "attendanceDaysCompleted": "{present}/{elapsed} days completed",
+  "@attendanceDaysCompleted": {
+    "placeholders": {
+      "present": {
+        "type": "int"
+      },
+      "elapsed": {
+        "type": "int"
+      }
+    }
+  },
+  "noLogin": "No Login",
+  "lessThanZeroHours": "Less than 0h",
+  "moreThanZeroHours": "More than 0h",
+  "weekdayMon": "Mon",
+  "weekdayTue": "Tue",
+  "weekdayWed": "Wed",
+  "weekdayThu": "Thu",
+  "weekdayFri": "Fri",
+  "weekdaySat": "Sat",
+  "weekdaySun": "Sun",
+  "weekdayMonUpper": "MON",
+  "weekdayTueUpper": "TUE",
+  "weekdayWedUpper": "WED",
+  "weekdayThuUpper": "THU",
+  "weekdayFriUpper": "FRI",
+  "weekdaySatUpper": "SAT",
+  "weekdaySunUpper": "SUN",
+  "monthJanuary": "January",
+  "monthFebruary": "February",
+  "monthMarch": "March",
+  "monthApril": "April",
+  "monthMay": "May",
+  "monthJune": "June",
+  "monthJuly": "July",
+  "monthAugust": "August",
+  "monthSeptember": "September",
+  "monthOctober": "October",
+  "monthNovember": "November",
+  "monthDecember": "December",
+  "monthJan": "Jan",
+  "monthFeb": "Feb",
+  "monthMar": "Mar",
+  "monthApr": "Apr",
+  "monthMayShort": "May",
+  "monthJun": "Jun",
+  "monthJul": "Jul",
+  "monthAug": "Aug",
+  "monthSep": "Sep",
+  "monthOct": "Oct",
+  "monthNov": "Nov",
+  "monthDec": "Dec",
+  "profileImageUploadFailed": "Profile image upload failed: {error}",
+  "@profileImageUploadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "profilePictureUpdated": "Profile picture updated",
+  "uploadedPreviewFailed": "Uploaded, but preview could not load. Pull down to refresh — contact support if it persists.",
+  "notificationsSettingsComingSoon": "Notifications settings are coming soon",
+  "signOutConfirmBody": "You will need your driver ID and passcode to sign in again.",
+  "accountSection": "Account",
+  "myProfile": "My Profile",
+  "attendanceAndLeaves": "Attendance & Leaves",
+  "wrongAction": "Wrong Action",
+  "paymentDetails": "Payment Details",
+  "assets": "Assets",
+  "preferencesSection": "Preferences",
+  "notifications": "Notifications",
+  "helpAndSupport": "Help & Support",
+  "termsAndConditions": "Terms & Conditions",
+  "trainingSection": "Training",
+  "tutorialMaterial": "Tutorial Material",
+  "video": "Video",
+  "couldNotLoadProfile": "Could not load profile",
+  "profileSessionExpiredHint": "Your session may have expired. Try again or sign out and sign back in.",
+  "profile": "Profile",
+  "help": "Help",
+  "driverIdLabel": "ID: {code}",
+  "@driverIdLabel": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "updateProfilePicture": "Update profile picture",
+  "couldNotLoadNotificationsWithError": "Couldn't load notifications.\n{error}",
+  "@couldNotLoadNotificationsWithError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "allCaughtUp": "You're all caught up",
+  "notificationsEmptyHint": "Important alerts and reminders from Musallam will show up here.",
+  "musallamAlertsChannelName": "Musallam alerts",
+  "musallamAlertsChannelDesc": "Operational alerts and reminders for drivers",
+  "vehicle": "Vehicle",
+  "vehicleComingSoon": "Assigned vehicle and maintenance info. Coming soon.",
+  "am": "AM",
+  "pm": "PM",
+  "onDutyStatusLabel": "{status}{speed} · {zone}",
+  "@onDutyStatusLabel": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      },
+      "speed": {
+        "type": "String"
+      },
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
+  "couldNotStartUpload": "Could not start upload",
+  "couldNotConfirmUpload": "Could not confirm upload",
+  "networkErrorReachingAdminUploadServer": "Network error reaching admin upload server",
+  "uploadFailedWithStatus": "Upload failed ({statusCode})",
+  "@uploadFailedWithStatus": {
+    "placeholders": {
+      "statusCode": {
+        "type": "int"
+      }
+    }
+  },
+  "availabilitySubmission": "Availability Submission",
+  "shiftRequiredToGoIn": "Submit shift to go In",
+  "shiftExpiredSubmitNext": "Your shift has ended. Submit your next shift to go In.",
+  "shiftSubmissionSubtitle": "Set your shift for this period. You can go In/Out freely until it ends, then submit again.",
+  "shiftSubmissionRequiredSubtitle": "A shift is required before you can go In. This cannot be skipped.",
+  "shiftType": "Shift Type",
+  "selectShift": "Select Shift",
+  "singleShift": "Single Shift",
+  "splitShift": "Split Shift",
+  "setTimeline": "Set Timeline",
+  "fromTime": "From",
+  "toTime": "To",
+  "session2": "Session 2",
+  "selectTime": "Select time",
+  "confirm": "Confirm",
+  "shiftEndsNextDay": "Ends next day",
+  "session1Required": "Please set session 1 start and end times",
+  "session2Required": "Please set session 2 start and end times",
+  "invalidSessionDuration": "End time must be after start time",
+  "sessionTooLong": "Each session must be 24 hours or less",
+  "sessionsOverlap": "Sessions cannot overlap",
+  "shiftLocked": "Today's shift is locked until it ends",
+  "couldNotSubmitShift": "Could not submit shift",
+  "outsideShiftWindowTitle": "Outside shift window",
+  "outsideShiftWindowMessage": "You are outside your submitted shift hours. You can continue anyway, but this may be flagged for review.",
+  "continueAnyway": "Continue anyway",
+  "mustBeOnDutyToAddDelivery": "You must be In to add a delivery",
+  "shiftRequiredBeforeDuty": "Submit today's shift before going In",
+  "pickupOrder": "Pickup Order",
+  "confirmPickup": "Confirm Pickup",
+  "pickedUpAt": "Picked up at",
+  "uploadPickupProof": "Upload Pickup Proof",
+  "cancelOrder": "Cancel Order",
+  "confirmCancel": "Confirm Cancel",
+  "cancelledAt": "Cancelled at",
+  "cancelReasonLabel": "Cancel reason",
+  "cancelReasonRequired": "Cancel reason is required",
+  "cancelReasonCustomerNoShow": "Customer no-show",
+  "cancelReasonCustomerRefused": "Customer refused",
+  "cancelReasonWrongAddress": "Wrong address",
+  "cancelReasonRestaurantIssue": "Restaurant issue",
+  "cancelReasonAccident": "Accident",
+  "cancelReasonOther": "Other",
+  "cancelNoteHint": "Add details (optional)",
+  "statusCancelled": "Cancelled",
+  "activeDeliveryBanner": "Active delivery",
+  "noActiveDelivery": "No active delivery in progress",
+  "deliveryDuration": "Duration",
+  "pickupProof": "Pickup proof",
+  "deliveryProof": "Delivery proof",
+  "deliveryProofOptional": "Delivery proof (optional)",
+  "cancelProof": "Cancel proof",
+  "mustCompleteActiveDeliveryFirst": "Complete your current delivery before picking up another order",
+  "activePickupExists": "You already have an order in progress",
+  "duplicateOrderId": "This order ID is already logged",
+  "proofPhotoRequired": "A proof photo is required",
+  "finishAsDelivered": "Finish as delivered",
+  "finishAsCancelled": "Finish as cancelled",
+  "switchOutcome": "Switch",
+  "selectReason": "Select a reason",
+  "permissionOverlayTitle": "Display over other apps",
+  "permissionOverlayDesc": "Shows a floating icon while you are In so you can return quickly.",
+  "grantOverlayPermission": "Grant overlay permission",
+  "onDutyReturnToApp": "You are In — return to the app",
+  "onDutyTurnOnGpsOverlay": "Turn GPS on to continue while In",
+  "openLocationSettingsAction": "Open location settings",
+  "pickupLoggedSuccessfully": "Pickup logged successfully",
+  "cancelLoggedSuccessfully": "Cancellation logged successfully",
+  "proceedToDeliverWhenReady": "Head to the customer and mark as delivered when done.",
+  "shiftAdherenceTitle": "Shift adherence",
+  "minutesLateVsShift": "{minutes} min late vs shift",
+  "@minutesLateVsShift": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "minutesEarlyOutVsShift": "{minutes} min early vs shift",
+  "@minutesEarlyOutVsShift": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "onTimeVsShift": "On time vs shift",
+  "noShiftSubmitted": "No shift submitted for today",
+  "timeInToday": "Time in today: {duration}",
+  "@timeInToday": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "shiftAdherenceLateShort": "{minutes}m late",
+  "@shiftAdherenceLateShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "shiftAdherenceEarlyShort": "{minutes}m early",
+  "@shiftAdherenceEarlyShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "shiftAdherenceOnTimeShort": "On time",
+  "updateAvailableTitle": "Update available",
+  "updateRequiredTitle": "Update required",
+  "updateAvailableBody": "Version {version} is ready to install.",
+  "@updateAvailableBody": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateDownload": "Download update",
+  "updateLater": "Later",
+  "updateInstall": "Install update",
+  "updateAllowInstallPermission": "Allow Musallam to install app updates, then try again.",
+  "openInstallSettings": "Open settings",
+  "updateDownloading": "Downloading… {percent}%",
+  "@updateDownloading": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "updateChecksumFailed": "Download verification failed. Please try again.",
+  "updateNoInstallerAvailable": "Couldn't open the Android installer. Please tap the downloaded APK from your Files app, or contact support.",
+  "updateApkMissing": "The downloaded update file is missing. Tap Download to try again."
+}
