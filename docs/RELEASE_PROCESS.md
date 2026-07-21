@@ -109,7 +109,7 @@ builds must use the production keystore.
 | Item | Location |
 |------|----------|
 | Keystore file | `~/musallam-release.jks` (keep outside repo; back up in 2+ places) |
-| Key alias | `musallam-upload` |
+| Key alias | `musallam_delivery` |
 | Credentials | `android/key.properties` (gitignored) |
 | Template | `android/key.properties.example` |
 

@@ -9,7 +9,7 @@ alwaysApply: false
 ## Non-negotiable
 
 - **Never** sign release APKs with the debug certificate. `android/app/build.gradle.kts` loads `android/key.properties` and fails release builds if it is missing.
-- **Keystore**: `~/musallam-release.jks`, alias `musallam-upload`. Credentials in `android/key.properties` (gitignored). Template: `android/key.properties.example`.
+- **Keystore**: `~/musallam-release.jks`, alias `musallam_delivery`. Credentials in `android/key.properties` (gitignored). Template: `android/key.properties.example`.
 - **Same keystore forever** — certificate changes block in-place upgrades on driver phones.
 
 ## Before any release build or publish

@@ -2,5 +2,5 @@
 # The keystore must stay outside the repo; use an absolute storeFile path.
 storePassword=your-store-password
 keyPassword=your-key-password
-keyAlias=musallam-upload
+keyAlias=musallam_delivery
 storeFile=/Users/wb/musallam-release.jks
