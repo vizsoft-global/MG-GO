@@ -84,7 +84,7 @@ separate R2 buckets. Never assume they share anything.
 Full checklist: **`docs/RELEASE_PROCESS.md` section 4**. Cursor rule: `.cursor/rules/android-release-signing.mdc`.
 
 1. **Never ship debug-signed APKs.** Release builds load `android/key.properties` and
-   use `~/musallam-release.jks` (alias `musallam-upload`). Gradle fails if
+   use `~/musallam-release.jks` (alias `musallam_delivery`). Gradle fails if
    `key.properties` is missing. `scripts/verify_apk_signing.sh` rejects
    `CN=Android Debug` before publish.
 2. **First-time setup:** copy `android/key.properties.example` → `android/key.properties`,
