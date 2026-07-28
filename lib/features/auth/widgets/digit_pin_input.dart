@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/ascii_digits.dart';
 
 /// OTP-style numeric input: one digit per box, optional separator (e.g. XXX-XXX).
 class DigitPinInput extends StatefulWidget {
@@ -34,8 +35,6 @@ class DigitPinInputState extends State<DigitPinInput> {
   late final List<String> _previousCellTexts;
   int _lastNotifiedLength = 0;
 
-  static final _digitRegex = RegExp(r'^\d$');
-
   @override
   void initState() {
     super.initState();
@@ -64,8 +63,7 @@ class DigitPinInputState extends State<DigitPinInput> {
     super.dispose();
   }
 
-  String get value =>
-      _controllers.map((c) => c.text).join().replaceAll(RegExp(r'\D'), '');
+  String get value => toAsciiDigits(_controllers.map((c) => c.text).join());
 
   void clear() {
     for (final c in _controllers) {
@@ -108,9 +106,19 @@ class DigitPinInputState extends State<DigitPinInput> {
       _applyPaste(index, text);
       return;
     }
-    if (text.isNotEmpty && !_digitRegex.hasMatch(text)) {
-      _controllers[index].text = '';
-      return;
+    if (text.isNotEmpty) {
+      final ascii = toAsciiDigits(text);
+      if (ascii.length != 1) {
+        _controllers[index].text = '';
+        return;
+      }
+      if (ascii != text) {
+        _controllers[index].value = TextEditingValue(
+          text: ascii,
+          selection: TextSelection.collapsed(offset: ascii.length),
+        );
+        return;
+      }
     }
     final wasEmpty = _previousCellTexts[index].isEmpty;
     _previousCellTexts[index] = text;
@@ -121,7 +129,7 @@ class DigitPinInputState extends State<DigitPinInput> {
   }
 
   void _applyPaste(int startIndex, String raw) {
-    final digits = raw.replaceAll(RegExp(r'\D'), '').split('');
+    final digits = toAsciiDigits(raw).split('');
     if (digits.isEmpty) return;
 
     var cell = startIndex;

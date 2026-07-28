@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io' show Platform;
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
@@ -69,7 +69,7 @@ class DeviceIdentityService {
   }
 
   Future<String> _resolveDeviceId(SharedPreferences prefs) async {
-    if (Platform.isAndroid) {
+    if (!kIsWeb && Platform.isAndroid) {
       try {
         final info = await _deviceInfo.androidInfo;
         final androidId = info.id.trim();
@@ -90,7 +90,7 @@ class DeviceIdentityService {
   }
 
   Future<DeviceIdentity> _loadAndroidDetails(String deviceId) async {
-    if (!Platform.isAndroid) {
+    if (kIsWeb || !Platform.isAndroid) {
       return DeviceIdentity(deviceId: deviceId);
     }
     try {

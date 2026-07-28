@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -32,10 +33,14 @@ class OfflineDb {
   }
 
   Future<void> initialize() async {
+    if (kIsWeb) return;
     await database;
   }
 
   Future<String> ensureProofQueueDir() async {
+    if (kIsWeb) {
+      throw UnsupportedError('Proof queue is not available on web');
+    }
     final dir = await getApplicationSupportDirectory();
     final queueDir = Directory(p.join(dir.path, _proofQueueDir));
     if (!await queueDir.exists()) {
@@ -494,6 +499,9 @@ class OfflineDb {
   }
 
   Future<Database> _open() async {
+    if (kIsWeb) {
+      throw UnsupportedError('OfflineDb is not available on web');
+    }
     final appSupportDir = await getApplicationSupportDirectory();
     final path = p.join(appSupportDir.path, _dbName);
     return openDatabase(
