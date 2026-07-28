@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/ascii_digits.dart';
 
 /// Numeric employee ID field: 4–8 digits, width grows from 4-digit to 8-digit size.
 class EmployeeIdInput extends StatefulWidget {
@@ -51,7 +52,7 @@ class EmployeeIdInputState extends State<EmployeeIdInput> {
     super.dispose();
   }
 
-  String get value => _controller.text.replaceAll(RegExp(r'\D'), '');
+  String get value => toAsciiDigits(_controller.text);
 
   void requestFocus() {
     if (widget.enabled) _focusNode.requestFocus();
