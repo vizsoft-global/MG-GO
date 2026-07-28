@@ -10,6 +10,7 @@ import '../../core/config/env.dart';
 import '../../core/delivery/delivery_proximity_cache.dart';
 import '../../core/device/device_identity_service.dart';
 import '../../core/geo/device_location_resolver.dart';
+import '../../core/utils/ascii_digits.dart';
 import 'device_session_models.dart';
 import 'driver_access.dart';
 import 'login_preferences_store.dart';
@@ -103,11 +104,74 @@ class RiderAuthService {
     required String passcode,
     bool forceOverride = false,
   }) async {
-    final normalizedId = employeeId.trim();
-    final normalizedPasscode = passcode.trim();
+    final normalizedId = toAsciiDigits(employeeId);
+    final normalizedPasscode = toAsciiDigits(passcode);
+
+    // #region agent log
+    Future<void> _dbg(
+      String hypothesisId,
+      String message,
+      Map<String, Object?> data,
+    ) async {
+      final payload = <String, Object?>{
+        'sessionId': 'da892f',
+        'runId': 'repro2',
+        'hypothesisId': hypothesisId,
+        'location': 'rider_auth_service.dart:signInWithDriverPasscode',
+        'message': message,
+        'data': data,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      };
+      final line = jsonEncode(payload);
+      debugPrint('DBG_DA892F:$line');
+      try {
+        await http
+            .post(
+              Uri.parse(
+                'http://127.0.0.1:7504/ingest/7f7aeee7-b4d1-4a7e-98f1-6909c77c6d2e',
+              ),
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Debug-Session-Id': 'da892f',
+              },
+              body: line,
+            )
+            .timeout(const Duration(milliseconds: 800));
+      } catch (_) {}
+    }
+
+    String? _anonRef() {
+      try {
+        final parts = Env.supabaseAnonKey.split('.');
+        if (parts.length < 2) return null;
+        final normalized = base64Url.normalize(parts[1]);
+        final payload =
+            jsonDecode(utf8.decode(base64Url.decode(normalized))) as Map;
+        return payload['ref'] as String?;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    await _dbg('A', 'login_attempt_env', {
+      'flavor': Env.flavor,
+      'supabaseHost': Env.supabaseHost,
+      'anonRef': _anonRef(),
+      'adminHost': Uri.tryParse(Env.adminApiBaseUrl)?.host,
+      'idLen': normalizedId.length,
+      'passLen': normalizedPasscode.length,
+      'forceOverride': forceOverride,
+    });
+    // #endregion
 
     if (!RegExp(r'^\d{4,8}$').hasMatch(normalizedId) ||
         !RegExp(r'^\d{6}$').hasMatch(normalizedPasscode)) {
+      // #region agent log
+      await _dbg('C', 'client_validation_failed', {
+        'idLen': normalizedId.length,
+        'passLen': normalizedPasscode.length,
+      });
+      // #endregion
       throw RiderAuthFailure.invalidCredentials;
     }
 
@@ -116,6 +180,16 @@ class RiderAuthService {
     try {
       packageInfo = await PackageInfo.fromPlatform();
     } catch (_) {}
+
+    // #region agent log
+    await _dbg('C', 'device_before_invoke', {
+      'deviceIdLen': device.deviceId.length,
+      'deviceIdEmpty': device.deviceId.isEmpty,
+      'deviceIdLooksLikeBuildId': RegExp(
+        r'^[A-Z0-9]+\.[0-9]+\.[0-9]+',
+      ).hasMatch(device.deviceId),
+    });
+    // #endregion
 
     final FunctionResponse response;
     try {
@@ -135,6 +209,21 @@ class RiderAuthService {
         },
       );
     } on FunctionException catch (e) {
+      // #region agent log
+      await _dbg('A', 'function_exception', {
+        'status': e.status,
+        'detailsType': e.details?.runtimeType.toString(),
+        'detailsError': e.details is Map
+            ? (e.details as Map)['error']?.toString()
+            : (e.details is String
+                ? (e.details as String).length > 120
+                    ? (e.details as String).substring(0, 120)
+                    : e.details as String
+                : null),
+        'supabaseHost': Env.supabaseHost,
+        'anonRef': _anonRef(),
+      });
+      // #endregion
       final conflict = _parseDeviceConflict(e);
       if (conflict != null) throw conflict;
       final blockedReason = _parseBlockedReason(e.details);
@@ -145,6 +234,16 @@ class RiderAuthService {
     }
 
     final payload = _parseFunctionPayload(response.data);
+    // #region agent log
+    await _dbg('B', 'function_response', {
+      'payloadNull': payload == null,
+      'hasError': payload?['error'] != null,
+      'error': payload?['error']?.toString(),
+      'hasAccessToken': payload?['access_token'] is String &&
+          (payload?['access_token'] as String).isNotEmpty,
+      'supabaseHost': Env.supabaseHost,
+    });
+    // #endregion
     if (payload == null) {
       throw RiderAuthFailure.unknown;
     }

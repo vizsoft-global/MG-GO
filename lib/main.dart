@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -72,7 +73,10 @@ Future<void> main() async {
 
 Future<void> _bootstrapServices() async {
   await Supabase.initialize(url: Env.supabaseUrl, anonKey: Env.supabaseAnonKey);
-  await OfflineDb.instance.initialize();
+  // Offline SQLite + path_provider are mobile-only; skip on web (Chrome debug).
+  if (!kIsWeb) {
+    await OfflineDb.instance.initialize();
+  }
   await SecurityBypassStore.load();
   await AppUpdateChannelStore.ensureDefaultChannel();
 
