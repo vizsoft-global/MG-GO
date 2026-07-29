@@ -1,16 +1,16 @@
-# Graph Report - MG-GO  (2026-07-28)
+# Graph Report - MG-GO  (2026-07-29)
 
 ## Corpus Check
-- 230 files · ~191,490 words
+- 240 files · ~195,316 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4969 nodes · 6509 edges · 178 communities (162 shown, 16 thin omitted)
+- 5078 nodes · 6671 edges · 189 communities (170 shown, 19 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 9 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `5a18cf7e`
+- Built from commit: `35c65656`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -185,55 +185,65 @@
 - [[_COMMUNITY_Community 167|Community 167]]
 - [[_COMMUNITY_Community 173|Community 173]]
 - [[_COMMUNITY_Community 174|Community 174]]
+- [[_COMMUNITY_Community 178|Community 178]]
+- [[_COMMUNITY_Community 179|Community 179]]
+- [[_COMMUNITY_Community 180|Community 180]]
+- [[_COMMUNITY_Community 181|Community 181]]
+- [[_COMMUNITY_Community 182|Community 182]]
+- [[_COMMUNITY_Community 183|Community 183]]
+- [[_COMMUNITY_Community 184|Community 184]]
+- [[_COMMUNITY_Community 185|Community 185]]
+- [[_COMMUNITY_Community 186|Community 186]]
+- [[_COMMUNITY_Community 187|Community 187]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `DutyOverlayController` - 25 edges
 2. `AppLocalizations` - 19 edges
 3. `MainActivity` - 16 edges
-4. `list` - 16 edges
-5. `DpdApp` - 15 edges
-6. `build` - 14 edges
-7. `homeDashboardProvider` - 14 edges
-8. `DutyOverlayPlugin` - 13 edges
-9. `networkStatusProvider` - 13 edges
-10. `Two-Stage Delivery + In/Out Lock` - 13 edges
+4. `DpdApp` - 16 edges
+5. `list` - 16 edges
+6. `AppDelegate` - 15 edges
+7. `build` - 15 edges
+8. `homeDashboardProvider` - 14 edges
+9. `DutyOverlayPlugin` - 13 edges
+10. `networkStatusProvider` - 13 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `_NoOpNetworkStatus` --inherits--> `NetworkStatusController`  [EXTRACTED]
   test/restaurant_geofence_test.dart → lib/core/offline/network_status_provider.dart
 - `_purgeOfflineCachesForUser` --references--> `offlineRepoProvider`  [EXTRACTED]
   lib/core/auth/auth_user_reset.dart → lib/core/offline/offline_repo.dart
-- `build` --references--> `networkStatusProvider`  [EXTRACTED]
-  lib/core/widgets/offline_banner.dart → lib/core/offline/network_status_provider.dart
 - `warmUp` --references--> `deliveryProximityContextProvider`  [EXTRACTED]
   lib/features/deliveries/delivery_proximity_preview.dart → lib/features/deliveries/delivery_proximity_service.dart
 - `wWinMain()` --calls--> `CreateAndAttachConsole()`  [INFERRED]
   windows/runner/main.cpp → windows/runner/utils.cpp
+- `DpdApp` --references--> `appBrandingProvider`  [EXTRACTED]
+  lib/app.dart → lib/core/branding/app_branding_provider.dart
 
 ## Import Cycles
 - None detected.
 
-## Communities (178 total, 16 thin omitted)
+## Communities (189 total, 19 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.00
-Nodes (501): app_localizations_ar.dart, app_localizations_en.dart, accessBlocked, accountBlockedDefault, accountNotActive, accountNotSetupAsDriver, accountSection, activeDeliveryBanner (+493 more)
+Nodes (503): app_localizations_ar.dart, app_localizations_en.dart, accessBlocked, accountBlockedDefault, accountNotActive, accountNotSetupAsDriver, accountSection, activeDeliveryBanner (+495 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.00
-Nodes (490): app_localizations.dart, accessBlocked, accountBlockedDefault, accountNotActive, accountNotSetupAsDriver, accountSection, activeDeliveryBanner, activeOffers (+482 more)
+Nodes (492): app_localizations.dart, accessBlocked, accountBlockedDefault, accountNotActive, accountNotSetupAsDriver, accountSection, activeDeliveryBanner, activeOffers (+484 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.00
-Nodes (490): accessBlocked, accountBlockedDefault, accountNotActive, accountNotSetupAsDriver, accountSection, activeDeliveryBanner, activeOffers, activePickupExists (+482 more)
+Nodes (492): accessBlocked, accountBlockedDefault, accountNotActive, accountNotSetupAsDriver, accountSection, activeDeliveryBanner, activeOffers, activePickupExists (+484 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.02
-Nodes (111): abs, activeOffers, ActiveOfferTier, adjustmentKwd, amountKwd, amountLabel, asInt, attendanceLabel (+103 more)
+Nodes (109): abs, activeOffers, ActiveOfferTier, adjustmentKwd, amountKwd, amountLabel, asInt, attendanceLabel (+101 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.04
-Nodes (63): badge, build, _Card, child, counts, _CountsBadge, daily, deliveries (+55 more)
+Cohesion: 0.05
+Nodes (37): badge, build, _Card, child, counts, _CountsBadge, daily, deliveries (+29 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.03
@@ -248,8 +258,8 @@ Cohesion: 0.04
 Nodes (56): date, end, endInstant, endOffset, error, errorKey, _formatDate, formatTimeOfDay12h (+48 more)
 
 ### Community 8 - "Community 8"
-Cohesion: 0.05
-Nodes (46): app_colors.dart, BlockedScreen, reason, ../../core/l10n/l10n.dart, ../../core/theme/app_colors.dart, DeliverySuccessScreen, queued, stage (+38 more)
+Cohesion: 0.06
+Nodes (39): app_colors.dart, reason, ../../core/l10n/l10n.dart, ../../core/theme/app_colors.dart, ../../earnings/earnings_models.dart, HomeDeliveryRuleSummary, HomeIncentiveProgress, ../home_models.dart (+31 more)
 
 ### Community 9 - "Community 9"
 Cohesion: 0.04
@@ -264,20 +274,20 @@ Cohesion: 0.04
 Nodes (50): allowed, allowedInRange, _client, color, DeliveryProximityBlockReason, DeliveryProximityService, deliveryProximityServiceProvider, distanceBeyondRangeMeters (+42 more)
 
 ### Community 12 - "Community 12"
-Cohesion: 0.04
-Nodes (47): _allowPasscodeAutoSubmit, branding, build, child, createState, _employeeId, _employeeIdKey, _employeeIdPattern (+39 more)
+Cohesion: 0.06
+Nodes (34): _allowPasscodeAutoSubmit, branding, child, createState, _employeeId, _employeeIdKey, _employeeIdPattern, _error (+26 more)
 
 ### Community 13 - "Community 13"
-Cohesion: 0.05
-Nodes (45): AsyncValue, ConsumerWidget, MonthlyEarningsAggregate, earningsMonthProvider, earningsPerformanceProvider, extraEarningsProvider, selectedEarningsMonthProvider, build (+37 more)
+Cohesion: 0.10
+Nodes (23): earningsMonthProvider, earningsPerformanceProvider, selectedEarningsMonthProvider, build, EarningsScreen, _ErrorState, _Header, height (+15 more)
 
 ### Community 14 - "Community 14"
-Cohesion: 0.05
-Nodes (41): attendanceMonthProvider, AttendanceScreen, build, _changeMonth, attendance_providers.dart, ../../core/branding/remote_image.dart, ../../core/l10n/locale_formatters.dart, DriverDelivery (+33 more)
+Cohesion: 0.06
+Nodes (34): ../../core/branding/remote_image.dart, ../../core/storage/driver_upload_provider.dart, DriverDelivery, delivery_detail_sheet.dart, delivery_status_chip.dart, build, child, children (+26 more)
 
 ### Community 15 - "Community 15"
 Cohesion: 0.05
-Nodes (43): ../auth/login_preferences_store.dart, package:video_player/video_player.dart, Route /maintenance, _bootstrap, _brandingReady, brandingTimeout, _BundledSplashImage, controller (+35 more)
+Nodes (41): ../auth/login_preferences_store.dart, package:video_player/video_player.dart, _bootstrap, _brandingReady, brandingTimeout, _BundledSplashImage, controller, createState (+33 more)
 
 ### Community 16 - "Community 16"
 Cohesion: 0.05
@@ -289,15 +299,15 @@ Nodes (37): accentOrange, AppColors, attendanceLegendBg, attendancePresentBg, at
 
 ### Community 18 - "Community 18"
 Cohesion: 0.06
-Nodes (35): currentSessionProvider, build, ../../core/storage/driver_upload_messages.dart, ../../core/storage/driver_upload_service.dart, ../../core/widgets/coming_soon_dialog.dart, localeProvider, avatarUploadControllerProvider, _appVersionLabel (+27 more)
+Nodes (35): ../auth/rider_auth_service.dart, RiderProfile, ../avatar_upload_controller.dart, build, ../../core/storage/driver_upload_messages.dart, ../../core/storage/driver_upload_service.dart, ../../core/widgets/coming_soon_dialog.dart, profile_avatar.dart (+27 more)
 
 ### Community 19 - "Community 19"
 Cohesion: 0.07
-Nodes (36): ../device/device_identity_service.dart, deviceIdentityServiceProvider, ../../features/deliveries/delivery_models.dart, ../../features/duty/location_tracking_service.dart, ../../features/shift/shift_service.dart, network_status_provider.dart, networkStatusProvider, offlineRepoProvider (+28 more)
+Nodes (27): ../device/device_identity_service.dart, ../../features/deliveries/delivery_models.dart, ../../features/duty/location_tracking_service.dart, ../../features/shift/shift_service.dart, network_status_provider.dart, offline_db.dart, offline_repo.dart, build (+19 more)
 
 ### Community 20 - "Community 20"
 Cohesion: 0.06
-Nodes (36): DailyEarning, payoutsProvider, build, PayoutDetailScreen, active, aggregate, build, _buildBody (+28 more)
+Nodes (33): PayoutEntry, active, aggregate, _buildBody, createState, _DailyEarningRow, day, _DeductionsPlaceholder (+25 more)
 
 ### Community 21 - "Community 21"
 Cohesion: 0.06
@@ -305,7 +315,7 @@ Nodes (35): ../branding/app_branding_provider.dart, ChangeNotifier, ../../featur
 
 ### Community 22 - "Community 22"
 Cohesion: 0.07
-Nodes (31): ../config/env.dart, dart:convert, _buildMetadata, _client, NotificationEventRepository, recordEvent, _recordViaAdminApi, _client (+23 more)
+Nodes (32): ../config/env.dart, dart:convert, _buildMetadata, _client, NotificationEventRepository, recordEvent, _recordViaAdminApi, _client (+24 more)
 
 ### Community 23 - "Community 23"
 Cohesion: 0.06
@@ -322,51 +332,51 @@ Nodes (34): ../../earnings/earnings_providers.dart, active, _bikeFraction, _Bike
 
 ### Community 26 - "Community 26"
 Cohesion: 0.10
-Nodes (14): ActivityAware, ActivityPluginBinding, Activity, Activity, Boolean, MethodChannel, String, MainActivity (+6 more)
+Nodes (14): ActivityAware, ActivityPluginBinding, Activity, Activity, Boolean, FlutterEngine, MethodChannel, String (+6 more)
 
 ### Community 27 - "Community 27"
 Cohesion: 0.06
-Nodes (33): DateTime get, SelectedEarningsMonthNotifier, _client, current, _earningsColumns, EarningsMonth, _fetchAttendancePctSafe, fetchDayDetail (+25 more)
+Nodes (36): ../../core/offline/offline_repo.dart, DateTime get, build, earningsServiceProvider, next, previous, SelectedEarningsMonthNotifier, watch (+28 more)
 
 ### Community 28 - "Community 28"
 Cohesion: 0.07
-Nodes (33): dutyLocationProvider, _activeMode, build, _cancelTimer, _checkoutTriggered, copyWith, _countdownTimer, _dispose (+25 more)
+Nodes (31): dutyLocationProvider, _activeMode, build, _cancelTimer, _checkoutTriggered, copyWith, _countdownTimer, _dispose (+23 more)
 
 ### Community 29 - "Community 29"
 Cohesion: 0.06
-Nodes (32): FocusNode, FocusOnKeyEventCallback, TextEditingController, _applyPaste, autofocus, build, clear, controller (+24 more)
+Nodes (31): FocusNode, FocusOnKeyEventCallback, TextEditingController, _applyPaste, autofocus, build, clear, controller (+23 more)
 
 ### Community 30 - "Community 30"
 Cohesion: 0.06
 Nodes (31): dart:math, FontWeight, amountKwd, build, _buildFanned, _buildGrouped, CashStack, CashStackLabelPosition (+23 more)
 
 ### Community 31 - "Community 31"
-Cohesion: 0.06
-Nodes (31): apiValue, cancelLat, cancelledAt, cancelLng, cancelProofUrl, CancelReason, cancelReasonLabel, composeReason (+23 more)
+Cohesion: 0.05
+Nodes (40): BoxFit, build, fallback, fit, height, RemoteRasterImage, url, width (+32 more)
 
 ### Community 32 - "Community 32"
 Cohesion: 0.06
-Nodes (31): ../../features/duty/duty_session_storage.dart, offline_db.dart, clearActiveShiftCache, clearUserCaches, _ensureNoConflictingPickup, loadActiveShiftCache, loadAttendanceCache, loadBrandingCache (+23 more)
+Nodes (30): ../../features/duty/duty_session_storage.dart, clearActiveShiftCache, clearUserCaches, _ensureNoConflictingPickup, loadActiveShiftCache, loadAttendanceCache, loadBrandingCache, loadDeliveriesCache (+22 more)
 
 ### Community 33 - "Community 33"
 Cohesion: 0.06
 Nodes (30): ../app_installer.dart, ../app_update_provider.dart, update_progress_dialog.dart, apkFile, _ensureInstallPermission, errorCode, errorMessage, exists (+22 more)
 
 ### Community 34 - "Community 34"
-Cohesion: 0.06
-Nodes (27): driver_upload_service.dart, l10n/app_localizations.dart, code, loadSavedLocalizations, lookupAppLocalizations, locale_provider.dart, messageForDriverUploadException, build (+19 more)
+Cohesion: 0.10
+Nodes (17): driver_upload_service.dart, l10n/app_localizations.dart, code, loadSavedLocalizations, lookupAppLocalizations, locale_provider.dart, messageForDriverUploadException, build (+9 more)
 
 ### Community 35 - "Community 35"
 Cohesion: 0.06
 Nodes (30): activeDeliveryId, altitudeM, chargingState, clearDutyAccessToken, _client, extras, forceHistory, _friendlyError (+22 more)
 
 ### Community 36 - "Community 36"
-Cohesion: 0.06
-Nodes (29): TimeOfDayValue, ValueChanged, _BottomIndicator, build, count, date, _DayCell, DeliveriesCalendarCard (+21 more)
+Cohesion: 0.10
+Nodes (20): _BottomIndicator, build, count, date, _DayCell, DeliveriesCalendarCard, icon, isToday (+12 more)
 
 ### Community 37 - "Community 37"
-Cohesion: 0.07
-Nodes (28): CancelReason?, ../../core/storage/order_proof_constraints.dart, build, _cancelNoteController, _cancelReason, createState, deliveryId, dispose (+20 more)
+Cohesion: 0.04
+Nodes (49): CancelReason?, ../../core/geo/device_location_resolver.dart, ../../core/storage/order_proof_constraints.dart, _canSubmitDelivery, child, createState, dispose, _error (+41 more)
 
 ### Community 38 - "Community 38"
 Cohesion: 0.07
@@ -374,11 +384,11 @@ Nodes (29): adminApiBaseUrl, AppFlavor, Env, firebaseApiKey, firebaseAppId, fire
 
 ### Community 39 - "Community 39"
 Cohesion: 0.07
-Nodes (29): fcm_background.dart, local_notification_service.dart, notification_event_repository.dart, notification_inbox_provider.dart, notification_router.dart, NotificationRouter get, notificationEventRepositoryProvider, _appLinks (+21 more)
+Nodes (28): fcm_background.dart, local_notification_service.dart, notification_event_repository.dart, notification_inbox_provider.dart, notification_router.dart, NotificationRouter get, _appLinks, _authSub (+20 more)
 
 ### Community 40 - "Community 40"
-Cohesion: 0.07
-Nodes (27): IconData, build, description, footer, icon, PlaceholderTab, title, VoidCallback (+19 more)
+Cohesion: 0.06
+Nodes (32): build, child, FlavorBanner, env.dart, IconData, build, description, footer (+24 more)
 
 ### Community 41 - "Community 41"
 Cohesion: 0.15
@@ -386,35 +396,35 @@ Nodes (7): Activity, Boolean, Int, Context, DutyOverlayController, View, WindowM
 
 ### Community 42 - "Community 42"
 Cohesion: 0.08
-Nodes (26): AppInstaller, _channel, code, installApk, message, toString, dart:io, package:flutter/services.dart (+18 more)
+Nodes (23): beginSensitiveSession, CaptureAttemptCallback, CaptureStateCallback, disable, enable, _enabled, endSensitiveSession, _ensureEventSubscription (+15 more)
 
 ### Community 43 - "Community 43"
-Cohesion: 0.07
-Nodes (28): ../../core/security/security_event_repository.dart, ../../core/security/security_event_types.dart, _autoCheckedOut, _battery, _collectReportExtras, DutyTaskHandler, _ensureNotificationVisible, _handleGoOfflineFromNotification (+20 more)
+Cohesion: 0.06
+Nodes (30): @pragma, ../../core/security/security_event_repository.dart, _autoCheckedOut, _battery, _collectReportExtras, DutyTaskHandler, dutyTaskStartCallback, _ensureNotificationVisible (+22 more)
 
 ### Community 44 - "Community 44"
 Cohesion: 0.07
 Nodes (23): package:dpd_userapp/core/geo/zone_geometry.dart, package:dpd_userapp/core/offline/network_status_provider.dart, package:dpd_userapp/core/theme/app_colors.dart, package:dpd_userapp/features/deliveries/delivery_proximity_service.dart, package:dpd_userapp/features/duty/adaptive_location_scheduler.dart, package:dpd_userapp/features/home/zone_monitor_provider.dart, package:dpd_userapp/features/shift/shift_models.dart, package:flutter_test/flutter_test.dart (+15 more)
 
 ### Community 45 - "Community 45"
-Cohesion: 0.09
-Nodes (25): ../active_delivery_provider.dart, ../add_delivery_flow.dart, activeDeliveryProvider, ActiveDeliveryScreen, build, active, ok, openActiveDelivery (+17 more)
+Cohesion: 0.08
+Nodes (30): ../active_delivery_provider.dart, ../add_delivery_flow.dart, activeDeliveryProvider, ActiveDeliveryScreen, build, active, ok, openActiveDelivery (+22 more)
 
 ### Community 46 - "Community 46"
 Cohesion: 0.07
-Nodes (27): ../deliveries/active_delivery_provider.dart, ../deliveries/add_delivery_flow.dart, ../duty/duty_lifecycle_controller.dart, ../duty/duty_location_provider.dart, distanceTodayMeters, _handleDutyToggle, l10n, label (+19 more)
+Nodes (30): ../deliveries/active_delivery_provider.dart, ../deliveries/add_delivery_flow.dart, ../duty/duty_lifecycle_controller.dart, dutyLifecycleControllerProvider, ../duty/duty_location_provider.dart, build, distanceTodayMeters, _handleDutyToggle (+22 more)
 
 ### Community 47 - "Community 47"
-Cohesion: 0.07
-Nodes (27): AddDeliveryScreen, _canSubmitDelivery, child, createState, dispose, _error, _FormCard, _hasOrderId (+19 more)
+Cohesion: 0.08
+Nodes (33): BlockedScreen, _FormCard, _ProximityBanner, _SuccessBadge, _Body, bold, _BreakdownCard, _Card (+25 more)
 
 ### Community 48 - "Community 48"
 Cohesion: 0.08
 Nodes (25): lastUserId, _purgeOfflineCachesForUser, _resetUserScopedProviders, sub, duty_lock_channel.dart, _bootstrap, controller, disable (+17 more)
 
 ### Community 49 - "Community 49"
-Cohesion: 0.07
-Nodes (24): Color, build, child, FlavorBanner, env.dart, PerformanceSummary, Widget, AttendanceLegend (+16 more)
+Cohesion: 0.18
+Nodes (10): PerformanceSummary, build, _Card, child, _Divider, label, performance, PerformanceSummaryCard (+2 more)
 
 ### Community 50 - "Community 50"
 Cohesion: 0.08
@@ -422,24 +432,24 @@ Nodes (26): ../../../core/branding/branding_logo.dart, notificationsUnreadCountP
 
 ### Community 51 - "Community 51"
 Cohesion: 0.08
-Nodes (26): return result ??, shift_time_field.dart, shift_type_sheet.dart, ShiftSubmissionCallback? onSubmitted,
-  bool, build, createState, _errorKey, false (+18 more)
+Nodes (24): return result ??, shift_time_field.dart, shift_type_sheet.dart, ShiftSubmissionCallback? onSubmitted,
+  bool, build, createState, _errorKey, false (+16 more)
 
 ### Community 52 - "Community 52"
-Cohesion: 0.09
-Nodes (24): app_branding.dart, app_branding_service.dart, AsyncNotifier, MonthAttendance, AttendanceMonthNotifier, AppBranding, AppBrandingNotifier, appBrandingServiceProvider (+16 more)
+Cohesion: 0.14
+Nodes (17): app_branding.dart, app_branding_service.dart, AsyncNotifier, MonthAttendance, AttendanceMonthNotifier, AppBrandingNotifier, appBrandingServiceProvider, build (+9 more)
 
 ### Community 53 - "Community 53"
-Cohesion: 0.12
-Nodes (26): LoginScreen, _LoginScreenState, riderProfileProvider, ConsumerState, ConsumerStatefulWidget, build, _PickupScreenState, _startProximityMonitoring (+18 more)
+Cohesion: 0.05
+Nodes (49): ../app_update/app_update_provider.dart, ../app_update/widgets/update_available_sheet.dart, ConsumerState, ConsumerStatefulWidget, ../../core/platform/app_lifecycle_actions.dart, ../../core/widgets/offline_banner.dart, AddDeliveryScreen, build (+41 more)
 
 ### Community 54 - "Community 54"
-Cohesion: 0.08
-Nodes (24): ActiveOffer, _EmptyOffersBlock, _ErrorState, extra, _Header, _HeroCard, l10n, _LoadingState (+16 more)
+Cohesion: 0.09
+Nodes (25): ConsumerWidget, DeliverySuccessScreen, extraEarningsProvider, payoutsProvider, build, _EmptyOffersBlock, _ErrorState, extra (+17 more)
 
 ### Community 55 - "Community 55"
-Cohesion: 0.08
-Nodes (25): actionParams, actionType, bannerObjectKey, body, campaignId, category, clickedAt, copyWith (+17 more)
+Cohesion: 0.07
+Nodes (27): actionParams, actionType, bannerObjectKey, body, campaignId, category, clickedAt, copyWith (+19 more)
 
 ### Community 56 - "Community 56"
 Cohesion: 0.11
@@ -462,56 +472,56 @@ Cohesion: 0.08
 Nodes (23): package:http_parser/http_parser.dart, _accessToken, _client, code, contentType, _driverAvatarMaxBytes, DriverUploadResult, _errorMessage (+15 more)
 
 ### Community 61 - "Community 61"
-Cohesion: 0.13
-Nodes (21): ../auth/rider_auth_service.dart, profileAvatarUrlProvider, RiderProfile, ../avatar_upload_controller.dart, ../../core/storage/driver_upload_provider.dart, package:flutter/painting.dart, profile_avatar.dart, avatarLocalPreviewProvider (+13 more)
+Cohesion: 0.23
+Nodes (14): profileAvatarUrlProvider, dart:typed_data, package:flutter/painting.dart, avatarLocalPreviewProvider, AvatarUploadController, AvatarUploadOutcome, build, _evictNetworkImage (+6 more)
 
 ### Community 62 - "Community 62"
 Cohesion: 0.09
 Nodes (22): await, ../../core/permissions/duty_permissions_service.dart, ../duty/widgets/duty_readiness_sheet.dart, contains, context, current, ensureOnDutyForAction, error (+14 more)
 
 ### Community 63 - "Community 63"
-Cohesion: 0.10
-Nodes (21): ../../core/offline/sync_controller.dart, build, build, capturedAtMs, completions, id, label, lastError (+13 more)
+Cohesion: 0.12
+Nodes (19): ../../core/offline/sync_controller.dart, build, capturedAtMs, completions, id, label, lastError, legacy (+11 more)
 
 ### Community 64 - "Community 64"
 Cohesion: 0.09
 Nodes (21): date, diff, endHasSameMonth, formatDayMonth, formatDayMonthTime, formatDeliveryDateTime, formatMonthYear, formatPayoutPeriodLabel (+13 more)
 
 ### Community 65 - "Community 65"
-Cohesion: 0.09
-Nodes (21): Map, actionParams, actionType, body, campaignId, canTrackEvents, category, deepLink (+13 more)
+Cohesion: 0.08
+Nodes (23): Map, actionParams, actionType, body, campaignId, canTrackEvents, category, deepLink (+15 more)
 
 ### Community 66 - "Community 66"
 Cohesion: 0.09
-Nodes (21): String get, autofocus, build, clear, _controller, createState, _digitWidth, dispose (+13 more)
+Nodes (22): ../../../core/utils/ascii_digits.dart, String get, autofocus, build, clear, _controller, createState, _digitWidth (+14 more)
 
 ### Community 67 - "Community 67"
-Cohesion: 0.10
-Nodes (20): _authSub, _checkAccess, _checking, _debounce, didChangeAppLifecycleState, dispose, DriverAccessEnforcer, _driverChannel (+12 more)
+Cohesion: 0.08
+Nodes (25): _authSub, _checkAccess, _checking, _debounce, didChangeAppLifecycleState, dispose, DriverAccessEnforcer, driverAccessEnforcerProvider (+17 more)
 
 ### Community 68 - "Community 68"
-Cohesion: 0.10
-Nodes (18): clearStoredToken, _client, deactivateCurrentToken, deactivateToken, markTokenInvalid, PushTokenRepository, readStoredToken, _storedTokenKey (+10 more)
+Cohesion: 0.13
+Nodes (13): clearStoredToken, _client, deactivateCurrentToken, deactivateToken, markTokenInvalid, PushTokenRepository, readStoredToken, _storedTokenKey (+5 more)
 
 ### Community 69 - "Community 69"
-Cohesion: 0.10
-Nodes (19): app.dart, _authSub, _checkMetadataDeviceMismatch, didChangeAppLifecycleState, dispose, _handleKick, _hasReconciliationPending, _heartbeatInFlight (+11 more)
+Cohesion: 0.09
+Nodes (20): messageForAuthFailure, _authSub, _checkMetadataDeviceMismatch, didChangeAppLifecycleState, dispose, _handleKick, _hasReconciliationPending, _heartbeatInFlight (+12 more)
 
 ### Community 70 - "Community 70"
 Cohesion: 0.10
 Nodes (19): ../../core/duty_lock/duty_lock_channel.dart, duty_permission_status.dart, t, package:disable_battery_optimization/disable_battery_optimization.dart, package:permission_handler/permission_handler.dart, audit, DutyPermissionsService, fix (+11 more)
 
 ### Community 71 - "Community 71"
-Cohesion: 0.12
-Nodes (19): ../../core/geo/device_location_resolver.dart, ../../core/settings/live_db_refresh.dart, build, canSubmitDelivery, context, copyWith, DeliveryProximityPreviewNotifier, DeliveryProximityPreviewState (+11 more)
+Cohesion: 0.15
+Nodes (13): ../../core/settings/live_db_refresh.dart, canSubmitDelivery, context, copyWith, DeliveryProximityPreviewNotifier, DeliveryProximityPreviewState, evaluating, initialized (+5 more)
 
 ### Community 72 - "Community 72"
 Cohesion: 0.10
-Nodes (19): core/notifications/fcm_background.dart, core/observability/sentry_config.dart, core/observability/sentry_provider_observer.dart, ImagePickerPlatform, _bootstrapServices, build, child, _ConfigErrorApp (+11 more)
+Nodes (21): core/notifications/fcm_background.dart, core/observability/sentry_config.dart, core/observability/sentry_provider_observer.dart, ImagePickerPlatform, _AuthListener, _AuthListenerState, _bootstrapServices, build (+13 more)
 
 ### Community 73 - "Community 73"
-Cohesion: 0.11
-Nodes (19): LocationReportResult, applyLocalZoneStatus, applyReport, build, copyWith, distanceTodayMeters, DutyLocationNotifier, DutyLocationState (+11 more)
+Cohesion: 0.10
+Nodes (20): LocationReportResult, applyLocalZoneStatus, applyReport, build, copyWith, distanceTodayMeters, DutyLocationNotifier, DutyLocationState (+12 more)
 
 ### Community 74 - "Community 74"
 Cohesion: 0.10
@@ -539,7 +549,7 @@ Nodes (18): fromWidgetRef, _handleCustomPayload, handleDeepLink, handlePayload, 
 
 ### Community 80 - "Community 80"
 Cohesion: 0.11
-Nodes (18): screen_protector_service.dart, ScreenProtectorService?, security_bypass_store.dart, security_event_repository.dart, assertTrustedPosition, _canWarn, checkDeveloperMode, checkMockLocationSetting (+10 more)
+Nodes (18): screen_protector_service.dart, ScreenProtectorService, security_bypass_store.dart, security_event_repository.dart, assertTrustedPosition, _canWarn, checkDeveloperMode, checkMockLocationSetting (+10 more)
 
 ### Community 81 - "Community 81"
 Cohesion: 0.11
@@ -550,36 +560,36 @@ Cohesion: 0.11
 Nodes (17): double get, static const double, aspectRatio, assetPath, BikeMarker, build, color, face (+9 more)
 
 ### Community 83 - "Community 83"
-Cohesion: 0.11
-Nodes (17): clear, DeviceLocationResolver, _ensurePermission, instance, _integrity, _memoryAt, _memoryMaxAge, _memoryPosition (+9 more)
+Cohesion: 0.07
+Nodes (27): clear, DeviceLocationResolver, _ensurePermission, instance, _integrity, _memoryAt, _memoryMaxAge, _memoryPosition (+19 more)
 
 ### Community 84 - "Community 84"
-Cohesion: 0.12
-Nodes (17): build, _client, fetchDashboard, _fetchWithRetry, _friendlyError, HomeService, homeServiceProvider, _isRetryable (+9 more)
+Cohesion: 0.11
+Nodes (20): HomeDashboard, build, _client, fetchDashboard, _fetchWithRetry, _friendlyError, HomeDashboardNotifier, HomeService (+12 more)
 
 ### Community 85 - "Community 85"
 Cohesion: 0.12
-Nodes (17): integrity_checker.dart, active, _authSub, copyWith, _currentRouteName, didChangeAppLifecycleState, disable, enable (+9 more)
+Nodes (15): integrity_checker.dart, active, _authSub, copyWith, _currentRouteName, didChangeAppLifecycleState, disable, enable (+7 more)
 
 ### Community 86 - "Community 86"
 Cohesion: 0.12
 Nodes (16): `admin_driver_device_overview(p_driver_id uuid, p_history_limit int default 20)`, `admin_force_sign_out_driver(p_driver_id uuid)`, Admin panel implementation checklist, App version alignment, Database schema, `driver_device_sessions` (new table), Driver RPCs (app-side, for reference), `drivers` (new columns) (+8 more)
 
 ### Community 87 - "Community 87"
-Cohesion: 0.12
-Nodes (16): ../app_update/app_update_provider.dart, ../app_update/widgets/update_available_sheet.dart, ../../core/widgets/offline_banner.dart, ../deliveries/delivery_proximity_preview.dart, activeIcon, _checkForAppUpdate, createState, didChangeAppLifecycleState (+8 more)
+Cohesion: 0.10
+Nodes (20): app.dart, home_providers.dart, build, _debounce, didChangeAppLifecycleState, dispose, _inFlight, _lastOnDuty (+12 more)
 
 ### Community 88 - "Community 88"
-Cohesion: 0.12
-Nodes (15): attendance_day_cell.dart, ../attendance_models.dart, list, build, month, MonthAttendanceGrid, rows, year (+7 more)
+Cohesion: 0.08
+Nodes (23): attendanceMonthProvider, AttendanceScreen, build, _changeMonth, attendance_day_cell.dart, ../attendance_models.dart, attendance_providers.dart, ../../core/l10n/locale_formatters.dart (+15 more)
 
 ### Community 89 - "Community 89"
-Cohesion: 0.12
-Nodes (15): clearRememberMe, LoginPreferencesStore, readRememberMe, _rememberMeKey, setRememberMe, _accessTokenKey, _activeDeliveryIdKey, clearAccessToken (+7 more)
+Cohesion: 0.22
+Nodes (8): _accessTokenKey, _activeDeliveryIdKey, clearAccessToken, DutySessionStorage, readAccessToken, readActiveDeliveryId, saveAccessToken, setActiveDeliveryId
 
 ### Community 90 - "Community 90"
 Cohesion: 0.12
-Nodes (16): ../../core/geo/location_sampler.dart, ../deliveries/delivery_proximity_service.dart, controller, dispose, _ensureSubscribed, _evaluate, _evaluateFromCurrentPosition, _lastPosition (+8 more)
+Nodes (15): AsyncValue, ../../core/geo/location_sampler.dart, controller, dispose, _ensureSubscribed, _evaluate, _evaluateFromCurrentPosition, _lastPosition (+7 more)
 
 ### Community 91 - "Community 91"
 Cohesion: 0.12
@@ -594,12 +604,12 @@ Cohesion: 0.12
 Nodes (16): Add delivery (legacy note), Build release APK, Configuration, Database, Driver app settings (admin), First-time setup, Musallam Delivery Partner (DPD Driver App), Passcode login (+8 more)
 
 ### Community 94 - "Community 94"
-Cohesion: 0.14
-Nodes (10): Any, FlutterAppDelegate, FlutterImplicitEngineBridge, FlutterImplicitEngineDelegate, Bool, AppDelegate, Bool, AppDelegate (+2 more)
+Cohesion: 0.10
+Nodes (18): Any, FlutterAppDelegate, FlutterError, FlutterEventSink, FlutterImplicitEngineBridge, FlutterImplicitEngineDelegate, FlutterStreamHandler, Bool (+10 more)
 
 ### Community 95 - "Community 95"
-Cohesion: 0.15
-Nodes (15): ../app_release_models.dart, ../app_release_service.dart, UpdateDecision, AppReleaseService, appReleaseServiceProvider, AppUpdateNotifier, build, checkForUpdate (+7 more)
+Cohesion: 0.12
+Nodes (18): ../app_release_models.dart, ../app_release_service.dart, UpdateDecision, AppReleaseService, appReleaseServiceProvider, AppUpdateNotifier, appUpdateProvider, build (+10 more)
 
 ### Community 96 - "Community 96"
 Cohesion: 0.12
@@ -607,43 +617,43 @@ Nodes (15): appSubtitle, defaults, hashCode, iconUrl, isSvgIcon, isSvgLogo, logi
 
 ### Community 97 - "Community 97"
 Cohesion: 0.12
-Nodes (15): core/offline/offline_db.dart, _activeFromPendingPickups, isOffline, _loadLocalActiveDelivery, null, pending, pickups, readActiveDeliverySession (+7 more)
+Nodes (16): ../../core/offline/network_status_provider.dart, core/offline/offline_db.dart, _activeFromPendingPickups, isOffline, _loadLocalActiveDelivery, null, pending, pickups (+8 more)
 
 ### Community 98 - "Community 98"
 Cohesion: 0.13
 Nodes (15): AppLocale, build, code, fromCode, getString, initialLocaleOverride, label, _loadSavedLocale (+7 more)
 
 ### Community 99 - "Community 99"
-Cohesion: 0.13
-Nodes (14): adaptive_location_scheduler.dart, duty_background_service.dart, _authSub, _bootstrap, controller, didChangeAppLifecycleState, dispose, _ensureServiceRunning (+6 more)
+Cohesion: 0.12
+Nodes (16): adaptive_location_scheduler.dart, duty_background_service.dart, _authSub, _bootstrap, controller, didChangeAppLifecycleState, dispose, _ensureServiceRunning (+8 more)
 
 ### Community 100 - "Community 100"
 Cohesion: 0.13
 Nodes (14): date, DayAttendance, elapsedDays, fromJson, isValidated, month, onlineSeconds, presentDays (+6 more)
 
 ### Community 101 - "Community 101"
-Cohesion: 0.13
-Nodes (14): AttendanceMonth, AttendanceService, attendanceServiceProvider, build, _client, _currentMonth, fetchMonth, month (+6 more)
+Cohesion: 0.11
+Nodes (17): AttendanceMonth, AttendanceService, attendanceServiceProvider, build, _client, _currentMonth, fetchMonth, month (+9 more)
 
 ### Community 102 - "Community 102"
-Cohesion: 0.13
-Nodes (14): branding, BrandingLogo, build, _BundledLogoMark, _FallbackTitle, height, light, lightFallback (+6 more)
+Cohesion: 0.12
+Nodes (15): AppBranding, branding, BrandingLogo, build, _BundledLogoMark, _FallbackTitle, height, light (+7 more)
 
 ### Community 103 - "Community 103"
-Cohesion: 0.13
-Nodes (14): core/auth/auth_user_reset.dart, core/config/flavor_banner.dart, core/duty_lock/duty_lock_controller.dart, core/l10n/locale_provider.dart, core/notifications/push_notification_controller.dart, core/router/app_router.dart, core/security/security_guard_controller.dart, core/theme/app_theme.dart (+6 more)
+Cohesion: 0.12
+Nodes (15): core/auth/auth_user_reset.dart, core/config/flavor_banner.dart, core/duty_lock/duty_lock_controller.dart, core/l10n/locale_provider.dart, core/notifications/push_notification_controller.dart, core/router/app_router.dart, core/security/security_guard_controller.dart, core/theme/app_theme.dart (+7 more)
 
 ### Community 104 - "Community 104"
-Cohesion: 0.14
-Nodes (14): ../../../core/notifications/notification_inbox_models.dart, ../../../core/notifications/notification_media_repository.dart, NotificationInboxItem, notificationMediaRepositoryProvider, build, diff, _formatTime, item (+6 more)
+Cohesion: 0.08
+Nodes (24): ../../../core/notifications/notification_event_repository.dart, ../../../core/notifications/notification_media_repository.dart, ../../../core/notifications/screenshot_restriction_store.dart, ../../../core/security/screen_protector_service.dart, ../../../core/security/security_event_types.dart, NotificationInboxItem get, build, createState (+16 more)
 
 ### Community 105 - "Community 105"
-Cohesion: 0.15
-Nodes (14): core/security/security_bypass_store.dart, DateTime?, ../home/widgets/kd_note.dart, securityBypassProvider, build, build, createState, _lastTapAt (+6 more)
+Cohesion: 0.20
+Nodes (10): core/security/security_bypass_store.dart, ../home/widgets/kd_note.dart, build, createState, _lastTapAt, _requiredTaps, _tapCount, _tapWindow (+2 more)
 
 ### Community 106 - "Community 106"
-Cohesion: 0.13
-Nodes (14): createState, _ErrorBody, _filterForDay, initState, l10n, onRetry, _selectedDate, _verifiedCountsByDate (+6 more)
+Cohesion: 0.09
+Nodes (24): build, createState, DeliveriesScreen, _DeliveriesScreenState, _ErrorBody, _filterForDay, initState, l10n (+16 more)
 
 ### Community 107 - "Community 107"
 Cohesion: 0.13
@@ -654,24 +664,24 @@ Cohesion: 0.13
 Nodes (14): RealtimeChannel?, addListener, _channel, _client, coordinator, dispose, _listeners, LiveDbRefreshCoordinator (+6 more)
 
 ### Community 109 - "Community 109"
-Cohesion: 0.14
-Nodes (13): ../../core/notifications/notification_inbox_provider.dart, ../../core/notifications/notification_payload.dart, ../../core/notifications/notification_router.dart, ../../notifications/widgets/notification_detail_sheet.dart, diff, _formatTime, item, local (+5 more)
+Cohesion: 0.12
+Nodes (15): ../../../core/notifications/notification_inbox_models.dart, ../../core/notifications/notification_inbox_provider.dart, ../../../core/notifications/notification_payload.dart, ../../core/notifications/notification_router.dart, NotificationInboxItem, ../../notifications/widgets/notification_detail_sheet.dart, diff, _formatTime (+7 more)
 
 ### Community 110 - "Community 110"
 Cohesion: 0.14
 Nodes (13): Cancel reasons, Daily shift gate (mandatory), Database migrations, Delivery flow, Deprecated RPC, GPS enrichment, GPS zone tracking, In lock (Android) (+5 more)
 
 ### Community 111 - "Community 111"
-Cohesion: 0.15
-Nodes (11): ../l10n/l10n.dart, ../offline/network_status_provider.dart, ../router/app_router.dart, _open, SecurityWarningDialog, show, static bool, ../theme/app_colors.dart (+3 more)
+Cohesion: 0.20
+Nodes (8): ../l10n/l10n.dart, ../router/app_router.dart, _open, SecurityWarningDialog, show, static bool, ../theme/app_colors.dart, showComingSoonDialog
 
 ### Community 112 - "Community 112"
-Cohesion: 0.18
-Nodes (13): notification_inbox_models.dart, notification_inbox_repository.dart, NotificationInboxSnapshot, 0, build, _fetch, markAllRead, markRead (+5 more)
+Cohesion: 0.16
+Nodes (14): notification_inbox_models.dart, notification_inbox_repository.dart, NotificationInboxSnapshot, 0, build, _fetch, markAllRead, markRead (+6 more)
 
 ### Community 113 - "Community 113"
-Cohesion: 0.15
-Nodes (13): accumulatedOnlineSeconds, build, createState, didUpdateWidget, dispose, initState, isOnline, _startTimer (+5 more)
+Cohesion: 0.13
+Nodes (14): DateTime?, _RemoteDutyToastSuppressNotifier, Timer?, accumulatedOnlineSeconds, build, createState, didUpdateWidget, dispose (+6 more)
 
 ### Community 114 - "Community 114"
 Cohesion: 0.15
@@ -682,32 +692,32 @@ Cohesion: 0.15
 Nodes (12): core/l10n/localizations_loader.dart, DutyBackgroundService, _foregroundTaskOptions, init, _iosConfig, isRunning, notifyDeliverySubmitted, start (+4 more)
 
 ### Community 116 - "Community 116"
-Cohesion: 0.15
-Nodes (12): dart:typed_data, AvatarLocalPreviewNotifier, Uint8List?, _avatarContent, build, fullName, _initials, _initialsFallback (+4 more)
+Cohesion: 0.17
+Nodes (11): AvatarLocalPreviewNotifier, Uint8List?, _avatarContent, build, fullName, _initials, _initialsFallback, localBytes (+3 more)
 
 ### Community 117 - "Community 117"
-Cohesion: 0.15
-Nodes (12): dart:ui, FlutterLocalNotificationsPlugin, ../l10n/localizations_loader.dart, initialize, instance, LocalNotificationService, _onNotificationResponse, _payloadToMap (+4 more)
+Cohesion: 0.12
+Nodes (14): dart:ui, FlutterLocalNotificationsPlugin, ../l10n/localizations_loader.dart, initialize, instance, LocalNotificationService, _onNotificationResponse, _payloadToMap (+6 more)
 
 ### Community 118 - "Community 118"
 Cohesion: 0.17
 Nodes (12): File, build, _close, createState, _downloading, _error, initState, _progress (+4 more)
 
 ### Community 119 - "Community 119"
-Cohesion: 0.15
-Nodes (12): build, _cached, ensureLoaded, isEnabled, load, _loaded, _prefKey, readEnabled (+4 more)
+Cohesion: 0.14
+Nodes (13): build, _cached, ensureLoaded, isEnabled, load, _loaded, _prefKey, readEnabled (+5 more)
 
 ### Community 120 - "Community 120"
-Cohesion: 0.18
-Nodes (12): ../shift_models.dart, ../shift_service.dart, DailyShift, build, clearLocal, _expiryTimer, refresh, _scheduleExpiryRefresh (+4 more)
+Cohesion: 0.16
+Nodes (15): ../shift_models.dart, _loadActiveShift, ../shift_service.dart, build, clearLocal, _expiryTimer, refresh, _scheduleExpiryRefresh (+7 more)
 
 ### Community 121 - "Community 121"
 Cohesion: 0.17
 Nodes (12): AppInstallerException, AppReleaseException, DeviceConflictException, RiderBlockedException, DeliveryServiceException, LocationTrackingException, EarningsServiceException, Exception (+4 more)
 
 ### Community 122 - "Community 122"
-Cohesion: 0.20
-Nodes (12): _submit, build, dutyLifecycleControllerProvider, build, HomeScreen, zoneMonitorProvider, Route /deliveries, Route /deliveries/active (+4 more)
+Cohesion: 0.10
+Nodes (19): Color, AttendanceLegend, border, build, _Circle, color, icon, label (+11 more)
 
 ### Community 123 - "Community 123"
 Cohesion: 0.23
@@ -719,20 +729,20 @@ Nodes (11): ../offline/offline_db.dart, required SecurityEventType eventType,
   SecuritySeverity, security_event_types.dart, _client, _defaultDevicePayload, logEvent, logSecurityEventViaHttp, response (+3 more)
 
 ### Community 125 - "Community 125"
-Cohesion: 0.18
-Nodes (11): ShiftType, build, createState, initial, label, onTap, _RadioTile, _selected (+3 more)
+Cohesion: 0.20
+Nodes (9): ShiftType, build, createState, initial, label, onTap, _RadioTile, _selected (+1 more)
 
 ### Community 126 - "Community 126"
-Cohesion: 0.33
-Nodes (11): authUserResetControllerProvider, deviceSessionMonitorControllerProvider, driverAccessMonitorProvider, localZoneMonitorControllerProvider, dutyLockControllerProvider, build, DpdApp, pushNotificationControllerProvider (+3 more)
+Cohesion: 0.30
+Nodes (12): authUserResetControllerProvider, deviceSessionMonitorControllerProvider, driverAccessMonitorProvider, localZoneMonitorControllerProvider, dutyLockControllerProvider, remoteDutyMonitorProvider, build, DpdApp (+4 more)
 
 ### Community 127 - "Community 127"
-Cohesion: 0.18
-Nodes (10): ../../core/offline/network_status_provider.dart, ../../core/offline/offline_repo.dart, build, earningsServiceProvider, next, previous, watch, EarningsService (+2 more)
+Cohesion: 0.14
+Nodes (15): build, appBrandingProvider, ../../core/branding/app_branding.dart, ../../core/branding/app_branding_provider.dart, build, ctaLabel, GateScreenBody, icon (+7 more)
 
 ### Community 128 - "Community 128"
-Cohesion: 0.18
-Nodes (10): checkPermission, getCurrentPosition, instance, isServiceEnabled, lastKnownIfFresh, lastKnownMaxAge, LocationSampler, positionStream (+2 more)
+Cohesion: 0.12
+Nodes (15): MonthlyEarningsAggregate, aggregate, _Chevron, _ChevronDir, direction, _Divider, _ExtraEarningsPill, label (+7 more)
 
 ### Community 129 - "Community 129"
 Cohesion: 0.18
@@ -747,32 +757,32 @@ Cohesion: 0.20
 Nodes (9): ../auth/driver_access_monitor.dart, ../../core/geo/zone_geometry.dart, false, messageForDeliveryServiceException, messageForProximityContextError, messageForProximityStatus, msg, delivery_proximity_service.dart (+1 more)
 
 ### Community 132 - "Community 132"
-Cohesion: 0.20
-Nodes (9): BoxFit, build, fallback, fit, height, RemoteRasterImage, url, width (+1 more)
+Cohesion: 0.14
+Nodes (13): clearRememberMe, LoginPreferencesStore, readRememberMe, _rememberMeKey, setRememberMe, _key, _prefix, resolveEffective (+5 more)
 
 ### Community 133 - "Community 133"
-Cohesion: 0.22
-Nodes (9): ../../core/platform/app_lifecycle_actions.dart, ../home/home_providers.dart, homeDashboardProvider, AppExitScope, build, child, build, _applyOnDuty (+1 more)
+Cohesion: 0.15
+Nodes (12): AppInstaller, _channel, code, installApk, message, toString, dart:io, package:flutter/services.dart (+4 more)
 
 ### Community 134 - "Community 134"
 Cohesion: 0.20
 Nodes (9): clearCurrentUser, clearForUser, DeliveryProximityCache, load, _repo, save, ../../features/deliveries/delivery_proximity_service.dart, ../offline/offline_repo.dart (+1 more)
 
 ### Community 135 - "Community 135"
-Cohesion: 0.27
-Nodes (10): state, StatefulWidget, DigitPinInput, DigitPinInputState, DutyReadinessSheet, _DutyReadinessSheetState, EmployeeIdInput, EmployeeIdInputState (+2 more)
+Cohesion: 0.20
+Nodes (14): state, StatefulWidget, DigitPinInput, DigitPinInputState, DutyReadinessSheet, _DutyReadinessSheetState, EmployeeIdInput, EmployeeIdInputState (+6 more)
 
 ### Community 136 - "Community 136"
-Cohesion: 0.22
-Nodes (8): @pragma, dutyTaskStartCallback, firebase_options.dart, notification_payload.dart, firebaseMessagingBackgroundHandler, initializeApp, payload, package:firebase_messaging/firebase_messaging.dart
+Cohesion: 0.29
+Nodes (6): firebase_options.dart, notification_payload.dart, initializeApp, payload, package:firebase_core/firebase_core.dart, package:firebase_messaging/firebase_messaging.dart
 
 ### Community 137 - "Community 137"
-Cohesion: 0.22
-Nodes (8): core/config/env.dart, android, DefaultFirebaseOptions, ios, web, package:firebase_core/firebase_core.dart, static const FirebaseOptions, static FirebaseOptions get
+Cohesion: 0.25
+Nodes (7): core/config/env.dart, android, DefaultFirebaseOptions, ios, web, static const FirebaseOptions, static FirebaseOptions get
 
 ### Community 138 - "Community 138"
-Cohesion: 0.22
-Nodes (8): bindSentryUserFromSession, configureScope, configureSentryOptions, isProduction, listenForSentryAuthContext, user, package:flutter/foundation.dart, package:sentry_flutter/sentry_flutter.dart
+Cohesion: 0.15
+Nodes (11): bindSentryUserFromSession, configureScope, configureSentryOptions, isProduction, listenForSentryAuthContext, user, providerDidFail, SentryProviderObserver (+3 more)
 
 ### Community 139 - "Community 139"
 Cohesion: 0.22
@@ -795,12 +805,12 @@ Cohesion: 0.29
 Nodes (6): Agent context — `dpd_userapp`, Android release signing — CRITICAL (MDM + OTA), App version (Musallam driver app — Android only), Quick reference for incrementing, Release / OTA publishing — CRITICAL rules, Rules for any new build the user asks me to generate
 
 ### Community 144 - "Community 144"
-Cohesion: 0.38
-Nodes (7): driverAccessEnforcerProvider, enforceDriverBlockedFromError, riderAuthServiceProvider, handleDeliveryServiceExceptionActions, HomeDashboard, _ensureAccessAllowed, HomeDashboardNotifier
+Cohesion: 0.22
+Nodes (13): deviceIdentityServiceProvider, ../offline/network_status_provider.dart, networkStatusProvider, offlineRepoProvider, _syncCompletionRows, SyncController, _syncDeliveryRows, _syncPickupRows (+5 more)
 
 ### Community 145 - "Community 145"
-Cohesion: 0.33
-Nodes (6): myDeliveriesProvider, delivery_list_tile.dart, ../delivery_service.dart, build, deliveries, DeliveriesListCard
+Cohesion: 0.17
+Nodes (11): _client, fetch, _fromJson, _fromRow, _fullColumns, _legacyColumns, _minimalColumns, _nonEmpty (+3 more)
 
 ### Community 146 - "Community 146"
 Cohesion: 0.29
@@ -823,36 +833,64 @@ Cohesion: 0.33
 Nodes (5): Common misconfiguration symptoms, Feature → auth → endpoint, Flavor integration matrix, Infra checklist (outside the app), Stack pairing (must match)
 
 ### Community 151 - "Community 151"
-Cohesion: 0.50
-Nodes (4): _DeviceSessionMonitor, _DriverAccessMonitor, DutyLifecycleController, WidgetsBindingObserver
+Cohesion: 0.40
+Nodes (5): _DeviceSessionMonitor, _DriverAccessMonitor, DutyLifecycleController, _RemoteDutyMonitor, WidgetsBindingObserver
 
 ### Community 152 - "Community 152"
 Cohesion: 0.50
 Nodes (3): SecurityEventType, SecuritySeverity, value
 
 ### Community 153 - "Community 153"
-Cohesion: 0.67
-Nodes (3): appUpdateProvider, _reportInstalledVersion, _runOptionalUpdateSheet
+Cohesion: 0.18
+Nodes (11): ActiveOffer, ../earnings_models.dart, AppLocalizations, AppLocalizationsAr, AppLocalizationsEn, of, ActiveOfferCard, build (+3 more)
+
+### Community 154 - "Community 154"
+Cohesion: 0.20
+Nodes (9): TimeOfDayValue, ValueChanged, build, endsNextDay, label, onChanged, _pickTime, ShiftTimeField (+1 more)
+
+### Community 178 - "Community 178"
+Cohesion: 0.36
+Nodes (8): currentSessionProvider, riderProfileProvider, localeProvider, avatarUploadControllerProvider, build, _ProfileScreenState, Route /profile/attendance, showLanguagePickerSheet
+
+### Community 179 - "Community 179"
+Cohesion: 0.33
+Nodes (7): _triggerZoneTimeoutCheckout, securityBypassProvider, securityEventRepositoryProvider, build, SecurityGuardController, SecurityGuardState, _onBikeTap
+
+### Community 180 - "Community 180"
+Cohesion: 0.33
+Nodes (7): notificationEventRepositoryProvider, notificationMediaRepositoryProvider, _recordDelivered, _NotificationDetailSheet, _NotificationDetailSheetState, _onCaptureAttempt, _resolveHeroImage
+
+### Community 181 - "Community 181"
+Cohesion: 0.33
+Nodes (5): handle_new_rx_page(), __lldb_init_module(), Intercept NOTIFY_DEBUGGER_ABOUT_RX_PAGES and touch the pages., SBDebugger, SBFrame
+
+### Community 182 - "Community 182"
+Cohesion: 0.33
+Nodes (5): DailyShift, ../../shift/shift_models.dart, build, CurrentShiftChip, shift
+
+### Community 184 - "Community 184"
+Cohesion: 0.50
+Nodes (3): out, toAsciiDigits, toString
 
 ## Knowledge Gaps
-- **3731 isolated node(s):** `Activity`, `FlutterEngine`, `String`, `Activity`, `Activity` (+3726 more)
+- **3790 isolated node(s):** `Activity`, `FlutterEngine`, `String`, `Activity`, `Activity` (+3785 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **16 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **19 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `AppLocalizations` connect `Community 54` to `Community 0`, `Community 4`, `Community 166`, `Community 106`, `Community 43`, `Community 13`, `Community 46`, `Community 14`, `Community 20`, `Community 23`, `Community 25`?**
-  _High betweenness centrality (0.045) - this node is a cross-community bridge._
-- **Why does `AppLocalizationsEn` connect `Community 54` to `Community 2`?**
-  _High betweenness centrality (0.011) - this node is a cross-community bridge._
-- **Why does `list` connect `Community 88` to `Community 3`, `Community 100`, `Community 4`, `Community 8`, `Community 9`, `Community 11`, `Community 14`, `Community 145`, `Community 54`, `Community 55`, `Community 22`, `Community 25`, `Community 92`, `Community 29`?**
-  _High betweenness centrality (0.010) - this node is a cross-community bridge._
+- **Why does `AppLocalizations` connect `Community 153` to `Community 0`, `Community 4`, `Community 166`, `Community 106`, `Community 43`, `Community 13`, `Community 46`, `Community 47`, `Community 14`, `Community 20`, `Community 54`, `Community 23`, `Community 25`?**
+  _High betweenness centrality (0.046) - this node is a cross-community bridge._
+- **Why does `list` connect `Community 88` to `Community 3`, `Community 100`, `Community 4`, `Community 8`, `Community 9`, `Community 106`, `Community 11`, `Community 14`, `Community 54`, `Community 55`, `Community 22`, `Community 25`, `Community 92`, `Community 29`?**
+  _High betweenness centrality (0.015) - this node is a cross-community bridge._
+- **Why does `AppLocalizationsEn` connect `Community 153` to `Community 2`?**
+  _High betweenness centrality (0.012) - this node is a cross-community bridge._
 - **What connects `Activity`, `FlutterEngine`, `String` to the rest of the system?**
-  _3731 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _3791 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.00398406374501992 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.003968253968253968 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.004073319755600814 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.004056795131845842 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.004073319755600814 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.004056795131845842 - nodes in this community are weakly interconnected._
