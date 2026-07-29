@@ -20,6 +20,7 @@ class NotificationInboxItem {
     this.deliveredAt,
     this.bannerObjectKey,
     this.thumbnailObjectKey,
+    this.screenshotRestricted,
   });
 
   final String dispatchItemId;
@@ -36,6 +37,8 @@ class NotificationInboxItem {
   final DateTime? deliveredAt;
   final String? bannerObjectKey;
   final String? thumbnailObjectKey;
+  /// null when key absent (legacy rows); prefer cache fail-safe then.
+  final bool? screenshotRestricted;
 
   bool get isUnread => openedAt == null;
 
@@ -59,10 +62,15 @@ class NotificationInboxItem {
       deliveredAt: _parseDate(json['delivered_at']),
       bannerObjectKey: banner,
       thumbnailObjectKey: image ?? banner,
+      screenshotRestricted: _readOptionalBool(json, 'screenshot_restricted'),
     );
   }
 
-  NotificationInboxItem copyWith({DateTime? openedAt, DateTime? clickedAt}) {
+  NotificationInboxItem copyWith({
+    DateTime? openedAt,
+    DateTime? clickedAt,
+    bool? screenshotRestricted,
+  }) {
     return NotificationInboxItem(
       dispatchItemId: dispatchItemId,
       campaignId: campaignId,
@@ -78,7 +86,19 @@ class NotificationInboxItem {
       deliveredAt: deliveredAt,
       bannerObjectKey: bannerObjectKey,
       thumbnailObjectKey: thumbnailObjectKey,
+      screenshotRestricted: screenshotRestricted ?? this.screenshotRestricted,
     );
+  }
+
+  static bool? _readOptionalBool(Map<String, dynamic> json, String key) {
+    if (!json.containsKey(key)) return null;
+    final value = json[key];
+    if (value == null) return null;
+    if (value is bool) return value;
+    final text = value.toString().trim().toLowerCase();
+    if (text == 'true' || text == '1' || text == 'yes') return true;
+    if (text == 'false' || text == '0' || text == 'no') return false;
+    return null;
   }
 
   static DateTime? _parseDate(Object? value) {

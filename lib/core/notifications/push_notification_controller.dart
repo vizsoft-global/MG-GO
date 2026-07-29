@@ -18,6 +18,7 @@ import 'notification_inbox_provider.dart';
 import 'notification_payload.dart';
 import 'notification_router.dart';
 import 'push_token_repository.dart';
+import 'screenshot_restriction_store.dart';
 
 final pushNotificationControllerProvider =
     NotifierProvider<PushNotificationController, bool>(
@@ -172,6 +173,7 @@ class PushNotificationController extends Notifier<bool> {
 
   Future<void> _onForegroundMessage(RemoteMessage message) async {
     final payload = NotificationPayload.fromFcmData(message.data);
+    await _cacheScreenshotRestriction(payload);
     await _recordDelivered(payload);
     unawaited(ref.read(notificationInboxProvider.notifier).refresh());
 
@@ -195,7 +197,19 @@ class PushNotificationController extends Notifier<bool> {
     required bool clicked,
   }) async {
     final payload = NotificationPayload.fromFcmData(message.data);
+    await _cacheScreenshotRestriction(payload);
     await _handleUserInteraction(payload, clicked: clicked);
+  }
+
+  Future<void> _cacheScreenshotRestriction(NotificationPayload payload) async {
+    if (payload.screenshotRestricted == null || payload.campaignId.isEmpty) {
+      return;
+    }
+    await screenshotRestrictionStore.save(
+      campaignId: payload.campaignId,
+      dispatchItemId: payload.dispatchItemId,
+      restricted: payload.screenshotRestricted!,
+    );
   }
 
   Future<void> _handleUserInteraction(
