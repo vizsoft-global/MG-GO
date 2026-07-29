@@ -49,8 +49,6 @@ lib/core/config/env.local.dart
 
 sentry.properties
 
-sentry.properties
-
-/graphify-out
-
-/build
+# Graphify — commit the graph; ignore local-only cost/cache
+graphify-out/cost.json
+graphify-out/cache/

@@ -465,7 +465,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'Counts toward incentive deliveries';
 
   @override
-  String get outsideDeliveryAreaReturnSoon => 'Outside zone. Return soon.';
+  String get outsideDeliveryAreaReturnSoon =>
+      'Outside zone. Return within 45 minutes.';
 
   @override
   String get outsideDeliveryAreaReturnAfterDelivery =>
@@ -474,6 +475,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get zoneTimeoutCheckedOut =>
       'You were checked out for staying outside your delivery area too long.';
+
+  @override
+  String get autoCheckoutOffline =>
+      'You were checked out automatically after being offline too long.';
+
+  @override
+  String get autoCheckoutOutOfZone =>
+      'You were checked out automatically after staying outside your assigned zone too long.';
 
   @override
   String get completeMoreEarnMore => 'Complete more. Earn more.';

@@ -908,6 +908,18 @@ abstract class AppLocalizations {
   /// **'You were checked out for staying outside your delivery area too long.'**
   String get zoneTimeoutCheckedOut;
 
+  /// Auto-checkout after continuous offline (server cron).
+  ///
+  /// In en, this message translates to:
+  /// **'You were checked out automatically after being offline too long.'**
+  String get autoCheckoutOffline;
+
+  /// Auto-checkout after continuous out-of-assigned-zone (server cron).
+  ///
+  /// In en, this message translates to:
+  /// **'You were checked out automatically after staying outside your assigned zone too long.'**
+  String get autoCheckoutOutOfZone;
+
   /// No description provided for @completeMoreEarnMore.
   ///
   /// In en, this message translates to:
