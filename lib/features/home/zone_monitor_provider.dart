@@ -1,18 +1,24 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../app.dart';
 import '../../core/geo/location_sampler.dart';
+import '../../core/l10n/localizations_loader.dart';
 import '../../core/security/security_event_repository.dart';
 import '../../core/security/security_event_types.dart';
 import '../deliveries/active_delivery_provider.dart';
 import '../duty/duty_location_provider.dart';
 import 'home_providers.dart';
+import 'remote_duty_monitor.dart';
 
 /// Idle outside-zone warning window (no active delivery).
-const zoneIdleTimeoutSeconds = 600;
+/// Matches admin `attendance_auto_checkout_minutes` default (45).
+const zoneIdleTimeoutSeconds = 45 * 60;
 
 /// Return-to-zone grace after completing a delivery while still outside.
-const zoneReturnGraceSeconds = 1200;
+const zoneReturnGraceSeconds = 20 * 60;
 
 /// @deprecated Use [zoneIdleTimeoutSeconds] or [zoneReturnGraceSeconds].
 const zoneTimeoutSeconds = zoneIdleTimeoutSeconds;
@@ -282,12 +288,20 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
           );
     } catch (_) {}
 
+    suppressRemoteDutyAutoCheckoutToastRef(ref);
     await ref.read(homeDashboardProvider.notifier).setDutyState(
           isOnDuty: false,
           isOnline: false,
         );
     await ref.read(homeDashboardProvider.notifier).refresh();
     _stopMonitoring(reset: true);
+
+    try {
+      final l10n = await loadSavedLocalizations();
+      scaffoldMessengerKey.currentState?.showSnackBar(
+        SnackBar(content: Text(l10n.zoneTimeoutCheckedOut)),
+      );
+    } catch (_) {}
   }
 }
 

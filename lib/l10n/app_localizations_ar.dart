@@ -466,7 +466,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get countsTowardIncentiveDeliveries => 'تُحتسب ضمن توصيلات الحوافز';
 
   @override
-  String get outsideDeliveryAreaReturnSoon => 'خارج المنطقة. عد قريباً.';
+  String get outsideDeliveryAreaReturnSoon => 'خارج المنطقة. عد خلال 45 دقيقة.';
 
   @override
   String get outsideDeliveryAreaReturnAfterDelivery =>
@@ -475,6 +475,14 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get zoneTimeoutCheckedOut =>
       'تم إخراجك من الخدمة لبقائك خارج منطقة التوصيل لفترة طويلة.';
+
+  @override
+  String get autoCheckoutOffline =>
+      'تم إخراجك تلقائياً بعد البقاء دون اتصال لفترة طويلة.';
+
+  @override
+  String get autoCheckoutOutOfZone =>
+      'تم إخراجك تلقائياً بعد البقاء خارج منطقتك المخصصة لفترة طويلة.';
 
   @override
   String get completeMoreEarnMore => 'أكمل المزيد. اربح المزيد.';

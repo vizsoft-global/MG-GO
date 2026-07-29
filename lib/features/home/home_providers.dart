@@ -6,6 +6,7 @@ import '../../core/offline/offline_repo.dart';
 import '../auth/driver_access_monitor.dart';
 import '../auth/rider_auth_service.dart';
 import 'home_models.dart';
+import 'remote_duty_monitor.dart';
 
 class HomeServiceException implements Exception {
   HomeServiceException(this.message);
@@ -188,6 +189,9 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboard> {
     required bool isOnDuty,
     required bool isOnline,
   }) async {
+    if (!isOnDuty) {
+      suppressRemoteDutyAutoCheckoutToastRef(ref);
+    }
     state = await AsyncValue.guard(
       () async {
         final dashboard = await ref

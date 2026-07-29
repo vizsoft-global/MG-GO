@@ -7,6 +7,7 @@ import 'core/duty_lock/duty_lock_controller.dart';
 import 'features/auth/device_session_monitor.dart';
 import 'features/auth/driver_access_monitor.dart';
 import 'features/duty/local_zone_monitor.dart';
+import 'features/home/remote_duty_monitor.dart';
 import 'core/branding/app_branding.dart';
 import 'core/branding/app_branding_provider.dart';
 import 'core/config/flavor_banner.dart';
@@ -36,6 +37,7 @@ class DpdApp extends ConsumerWidget {
     ref.watch(authUserResetControllerProvider);
     ref.watch(deviceSessionMonitorControllerProvider);
     ref.watch(driverAccessMonitorProvider);
+    ref.watch(remoteDutyMonitorProvider);
     ref.watch(localZoneMonitorControllerProvider);
     ref.listen(networkStatusProvider, (previous, next) {
       if (previous?.isOffline == true && !next.isOffline) {
