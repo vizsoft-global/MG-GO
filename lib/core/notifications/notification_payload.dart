@@ -26,13 +26,14 @@ enum NotificationClientEventType {
   opened('opened'),
   clicked('clicked'),
   failed('failed'),
-  tokenInvalid('token_invalid');
+  tokenInvalid('token_invalid'),
+  screenshotTaken('screenshot_taken');
 
   const NotificationClientEventType(this.value);
   final String value;
 }
 
-/// Parsed FCM data payload (Notification Center v1).
+/// Parsed FCM data payload (Notification Center v2).
 class NotificationPayload {
   NotificationPayload({
     required this.campaignId,
@@ -45,6 +46,7 @@ class NotificationPayload {
     this.deepLink,
     this.title,
     this.body,
+    this.screenshotRestricted,
   });
 
   final String campaignId;
@@ -57,6 +59,8 @@ class NotificationPayload {
   final String? deepLink;
   final String? title;
   final String? body;
+  /// null when key absent (legacy v1); use cache fail-safe in that case.
+  final bool? screenshotRestricted;
 
   bool get canTrackEvents =>
       campaignId.isNotEmpty && (dispatchItemId?.isNotEmpty ?? false);
@@ -100,6 +104,11 @@ class NotificationPayload {
       deepLink: _readString(data, 'deep_link') ?? _readString(data, 'deepLink'),
       title: _readString(data, 'title'),
       body: _readString(data, 'body'),
+      screenshotRestricted: _readOptionalBool(
+        data,
+        'screenshot_restricted',
+      ) ??
+          _readOptionalBool(data, 'screenshotRestricted'),
     );
   }
 
@@ -120,7 +129,20 @@ class NotificationPayload {
     'deepLink',
     'title',
     'body',
+    'screenshot_restricted',
+    'screenshotRestricted',
   };
+
+  static bool? _readOptionalBool(Map<String, dynamic> data, String key) {
+    if (!data.containsKey(key)) return null;
+    final value = data[key];
+    if (value == null) return null;
+    if (value is bool) return value;
+    final text = value.toString().trim().toLowerCase();
+    if (text == 'true' || text == '1' || text == 'yes') return true;
+    if (text == 'false' || text == '0' || text == 'no') return false;
+    return null;
+  }
 
   static String? _readString(Map<String, dynamic> data, String key) {
     final value = data[key];

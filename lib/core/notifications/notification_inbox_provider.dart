@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'notification_inbox_models.dart';
 import 'notification_inbox_repository.dart';
+import 'screenshot_restriction_store.dart';
 
 /// Pull-to-refresh / pagination-friendly inbox snapshot.
 final notificationInboxProvider =
@@ -75,7 +76,19 @@ class NotificationInboxNotifier
 
   Future<NotificationInboxSnapshot> _fetch() async {
     final repo = ref.read(notificationInboxRepositoryProvider);
-    return repo.list(limit: 50);
+    final snapshot = await repo.list(limit: 50);
+    await screenshotRestrictionStore.saveMany(
+      snapshot.items
+          .where((item) => item.screenshotRestricted != null)
+          .map(
+            (item) => (
+              campaignId: item.campaignId,
+              dispatchItemId: item.dispatchItemId,
+              restricted: item.screenshotRestricted!,
+            ),
+          ),
+    );
+    return snapshot;
   }
 }
 

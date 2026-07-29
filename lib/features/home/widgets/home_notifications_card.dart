@@ -150,7 +150,7 @@ class HomeNotificationsCard extends ConsumerWidget {
     final payload = NotificationPayload(
       campaignId: item.campaignId,
       dispatchItemId: item.dispatchItemId,
-      payloadVersion: '1',
+      payloadVersion: '2',
       actionType:
           NotificationActionType.fromValue(item.actionType) ??
           NotificationActionType.openScreen,
@@ -159,6 +159,7 @@ class HomeNotificationsCard extends ConsumerWidget {
       priority: item.priority,
       title: item.title,
       body: item.body,
+      screenshotRestricted: item.screenshotRestricted,
     );
     if (!context.mounted) return;
 

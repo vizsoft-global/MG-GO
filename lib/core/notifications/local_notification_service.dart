@@ -104,6 +104,9 @@ class LocalNotificationService {
       'category': payload.category,
       'priority': payload.priority,
       if (payload.deepLink != null) 'deep_link': payload.deepLink,
+      if (payload.screenshotRestricted != null)
+        'screenshot_restricted':
+            payload.screenshotRestricted! ? 'true' : 'false',
     };
   }
 }
