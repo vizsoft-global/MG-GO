@@ -7,6 +7,7 @@ import '../../core/branding/app_branding.dart';
 import '../../core/branding/app_branding_provider.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
+import '../auth/login_verification_gate.dart';
 
 /// Full-screen maintenance gate when `driver_app_maintenance_mode` is true.
 class MaintenanceScreen extends ConsumerWidget {
@@ -47,7 +48,13 @@ class MaintenanceScreen extends ConsumerWidget {
     if (!context.mounted || settings == null) return;
     if (!settings.maintenanceMode) {
       final session = Supabase.instance.client.auth.currentSession;
-      context.go(session != null ? '/home' : '/login');
+      if (session == null) {
+        context.go('/login');
+        return;
+      }
+      await ref.read(loginVerificationRefreshListenableProvider).refresh();
+      if (!context.mounted) return;
+      context.go(await resolvePostLoginLocation());
     }
   }
 }

@@ -12,6 +12,7 @@ import '../home/home_providers.dart';
 import 'auth_messages.dart';
 import 'device_session_models.dart';
 import 'login_preferences_store.dart';
+import 'login_verification_gate.dart';
 import 'rider_auth_service.dart';
 import 'widgets/digit_pin_input.dart';
 import 'widgets/employee_id_input.dart';
@@ -69,8 +70,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       _loginSucceeded = true;
       ref.invalidate(riderProfileProvider);
       ref.invalidate(homeDashboardProvider);
+      await ref.read(loginVerificationRefreshListenableProvider).refresh();
       if (!mounted) return;
-      context.go('/home');
+      context.go(await resolvePostLoginLocation());
     } on DeviceConflictException catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
@@ -93,8 +95,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         _loginSucceeded = true;
         ref.invalidate(riderProfileProvider);
         ref.invalidate(homeDashboardProvider);
+        await ref.read(loginVerificationRefreshListenableProvider).refresh();
         if (!mounted) return;
-        context.go('/home');
+        context.go(await resolvePostLoginLocation());
         return;
       }
       await ref.read(riderAuthServiceProvider).signOut();

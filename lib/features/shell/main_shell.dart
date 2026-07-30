@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/platform/app_lifecycle_actions.dart';
@@ -11,6 +12,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/widgets/offline_banner.dart';
 import '../app_update/app_update_provider.dart';
 import '../app_update/widgets/update_available_sheet.dart';
+import '../auth/login_verification_gate.dart';
+import '../auth/login_verification_store.dart';
 import '../auth/rider_auth_service.dart';
 import '../deliveries/delivery_proximity_preview.dart';
 import '../deliveries/delivery_proximity_service.dart';
@@ -51,6 +54,18 @@ class _MainShellState extends ConsumerState<MainShell>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       unawaited(_checkForAppUpdate(resume: true));
+      unawaited(_enforceLoginVerificationGate());
+    }
+  }
+
+  Future<void> _enforceLoginVerificationGate() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null || !mounted) return;
+    final needs = await LoginVerificationStore.needsCapture(userId);
+    await ref.read(loginVerificationRefreshListenableProvider).refresh();
+    if (!mounted) return;
+    if (needs) {
+      context.go('/login-verification');
     }
   }
 

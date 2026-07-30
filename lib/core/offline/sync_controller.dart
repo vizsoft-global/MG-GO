@@ -13,6 +13,7 @@ import '../../features/shift/shift_service.dart';
 import '../device/device_identity_service.dart';
 import '../security/security_event_repository.dart';
 import '../security/security_event_types.dart';
+import '../../features/auth/login_verification_store.dart';
 import '../storage/driver_upload_service.dart';
 import 'offline_db.dart';
 import 'offline_repo.dart';
@@ -84,6 +85,8 @@ class SyncController extends Notifier<SyncState> {
         userId,
         limit: 500,
       );
+      final loginVerificationRows =
+          await db.getPendingLoginVerifications(userId);
       final initialPending =
           shiftRows.length +
           dutyRows.length +
@@ -94,11 +97,12 @@ class SyncController extends Notifier<SyncState> {
           securityRows.length;
 
       if (initialPending == 0) {
-        // Nothing to do. Reset to a clean baseline so no stale `pendingCount`
-        // from a previous run lingers in state. Keep `running` false — drain()
-        // already runs silently in the background and the offline banner only
-        // shows when the device is verifiably offline, so this never affects
-        // UI on a healthy network.
+        // Login-verification uploads drain silently (no offline banner).
+        if (loginVerificationRows.isNotEmpty) {
+          await _syncLoginVerificationRows(loginVerificationRows);
+        }
+        // Nothing user-visible to do. Reset to a clean baseline so no stale
+        // `pendingCount` from a previous run lingers in state.
         state = const SyncState();
         return;
       }
@@ -119,6 +123,7 @@ class SyncController extends Notifier<SyncState> {
       synced += await _syncCompletionRows(completionRows);
       synced += await _syncDeliveryRows(deliveryRows);
       synced += await _syncSecurityRows(securityRows);
+      synced += await _syncLoginVerificationRows(loginVerificationRows);
 
       // 3) Recount what's actually still pending instead of forcing 0 — rows
       //    that failed are still in the DB and must keep the banner visible
@@ -545,6 +550,70 @@ class SyncController extends Notifier<SyncState> {
       } catch (e) {
         await OfflineDb.instance.markPendingFailure(
           table: 'pending_security_events',
+          id: id,
+          error: e.toString(),
+        );
+      }
+    }
+    return synced;
+  }
+
+  Future<int> _syncLoginVerificationRows(List<Map<String, Object?>> rows) async {
+    var synced = 0;
+    final client = Supabase.instance.client;
+    final userId = client.auth.currentUser?.id;
+    if (userId == null || rows.isEmpty) return synced;
+    final uploadService = DriverUploadService(client);
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+
+    for (final row in rows) {
+      final id = row['id'] as String?;
+      if (id == null || id.isEmpty) continue;
+      final nextAttempt = row['next_attempt_at'] as int?;
+      if (nextAttempt != null && nextAttempt > nowMs) continue;
+
+      final localPath = row['local_path'] as String? ?? '';
+      final mime = row['mime'] as String? ?? 'image/jpeg';
+      if (localPath.isEmpty) {
+        await OfflineDb.instance.deletePendingById(
+          table: 'pending_login_verifications',
+          id: id,
+        );
+        continue;
+      }
+
+      try {
+        final file = File(localPath);
+        if (!await file.exists()) {
+          await OfflineDb.instance.deletePendingById(
+            table: 'pending_login_verifications',
+            id: id,
+          );
+          await LoginVerificationStore.clearStalePending(userId);
+          continue;
+        }
+        final bytes = await file.readAsBytes();
+        final upload = await uploadService.uploadLoginVerification(
+          bytes: bytes,
+          contentType: mime,
+          filename: file.uri.pathSegments.isEmpty
+              ? 'login_verification.jpg'
+              : file.uri.pathSegments.last,
+        );
+        await client.rpc(
+          'driver_record_login_verification',
+          params: {'p_object_key': upload.objectKey},
+        );
+        await OfflineDb.instance.deletePendingById(
+          table: 'pending_login_verifications',
+          id: id,
+        );
+        await OfflineDb.instance.deleteLoginVerificationLocalFile(localPath);
+        await LoginVerificationStore.markUploaded(userId);
+        synced++;
+      } catch (e) {
+        await OfflineDb.instance.markPendingFailure(
+          table: 'pending_login_verifications',
           id: id,
           error: e.toString(),
         );

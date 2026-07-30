@@ -80,6 +80,12 @@
     }
   },
   "takePhoto": "Take photo",
+  "verifyIdentityTitle": "Verify identity",
+  "verifyIdentityMessage": "Take a live selfie to confirm you are the driver logging in. This is required once per day.",
+  "verifyIdentityPermissionDenied": "Camera permission is required to verify your identity. Grant camera access to continue. You cannot skip this step.",
+  "verifyIdentityRetake": "Retake",
+  "verifyIdentityConfirm": "Confirm photo",
+  "verifyIdentitySaving": "Saving photo…",
   "chooseImageSource": "Choose Image Source",
   "chooseFromGallery": "Choose from gallery",
   "imgLabel": "IMG",

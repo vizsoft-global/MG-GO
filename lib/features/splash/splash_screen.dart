@@ -12,6 +12,8 @@ import '../../core/branding/app_branding_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/branding/remote_image.dart';
 import '../auth/login_preferences_store.dart';
+import '../auth/login_verification_gate.dart';
+import '../auth/login_verification_store.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -107,11 +109,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     context.go('/maintenance');
   }
 
-  void _navigateNext() {
+  Future<void> _navigateNext() async {
     if (_navigated || !mounted) return;
     _navigated = true;
     final session = Supabase.instance.client.auth.currentSession;
-    context.go(session != null ? '/home' : '/login');
+    if (session == null) {
+      context.go('/login');
+      return;
+    }
+    final userId = session.user.id;
+    final needs = await LoginVerificationStore.needsCapture(userId);
+    await ref.read(loginVerificationRefreshListenableProvider).refresh();
+    if (!mounted) return;
+    context.go(needs ? '/login-verification' : '/home');
   }
 
   void _maybeNavigateNext() {
