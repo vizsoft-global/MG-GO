@@ -600,9 +600,15 @@ class SyncController extends Notifier<SyncState> {
               ? 'login_verification.jpg'
               : file.uri.pathSegments.last,
         );
+        final livenessPassed = (row['liveness_passed'] as int?) == 1;
+        final livenessMethod = row['liveness_method'] as String?;
         await client.rpc(
           'driver_record_login_verification',
-          params: {'p_object_key': upload.objectKey},
+          params: {
+            'p_object_key': upload.objectKey,
+            'p_liveness_passed': livenessPassed,
+            'p_liveness_method': livenessMethod,
+          },
         );
         await OfflineDb.instance.deletePendingById(
           table: 'pending_login_verifications',

@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/offline/offline_db.dart';
 
@@ -6,10 +7,14 @@ import '../../core/offline/offline_db.dart';
 ///
 /// Day keys use device-local `yyyy-MM-dd`. A pending upload older than 24h
 /// clears day credit so the next gate check forces re-capture.
+///
+/// Admin exemptions (global `app_settings` + per-driver) are cached locally;
+/// never-fetched → fail-closed (still require capture).
 class LoginVerificationStore {
   LoginVerificationStore._();
 
   static const _stalePending = Duration(hours: 24);
+  static const _globalExemptKey = 'login_verification_exempt_all';
 
   static String _captureDayKey(String userId) =>
       'login_verification_capture_day_$userId';
@@ -21,6 +26,8 @@ class LoginVerificationStore {
       'login_verification_pending_mime_$userId';
   static String _pendingCapturedAtKey(String userId) =>
       'login_verification_pending_captured_at_$userId';
+  static String _perDriverExemptKey(String userId) =>
+      'login_verification_exempt_$userId';
 
   static String localDayString([DateTime? at]) {
     final d = (at ?? DateTime.now()).toLocal();
@@ -30,9 +37,59 @@ class LoginVerificationStore {
     return '$y-$m-$day';
   }
 
+  static Future<void> setGlobalExemptCached(bool exempt) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_globalExemptKey, exempt);
+  }
+
+  static Future<void> setPerDriverExemptCached({
+    required String userId,
+    required bool exempt,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_perDriverExemptKey(userId), exempt);
+  }
+
+  /// Pulls global + per-driver exempt flags from the network into prefs.
+  static Future<void> syncExemptFlagsFromNetwork(String userId) async {
+    final client = Supabase.instance.client;
+    try {
+      final settings = await client
+          .from('app_settings')
+          .select('driver_app_login_verification_exempt_all')
+          .eq('id', 1)
+          .maybeSingle();
+      if (settings != null) {
+        await setGlobalExemptCached(
+          settings['driver_app_login_verification_exempt_all'] == true,
+        );
+      }
+    } catch (_) {}
+
+    try {
+      final row = await client
+          .from('drivers')
+          .select('login_verification_exempt')
+          .eq('id', userId)
+          .maybeSingle();
+      if (row != null) {
+        await setPerDriverExemptCached(
+          userId: userId,
+          exempt: row['login_verification_exempt'] == true,
+        );
+      }
+    } catch (_) {}
+  }
+
   /// True when the driver must complete the verify-identity screen.
   static Future<bool> needsCapture(String userId) async {
     final prefs = await SharedPreferences.getInstance();
+    final globalExempt = prefs.getBool(_globalExemptKey);
+    final perDriverExempt = prefs.getBool(_perDriverExemptKey(userId));
+    if (globalExempt == true || perDriverExempt == true) {
+      return false;
+    }
+
     final pendingAtRaw = prefs.getString(_pendingCapturedAtKey(userId));
     if (pendingAtRaw != null && pendingAtRaw.isNotEmpty) {
       final pendingAt = DateTime.tryParse(pendingAtRaw);

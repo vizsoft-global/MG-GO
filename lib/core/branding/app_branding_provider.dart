@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../features/auth/login_verification_store.dart';
 import '../settings/live_db_refresh.dart';
 import 'app_branding.dart';
 import 'app_branding_service.dart';
@@ -26,7 +27,11 @@ class AppBrandingNotifier extends AsyncNotifier<AppBranding> {
     void refreshListener() => unawaited(refresh());
     coordinator.addListener(refreshListener);
     ref.onDispose(() => coordinator.removeListener(refreshListener));
-    return ref.read(appBrandingServiceProvider).fetch();
+    final branding = await ref.read(appBrandingServiceProvider).fetch();
+    await LoginVerificationStore.setGlobalExemptCached(
+      branding.loginVerificationExemptAll,
+    );
+    return branding;
   }
 
   /// Re-fetch settings (Try again, pull-to-refresh, poll/realtime).
@@ -34,6 +39,9 @@ class AppBrandingNotifier extends AsyncNotifier<AppBranding> {
     final previous = state;
     try {
       final next = await ref.read(appBrandingServiceProvider).fetch();
+      await LoginVerificationStore.setGlobalExemptCached(
+        next.loginVerificationExemptAll,
+      );
       if (previous.hasValue && previous.value == next) return;
       state = AsyncValue.data(next);
     } catch (e, st) {

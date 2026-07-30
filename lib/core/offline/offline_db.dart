@@ -18,7 +18,8 @@ class OfflineDb {
   // v6: two-stage delivery queues + enriched location reports.
   // v7: device_id on pickup/completion queues for single-device flush grace.
   // v8: pending_login_verifications for daily login selfie upload queue.
-  static const _dbVersion = 8;
+  // v9: liveness_passed + liveness_method on pending_login_verifications.
+  static const _dbVersion = 9;
   static const _proofQueueDir = 'proof_queue';
   static const _loginVerificationQueueDir = 'login_verification_queue';
   static const _maxLocationQueueRows = 1000;
@@ -91,6 +92,8 @@ class OfflineDb {
     required String localPath,
     required String mime,
     required int capturedAtMs,
+    bool livenessPassed = false,
+    String? livenessMethod,
   }) async {
     final db = await database;
     await db.insert('pending_login_verifications', {
@@ -99,6 +102,8 @@ class OfflineDb {
       'local_path': localPath,
       'mime': mime,
       'captured_at': capturedAtMs,
+      'liveness_passed': livenessPassed ? 1 : 0,
+      'liveness_method': livenessMethod,
       'status': 'queued',
       'attempt_count': 0,
       'next_attempt_at': null,
@@ -708,6 +713,9 @@ class OfflineDb {
         if (oldVersion < 8) {
           await _createLoginVerificationTable(db);
         }
+        if (oldVersion < 9) {
+          await _migrateLoginVerificationLiveness(db);
+        }
       },
     );
   }
@@ -720,12 +728,37 @@ class OfflineDb {
         local_path TEXT NOT NULL,
         mime TEXT NOT NULL,
         captured_at INTEGER NOT NULL,
+        liveness_passed INTEGER NOT NULL DEFAULT 0,
+        liveness_method TEXT,
         status TEXT NOT NULL DEFAULT 'queued',
         last_error TEXT,
         attempt_count INTEGER NOT NULL DEFAULT 0,
         next_attempt_at INTEGER
       );
     ''');
+  }
+
+  Future<void> _migrateLoginVerificationLiveness(Database db) async {
+    await _createLoginVerificationTable(db);
+    final info = await db.rawQuery(
+      'PRAGMA table_info(pending_login_verifications)',
+    );
+    final columns = info
+        .map((row) => row['name'] as String?)
+        .whereType<String>()
+        .toSet();
+    if (!columns.contains('liveness_passed')) {
+      await db.execute('''
+        ALTER TABLE pending_login_verifications
+        ADD COLUMN liveness_passed INTEGER NOT NULL DEFAULT 0;
+      ''');
+    }
+    if (!columns.contains('liveness_method')) {
+      await db.execute('''
+        ALTER TABLE pending_login_verifications
+        ADD COLUMN liveness_method TEXT;
+      ''');
+    }
   }
 
   Future<void> _createTwoStageDeliveryTables(Database db) async {

@@ -335,7 +335,7 @@ abstract class AppLocalizations {
   /// No description provided for @verifyIdentityMessage.
   ///
   /// In en, this message translates to:
-  /// **'Take a live selfie to confirm you are the driver logging in. This is required once per day.'**
+  /// **'Look at the camera and blink once to prove you are present. A photo is taken after a successful blink. Required once per day.'**
   String get verifyIdentityMessage;
 
   /// No description provided for @verifyIdentityPermissionDenied.
@@ -343,6 +343,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Camera permission is required to verify your identity. Grant camera access to continue. You cannot skip this step.'**
   String get verifyIdentityPermissionDenied;
+
+  /// No description provided for @verifyIdentityBlinkInstruction.
+  ///
+  /// In en, this message translates to:
+  /// **'Blink once'**
+  String get verifyIdentityBlinkInstruction;
+
+  /// No description provided for @verifyIdentityFaceNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Position your face in the frame'**
+  String get verifyIdentityFaceNotFound;
+
+  /// No description provided for @verifyIdentityBlinkTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'Blink not detected, try again'**
+  String get verifyIdentityBlinkTimeout;
+
+  /// No description provided for @verifyIdentityInitError.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera or face detection failed to start. Tap retry to try again. You cannot skip this step.'**
+  String get verifyIdentityInitError;
+
+  /// No description provided for @verifyIdentityBlinkSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Blink detected'**
+  String get verifyIdentityBlinkSuccess;
 
   /// No description provided for @verifyIdentityRetake.
   ///

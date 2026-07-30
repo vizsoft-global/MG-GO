@@ -13,6 +13,13 @@ class AppBrandingService {
       'driver_app_title, driver_app_logo_url, driver_app_splash_url, '
       'driver_app_icon_url, '
       'driver_app_maintenance_mode, driver_app_maintenance_message, '
+      'driver_app_login_verification_exempt_all, '
+      'driver_app_login_hint, app_subtitle';
+
+  static const _withoutExemptColumns =
+      'driver_app_title, driver_app_logo_url, driver_app_splash_url, '
+      'driver_app_icon_url, '
+      'driver_app_maintenance_mode, driver_app_maintenance_message, '
       'driver_app_login_hint, app_subtitle';
 
   static const _withoutMaintenanceColumns =
@@ -29,6 +36,7 @@ class AppBrandingService {
     AppBranding? fromNetwork;
     const attempts = [
       _fullColumns,
+      _withoutExemptColumns,
       _withoutMaintenanceColumns,
       _legacyColumns,
       _minimalColumns,
@@ -80,6 +88,9 @@ class AppBrandingService {
         _nonEmpty(row['driver_app_maintenance_message'] as String?) ??
         AppBranding.defaults.maintenanceMessage;
 
+    final loginVerificationExemptAll =
+        row['driver_app_login_verification_exempt_all'] as bool? ?? false;
+
     return AppBranding(
       title: title,
       appSubtitle:
@@ -93,6 +104,7 @@ class AppBrandingService {
       iconUrl: iconUrl,
       maintenanceMode: maintenanceMode,
       maintenanceMessage: maintenanceMessage,
+      loginVerificationExemptAll: loginVerificationExemptAll,
     );
   }
 
@@ -111,6 +123,7 @@ class AppBrandingService {
     'iconUrl': value.iconUrl,
     'maintenanceMode': value.maintenanceMode,
     'maintenanceMessage': value.maintenanceMessage,
+    'loginVerificationExemptAll': value.loginVerificationExemptAll,
   };
 
   AppBranding _fromJson(Map<String, dynamic> json) => AppBranding(
@@ -125,5 +138,7 @@ class AppBrandingService {
     maintenanceMessage:
         json['maintenanceMessage'] as String? ??
         AppBranding.defaults.maintenanceMessage,
+    loginVerificationExemptAll:
+        json['loginVerificationExemptAll'] as bool? ?? false,
   );
 }

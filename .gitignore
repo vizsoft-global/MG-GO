@@ -49,6 +49,8 @@ lib/core/config/env.local.dart
 
 sentry.properties
 
-# Graphify — commit the graph; ignore local-only cost/cache
-graphify-out/cost.json
-graphify-out/cache/
+# Graphify — regenerate locally with `graphify update .`
+graphify-out/
+
+# Local Cursor rules (Kannada)
+.cursor/rules/KA.mdc
