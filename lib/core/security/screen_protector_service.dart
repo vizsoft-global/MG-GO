@@ -23,37 +23,34 @@ class ScreenProtectorService {
   StreamSubscription<dynamic>? _eventsSub;
   bool _enabled = false;
   int _sensitiveSessionDepth = 0;
+  int _allowSessionDepth = 0;
   CaptureAttemptCallback? _globalCallback;
   CaptureAttemptCallback? _sensitiveCallback;
   CaptureStateCallback? _captureStateCallback;
 
+  bool get isAllowScreenshotSessionActive => _allowSessionDepth > 0;
+
   Future<void> enable(CaptureAttemptCallback onCaptureAttempt) async {
     _globalCallback = onCaptureAttempt;
-    if (_enabled) {
-      _ensureEventSubscription();
-      return;
-    }
     _enabled = true;
-    if (Platform.isAndroid) {
-      await _securityChannel.invokeMethod<void>('setSecureEnabled', true);
-    }
     _ensureEventSubscription();
+    await _syncSecureFlag();
   }
 
   Future<void> disable() async {
-    if (!_enabled) return;
+    if (!_enabled && _sensitiveSessionDepth == 0 && _allowSessionDepth == 0) {
+      return;
+    }
     _enabled = false;
     _globalCallback = null;
-    if (_sensitiveSessionDepth == 0) {
+    await _syncSecureFlag();
+    if (_sensitiveSessionDepth == 0 && _allowSessionDepth == 0) {
       await _eventsSub?.cancel();
       _eventsSub = null;
-      if (Platform.isAndroid) {
-        await _securityChannel.invokeMethod<void>('setSecureEnabled', false);
-      }
     }
   }
 
-  /// Detail-scoped protection for screenshot-restricted notifications.
+  /// Restricted notification detail: keep screenshots blocked + iOS detect/blur.
   Future<void> beginSensitiveSession({
     required CaptureAttemptCallback onCaptureAttempt,
     CaptureStateCallback? onCaptureStateChanged,
@@ -61,9 +58,6 @@ class ScreenProtectorService {
     _sensitiveSessionDepth += 1;
     _sensitiveCallback = onCaptureAttempt;
     _captureStateCallback = onCaptureStateChanged;
-    if (Platform.isAndroid) {
-      await _securityChannel.invokeMethod<void>('setSecureEnabled', true);
-    }
     if (Platform.isIOS) {
       await _securityChannel.invokeMethod<void>(
         'setSensitiveProtectionEnabled',
@@ -73,6 +67,7 @@ class ScreenProtectorService {
       onCaptureStateChanged?.call(captured);
     }
     _ensureEventSubscription();
+    await _syncSecureFlag();
   }
 
   Future<void> endSensitiveSession() async {
@@ -87,13 +82,25 @@ class ScreenProtectorService {
         false,
       );
     }
-    if (!_enabled) {
+    await _syncSecureFlag();
+    if (!_enabled && _allowSessionDepth == 0) {
       await _eventsSub?.cancel();
       _eventsSub = null;
-      if (Platform.isAndroid) {
-        await _securityChannel.invokeMethod<void>('setSecureEnabled', false);
-      }
     }
+  }
+
+  /// Force-OFF / unrestricted notification detail: temporarily allow screenshots.
+  /// Restores global restriction when [endAllowScreenshotSession] is called.
+  Future<void> beginAllowScreenshotSession() async {
+    _allowSessionDepth += 1;
+    await _syncSecureFlag();
+  }
+
+  Future<void> endAllowScreenshotSession() async {
+    if (_allowSessionDepth == 0) return;
+    _allowSessionDepth -= 1;
+    if (_allowSessionDepth > 0) return;
+    await _syncSecureFlag();
   }
 
   Future<bool> isScreenCaptured() async {
@@ -120,6 +127,14 @@ class ScreenProtectorService {
     return enabled ?? false;
   }
 
+  /// Effective FLAG_SECURE: on when global/sensitive wants it, off during allow.
+  Future<void> _syncSecureFlag() async {
+    if (!Platform.isAndroid) return;
+    final wantSecure =
+        (_enabled || _sensitiveSessionDepth > 0) && _allowSessionDepth == 0;
+    await _securityChannel.invokeMethod<void>('setSecureEnabled', wantSecure);
+  }
+
   void _ensureEventSubscription() {
     _eventsSub ??= _eventsChannel.receiveBroadcastStream().listen((raw) async {
       final text = raw?.toString();
@@ -131,6 +146,10 @@ class ScreenProtectorService {
 
       final type = _mapCaptureEvent(text);
       if (type == null) return;
+
+      // Temporary allow session: do not show global "capture blocked" UI.
+      if (_allowSessionDepth > 0) return;
+
       final sensitive = _sensitiveCallback;
       if (sensitive != null) {
         await sensitive(type);

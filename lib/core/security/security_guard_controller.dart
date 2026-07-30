@@ -167,8 +167,11 @@ class SecurityGuardController extends Notifier<SecurityGuardState>
         unawaited(integrity.checkDeveloperMode(warn: false));
         unawaited(integrity.checkMockLocationSetting(warn: true));
       }
-      if (_started && protector != null) {
+      if (_started &&
+          protector != null &&
+          !protector.isAllowScreenshotSessionActive) {
         // Defensive re-enable; some OEMs clear FLAG_SECURE across transitions.
+        // Skip while Force-OFF notification detail temporarily allows screenshots.
         unawaited(protector.enable(_onCaptureAttempt));
       }
     }
