@@ -14,6 +14,7 @@ import '../../core/utils/ascii_digits.dart';
 import 'device_session_models.dart';
 import 'driver_access.dart';
 import 'login_preferences_store.dart';
+import 'login_verification_store.dart';
 
 enum RiderAuthFailure {
   notConfigured,
@@ -80,10 +81,17 @@ class RiderAuthService {
     try {
       final row = await _client
           .from('drivers')
-          .select('is_blocked, blocked_reason')
+          .select('is_blocked, blocked_reason, login_verification_exempt')
           .eq('id', user.id)
           .maybeSingle();
       if (row == null) return const DriverAccessStatus.allowed();
+
+      try {
+        await LoginVerificationStore.setPerDriverExemptCached(
+          userId: user.id,
+          exempt: row['login_verification_exempt'] == true,
+        );
+      } catch (_) {}
 
       final blocked = row['is_blocked'] == true;
       if (!blocked) return const DriverAccessStatus.allowed();

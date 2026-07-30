@@ -6,6 +6,7 @@ class AppBranding {
     required this.loginHint,
     required this.maintenanceMode,
     required this.maintenanceMessage,
+    required this.loginVerificationExemptAll,
     this.logoUrl,
     this.splashUrl,
     this.iconUrl,
@@ -42,6 +43,9 @@ class AppBranding {
   /// `driver_app_maintenance_message`
   final String maintenanceMessage;
 
+  /// `driver_app_login_verification_exempt_all` — fleet-wide login selfie skip.
+  final bool loginVerificationExemptAll;
+
   bool get isSvgLogo => _looksLikeSvg(logoUrl);
   bool get isSvgIcon => _looksLikeSvg(iconUrl);
 
@@ -57,6 +61,7 @@ class AppBranding {
     maintenanceMode: false,
     maintenanceMessage:
         'The driver app is temporarily unavailable. Please try again later.',
+    loginVerificationExemptAll: false,
     logoUrl: null,
     splashUrl: null,
     iconUrl: null,
@@ -73,7 +78,8 @@ class AppBranding {
             splashUrl == other.splashUrl &&
             iconUrl == other.iconUrl &&
             maintenanceMode == other.maintenanceMode &&
-            maintenanceMessage == other.maintenanceMessage;
+            maintenanceMessage == other.maintenanceMessage &&
+            loginVerificationExemptAll == other.loginVerificationExemptAll;
   }
 
   @override
@@ -86,5 +92,6 @@ class AppBranding {
     iconUrl,
     maintenanceMode,
     maintenanceMessage,
+    loginVerificationExemptAll,
   );
 }

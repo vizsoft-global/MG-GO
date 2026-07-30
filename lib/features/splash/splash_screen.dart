@@ -117,9 +117,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       context.go('/login');
       return;
     }
-    final userId = session.user.id;
-    final needs = await LoginVerificationStore.needsCapture(userId);
     await ref.read(loginVerificationRefreshListenableProvider).refresh();
+    final needs =
+        ref.read(loginVerificationRefreshListenableProvider).needsCapture ??
+            await LoginVerificationStore.needsCapture(session.user.id);
     if (!mounted) return;
     context.go(needs ? '/login-verification' : '/home');
   }

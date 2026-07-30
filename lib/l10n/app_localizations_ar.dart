@@ -149,11 +149,27 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get verifyIdentityMessage =>
-      'التقط صورة شخصية مباشرة للتأكد من أنك السائق الذي يسجل الدخول. هذا مطلوب مرة واحدة يومياً.';
+      'انظر إلى الكاميرا ورمش مرة واحدة لإثبات حضورك. تُلتقط الصورة بعد نجاح الرمش. مطلوب مرة واحدة يومياً.';
 
   @override
   String get verifyIdentityPermissionDenied =>
       'إذن الكاميرا مطلوب للتحقق من هويتك. امنح الوصول إلى الكاميرا للمتابعة. لا يمكن تخطي هذه الخطوة.';
+
+  @override
+  String get verifyIdentityBlinkInstruction => 'رمش مرة واحدة';
+
+  @override
+  String get verifyIdentityFaceNotFound => 'ضع وجهك داخل الإطار';
+
+  @override
+  String get verifyIdentityBlinkTimeout => 'لم يتم اكتشاف الرمش، حاول مرة أخرى';
+
+  @override
+  String get verifyIdentityInitError =>
+      'فشل تشغيل الكاميرا أو اكتشاف الوجه. اضغط إعادة المحاولة. لا يمكن تخطي هذه الخطوة.';
+
+  @override
+  String get verifyIdentityBlinkSuccess => 'تم اكتشاف الرمش';
 
   @override
   String get verifyIdentityRetake => 'إعادة الالتقاط';

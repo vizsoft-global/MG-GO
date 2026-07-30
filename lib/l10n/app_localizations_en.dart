@@ -146,11 +146,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get verifyIdentityMessage =>
-      'Take a live selfie to confirm you are the driver logging in. This is required once per day.';
+      'Look at the camera and blink once to prove you are present. A photo is taken after a successful blink. Required once per day.';
 
   @override
   String get verifyIdentityPermissionDenied =>
       'Camera permission is required to verify your identity. Grant camera access to continue. You cannot skip this step.';
+
+  @override
+  String get verifyIdentityBlinkInstruction => 'Blink once';
+
+  @override
+  String get verifyIdentityFaceNotFound => 'Position your face in the frame';
+
+  @override
+  String get verifyIdentityBlinkTimeout => 'Blink not detected, try again';
+
+  @override
+  String get verifyIdentityInitError =>
+      'Camera or face detection failed to start. Tap retry to try again. You cannot skip this step.';
+
+  @override
+  String get verifyIdentityBlinkSuccess => 'Blink detected';
 
   @override
   String get verifyIdentityRetake => 'Retake';
