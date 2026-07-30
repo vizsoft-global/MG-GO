@@ -55,7 +55,8 @@ class _NotificationDetailSheetState
   final ScreenProtectorService _protector = ScreenProtectorService.instance;
   bool _restricted = false;
   bool _obscureContent = false;
-  bool _sessionActive = false;
+  bool _sensitiveSessionActive = false;
+  bool _allowSessionActive = false;
 
   NotificationInboxItem get item => widget.item;
 
@@ -69,8 +70,12 @@ class _NotificationDetailSheetState
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    if (_sessionActive) {
+    if (_sensitiveSessionActive) {
       unawaited(_protector.endSensitiveSession());
+    }
+    if (_allowSessionActive) {
+      // Restore global FLAG_SECURE after temporary allow (Force OFF detail).
+      unawaited(_protector.endAllowScreenshotSession());
     }
     super.dispose();
   }
@@ -95,16 +100,22 @@ class _NotificationDetailSheetState
     );
     if (!mounted) return;
     setState(() => _restricted = restricted);
-    if (!restricted) return;
 
-    await _protector.beginSensitiveSession(
-      onCaptureAttempt: _onCaptureAttempt,
-      onCaptureStateChanged: (captured) {
-        if (!mounted) return;
-        setState(() => _obscureContent = captured);
-      },
-    );
-    _sessionActive = true;
+    if (restricted) {
+      await _protector.beginSensitiveSession(
+        onCaptureAttempt: _onCaptureAttempt,
+        onCaptureStateChanged: (captured) {
+          if (!mounted) return;
+          setState(() => _obscureContent = captured);
+        },
+      );
+      _sensitiveSessionActive = true;
+      return;
+    }
+
+    // Force OFF / unrestricted: temporarily allow screenshots while sheet is open.
+    await _protector.beginAllowScreenshotSession();
+    _allowSessionActive = true;
   }
 
   Future<void> _refreshCaptureState() async {
