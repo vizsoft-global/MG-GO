@@ -142,6 +142,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get takePhoto => 'Take photo';
 
   @override
+  String get verifyIdentityTitle => 'Verify identity';
+
+  @override
+  String get verifyIdentityMessage =>
+      'Take a live selfie to confirm you are the driver logging in. This is required once per day.';
+
+  @override
+  String get verifyIdentityPermissionDenied =>
+      'Camera permission is required to verify your identity. Grant camera access to continue. You cannot skip this step.';
+
+  @override
+  String get verifyIdentityRetake => 'Retake';
+
+  @override
+  String get verifyIdentityConfirm => 'Confirm photo';
+
+  @override
+  String get verifyIdentitySaving => 'Saving photo…';
+
+  @override
   String get chooseImageSource => 'Choose Image Source';
 
   @override

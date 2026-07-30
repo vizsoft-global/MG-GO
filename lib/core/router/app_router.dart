@@ -5,6 +5,8 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/login_screen.dart';
+import '../../features/auth/login_verification_gate.dart';
+import '../../features/auth/login_verification_screen.dart';
 import '../../features/attendance/attendance_screen.dart';
 import '../../features/auth/rider_auth_service.dart';
 import '../../features/blocked/blocked_screen.dart';
@@ -35,6 +37,8 @@ final rootNavigatorKey = GlobalKey<NavigatorState>();
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authListenable = ref.watch(authRefreshListenableProvider);
   final settingsListenable = ref.watch(settingsRefreshListenableProvider);
+  final loginVerificationListenable =
+      ref.watch(loginVerificationRefreshListenableProvider);
 
   // Do NOT watch appBrandingProvider here — that recreates GoRouter on every
   // settings poll and resets navigation to splash (/).
@@ -42,7 +46,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     navigatorKey: rootNavigatorKey,
     observers: [SentryNavigatorObserver()],
     initialLocation: '/',
-    refreshListenable: Listenable.merge([authListenable, settingsListenable]),
+    refreshListenable: Listenable.merge([
+      authListenable,
+      settingsListenable,
+      loginVerificationListenable,
+    ]),
     redirect: (context, state) {
       final settingsAsync = ref.read(appBrandingProvider);
       final settingsLoaded = settingsAsync.hasValue;
@@ -55,13 +63,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final onSplash = loc == '/';
       final onMaintenance = loc == '/maintenance';
       final onBlocked = loc == '/blocked';
+      final onLoginVerification = loc == '/login-verification';
 
       if (onSplash) return null;
 
       if (onMaintenance) {
         if (!settingsLoaded) return null;
         if (!inMaintenance) {
-          return session != null ? '/home' : '/login';
+          if (session == null) return '/login';
+          final needs = ref
+              .read(loginVerificationRefreshListenableProvider)
+              .needsCapture;
+          if (needs == true) return '/login-verification';
+          return '/home';
         }
         return null;
       }
@@ -72,11 +86,30 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return '/maintenance';
       }
 
-      if (session == null && !isAuthRoute) {
+      if (session == null && !isAuthRoute && !onLoginVerification) {
+        return '/login';
+      }
+      if (session == null && onLoginVerification) {
         return '/login';
       }
       if (session != null && isAuthRoute) {
+        // Bounce off login/blocked into post-auth destination; verification
+        // gate is applied below using the sync compliance cache.
+        final needs =
+            ref.read(loginVerificationRefreshListenableProvider).needsCapture;
+        if (needs == true) return '/login-verification';
         return '/home';
+      }
+
+      if (session != null) {
+        final needs =
+            ref.read(loginVerificationRefreshListenableProvider).needsCapture;
+        if (needs == true && !onLoginVerification) {
+          return '/login-verification';
+        }
+        if (needs == false && onLoginVerification) {
+          return '/home';
+        }
       }
       return null;
     },
@@ -95,6 +128,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/login',
         name: 'login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/login-verification',
+        name: 'login_verification',
+        builder: (context, state) => const LoginVerificationScreen(),
       ),
       GoRoute(
         path: '/blocked',

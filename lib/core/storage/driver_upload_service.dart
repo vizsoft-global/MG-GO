@@ -38,6 +38,7 @@ class DriverUploadService {
 
   static const _orderProofMaxBytes = 10 * 1024 * 1024;
   static const _driverAvatarMaxBytes = 2 * 1024 * 1024;
+  static const _loginVerificationMaxBytes = 5 * 1024 * 1024;
 
   Future<DriverUploadResult> uploadOrderProof({
     required List<int> bytes,
@@ -93,6 +94,34 @@ class DriverUploadService {
       contentType: contentType,
       filename: filename,
       entityType: 'driver_avatar',
+      authHeaders: authHeaders,
+      onProgress: onProgress,
+    );
+  }
+
+  Future<DriverUploadResult> uploadLoginVerification({
+    required List<int> bytes,
+    required String contentType,
+    required String filename,
+    void Function(double progress)? onProgress,
+  }) async {
+    if (bytes.isEmpty) {
+      throw DriverUploadException(code: 'file_empty');
+    }
+    if (bytes.length > _loginVerificationMaxBytes) {
+      throw DriverUploadException(code: 'file_too_large_login_verification');
+    }
+    if (!_isAllowedContentType(contentType)) {
+      throw DriverUploadException(code: 'invalid_content_type');
+    }
+
+    final token = _accessToken();
+    final authHeaders = {'Authorization': 'Bearer $token'};
+    return _uploadViaPresign(
+      bytes: bytes,
+      contentType: contentType,
+      filename: filename,
+      entityType: 'login_verification',
       authHeaders: authHeaders,
       onProgress: onProgress,
     );

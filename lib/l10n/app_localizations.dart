@@ -326,6 +326,42 @@ abstract class AppLocalizations {
   /// **'Take photo'**
   String get takePhoto;
 
+  /// No description provided for @verifyIdentityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify identity'**
+  String get verifyIdentityTitle;
+
+  /// No description provided for @verifyIdentityMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a live selfie to confirm you are the driver logging in. This is required once per day.'**
+  String get verifyIdentityMessage;
+
+  /// No description provided for @verifyIdentityPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera permission is required to verify your identity. Grant camera access to continue. You cannot skip this step.'**
+  String get verifyIdentityPermissionDenied;
+
+  /// No description provided for @verifyIdentityRetake.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake'**
+  String get verifyIdentityRetake;
+
+  /// No description provided for @verifyIdentityConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm photo'**
+  String get verifyIdentityConfirm;
+
+  /// No description provided for @verifyIdentitySaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving photo…'**
+  String get verifyIdentitySaving;
+
   /// No description provided for @chooseImageSource.
   ///
   /// In en, this message translates to:
@@ -893,7 +929,7 @@ abstract class AppLocalizations {
   /// No description provided for @outsideDeliveryAreaReturnSoon.
   ///
   /// In en, this message translates to:
-  /// **'Outside zone. Return soon.'**
+  /// **'Outside zone. Return within 45 minutes.'**
   String get outsideDeliveryAreaReturnSoon;
 
   /// No description provided for @outsideDeliveryAreaReturnAfterDelivery.
@@ -908,13 +944,13 @@ abstract class AppLocalizations {
   /// **'You were checked out for staying outside your delivery area too long.'**
   String get zoneTimeoutCheckedOut;
 
-  /// Auto-checkout after continuous offline (server cron).
+  /// No description provided for @autoCheckoutOffline.
   ///
   /// In en, this message translates to:
   /// **'You were checked out automatically after being offline too long.'**
   String get autoCheckoutOffline;
 
-  /// Auto-checkout after continuous out-of-assigned-zone (server cron).
+  /// No description provided for @autoCheckoutOutOfZone.
   ///
   /// In en, this message translates to:
   /// **'You were checked out automatically after staying outside your assigned zone too long.'**

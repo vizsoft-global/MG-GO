@@ -145,6 +145,26 @@ class AppLocalizationsAr extends AppLocalizations {
   String get takePhoto => 'التقاط صورة';
 
   @override
+  String get verifyIdentityTitle => 'التحقق من الهوية';
+
+  @override
+  String get verifyIdentityMessage =>
+      'التقط صورة شخصية مباشرة للتأكد من أنك السائق الذي يسجل الدخول. هذا مطلوب مرة واحدة يومياً.';
+
+  @override
+  String get verifyIdentityPermissionDenied =>
+      'إذن الكاميرا مطلوب للتحقق من هويتك. امنح الوصول إلى الكاميرا للمتابعة. لا يمكن تخطي هذه الخطوة.';
+
+  @override
+  String get verifyIdentityRetake => 'إعادة الالتقاط';
+
+  @override
+  String get verifyIdentityConfirm => 'تأكيد الصورة';
+
+  @override
+  String get verifyIdentitySaving => 'جاري حفظ الصورة…';
+
+  @override
   String get chooseImageSource => 'اختر مصدر الصورة';
 
   @override

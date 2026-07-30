@@ -17,8 +17,10 @@ class OfflineDb {
   // v5: active shift cache + pending shift submissions.
   // v6: two-stage delivery queues + enriched location reports.
   // v7: device_id on pickup/completion queues for single-device flush grace.
-  static const _dbVersion = 7;
+  // v8: pending_login_verifications for daily login selfie upload queue.
+  static const _dbVersion = 8;
   static const _proofQueueDir = 'proof_queue';
+  static const _loginVerificationQueueDir = 'login_verification_queue';
   static const _maxLocationQueueRows = 1000;
   static const _uuid = Uuid();
 
@@ -58,6 +60,72 @@ class OfflineDb {
     final destination = p.join(queueDir, filename);
     await File(sourcePath).copy(destination);
     return destination;
+  }
+
+  Future<String> ensureLoginVerificationQueueDir() async {
+    if (kIsWeb) {
+      throw UnsupportedError('Login verification queue is not available on web');
+    }
+    final dir = await getApplicationSupportDirectory();
+    final queueDir = Directory(p.join(dir.path, _loginVerificationQueueDir));
+    if (!await queueDir.exists()) {
+      await queueDir.create(recursive: true);
+    }
+    return queueDir.path;
+  }
+
+  Future<String> copyLoginVerificationToQueue({
+    required String sourcePath,
+    required String extensionWithDot,
+  }) async {
+    final queueDir = await ensureLoginVerificationQueueDir();
+    final filename = '${_uuid.v4()}$extensionWithDot';
+    final destination = p.join(queueDir, filename);
+    await File(sourcePath).copy(destination);
+    return destination;
+  }
+
+  Future<void> enqueueLoginVerification({
+    required String id,
+    required String userId,
+    required String localPath,
+    required String mime,
+    required int capturedAtMs,
+  }) async {
+    final db = await database;
+    await db.insert('pending_login_verifications', {
+      'id': id,
+      'user_id': userId,
+      'local_path': localPath,
+      'mime': mime,
+      'captured_at': capturedAtMs,
+      'status': 'queued',
+      'attempt_count': 0,
+      'next_attempt_at': null,
+      'last_error': null,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<List<Map<String, Object?>>> getPendingLoginVerifications(
+    String userId,
+  ) async {
+    final db = await database;
+    return db.query(
+      'pending_login_verifications',
+      where: "user_id = ? AND status != 'failed'",
+      whereArgs: [userId],
+      orderBy: 'captured_at ASC',
+    );
+  }
+
+  Future<void> deleteLoginVerificationLocalFile(String? path) async {
+    if (path == null || path.isEmpty) return;
+    try {
+      final file = File(path);
+      if (await file.exists()) {
+        await file.delete();
+      }
+    } catch (_) {}
   }
 
   Future<void> saveCache({
@@ -434,6 +502,32 @@ class OfflineDb {
     required String error,
   }) async {
     final db = await database;
+    if (table == 'pending_login_verifications') {
+      final rows = await db.query(
+        table,
+        columns: ['attempt_count'],
+        where: 'id = ?',
+        whereArgs: [id],
+        limit: 1,
+      );
+      final previousAttempts =
+          rows.isEmpty ? 0 : (rows.first['attempt_count'] as int? ?? 0);
+      final attemptCount = previousAttempts + 1;
+      final nextAttemptAt = DateTime.now()
+          .add(Duration(seconds: 30 * attemptCount))
+          .millisecondsSinceEpoch;
+      // Keep retrying until the 24h gate forces a fresh capture; do not mark
+      // failed permanently (unlike delivery proofs).
+      await db.rawUpdate(
+        '''
+        UPDATE $table
+        SET attempt_count = ?, last_error = ?, status = 'queued', next_attempt_at = ?
+        WHERE id = ?
+        ''',
+        [attemptCount, error, nextAttemptAt, id],
+      );
+      return;
+    }
     if (table == 'pending_deliveries' ||
         table == 'pending_pickups' ||
         table == 'pending_completions') {
@@ -611,8 +705,27 @@ class OfflineDb {
             ALTER TABLE pending_completions ADD COLUMN device_id TEXT;
           ''');
         }
+        if (oldVersion < 8) {
+          await _createLoginVerificationTable(db);
+        }
       },
     );
+  }
+
+  Future<void> _createLoginVerificationTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS pending_login_verifications (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        local_path TEXT NOT NULL,
+        mime TEXT NOT NULL,
+        captured_at INTEGER NOT NULL,
+        status TEXT NOT NULL DEFAULT 'queued',
+        last_error TEXT,
+        attempt_count INTEGER NOT NULL DEFAULT 0,
+        next_attempt_at INTEGER
+      );
+    ''');
   }
 
   Future<void> _createTwoStageDeliveryTables(Database db) async {
@@ -803,6 +916,7 @@ class OfflineDb {
         last_error TEXT
       );
     ''');
+    await _createLoginVerificationTable(db);
   }
 
   Future<void> _trimLocationQueue(Database db) async {
