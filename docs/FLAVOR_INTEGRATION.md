@@ -47,4 +47,6 @@ Verify on **both** Supabase projects and admin deployments:
 | GPS stops in background after kill | Expected if token expired; foreground service uses stored token from same Supabase |
 | FCM never arrives | Wrong `google-services.json` flavor or token registered on wrong Supabase project |
 | OTA checks wrong channel | `app_update_channel` pref overridden; dev flavor defaults to `internal` on first launch |
+| OTA missing on sideload build | Built `*Play` by mistake, or Admin Sideload updates OFF, or `SIDELOAD_OTA=false` |
+| Play review sees REQUEST_INSTALL_PACKAGES | Uploaded `*Sideload` AAB/APK — use `./scripts/build_play.sh` (`prodPlay`) instead |
 | Notification banner blank | Campaign has no media, driver not in `notification_dispatch_items`, or admin/media auth failure |

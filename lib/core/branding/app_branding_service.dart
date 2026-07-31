@@ -14,6 +14,14 @@ class AppBrandingService {
       'driver_app_icon_url, '
       'driver_app_maintenance_mode, driver_app_maintenance_message, '
       'driver_app_login_verification_exempt_all, '
+      'driver_app_sideload_updates_enabled, '
+      'driver_app_login_hint, app_subtitle';
+
+  static const _withoutSideloadFlagColumns =
+      'driver_app_title, driver_app_logo_url, driver_app_splash_url, '
+      'driver_app_icon_url, '
+      'driver_app_maintenance_mode, driver_app_maintenance_message, '
+      'driver_app_login_verification_exempt_all, '
       'driver_app_login_hint, app_subtitle';
 
   static const _withoutExemptColumns =
@@ -36,6 +44,7 @@ class AppBrandingService {
     AppBranding? fromNetwork;
     const attempts = [
       _fullColumns,
+      _withoutSideloadFlagColumns,
       _withoutExemptColumns,
       _withoutMaintenanceColumns,
       _legacyColumns,
@@ -91,6 +100,9 @@ class AppBrandingService {
     final loginVerificationExemptAll =
         row['driver_app_login_verification_exempt_all'] as bool? ?? false;
 
+    final sideloadUpdatesEnabled =
+        row['driver_app_sideload_updates_enabled'] as bool? ?? true;
+
     return AppBranding(
       title: title,
       appSubtitle:
@@ -105,6 +117,7 @@ class AppBrandingService {
       maintenanceMode: maintenanceMode,
       maintenanceMessage: maintenanceMessage,
       loginVerificationExemptAll: loginVerificationExemptAll,
+      sideloadUpdatesEnabled: sideloadUpdatesEnabled,
     );
   }
 
@@ -124,6 +137,7 @@ class AppBrandingService {
     'maintenanceMode': value.maintenanceMode,
     'maintenanceMessage': value.maintenanceMessage,
     'loginVerificationExemptAll': value.loginVerificationExemptAll,
+    'sideloadUpdatesEnabled': value.sideloadUpdatesEnabled,
   };
 
   AppBranding _fromJson(Map<String, dynamic> json) => AppBranding(
@@ -140,5 +154,6 @@ class AppBrandingService {
         AppBranding.defaults.maintenanceMessage,
     loginVerificationExemptAll:
         json['loginVerificationExemptAll'] as bool? ?? false,
+    sideloadUpdatesEnabled: json['sideloadUpdatesEnabled'] as bool? ?? true,
   );
 }

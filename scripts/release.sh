@@ -84,7 +84,9 @@ else
   ENV_FILE="${ENV_FILE:-$APP_DIR/env/dev.json}"
 fi
 
-APK_PATH="$APP_DIR/build/app/outputs/flutter-apk/app-${FLAVOR}-release.apk"
+# env (dev|prod) × distribution (Sideload) — App Releases APK with OTA permission.
+ANDROID_FLAVOR="${FLAVOR}Sideload"
+APK_PATH="$APP_DIR/build/app/outputs/flutter-apk/app-${ANDROID_FLAVOR}-release.apk"
 
 if [[ ! -f "$ENV_FILE" ]]; then
   echo "Missing $ENV_FILE (required for --dart-define-from-file)." >&2
@@ -98,7 +100,7 @@ if [[ ! -d "$DPDADMIN_DIR" ]]; then
 fi
 
 VERSION_LINE="$(grep -E '^version:' "$PUBSPEC" | head -1 | awk '{print $2}')"
-echo "==> Driver app version: $VERSION_LINE  (channel: $CHANNEL, flavor: $FLAVOR)"
+echo "==> Driver app version: $VERSION_LINE  (channel: $CHANNEL, env: $FLAVOR, android: $ANDROID_FLAVOR)"
 echo "==> Admin publish dir: $DPDADMIN_DIR"
 echo "==> Env file: $ENV_FILE"
 
@@ -112,8 +114,9 @@ fi
 if [[ "$DO_BUILD" -eq 1 ]]; then
   echo "==> Building release APK..."
   ( cd "$APP_DIR" && flutter build apk \
-      --flavor "$FLAVOR" \
+      --flavor "$ANDROID_FLAVOR" \
       --dart-define-from-file="$ENV_FILE" \
+      --dart-define=SIDELOAD_OTA=true \
       --release )
 else
   echo "==> Skipping build (--no-build); reusing existing APK"

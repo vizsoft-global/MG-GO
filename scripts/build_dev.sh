@@ -14,11 +14,12 @@ fi
 "$(dirname "$0")/check_release_keystore.sh"
 
 flutter build apk \
-  --flavor dev \
+  --flavor devSideload \
   --dart-define-from-file="$ENV_FILE" \
+  --dart-define=SIDELOAD_OTA=true \
   --release \
   "$@"
 
-APK="build/app/outputs/flutter-apk/app-dev-release.apk"
+APK="build/app/outputs/flutter-apk/app-devSideload-release.apk"
 "$(dirname "$0")/verify_apk_signing.sh" "$APK"
 echo "APK: $APK"
