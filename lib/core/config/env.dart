@@ -55,6 +55,14 @@ class Env {
   static String get otaDefaultChannel =>
       isProd ? 'production' : 'internal';
 
+  /// Compile-time gate for in-app APK OTA (`play` AAB must set `false`).
+  /// Sideload fleet builds keep the default `true`. Admin can still kill-switch
+  /// via `app_settings.driver_app_sideload_updates_enabled`.
+  static const sideloadOtaEnabled = bool.fromEnvironment(
+    'SIDELOAD_OTA',
+    defaultValue: true,
+  );
+
   static bool get isConfigured =>
       supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
 

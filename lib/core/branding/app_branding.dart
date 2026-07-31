@@ -7,6 +7,7 @@ class AppBranding {
     required this.maintenanceMode,
     required this.maintenanceMessage,
     required this.loginVerificationExemptAll,
+    required this.sideloadUpdatesEnabled,
     this.logoUrl,
     this.splashUrl,
     this.iconUrl,
@@ -46,6 +47,10 @@ class AppBranding {
   /// `driver_app_login_verification_exempt_all` — fleet-wide login selfie skip.
   final bool loginVerificationExemptAll;
 
+  /// `driver_app_sideload_updates_enabled` — admin kill-switch for in-app APK OTA.
+  /// When false (Play Store review window), hide update UI and skip downloads.
+  final bool sideloadUpdatesEnabled;
+
   bool get isSvgLogo => _looksLikeSvg(logoUrl);
   bool get isSvgIcon => _looksLikeSvg(iconUrl);
 
@@ -62,6 +67,7 @@ class AppBranding {
     maintenanceMessage:
         'The driver app is temporarily unavailable. Please try again later.',
     loginVerificationExemptAll: false,
+    sideloadUpdatesEnabled: true,
     logoUrl: null,
     splashUrl: null,
     iconUrl: null,
@@ -79,7 +85,8 @@ class AppBranding {
             iconUrl == other.iconUrl &&
             maintenanceMode == other.maintenanceMode &&
             maintenanceMessage == other.maintenanceMessage &&
-            loginVerificationExemptAll == other.loginVerificationExemptAll;
+            loginVerificationExemptAll == other.loginVerificationExemptAll &&
+            sideloadUpdatesEnabled == other.sideloadUpdatesEnabled;
   }
 
   @override
@@ -93,5 +100,6 @@ class AppBranding {
     maintenanceMode,
     maintenanceMessage,
     loginVerificationExemptAll,
+    sideloadUpdatesEnabled,
   );
 }

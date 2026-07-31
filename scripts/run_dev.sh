@@ -11,8 +11,10 @@ if [[ ! -f "$ENV_FILE" ]]; then
   exit 1
 fi
 
+# env×distribution: sideload keeps in-app APK OTA for local/QA.
 flutter run \
-  --flavor dev \
+  --flavor devSideload \
   --dart-define-from-file="$ENV_FILE" \
+  --dart-define=SIDELOAD_OTA=true \
   ${SENTRY_DSN:+--dart-define=SENTRY_DSN="$SENTRY_DSN"} \
   "$@"

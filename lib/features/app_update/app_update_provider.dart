@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/branding/app_branding_provider.dart';
+import '../../core/config/env.dart';
 import 'app_release_models.dart';
 import 'app_release_service.dart';
 
@@ -22,14 +24,14 @@ class AppUpdateNotifier extends AsyncNotifier<UpdateDecision> {
 
   @override
   Future<UpdateDecision> build() async {
-    if (!Platform.isAndroid) {
+    if (!Platform.isAndroid || !Env.sideloadOtaEnabled) {
       return const UpdateDecision.none();
     }
     return _evaluate();
   }
 
   Future<UpdateDecision> checkForUpdate({bool forceRefresh = false}) async {
-    if (!Platform.isAndroid) {
+    if (!Platform.isAndroid || !Env.sideloadOtaEnabled) {
       return const UpdateDecision.none();
     }
     if (forceRefresh) {
@@ -63,6 +65,22 @@ class AppUpdateNotifier extends AsyncNotifier<UpdateDecision> {
 
   Future<UpdateDecision> _evaluate() async {
     try {
+      // Admin Play Store review kill-switch (Settings → Driver App).
+      final branding = ref.read(appBrandingProvider).value;
+      if (branding != null && !branding.sideloadUpdatesEnabled) {
+        return const UpdateDecision.none();
+      }
+      if (branding == null) {
+        try {
+          final fetched = await ref.read(appBrandingProvider.future);
+          if (!fetched.sideloadUpdatesEnabled) {
+            return const UpdateDecision.none();
+          }
+        } catch (_) {
+          // Fail open to OTA check if branding is temporarily unavailable.
+        }
+      }
+
       final packageInfo = await PackageInfo.fromPlatform();
       final currentCode = int.tryParse(packageInfo.buildNumber) ?? 0;
       final service = ref.read(appReleaseServiceProvider);

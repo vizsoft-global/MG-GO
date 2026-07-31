@@ -12,7 +12,8 @@ if [[ ! -f "$ENV_FILE" ]]; then
 fi
 
 flutter run \
-  --flavor prod \
+  --flavor prodSideload \
   --dart-define-from-file="$ENV_FILE" \
+  --dart-define=SIDELOAD_OTA=true \
   ${SENTRY_DSN:+--dart-define=SENTRY_DSN="$SENTRY_DSN"} \
   "$@"

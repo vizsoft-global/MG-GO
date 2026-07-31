@@ -12,7 +12,7 @@ Flutter companion app for the DPD admin panel. Drivers sign in with **driver cod
 
 ## Configuration
 
-Two Android build flavors share the same package id (`kw.musallam.delivery`) but point at different backends. Only one flavor can be installed at a time.
+Android builds use **two dimensions**: `env` (`dev` / `prod` backends) × `distribution` (`sideload` / `play`). Scripts default to `*Sideload` (in-app APK OTA + `REQUEST_INSTALL_PACKAGES`). Play Store AAB uses `prodPlay` via `scripts/build_play.sh` (no install-packages permission; `SIDELOAD_OTA=false`). Same application id — only one install at a time.
 
 | Flavor | Launcher label | Supabase | Admin API | OTA default channel |
 |--------|----------------|----------|-----------|---------------------|
@@ -39,8 +39,10 @@ cp env/prod.json.example env/prod.json
 Or manually:
 
 ```bash
-flutter run --flavor dev --dart-define-from-file=env/dev.json
-flutter run --flavor prod --dart-define-from-file=env/prod.json
+flutter run --flavor devSideload --dart-define-from-file=env/dev.json --dart-define=SIDELOAD_OTA=true
+flutter run --flavor prodSideload --dart-define-from-file=env/prod.json --dart-define=SIDELOAD_OTA=true
+# Play Store AAB (no sideload OTA):
+./scripts/build_play.sh
 ```
 
 ### Build release APK

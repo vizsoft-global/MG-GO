@@ -31,6 +31,7 @@ environment:
   and a higher `version_code` than the phone.
 - The APK object referenced by `apk_object_key` exists in **that environment's R2 bucket**.
 - The app is pointed at the matching admin API / Supabase (via its flavor env file).
+- **Fleet APK** = `*Sideload` flavor (`REQUEST_INSTALL_PACKAGES` + OTA). **Play Store** = `./scripts/build_play.sh` (`prodPlay`, `SIDELOAD_OTA=false`). Before Play review submit, turn Admin → Settings → Driver App → Sideload updates **OFF**.
 
 A presigned URL is generated even if the object does **not** exist — so a
 missing object shows up as a **404 at download time**, not at the API call.

@@ -13,12 +13,14 @@ fi
 
 "$(dirname "$0")/check_release_keystore.sh"
 
+# Fleet / App Releases APK (includes REQUEST_INSTALL_PACKAGES).
 flutter build apk \
-  --flavor prod \
+  --flavor prodSideload \
   --dart-define-from-file="$ENV_FILE" \
+  --dart-define=SIDELOAD_OTA=true \
   --release \
   "$@"
 
-APK="build/app/outputs/flutter-apk/app-prod-release.apk"
+APK="build/app/outputs/flutter-apk/app-prodSideload-release.apk"
 "$(dirname "$0")/verify_apk_signing.sh" "$APK"
 echo "APK: $APK"
