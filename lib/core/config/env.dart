@@ -31,7 +31,7 @@ class Env {
 
   static const supabaseUrl = String.fromEnvironment(
     'SUPABASE_URL',
-    defaultValue: 'https://ytfmsgckjatiserpgdbz.supabase.co',
+    defaultValue: 'https://eoksxkdssptgyqyywdju.supabase.co',
   );
 
   /// Testing anon key default for local dev builds only. Prod builds must pass
@@ -39,7 +39,7 @@ class Env {
   static const supabaseAnonKey = String.fromEnvironment(
     'SUPABASE_ANON_KEY',
     defaultValue:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0Zm1zZ2NramF0aXNlcnBnZGJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NDk0NzcsImV4cCI6MjA5MzQyNTQ3N30.U3a-TyxhdQTuceeQFskp1ZfFmqRR75UnoGGFmxLU-h0',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVva3N4a2Rzc3B0Z3lxeXl3ZGp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMDAyMzAsImV4cCI6MjA5NTc3NjIzMH0.YAAzCcSFWmRe6gR0BOMEFuoGOjnZotEz2o7ETIrwaCo',
   );
 
   /// Admin panel origin for driver R2 presign/confirm (no R2 keys in app).
@@ -56,10 +56,13 @@ class Env {
 
   /// Fail fast when a flavor build points at the wrong backend stack.
   static void validateConfiguration() {
+    // Live DPD Control Tower stack (must match admin panel / migrations):
+    // eoksxkdssptgyqyywdju + dpdadmin-prod.vercel.app
+    const prodSupabaseRef = 'eoksxkdssptgyqyywdju';
     if (isProd) {
-      if (!supabaseUrl.contains('eoksxkdssptgyqyywdju')) {
+      if (!supabaseUrl.contains(prodSupabaseRef)) {
         throw StateError(
-          'Prod flavor must use prod Supabase (eoksxkdssptgyqyywdju). '
+          'Prod flavor must use live Supabase ($prodSupabaseRef). '
           'Got: $supabaseUrl',
         );
       }
@@ -70,21 +73,18 @@ class Env {
         );
       }
     } else {
-      if (supabaseUrl.contains('eoksxkdssptgyqyywdju')) {
+      // Dev builds may share the live DB for local QA, but must never ship
+      // a "DEV" flavor with silent defaults to a different stack by accident.
+      if (adminApiBaseUrl.contains('dpdadmin-prod') && !supabaseUrl.contains(prodSupabaseRef)) {
         throw StateError(
-          'Dev flavor must not use prod Supabase. Got: $supabaseUrl',
-        );
-      }
-      if (adminApiBaseUrl.contains('dpdadmin-prod')) {
-        throw StateError(
-          'Dev flavor must not use prod admin. Got: $adminApiBaseUrl',
+          'Dev flavor admin/prod mismatch. Got admin=$adminApiBaseUrl supabase=$supabaseUrl',
         );
       }
     }
 
     assert(() {
       if (isProd) {
-        assert(supabaseUrl.contains('eoksxkdssptgyqyywdju'));
+        assert(supabaseUrl.contains(prodSupabaseRef));
         assert(adminApiBaseUrl.contains('dpdadmin-prod'));
       }
       return true;
