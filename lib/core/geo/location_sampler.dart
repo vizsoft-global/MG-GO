@@ -19,7 +19,7 @@ class LocationSampler {
       Geolocator.checkPermission();
 
   Future<Position> getCurrentPosition({
-    LocationAccuracy accuracy = LocationAccuracy.medium,
+    LocationAccuracy accuracy = LocationAccuracy.high,
     Duration timeLimit = const Duration(seconds: 8),
   }) {
     return Geolocator.getCurrentPosition(
@@ -34,17 +34,32 @@ class LocationSampler {
   Future<Position?> lastKnownIfFresh({
     Duration maxAge = lastKnownMaxAge,
     DateTime? now,
+    double maxAccuracyMeters = 80,
   }) async {
     final position = await Geolocator.getLastKnownPosition();
     if (position == null) return null;
     final clock = now ?? DateTime.now();
     if (clock.difference(position.timestamp) > maxAge) return null;
+    // Reject coarse last-known fixes so fleet pins don't jump on bad cache.
+    if (position.accuracy > maxAccuracyMeters) return null;
     return position;
   }
 
+  /// Best effort: use a fresh accurate cache, otherwise a fresh high-accuracy
+  /// fix. Prefer accurate GPS over a stale low-accuracy reading.
+  Future<Position> getBestPosition({
+    Duration lastKnownMaxAge = const Duration(seconds: 12),
+    Duration timeLimit = const Duration(seconds: 12),
+    LocationAccuracy accuracy = LocationAccuracy.high,
+  }) async {
+    final lastKnown = await lastKnownIfFresh(maxAge: lastKnownMaxAge);
+    if (lastKnown != null) return lastKnown;
+    return getCurrentPosition(accuracy: accuracy, timeLimit: timeLimit);
+  }
+
   Stream<Position> positionStream({
-    LocationAccuracy accuracy = LocationAccuracy.medium,
-    int distanceFilter = 10,
+    LocationAccuracy accuracy = LocationAccuracy.high,
+    int distanceFilter = 5,
   }) {
     return Geolocator.getPositionStream(
       locationSettings: LocationSettings(

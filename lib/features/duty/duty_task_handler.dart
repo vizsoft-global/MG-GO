@@ -102,19 +102,25 @@ class DutyTaskHandler extends TaskHandler {
       }
 
       // Always sample GPS locally so we can detect idle → moving transitions.
-      // Server pushes only when moving (or on first on-duty sample / delivery).
-      final trackingIdle =
-          _scheduler.status == TrackingStatus.idle &&
-          !_scheduler.needsInitialReport &&
-          !force;
-      final position = await _sampler.getCurrentPosition(
-        accuracy: trackingIdle
-            ? LocationAccuracy.medium
-            : LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 20),
+      // Prefer a fresh accurate last-known fix for low latency; fall back to a
+      // high-accuracy fix so fleet positions stay true on the admin map.
+      final position = await _sampler.getBestPosition(
+        lastKnownMaxAge: const Duration(seconds: 10),
+        timeLimit: const Duration(seconds: 12),
+        accuracy: LocationAccuracy.high,
       );
       if (position.isMocked && !await SecurityBypassStore.readEnabled()) {
         await _handleMockLocation(position: position, token: token);
+        return;
+      }
+
+      // Discard extremely coarse fixes so a bad multipath reading doesn't
+      // yank the driver hundreds of meters on the live map. Always keep the
+      // first on-duty sample and forced delivery samples.
+      if (!force &&
+          !_scheduler.needsInitialReport &&
+          position.accuracy > 100) {
+        await _updateNotification(l10n.onDutyStationaryGpsPaused);
         return;
       }
 

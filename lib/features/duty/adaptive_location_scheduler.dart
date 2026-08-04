@@ -15,17 +15,22 @@ extension TrackingStatusApi on TrackingStatus {
   };
 }
 
-/// Adaptive GPS sampling: idle 2–5 min, moving 30–60 sec.
+/// Adaptive GPS sampling + server push cadence for fleet live tracking.
+///
+/// Targets ops responsiveness (admin live map) without saturating the DB:
+/// - moving: push about every 10–15s
+/// - idle: heartbeat every 45–60s (keeps pin fresh; no dead-zone on the map)
+/// - delivery submit / first on-duty sample / idle→moving: immediate
 class AdaptiveLocationScheduler {
   AdaptiveLocationScheduler({math.Random? random})
     : _random = random ?? math.Random();
 
   final math.Random _random;
 
-  static const movingSpeedThresholdMps = 2.0;
-  static const idleSpeedThresholdMps = 1.0;
-  static const idleDisplacementMeters = 30.0;
-  static const idleHoldDuration = Duration(minutes: 2);
+  static const movingSpeedThresholdMps = 1.5;
+  static const idleSpeedThresholdMps = 0.8;
+  static const idleDisplacementMeters = 15.0;
+  static const idleHoldDuration = Duration(seconds: 90);
 
   TrackingStatus _status = TrackingStatus.idle;
   DateTime? _lastSampleAt;
@@ -43,19 +48,18 @@ class AdaptiveLocationScheduler {
   /// First on-duty sample should reach the server for zone + dashboard state.
   bool get needsInitialReport => _needsInitialReport;
 
-  Duration tickInterval = const Duration(seconds: 30);
+  Duration tickInterval = const Duration(seconds: 15);
 
   /// Whether we should call `driver_report_location` on this tick.
   ///
-  /// When idle we only poll GPS locally to detect movement — no server push.
-  /// When moving we respect the adaptive interval (30–60s). Delivery submit
-  /// and the first on-duty sample always report immediately.
+  /// Moving drivers report on the short adaptive interval. Idle drivers still
+  /// send heartbeats so fleet ops see accurate last-seen pins (not multi-minute
+  /// gaps). Delivery submit and the first on-duty sample always report.
   bool shouldReportToServer(DateTime now, {bool force = false}) {
     if (force) return true;
     if (_needsInitialReport) return true;
     if (_movementJustStarted) return true;
     if (_status == TrackingStatus.deliverySubmit) return true;
-    if (_status != TrackingStatus.moving) return false;
     return shouldSampleNow(now);
   }
 
@@ -66,8 +70,9 @@ class AdaptiveLocationScheduler {
 
   Duration _intervalForStatus(TrackingStatus status) {
     return switch (status) {
-      TrackingStatus.idle => Duration(seconds: 120 + _random.nextInt(181)),
-      TrackingStatus.moving => Duration(seconds: 30 + _random.nextInt(31)),
+      // Heartbeat so admin live map never looks "stuck" when stationary.
+      TrackingStatus.idle => Duration(seconds: 45 + _random.nextInt(16)),
+      TrackingStatus.moving => Duration(seconds: 10 + _random.nextInt(6)),
       TrackingStatus.deliverySubmit => Duration.zero,
     };
   }

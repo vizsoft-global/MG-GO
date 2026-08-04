@@ -14,7 +14,9 @@ class DutyBackgroundService {
   );
 
   static final _foregroundTaskOptions = ForegroundTaskOptions(
-    eventAction: ForegroundTaskEventAction.repeat(30000),
+    // Aligns with adaptive moving report cadence (~10–15s) so ticks aren't
+    // coarser than the desired fleet-map update rate.
+    eventAction: ForegroundTaskEventAction.repeat(15000),
     autoRunOnBoot: false,
     autoRunOnMyPackageReplaced: false,
     allowWakeLock: true,

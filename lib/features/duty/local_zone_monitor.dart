@@ -12,12 +12,9 @@ import 'duty_location_provider.dart';
 /// Computes in/out-of-zone status on-device the instant the rider crosses the
 /// boundary, without waiting for the next `driver_report_location` RPC.
 ///
-/// The adaptive scheduler in the foreground duty isolate intentionally suppresses
-/// server pushes while the rider is idle (every 2–5 minutes) so battery / API
-/// cost stays low. That meant the "Outside delivery area" banner could lag by
-/// minutes after a rider crossed the boundary. This controller closes that gap
-/// by reading the device's GPS stream on the main isolate at a tight cadence
-/// (~10m / 8s) and evaluating against the locally cached zone polygon.
+/// The duty isolate still owns server pushes. This controller closes residual
+/// UI lag by reading a high-accuracy GPS stream (~5 m / high accuracy) on the
+/// main isolate and evaluating against the locally cached zone polygon.
 ///
 /// The server report is still authoritative for audit / history purposes —
 /// this provider only updates the UI-facing `zone_status` field on
@@ -82,8 +79,8 @@ class _LocalZoneMonitorController {
 
       _positionSub = _sampler
           .positionStream(
-            accuracy: LocationAccuracy.medium,
-            distanceFilter: 10,
+            accuracy: LocationAccuracy.high,
+            distanceFilter: 5,
           )
           .listen(
             _evaluate,
@@ -102,7 +99,7 @@ class _LocalZoneMonitorController {
   Future<void> _evaluateFromCurrentPosition() async {
     try {
       final position = await _sampler.getCurrentPosition(
-        accuracy: LocationAccuracy.medium,
+        accuracy: LocationAccuracy.high,
         timeLimit: const Duration(seconds: 8),
       );
       _evaluate(position);
