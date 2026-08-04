@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Play Store AAB — no REQUEST_INSTALL_PACKAGES, OTA compiled off (SIDELOAD_OTA=false).
-# Before upload: turn Admin → Settings → Driver App → Sideload updates OFF.
+# Play Store AAB — sideload / in-app APK OTA fully removed.
 
 cd "$(dirname "$0")/.."
 
@@ -17,12 +16,11 @@ fi
 "$(dirname "$0")/check_release_keystore.sh"
 
 flutter build appbundle \
-  --flavor prodPlay \
+  --flavor prod \
   --dart-define-from-file="$ENV_FILE" \
-  --dart-define=SIDELOAD_OTA=false \
   --release \
   "$@"
 
-AAB="build/app/outputs/bundle/prodPlayRelease/app-prodPlay-release.aab"
+AAB="build/app/outputs/bundle/prodRelease/app-prod-release.aab"
 echo "AAB: $AAB"
-echo "Verify merged manifest has NO android.permission.REQUEST_INSTALL_PACKAGES before Play upload."
+echo "Sideload OTA is disabled in code. Install packages permission is not declared."

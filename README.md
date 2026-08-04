@@ -12,12 +12,12 @@ Flutter companion app for the DPD admin panel. Drivers sign in with **driver cod
 
 ## Configuration
 
-Android builds use **two dimensions**: `env` (`dev` / `prod` backends) × `distribution` (`sideload` / `play`). Scripts default to `*Sideload` (in-app APK OTA + `REQUEST_INSTALL_PACKAGES`). Play Store AAB uses `prodPlay` via `scripts/build_play.sh` (no install-packages permission; `SIDELOAD_OTA=false`). Same application id — only one install at a time.
+Android builds use a single flavor dimension `env` (`dev` / `prod`). Distribution is **Google Play only** — in-app APK / sideload OTA and `REQUEST_INSTALL_PACKAGES` were removed for Play Store policy. The app **refuses to run** when Android Developer options are enabled.
 
-| Flavor | Launcher label | Supabase | Admin API | OTA default channel |
-|--------|----------------|----------|-----------|---------------------|
-| **dev** | Musallam Dev | `ytfmsgckjatiserpgdbz` | `dpdadmin.vercel.app` | `internal` |
-| **prod** | Musallam Delivery | `eoksxkdssptgyqyywdju` | `dpdadmin-prod.vercel.app` | `production` |
+| Flavor | Launcher label | Supabase | Admin API |
+|--------|----------------|----------|-----------|
+| **dev** | Musallam Dev | `ytfmsgckjatiserpgdbz` | `dpdadmin.vercel.app` |
+| **prod** | Musallam Delivery | `eoksxkdssptgyqyywdju` | `dpdadmin-prod.vercel.app` |
 
 ### First-time setup
 
@@ -39,9 +39,9 @@ cp env/prod.json.example env/prod.json
 Or manually:
 
 ```bash
-flutter run --flavor devSideload --dart-define-from-file=env/dev.json --dart-define=SIDELOAD_OTA=true
-flutter run --flavor prodSideload --dart-define-from-file=env/prod.json --dart-define=SIDELOAD_OTA=true
-# Play Store AAB (no sideload OTA):
+flutter run --flavor dev --dart-define-from-file=env/dev.json
+flutter run --flavor prod --dart-define-from-file=env/prod.json
+# Play Store AAB:
 ./scripts/build_play.sh
 ```
 
@@ -50,18 +50,15 @@ flutter run --flavor prodSideload --dart-define-from-file=env/prod.json --dart-d
 Requires `android/key.properties` + `~/musallam-release.jks` (see `android/key.properties.example` and [docs/RELEASE_PROCESS.md](docs/RELEASE_PROCESS.md) section 4).
 
 ```bash
-./scripts/build_dev.sh        # app-dev-release.apk
-./scripts/build_prod.sh       # app-prod-release.apk (MDM + prod OTA)
+./scripts/build_dev.sh        # local QA APK only
+./scripts/build_prod.sh       # internal test APK only — production ships via Play
 ```
 
 Build scripts verify the APK is **not** debug-signed before finishing.
 
-### Publish to admin OTA
+### Updates (Google Play only)
 
-```bash
-./scripts/release.sh internal --notes "QA build"              # dev flavor → testing admin
-./scripts/release.sh production --flavor prod --notes "..."   # prod flavor → prod admin
-```
+In-app OTA / admin "App Releases" APK push is **removed**. Ship all driver app updates with `./scripts/build_play.sh` and the Play Console.
 
 See `env/*.json.example` for all dart-define keys. Real `env/dev.json` and `env/prod.json` are gitignored.
 
@@ -73,8 +70,7 @@ Full auth/endpoint matrix: [docs/FLAVOR_INTEGRATION.md](docs/FLAVOR_INTEGRATION.
 |-------|-----|------|
 | Login | Test driver on testing Supabase | Prod driver on prod Supabase |
 | Launcher label | Musallam Dev | Musallam Delivery |
-| OTA channel default | `internal` | `production` |
-| Upload proof | Testing admin → R2 `dpd-private` | Prod admin → `dpd-private-prod` |
+| Distribution | Google Play only | Google Play only |
 | Dev banner | Orange DEV strip + Supabase host | Hidden |
 
 Copy the anon key from admin `.env.local` (`NEXT_PUBLIC_SUPABASE_ANON_KEY`) for the matching environment.
@@ -103,8 +99,7 @@ Drivers start from **Home** or the **Deliveries** tab (**Pickup Order** when idl
 - GPS captured at pickup and finish
 - **Pickup proximity gate:** enabled only when within `driver_app_delivery_proximity_meters` of the assigned zone or restaurant
 - **On-duty lock (Android):** overlay keeps the app foregrounded and blocks duty when GPS is off
-
-Apply admin migrations through `20260707110000_app_releases.sql` in the admin repo.
+- **Developer options:** app hard-blocks when Developer options are ON (Play policy / anti-sideload)
 
 ```bash
 flutter run \

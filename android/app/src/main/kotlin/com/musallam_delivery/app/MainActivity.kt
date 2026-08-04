@@ -1,25 +1,21 @@
 package com.musallam_delivery.app
 
 import android.app.Activity
-import android.content.Intent
 import android.os.Build
 import android.provider.Settings
 import android.view.WindowManager
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
 import com.musallam_delivery.app.duty_overlay.DutyOverlayPlugin
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
-import java.io.File
 
 class MainActivity : FlutterActivity() {
     companion object {
         private const val APP_LIFECYCLE_CHANNEL = "dpd_userapp/app_lifecycle"
         private const val SECURITY_CHANNEL = "dpd_userapp/security"
         private const val SECURITY_EVENTS_CHANNEL = "dpd_userapp/security_events"
-        private const val APP_INSTALLER_CHANNEL = "dpd_userapp/app_installer"
     }
 
     private var secureEnabled: Boolean = false
@@ -69,48 +65,6 @@ class MainActivity : FlutterActivity() {
                     securityEventSink = null
                 }
             })
-
-        // Native APK installer. We previously used `open_filex` for this, but
-        // its 4.x release refuses to open APK files unless the app holds
-        // `MANAGE_EXTERNAL_STORAGE` — even when the APK is in our own
-        // app-specific external cache. That caused every forced-update
-        // attempt to fail with `permissionDenied` and the in-app updater to
-        // re-download in a loop without ever launching the system installer.
-        // Firing the install intent directly via FileProvider bypasses that
-        // check entirely; we only need `REQUEST_INSTALL_PACKAGES`, which is
-        // already declared in the manifest.
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, APP_INSTALLER_CHANNEL)
-            .setMethodCallHandler { call, result ->
-                when (call.method) {
-                    "installApk" -> handleInstallApk(call.argument<String>("path"), result)
-                    else -> result.notImplemented()
-                }
-            }
-    }
-
-    private fun handleInstallApk(path: String?, result: MethodChannel.Result) {
-        if (path.isNullOrBlank()) {
-            result.error("invalid_args", "path is required", null)
-            return
-        }
-        val file = File(path)
-        if (!file.exists()) {
-            result.error("file_not_found", "APK not found at $path", null)
-            return
-        }
-        try {
-            val authority = "${applicationContext.packageName}.fileprovider"
-            val uri = FileProvider.getUriForFile(this, authority, file)
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(uri, "application/vnd.android.package-archive")
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            }
-            startActivity(intent)
-            result.success(true)
-        } catch (e: Throwable) {
-            result.error("install_failed", e.message ?: e.javaClass.simpleName, null)
-        }
     }
 
     override fun onResume() {
@@ -152,9 +106,6 @@ class MainActivity : FlutterActivity() {
         if (screenCaptureCallback != null) {
             return
         }
-        // Some OEM ROMs (e.g. RedMagicOS) reject DETECT_SCREEN_CAPTURE even when
-        // declared in the manifest, throwing SecurityException. Swallow it so the
-        // FLAG_SECURE protection still applies and the activity can resume.
         try {
             val callback = Activity.ScreenCaptureCallback {
                 securityEventSink?.success("screenshot_attempt")

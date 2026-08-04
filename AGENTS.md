@@ -23,14 +23,9 @@ Mapping (Android):
 2. **Bump `versionName` only when the user explicitly asks** (e.g. "make this 1.0.9").
    Otherwise keep the same `versionName` and only bump the build number.
 3. Update **both** values in `pubspec.yaml` (`version: <name>+<code>`).
-4. After bumping, remind the user that when they upload the resulting APK in the
-   admin panel (`/app-releases`), they must enter the **same** `version_code` and
-   `version_name` — otherwise the adoption tracker won't match the build and
-   driver phones will keep prompting (or fail to detect) the update.
-5. The Flutter app calls `GET /api/driver-app/active-release` with the params
-   `platform=android&channel=<channel>&versionCode=<n>&versionName=<x.y.z>` on
-   every launch / resume / sign-in. That call powers the **Adoption** tab in
-   admin, so `versionCode` in `pubspec.yaml` must match what's uploaded.
+4. Ship via **Google Play only** (`./scripts/build_play.sh` → Play Console AAB).
+   In-app APK OTA / admin `/app-releases` upload is permanently removed.
+5. The app hard-blocks when Android Developer options are enabled (release builds).
 
 ### Quick reference for incrementing
 
@@ -40,9 +35,9 @@ Mapping (Android):
 | User asks for "1.0.9" release             | `1.0.8+37`  | `1.0.9+38`  |
 | User asks for "1.1.0" release             | `1.0.8+37`  | `1.1.0+38`  |
 
-## Release / OTA publishing — CRITICAL rules
+## Release — CRITICAL rules
 
-Full procedure + debugging guide: **`docs/RELEASE_PROCESS.md`** (read it before publishing).
+Full procedure: **`docs/RELEASE_PROCESS.md`** (Play Store only — no sideload OTA).
 
 Dev/testing and production are **separate stacks** — separate Supabase DBs **and**
 separate R2 buckets. Never assume they share anything.

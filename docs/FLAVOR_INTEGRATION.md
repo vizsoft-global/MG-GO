@@ -4,10 +4,12 @@ Every driver-facing backend call routes through [`lib/core/config/env.dart`](../
 
 ## Stack pairing (must match)
 
-| Flavor | Supabase | Admin API | Firebase (native) | OTA default |
-|--------|----------|-----------|---------------------|-------------|
-| **dev** | `ytfmsgckjatiserpgdbz` | `dpdadmin.vercel.app` | `musallam-delivery-kw` | `internal` |
-| **prod** | `eoksxkdssptgyqyywdju` | `dpdadmin-prod.vercel.app` | `musallam-delivery-prod` | `production` |
+| Flavor | Supabase | Admin API | Firebase (native) |
+|--------|----------|-----------|---------------------|
+| **dev** | `ytfmsgckjatiserpgdbz` | `dpdadmin.vercel.app` | `musallam-delivery-kw` |
+| **prod** | `eoksxkdssptgyqyywdju` | `dpdadmin-prod.vercel.app` | `musallam-delivery-prod` |
+
+Distribution is **Google Play only** — a single `production` release channel, no in-app APK / sideload OTA.
 
 Admin JWT validation uses the Supabase project configured on that admin deployment. A dev app token sent to prod admin (or vice versa) returns **401/403** on upload and notification APIs.
 
@@ -26,7 +28,6 @@ Admin JWT validation uses the Supabase project configured on that admin deployme
 | **Notification images** | Bearer Supabase JWT | Admin GET `/api/driver-app/notification-media?campaignId=&role=` | `Env.adminApiBaseUrl` |
 | **Notification telemetry** | Supabase JWT | RPC `record_notification_client_event` (fallback: admin POST `/api/notifications/events`) | Supabase + admin |
 | **FCM token** | Supabase JWT | Upsert `driver_push_tokens` | Supabase client |
-| **OTA update check** | Bearer Supabase JWT | Admin GET `/api/driver-app/active-release?channel=` | `Env.adminApiBaseUrl` + `app_update_channel` pref |
 
 ## Infra checklist (outside the app)
 
@@ -46,7 +47,5 @@ Verify on **both** Supabase projects and admin deployments:
 | Login fails with valid credentials | Wrong Supabase project (driver/passcode on other env) |
 | GPS stops in background after kill | Expected if token expired; foreground service uses stored token from same Supabase |
 | FCM never arrives | Wrong `google-services.json` flavor or token registered on wrong Supabase project |
-| OTA checks wrong channel | `app_update_channel` pref overridden; dev flavor defaults to `internal` on first launch |
-| OTA missing on sideload build | Built `*Play` by mistake, or Admin Sideload updates OFF, or `SIDELOAD_OTA=false` |
-| Play review sees REQUEST_INSTALL_PACKAGES | Uploaded `*Sideload` AAB/APK — use `./scripts/build_play.sh` (`prodPlay`) instead |
+| App shows the block screen on launch | Android Developer options are enabled — turn them off in phone Settings |
 | Notification banner blank | Campaign has no media, driver not in `notification_dispatch_items`, or admin/media auth failure |

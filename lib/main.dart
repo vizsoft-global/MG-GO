@@ -20,8 +20,8 @@ import 'core/observability/sentry_config.dart';
 import 'core/observability/sentry_provider_observer.dart';
 import 'core/offline/offline_db.dart';
 import 'core/router/app_router.dart';
+import 'core/security/developer_mode_gate.dart';
 import 'core/security/security_bypass_store.dart';
-import 'core/updates/app_update_channel_store.dart';
 import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 
@@ -43,6 +43,13 @@ Future<void> main() async {
   }
 
   Env.validateConfiguration();
+
+  // Hard-block Developer options before any session/bootstrap (Play policy).
+  await SecurityBypassStore.load();
+  if (!kIsWeb && await isDeveloperModeHardBlocked()) {
+    runApp(const DeveloperModeBlockedApp());
+    return;
+  }
 
   if (Env.isSentryConfigured) {
     await SentryFlutter.init(
@@ -77,8 +84,7 @@ Future<void> _bootstrapServices() async {
   if (!kIsWeb) {
     await OfflineDb.instance.initialize();
   }
-  await SecurityBypassStore.load();
-  await AppUpdateChannelStore.ensureDefaultChannel();
+  // SecurityBypassStore already loaded in main() for the hard-block check.
 
   if (Firebase.apps.isEmpty) {
     try {

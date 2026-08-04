@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,8 +9,6 @@ import '../../core/l10n/l10n.dart';
 import '../../core/platform/app_lifecycle_actions.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/offline_banner.dart';
-import '../app_update/app_update_provider.dart';
-import '../app_update/widgets/update_available_sheet.dart';
 import '../auth/login_verification_gate.dart';
 import '../auth/login_verification_store.dart';
 import '../auth/rider_auth_service.dart';
@@ -30,8 +27,6 @@ class MainShell extends ConsumerStatefulWidget {
 
 class _MainShellState extends ConsumerState<MainShell>
     with WidgetsBindingObserver {
-  bool _updateCheckInFlight = false;
-
   @override
   void initState() {
     super.initState();
@@ -40,7 +35,6 @@ class _MainShellState extends ConsumerState<MainShell>
       ref.read(deliveryProximityContextProvider);
       ref.read(deliveryProximityPreviewProvider.notifier).warmUp();
       ref.read(riderProfileProvider.future);
-      unawaited(_runStartupPrompts());
     });
   }
 
@@ -53,7 +47,6 @@ class _MainShellState extends ConsumerState<MainShell>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      unawaited(_checkForAppUpdate(resume: true));
       unawaited(_enforceLoginVerificationGate());
     }
   }
@@ -66,39 +59,6 @@ class _MainShellState extends ConsumerState<MainShell>
     if (!mounted) return;
     if (needs) {
       context.go('/login-verification');
-    }
-  }
-
-  Future<void> _runStartupPrompts() async {
-    await _checkForAppUpdate();
-  }
-
-  Future<void> _checkForAppUpdate({bool resume = false}) async {
-    if (!Platform.isAndroid || !mounted) return;
-    // Re-entrancy guard. `initState`'s post-frame callback and
-    // `didChangeAppLifecycleState(resumed)` both invoke this method, and the
-    // user can also return from system settings (install permission) or from
-    // Android's "Install this app?" prompt mid-flow, each of which fires a
-    // fresh `resumed` event. Without this gate a second update flow stacks
-    // on top of the first one, leaving the previous dialog visible even
-    // after the second flow finishes downloading.
-    if (_updateCheckInFlight) return;
-    _updateCheckInFlight = true;
-    try {
-      final decision = await ref
-          .read(appUpdateProvider.notifier)
-          .checkForUpdate(forceRefresh: resume);
-
-      if (!decision.hasUpdate || !mounted) return;
-
-      final notifier = ref.read(appUpdateProvider.notifier);
-      if (!decision.isForced && notifier.optionalDismissedThisSession) {
-        return;
-      }
-
-      await showUpdateAvailableSheet(context, ref, decision: decision);
-    } finally {
-      _updateCheckInFlight = false;
     }
   }
 

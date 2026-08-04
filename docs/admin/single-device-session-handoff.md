@@ -171,7 +171,7 @@ supabase functions deploy driver-passcode-login --project-ref ytfmsgckjatiserpgd
 
 ## App version alignment
 
-When uploading the new APK in `/app-releases`, use the same `version_code` / `version_name` as `pubspec.yaml`. Drivers must be on the build that sends `device_id` on login for enforcement to apply.
+Ship the new build through Google Play (`./scripts/build_play.sh`). Drivers must be on the build that sends `device_id` on login for enforcement to apply.
 
 ## Server verification
 

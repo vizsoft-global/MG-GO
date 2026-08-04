@@ -359,11 +359,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pullDownToRefresh => 'Pull down to refresh';
 
   @override
-  String get developerModeDetectedTitle => 'Developer mode detected';
+  String get closeApp => 'Close app';
+
+  @override
+  String get developerModeDetectedTitle => 'Developer options must be off';
 
   @override
   String get developerModeDetectedMessage =>
-      'Developer options are enabled on this device. This activity has been recorded.';
+      'This app cannot run while Developer options are enabled. Turn them off in your phone Settings (Developer options), then open the app again. For security and Play Store policy, sideloading and in-app APK updates have been removed — install updates only from Google Play.';
 
   @override
   String get mockLocationDetectedTitle => 'Mock location detected';

@@ -16,6 +16,7 @@ import 'core/offline/network_status_provider.dart';
 import 'core/offline/sync_controller.dart';
 import 'core/notifications/push_notification_controller.dart';
 import 'core/router/app_router.dart';
+import 'core/security/developer_mode_gate.dart';
 import 'core/security/security_guard_controller.dart';
 import 'core/settings/live_db_refresh.dart';
 import 'core/theme/app_theme.dart';
@@ -50,20 +51,22 @@ class DpdApp extends ConsumerWidget {
     final locale = ref.watch(localeProvider);
 
     return FlavorBanner(
-      child: MaterialApp.router(
-        title: appTitle,
-        debugShowCheckedModeBanner: false,
-        locale: locale,
-        supportedLocales: AppLocalizations.supportedLocales,
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        theme: AppTheme.light(locale),
-        routerConfig: router,
-        scaffoldMessengerKey: scaffoldMessengerKey,
+      child: DeveloperModeGate(
+        child: MaterialApp.router(
+          title: appTitle,
+          debugShowCheckedModeBanner: false,
+          locale: locale,
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          theme: AppTheme.light(locale),
+          routerConfig: router,
+          scaffoldMessengerKey: scaffoldMessengerKey,
+        ),
       ),
     );
   }

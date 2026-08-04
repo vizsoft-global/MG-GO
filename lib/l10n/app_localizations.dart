@@ -720,6 +720,9 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Developer mode detected'**
+  String get closeApp;
+
+  /// No description provided for @developerModeDetectedTitle.
   String get developerModeDetectedTitle;
 
   /// No description provided for @developerModeDetectedMessage.

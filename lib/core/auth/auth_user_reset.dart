@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../features/app_update/app_update_provider.dart';
 import '../../features/attendance/attendance_providers.dart';
 import '../../features/auth/rider_auth_service.dart';
 import '../../features/deliveries/active_delivery_provider.dart';
@@ -35,12 +34,6 @@ final authUserResetControllerProvider = Provider<void>((ref) {
     final previousUserId = lastUserId;
     lastUserId = currentUserId;
     _resetUserScopedProviders(ref, previousUserId: previousUserId);
-    if (currentUserId != null) {
-      // Ping the admin "Adoption" tab with this driver's installed build as
-      // soon as their session is established, so we don't have to wait for
-      // the next app launch / resume cycle.
-      unawaited(_reportInstalledVersion(ref));
-    }
   });
 
   ref.onDispose(sub.cancel);
@@ -69,7 +62,6 @@ void _resetUserScopedProviders(Ref ref, {String? previousUserId}) {
   ref.invalidate(dutyLocationProvider);
   ref.invalidate(zoneMonitorProvider);
   ref.invalidate(dutyLifecycleControllerProvider);
-  ref.invalidate(appUpdateProvider);
 
   if (previousUserId != null && previousUserId.isNotEmpty) {
     unawaited(DutyBackgroundService.stop());
@@ -82,13 +74,5 @@ Future<void> _purgeOfflineCachesForUser(Ref ref, String userId) async {
     await ref.read(offlineRepoProvider).clearUserCaches(userId);
   } catch (_) {
     // Best-effort cleanup; never block sign-in on cache eviction.
-  }
-}
-
-Future<void> _reportInstalledVersion(Ref ref) async {
-  try {
-    await ref.read(appUpdateProvider.notifier).reportInstalledVersion();
-  } catch (_) {
-    // Adoption ping is best-effort; never block sign-in.
   }
 }

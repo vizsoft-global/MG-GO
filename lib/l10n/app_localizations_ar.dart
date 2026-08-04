@@ -361,11 +361,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pullDownToRefresh => 'اسحب للأسفل للتحديث';
 
   @override
-  String get developerModeDetectedTitle => 'تم اكتشاف وضع المطوّر';
+  String get closeApp => 'إغلاق التطبيق';
+
+  @override
+  String get developerModeDetectedTitle => 'يجب إيقاف خيارات المطوّر';
 
   @override
   String get developerModeDetectedMessage =>
-      'خيارات المطوّر مفعّلة على هذا الجهاز. تم تسجيل هذا النشاط.';
+      'لا يمكن تشغيل هذا التطبيق أثناء تفعيل خيارات المطوّر. أوقفها من إعدادات الهاتف ثم افتح التطبيق مرة أخرى. تم إزالة التحديث عبر التثبيت الجانبي — حدّث التطبيق فقط من Google Play.';
 
   @override
   String get mockLocationDetectedTitle => 'تم اكتشاف موقع وهمي';

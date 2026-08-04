@@ -111,21 +111,10 @@ Legacy `pending_deliveries` rows still sync via the deprecated two-step shim.
 
 `driver_create_delivery` remains as a shim (pickup + complete in one call) for one release.
 
-## Sideloaded Android updates
+## Android updates
 
-Drivers on Android receive in-app update prompts when a newer APK is marked **active** in the admin panel.
+Updates ship through **Google Play only**. In-app APK download / sideload OTA and the beta / internal channels were removed — there is a single `production` channel.
 
-1. Admin uploads APK under **Settings → App Releases** (super admin).
-2. Admin clicks **Activate** on the target version for the `production` channel.
-3. On launch (and on resume), the app calls `GET /api/driver-app/active-release` with the driver session token.
-4. If `version_code` is newer than the installed build, the app shows an update sheet.
-5. **Optional** updates can be dismissed once per session; **required** updates (or builds below `min_supported_version_code`) block the app until installed.
-6. The APK downloads to device cache, SHA256 is verified, then Android's package installer opens.
-
-Apply admin migration `20260707110000_app_releases.sql`.
-
-Requirements:
-
-- Same release keystore for every build (Android rejects certificate changes). Setup: `docs/RELEASE_PROCESS.md` section 4, keystore at `~/musallam-release.jks`, config in `android/key.properties`.
-- `REQUEST_INSTALL_PACKAGES` permission — user must allow "Install unknown apps" once.
-- Beta/internal channels: dev flavor seeds `app_update_channel` to `internal`; prod flavor seeds `production`. Override anytime via SharedPreferences key `app_update_channel`.
+- Build with `./scripts/build_play.sh` and upload the AAB to the Play Console.
+- Same release keystore for every build (Android rejects certificate changes). Setup: `docs/RELEASE_PROCESS.md`, keystore at `~/musallam-release.jks`, config in `android/key.properties`.
+- The app refuses to run while Android **Developer options** are enabled.

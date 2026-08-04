@@ -43,10 +43,8 @@ android {
         }
     }
 
-    // env × distribution → variants: devSideload, devPlay, prodSideload, prodPlay
-    // Sideload: in-app APK OTA + REQUEST_INSTALL_PACKAGES (App Releases).
-    // Play: Play Store AAB — no install-packages permission / OTA UI.
-    flavorDimensions += listOf("env", "distribution")
+    // env → variants: dev, prod (Play Store only — no sideload OTA dimension)
+    flavorDimensions += listOf("env")
     productFlavors {
         create("dev") {
             dimension = "env"
@@ -55,12 +53,6 @@ android {
         create("prod") {
             dimension = "env"
             resValue("string", "app_name", "Musallam Delivery")
-        }
-        create("sideload") {
-            dimension = "distribution"
-        }
-        create("play") {
-            dimension = "distribution"
         }
     }
 
