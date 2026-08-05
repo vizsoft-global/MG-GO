@@ -239,6 +239,39 @@ class OfflineDb {
     );
   }
 
+  /// Read-through caches only. Deliberately excludes every `pending_*` table:
+  /// those hold work the driver captured offline that the server has not seen
+  /// yet, so dropping them would silently destroy logged orders.
+  ///
+  /// Safe to call before a session is restored — clears all users, since the
+  /// signed-in driver is not known at bootstrap.
+  static const _volatileCacheTables = <String>[
+    'cache_proximity_context',
+    'cache_home_dashboard',
+    'cache_deliveries',
+    'cache_attendance_month',
+    'cache_earnings_month',
+    'cache_extra_earnings',
+    'cache_payouts',
+    'cache_active_shift',
+    // `cache_branding` is deliberately kept: the router's startup redirect waits
+    // on branding, so dropping it would stall launch for a driver who reopens
+    // the app offline right after updating.
+  ];
+
+  Future<void> clearVolatileCaches() async {
+    final db = await database;
+    for (final table in _volatileCacheTables) {
+      // A table may not exist yet on an older schema — skip and continue so one
+      // missing table cannot abort the whole reset.
+      try {
+        await db.delete(table);
+      } catch (e) {
+        debugPrint('[offline] skip cache purge for $table: $e');
+      }
+    }
+  }
+
   Future<void> enqueueShiftSubmission({
     required String userId,
     required Map<String, dynamic> payload,

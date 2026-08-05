@@ -162,6 +162,15 @@ class OfflineRepo {
     return OfflineDb.instance.clearUserCaches(userId);
   }
 
+  Future<void> clearProximityCache(String userId) async {
+    final db = await OfflineDb.instance.database;
+    await db.delete(
+      'cache_proximity_context',
+      where: 'user_id = ?',
+      whereArgs: [userId],
+    );
+  }
+
   Future<void> saveDeliveriesCache(
     String userId,
     List<Map<String, dynamic>> rows,

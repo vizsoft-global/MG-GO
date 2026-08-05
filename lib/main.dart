@@ -12,6 +12,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
+import 'core/app_update/app_upgrade_reset.dart';
 import 'core/config/env.dart';
 import 'core/l10n/localizations_loader.dart';
 import 'core/l10n/locale_provider.dart';
@@ -83,6 +84,7 @@ Future<void> _bootstrapServices() async {
   // Offline SQLite + path_provider are mobile-only; skip on web (Chrome debug).
   if (!kIsWeb) {
     await OfflineDb.instance.initialize();
+    await AppUpgradeReset.runIfUpgraded();
   }
   // SecurityBypassStore already loaded in main() for the hard-block check.
 

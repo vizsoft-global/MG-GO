@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../offline/offline_repo.dart';
 
 import '../../features/deliveries/delivery_proximity_service.dart';
@@ -6,10 +8,23 @@ import '../../features/deliveries/delivery_proximity_service.dart';
 class DeliveryProximityCache {
   static final _repo = OfflineRepo();
 
+  /// Returns null when nothing usable is cached. A payload written by an older
+  /// build can fail to parse; treat that as a cache miss and drop it, otherwise
+  /// the throw propagates out of the proximity provider's build() and leaves
+  /// Add Delivery disabled with no path back — the read fails before any
+  /// refresh can replace the bad row.
   static Future<DeliveryProximityContext?> load(String userId) async {
     final map = await _repo.loadProximityCache(userId);
     if (map == null) return null;
-    return DeliveryProximityContext.fromJson(map);
+    try {
+      return DeliveryProximityContext.fromJson(map);
+    } catch (e) {
+      debugPrint('[proximity] dropping unreadable cache: $e');
+      try {
+        await _repo.clearProximityCache(userId);
+      } catch (_) {}
+      return null;
+    }
   }
 
   static Future<void> save(
