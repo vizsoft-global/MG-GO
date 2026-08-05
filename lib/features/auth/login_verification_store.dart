@@ -51,6 +51,13 @@ class LoginVerificationStore {
   }
 
   /// Pulls global + per-driver exempt flags from the network into prefs.
+  ///
+  /// Both reads are bounded: the post-login navigation awaits this, so an
+  /// unbounded query on a weak connection would strand the driver on the login
+  /// screen after they have already authenticated. On timeout the previously
+  /// cached flags stand and the next refresh tries again.
+  static const _syncTimeout = Duration(seconds: 5);
+
   static Future<void> syncExemptFlagsFromNetwork(String userId) async {
     final client = Supabase.instance.client;
     try {
@@ -58,7 +65,8 @@ class LoginVerificationStore {
           .from('app_settings')
           .select('driver_app_login_verification_exempt_all')
           .eq('id', 1)
-          .maybeSingle();
+          .maybeSingle()
+          .timeout(_syncTimeout);
       if (settings != null) {
         await setGlobalExemptCached(
           settings['driver_app_login_verification_exempt_all'] == true,
@@ -71,7 +79,8 @@ class LoginVerificationStore {
           .from('drivers')
           .select('login_verification_exempt')
           .eq('id', userId)
-          .maybeSingle();
+          .maybeSingle()
+          .timeout(_syncTimeout);
       if (row != null) {
         await setPerDriverExemptCached(
           userId: userId,
