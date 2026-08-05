@@ -58,15 +58,21 @@ class LoginVerificationStore {
   /// cached flags stand and the next refresh tries again.
   static const _syncTimeout = Duration(seconds: 5);
 
+  /// Wraps a query in a real Future so the bound applies regardless of what the
+  /// query builder itself returns.
+  static Future<dynamic> _bounded(Future<dynamic> Function() run) =>
+      Future<dynamic>.sync(run).timeout(_syncTimeout);
+
   static Future<void> syncExemptFlagsFromNetwork(String userId) async {
     final client = Supabase.instance.client;
     try {
-      final settings = await client
-          .from('app_settings')
-          .select('driver_app_login_verification_exempt_all')
-          .eq('id', 1)
-          .maybeSingle()
-          .timeout(_syncTimeout);
+      final settings = await _bounded(
+        () async => await client
+            .from('app_settings')
+            .select('driver_app_login_verification_exempt_all')
+            .eq('id', 1)
+            .maybeSingle(),
+      );
       if (settings != null) {
         await setGlobalExemptCached(
           settings['driver_app_login_verification_exempt_all'] == true,
@@ -75,12 +81,13 @@ class LoginVerificationStore {
     } catch (_) {}
 
     try {
-      final row = await client
-          .from('drivers')
-          .select('login_verification_exempt')
-          .eq('id', userId)
-          .maybeSingle()
-          .timeout(_syncTimeout);
+      final row = await _bounded(
+        () async => await client
+            .from('drivers')
+            .select('login_verification_exempt')
+            .eq('id', userId)
+            .maybeSingle(),
+      );
       if (row != null) {
         await setPerDriverExemptCached(
           userId: userId,
