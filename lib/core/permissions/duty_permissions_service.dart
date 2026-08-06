@@ -9,25 +9,11 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../core/duty_lock/duty_lock_channel.dart';
 import '../../l10n/app_localizations.dart';
 import 'duty_permission_status.dart';
+import 'permission_request_gate.dart';
 
 class DutyPermissionsService {
-  /// Android allows only one permission dialog at a time. Concurrent calls
-  /// from the duty sheet, push bootstrap, and Geolocator all racing each other
-  /// produced FLUTTER-MUSSALAM-14 ("request already running").
-  static Future<void>? _requestQueue;
-
-  static Future<T> _serializedRequest<T>(Future<T> Function() action) async {
-    while (_requestQueue != null) {
-      await _requestQueue;
-    }
-    final gate = Completer<void>();
-    _requestQueue = gate.future;
-    try {
-      return await action();
-    } finally {
-      gate.complete();
-      _requestQueue = null;
-    }
+  static Future<T> _serializedRequest<T>(Future<T> Function() action) {
+    return PermissionRequestGate.run(action);
   }
   Future<DutyReadinessReport> audit(AppLocalizations l10n) async {
     if (!Platform.isAndroid) {

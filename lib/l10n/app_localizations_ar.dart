@@ -361,10 +361,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pullDownToRefresh => 'اسحب للأسفل للتحديث';
 
   @override
-  String get closeApp => 'إغلاق التطبيق';
+  String get developerModeDetectedTitle => 'يجب إيقاف خيارات المطوّر';
 
   @override
-  String get developerModeDetectedTitle => 'يجب إيقاف خيارات المطوّر';
+  String get closeApp => 'إغلاق التطبيق';
 
   @override
   String get developerModeDetectedMessage =>

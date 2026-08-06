@@ -63,9 +63,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             passcode: passcode,
             forceOverride: forceOverride,
           );
-      // Remember-me is always-on: driver phones are personal devices and the
-      // splash screen uses this flag to skip the intro video on subsequent
-      // launches when a Supabase session already exists.
+      // Remember-me is always-on: driver phones are personal devices, so the
+      // Supabase session is kept across launches.
       await LoginPreferencesStore.setRememberMe(true);
       _loginSucceeded = true;
       ref.invalidate(riderProfileProvider);
