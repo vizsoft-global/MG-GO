@@ -719,16 +719,19 @@ abstract class AppLocalizations {
   /// No description provided for @developerModeDetectedTitle.
   ///
   /// In en, this message translates to:
-  /// **'Developer mode detected'**
-  String get closeApp;
-
-  /// No description provided for @developerModeDetectedTitle.
+  /// **'Developer options must be off'**
   String get developerModeDetectedTitle;
+
+  /// No description provided for @closeApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Close app'**
+  String get closeApp;
 
   /// No description provided for @developerModeDetectedMessage.
   ///
   /// In en, this message translates to:
-  /// **'Developer options are enabled on this device. This activity has been recorded.'**
+  /// **'This app cannot run while Developer options are enabled. Turn them off in your phone Settings (Developer options), then open the app again. For security and Play Store policy, sideloading and in-app APK updates have been removed — install updates only from Google Play.'**
   String get developerModeDetectedMessage;
 
   /// No description provided for @mockLocationDetectedTitle.

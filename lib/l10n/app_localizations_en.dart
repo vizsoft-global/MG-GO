@@ -359,10 +359,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pullDownToRefresh => 'Pull down to refresh';
 
   @override
-  String get closeApp => 'Close app';
+  String get developerModeDetectedTitle => 'Developer options must be off';
 
   @override
-  String get developerModeDetectedTitle => 'Developer options must be off';
+  String get closeApp => 'Close app';
 
   @override
   String get developerModeDetectedMessage =>
