@@ -15,6 +15,7 @@ import 'package:uuid/uuid.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/offline/offline_db.dart';
 import '../../core/offline/sync_controller.dart';
+import '../../core/permissions/permission_request_gate.dart';
 import '../../core/theme/app_colors.dart';
 import 'login_verification_gate.dart';
 import 'login_verification_store.dart';
@@ -66,6 +67,8 @@ class _LoginVerificationScreenState
   bool _busy = false;
   bool _processingFrame = false;
   bool _streamActive = false;
+  /// Prevents overlapping _bootstrap / openSettings → re-request races.
+  Future<void>? _bootstrapInFlight;
   String? _statusHint;
   String? _localPath;
   Uint8List? _previewBytes;
@@ -90,12 +93,48 @@ class _LoginVerificationScreenState
     super.dispose();
   }
 
-  Future<void> _bootstrap() async {
+  Future<void> _bootstrap() {
+    final existing = _bootstrapInFlight;
+    if (existing != null) return existing;
+    final run = _bootstrapBody();
+    _bootstrapInFlight = run.whenComplete(() {
+      if (identical(_bootstrapInFlight, run)) {
+        _bootstrapInFlight = null;
+      }
+    });
+    return _bootstrapInFlight!;
+  }
+
+  Future<void> _bootstrapBody() async {
+    if (!mounted) return;
     setState(() => _phase = _CapturePhase.checkingPermission);
-    var status = await Permission.camera.status;
-    if (!status.isGranted) {
-      status = await Permission.camera.request();
+
+    PermissionStatus status;
+    try {
+      status = await PermissionRequestGate.run(() async {
+        var current = await Permission.camera.status;
+        if (current.isGranted) return current;
+        // Concurrent request throws PlatformException — serialize + retry once.
+        try {
+          return await Permission.camera.request();
+        } on PlatformException catch (e) {
+          if (e.code != 'PermissionHandler.PermissionManager') rethrow;
+          await Future<void>.delayed(const Duration(milliseconds: 350));
+          current = await Permission.camera.status;
+          if (current.isGranted ||
+              current.isPermanentlyDenied ||
+              current.isRestricted) {
+            return current;
+          }
+          return Permission.camera.request();
+        }
+      });
+    } on PlatformException {
+      if (!mounted) return;
+      setState(() => _phase = _CapturePhase.permissionDenied);
+      return;
     }
+
     if (!mounted) return;
     if (!status.isGranted) {
       setState(() => _phase = _CapturePhase.permissionDenied);

@@ -10,6 +10,7 @@ import '../../features/auth/login_verification_screen.dart';
 import '../../features/attendance/attendance_screen.dart';
 import '../../features/auth/rider_auth_service.dart';
 import '../../features/blocked/blocked_screen.dart';
+import '../../features/bootstrap/bootstrap_screen.dart';
 import '../../features/deliveries/add_delivery_screen.dart';
 import '../../features/deliveries/active_delivery_screen.dart';
 import '../../features/deliveries/finish_delivery_screen.dart';
@@ -27,7 +28,6 @@ import '../../features/notifications/notifications_inbox_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/shell/app_exit_scope.dart';
 import '../../features/shell/main_shell.dart';
-import '../../features/splash/splash_screen.dart';
 import '../../features/vehicle/vehicle_screen.dart';
 import '../branding/app_branding_provider.dart';
 
@@ -41,7 +41,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ref.watch(loginVerificationRefreshListenableProvider);
 
   // Do NOT watch appBrandingProvider here — that recreates GoRouter on every
-  // settings poll and resets navigation to splash (/).
+  // settings poll and resets navigation to the bootstrap route (/).
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     observers: [SentryNavigatorObserver()],
@@ -60,12 +60,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final loc = state.matchedLocation;
       const authRoutes = {'/login', '/blocked'};
       final isAuthRoute = authRoutes.contains(loc);
-      final onSplash = loc == '/';
+      final onBootstrap = loc == '/';
       final onMaintenance = loc == '/maintenance';
       final onBlocked = loc == '/blocked';
       final onLoginVerification = loc == '/login-verification';
 
-      if (onSplash) return null;
+      if (onBootstrap) return null;
 
       if (onMaintenance) {
         if (!settingsLoaded) return null;
@@ -116,8 +116,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: '/',
-        name: 'splash',
-        builder: (context, state) => const SplashScreen(),
+        name: 'bootstrap',
+        builder: (context, state) => const BootstrapScreen(),
       ),
       GoRoute(
         path: '/maintenance',

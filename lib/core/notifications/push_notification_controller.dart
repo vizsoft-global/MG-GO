@@ -11,6 +11,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../firebase_options.dart';
+import '../permissions/permission_request_gate.dart';
 import 'fcm_background.dart';
 import 'local_notification_service.dart';
 import 'notification_event_repository.dart';
@@ -93,9 +94,9 @@ class PushNotificationController extends Notifier<bool> {
         final status = await Permission.notification.status;
         if (!status.isGranted) {
           try {
-            await Permission.notification.request();
+            await PermissionRequestGate.run(Permission.notification.request);
           } on PlatformException catch (e) {
-            // Duty readiness sheet may already be showing a permission dialog.
+            // Another dialog may already be running (login selfie, duty sheet).
             debugPrint('[notifications] notification permission skipped: $e');
           }
         }
