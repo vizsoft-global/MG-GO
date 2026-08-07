@@ -22,6 +22,8 @@ bool allowDeveloperModeBypass() {
 
 /// Returns true when Developer options are ON and the app must refuse to run.
 Future<bool> isDeveloperModeHardBlocked() async {
+  // Android-only native check; web/desktop must never hard-block or hang.
+  if (kIsWeb) return false;
   if (allowDeveloperModeBypass()) return false;
   return ScreenProtectorService.instance.isDeveloperModeEnabled();
 }
@@ -82,17 +84,23 @@ class _DeveloperModeGateState extends ConsumerState<DeveloperModeGate>
   }
 
   Future<void> _refresh() async {
-    final blocked = await isDeveloperModeHardBlocked();
-    if (blocked) {
-      try {
-        await SecurityEventRepository(Supabase.instance.client).logEvent(
-          type: SecurityEventType.developerMode,
-          severity: SecuritySeverity.blocked,
-          context: const {'source': 'developer_mode_gate'},
-        );
-      } catch (_) {
-        // Best-effort audit; block UI regardless.
+    bool blocked = false;
+    try {
+      blocked = await isDeveloperModeHardBlocked();
+      if (blocked) {
+        try {
+          await SecurityEventRepository(Supabase.instance.client).logEvent(
+            type: SecurityEventType.developerMode,
+            severity: SecuritySeverity.blocked,
+            context: const {'source': 'developer_mode_gate'},
+          );
+        } catch (_) {
+          // Best-effort audit; block UI regardless.
+        }
       }
+    } catch (_) {
+      // Fail open so a platform probe error cannot leave the gate spinning.
+      blocked = false;
     }
     if (!mounted) return;
     if (_blocked != blocked) {

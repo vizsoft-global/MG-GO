@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -49,6 +49,10 @@ class DutyLifecycleController with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     unawaited(_bootstrap());
   }
+
+  /// Foreground duty tracking is Android-only; web has no dart:io Platform.
+  static bool get _isAndroid =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
   final Ref _ref;
   StreamSubscription<AuthState>? _authSub;
@@ -144,7 +148,7 @@ class DutyLifecycleController with WidgetsBindingObserver {
   }
 
   Future<void> _onDutyStarted() async {
-    if (!Platform.isAndroid) return;
+    if (!_isAndroid) return;
 
     try {
       final session = Supabase.instance.client.auth.currentSession;
@@ -170,7 +174,7 @@ class DutyLifecycleController with WidgetsBindingObserver {
   }
 
   Future<void> _ensureServiceRunning() async {
-    if (!Platform.isAndroid) return;
+    if (!_isAndroid) return;
     if (!await DutyBackgroundService.isRunning) {
       await _onDutyStarted();
     }

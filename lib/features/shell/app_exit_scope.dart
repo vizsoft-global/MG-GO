@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -49,7 +48,9 @@ class AppExitScope extends ConsumerWidget {
         );
 
         if (shouldExit == true) {
-          if (Platform.isIOS) {
+          final isIos =
+              !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+          if (isIos) {
             await SystemNavigator.pop(animated: true);
           } else {
             await SystemNavigator.pop();

@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
 import '../../core/l10n/localizations_loader.dart';
@@ -7,6 +6,10 @@ import 'duty_task_handler.dart';
 
 class DutyBackgroundService {
   DutyBackgroundService._();
+
+  /// Foreground duty tracking is Android-only; web has no dart:io Platform.
+  static bool get _isAndroid =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
   static final _iosConfig = IOSNotificationOptions(
     showNotification: false,
@@ -24,7 +27,7 @@ class DutyBackgroundService {
   );
 
   static Future<void> init() async {
-    if (!Platform.isAndroid) return;
+    if (!_isAndroid) return;
 
     final l10n = await loadSavedLocalizations();
 
@@ -46,7 +49,7 @@ class DutyBackgroundService {
   }
 
   static Future<bool> start() async {
-    if (!Platform.isAndroid) return false;
+    if (!_isAndroid) return false;
 
     try {
       if (await FlutterForegroundTask.isRunningService) {
@@ -90,16 +93,16 @@ class DutyBackgroundService {
   }
 
   static Future<bool> stop() async {
-    if (!Platform.isAndroid) return true;
+    if (!_isAndroid) return true;
     final result = await FlutterForegroundTask.stopService();
     return result is ServiceRequestSuccess;
   }
 
   static Future<bool> get isRunning =>
-      Platform.isAndroid ? FlutterForegroundTask.isRunningService : Future.value(false);
+      _isAndroid ? FlutterForegroundTask.isRunningService : Future.value(false);
 
   static void notifyDeliverySubmitted() {
-    if (!Platform.isAndroid) return;
+    if (!_isAndroid) return;
     FlutterForegroundTask.sendDataToTask('delivery_submit');
   }
 }

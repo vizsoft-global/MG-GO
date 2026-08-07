@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import 'security_event_types.dart';
@@ -19,6 +19,12 @@ class ScreenProtectorService {
   static const EventChannel _eventsChannel = EventChannel(
     'dpd_userapp/security_events',
   );
+
+  /// Native security channels exist only on mobile; web has no dart:io Platform.
+  static bool get _isAndroid =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+  static bool get _isIOS =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
 
   StreamSubscription<dynamic>? _eventsSub;
   bool _enabled = false;
@@ -58,7 +64,7 @@ class ScreenProtectorService {
     _sensitiveSessionDepth += 1;
     _sensitiveCallback = onCaptureAttempt;
     _captureStateCallback = onCaptureStateChanged;
-    if (Platform.isIOS) {
+    if (_isIOS) {
       await _securityChannel.invokeMethod<void>(
         'setSensitiveProtectionEnabled',
         true,
@@ -76,7 +82,7 @@ class ScreenProtectorService {
     if (_sensitiveSessionDepth > 0) return;
     _sensitiveCallback = null;
     _captureStateCallback = null;
-    if (Platform.isIOS) {
+    if (_isIOS) {
       await _securityChannel.invokeMethod<void>(
         'setSensitiveProtectionEnabled',
         false,
@@ -104,7 +110,7 @@ class ScreenProtectorService {
   }
 
   Future<bool> isScreenCaptured() async {
-    if (!Platform.isIOS) return false;
+    if (!_isIOS) return false;
     final captured = await _securityChannel.invokeMethod<bool>(
       'isScreenCaptured',
     );
@@ -112,7 +118,7 @@ class ScreenProtectorService {
   }
 
   Future<bool> isDeveloperModeEnabled() async {
-    if (!Platform.isAndroid) return false;
+    if (!_isAndroid) return false;
     final enabled = await _securityChannel.invokeMethod<bool>(
       'isDeveloperModeEnabled',
     );
@@ -120,7 +126,7 @@ class ScreenProtectorService {
   }
 
   Future<bool> isMockLocationSettingEnabled() async {
-    if (!Platform.isAndroid) return false;
+    if (!_isAndroid) return false;
     final enabled = await _securityChannel.invokeMethod<bool>(
       'isMockLocationSettingEnabled',
     );
@@ -129,7 +135,7 @@ class ScreenProtectorService {
 
   /// Effective FLAG_SECURE: on when global/sensitive wants it, off during allow.
   Future<void> _syncSecureFlag() async {
-    if (!Platform.isAndroid) return;
+    if (!_isAndroid) return;
     final wantSecure =
         (_enabled || _sensitiveSessionDepth > 0) && _allowSessionDepth == 0;
     await _securityChannel.invokeMethod<void>('setSecureEnabled', wantSecure);

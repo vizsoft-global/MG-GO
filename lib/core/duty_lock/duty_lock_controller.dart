@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -38,10 +38,14 @@ class DutyLockController {
     unawaited(_bootstrap());
   }
 
+  /// Duty lock is Android-only; web has no dart:io Platform.
+  static bool get _isAndroid =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
   final Ref _ref;
 
   Future<void> _bootstrap() async {
-    if (!Platform.isAndroid) return;
+    if (!_isAndroid) return;
     final isOnline = _ref.read(homeDashboardProvider).value?.isOnlineOnDuty ?? false;
     if (isOnline) {
       await enable();
@@ -49,17 +53,17 @@ class DutyLockController {
   }
 
   Future<void> enable() async {
-    if (!Platform.isAndroid) return;
+    if (!_isAndroid) return;
     await DutyLockChannel.enableLock();
   }
 
   Future<void> disable() async {
-    if (!Platform.isAndroid) return;
+    if (!_isAndroid) return;
     await DutyLockChannel.disableLock();
   }
 
   void dispose() {
-    if (Platform.isAndroid) {
+    if (_isAndroid) {
       unawaited(DutyLockChannel.disableLock());
     }
   }

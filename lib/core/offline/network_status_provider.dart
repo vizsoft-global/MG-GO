@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
@@ -145,6 +146,13 @@ class NetworkStatusController extends Notifier<NetworkStatusState> {
     try {
       if (state.connectivity == ConnectivityResult.none) {
         _setOffline(true);
+        return;
+      }
+      // Browsers block cross-origin HEAD to google.com/generate_204 (CORS).
+      // Rely on connectivity_plus + RPC heartbeat instead of a false offline.
+      if (kIsWeb) {
+        state = state.copyWith(lastProbeAt: DateTime.now());
+        _setOffline(false);
         return;
       }
       try {
