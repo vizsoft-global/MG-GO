@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 class AppLifecycleActions {
@@ -10,7 +9,9 @@ class AppLifecycleActions {
   );
 
   static Future<bool> moveTaskToBack() async {
-    if (!Platform.isAndroid) return false;
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      return false;
+    }
     try {
       final moved = await _channel.invokeMethod<bool>('moveTaskToBack');
       return moved ?? false;
