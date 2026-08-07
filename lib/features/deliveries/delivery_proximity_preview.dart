@@ -55,7 +55,10 @@ class DeliveryProximityPreviewNotifier
     ref.listen(deliveryProximityContextProvider, (previous, next) {
       next.whenData((ctx) {
         if (previous?.value == ctx) return;
-        unawaited(reevaluate(ctx, showLoading: !state.initialized));
+        // stateOrNull: safe during rebuild races; plain `state` can throw.
+        unawaited(
+          reevaluate(ctx, showLoading: stateOrNull?.initialized != true),
+        );
       });
     });
 
@@ -76,7 +79,9 @@ class DeliveryProximityPreviewNotifier
     ref.onDispose(() => coordinator.removeListener(onCoordinatorTick));
 
     final ctx = ref.watch(deliveryProximityContextProvider).value;
-    if (ctx != null && !state.initialized) {
+    // Never read `state` before build() returns — Riverpod throws and poisons
+    // this provider (grey ErrorWidget on Add Delivery after cache-warm relaunch).
+    if (ctx != null && stateOrNull?.initialized != true) {
       Future.microtask(() => reevaluate(ctx, showLoading: false));
     }
 
