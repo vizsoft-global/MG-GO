@@ -4,32 +4,36 @@ globs: android/**,scripts/**,pubspec.yaml,docs/RELEASE_PROCESS.md,AGENTS.md
 alwaysApply: false
 ---
 
-# Android release signing (MDM + OTA)
+# Android release signing (MDM + Play)
 
 ## Non-negotiable
 
 - **Never** sign release APKs with the debug certificate. `android/app/build.gradle.kts` loads `android/key.properties` and fails release builds if it is missing.
 - **Keystore**: `~/musallam-release.jks`, alias `musallam_delivery`. Credentials in `android/key.properties` (gitignored). Template: `android/key.properties.example`.
 - **Same keystore forever** — certificate changes block in-place upgrades on driver phones.
+- **Do not change** `applicationId` (`com.musallam_delivery.app`).
 
 ## Before any release build or publish
 
 1. Confirm `android/key.properties` exists and `storeFile` points at a real `.jks`.
-2. Run `./scripts/check_release_keystore.sh` (called automatically by build/release scripts).
+2. Run `./scripts/check_release_keystore.sh` (called automatically by build scripts).
 3. After build, `./scripts/verify_apk_signing.sh` must pass — cert DN must be `CN=Musallam Delivery`, not `CN=Android Debug`.
 
 ## Build / publish commands
 
 ```bash
-./scripts/build_prod.sh                    # prod APK for MDM
-./scripts/release.sh production --flavor prod --notes "..."
+./scripts/build_play.sh                    # Play Store AAB
+./scripts/build_prod.sh                    # signed APK for local/MDM
 ```
+
+OTA / `scripts/release.sh` sideload publishing is removed (script exits).
 
 ## MDM rollout
 
-- Package: `kw.musallam.delivery`, label: **Musallam Delivery**
-- If phones had **debug-signed** builds, drivers must **uninstall first** before installing a release-signed APK.
+- Package: `com.musallam_delivery.app`, label: **Musallam Delivery**
+- Artifact: `build/app/outputs/flutter-apk/app-release.apk`
+- If phones had older **debug-signed** builds, drivers must **uninstall first** before installing a release-signed APK.
 
 ## Full checklist
 
-Read `docs/RELEASE_PROCESS.md` section 4 (signing) before shipping.
+Read `docs/RELEASE_PROCESS.md` section 3 (signing) before shipping.

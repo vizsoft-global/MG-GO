@@ -10,7 +10,6 @@ import 'features/duty/local_zone_monitor.dart';
 import 'features/home/remote_duty_monitor.dart';
 import 'core/branding/app_branding.dart';
 import 'core/branding/app_branding_provider.dart';
-import 'core/config/flavor_banner.dart';
 import 'core/l10n/locale_provider.dart';
 import 'core/offline/network_status_provider.dart';
 import 'core/offline/sync_controller.dart';
@@ -50,23 +49,21 @@ class DpdApp extends ConsumerWidget {
     final appTitle = settings?.title ?? AppBranding.defaults.title;
     final locale = ref.watch(localeProvider);
 
-    return FlavorBanner(
-      child: DeveloperModeGate(
-        child: MaterialApp.router(
-          title: appTitle,
-          debugShowCheckedModeBanner: false,
-          locale: locale,
-          supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          theme: AppTheme.light(locale),
-          routerConfig: router,
-          scaffoldMessengerKey: scaffoldMessengerKey,
-        ),
+    return DeveloperModeGate(
+      child: MaterialApp.router(
+        title: appTitle,
+        debugShowCheckedModeBanner: false,
+        locale: locale,
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        theme: AppTheme.light(locale),
+        routerConfig: router,
+        scaffoldMessengerKey: scaffoldMessengerKey,
       ),
     );
   }

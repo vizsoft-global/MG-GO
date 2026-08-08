@@ -113,7 +113,7 @@ Legacy `pending_deliveries` rows still sync via the deprecated two-step shim.
 
 ## Android updates
 
-Updates ship through **Google Play only**. In-app APK download / sideload OTA and the beta / internal channels were removed — there is a single `production` channel.
+Updates ship through **Google Play only**. In-app APK download / sideload OTA, Android flavors, and separate app-update channels were removed.
 
 - Build with `./scripts/build_play.sh` and upload the AAB to the Play Console.
 - Same release keystore for every build (Android rejects certificate changes). Setup: `docs/RELEASE_PROCESS.md`, keystore at `~/musallam-release.jks`, config in `android/key.properties`.

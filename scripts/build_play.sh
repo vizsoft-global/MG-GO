@@ -16,11 +16,10 @@ fi
 "$(dirname "$0")/check_release_keystore.sh"
 
 flutter build appbundle \
-  --flavor prod \
   --dart-define-from-file="$ENV_FILE" \
   --release \
   "$@"
 
-AAB="build/app/outputs/bundle/prodRelease/app-prod-release.aab"
+AAB="build/app/outputs/bundle/release/app-release.aab"
 echo "AAB: $AAB"
 echo "Sideload OTA is disabled in code. Install packages permission is not declared."

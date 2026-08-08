@@ -17,135 +17,144 @@ class ActiveDeliveryScreen extends ConsumerWidget {
     final l10n = context.l10n;
     final activeAsync = ref.watch(activeDeliveryProvider);
 
-    ref.listen(activeDeliveryProvider, (previous, next) {
-      if (next.isLoading || next.hasError) return;
-      if (next.asData?.value != null) return;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (context.mounted) context.go('/home');
-      });
-    });
-
     return Scaffold(
       backgroundColor: AppColors.pageBackground,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/home');
+            }
+          },
         ),
         title: Text(l10n.activeDeliveryBanner),
       ),
       body: activeAsync.when(
+        skipLoadingOnReload: true,
+        skipLoadingOnRefresh: true,
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, _) => Center(child: Text(l10n.somethingWentWrong)),
         data: (active) {
           if (active == null) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(child: Text(l10n.noActiveDelivery));
           }
 
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.orderId,
-                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        active.externalOrderId.isNotEmpty
-                            ? '#${active.externalOrderId}'
-                            : l10n.notProvided,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.tomatoOrange,
-                            ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        l10n.pickedUpAt,
-                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        formatDeliveryDateTime(active.pickupAt, l10n),
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                      ),
-                      if (active.partnerName != null &&
-                          active.partnerName!.trim().isNotEmpty) ...[
-                        const SizedBox(height: 16),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          l10n.partner,
+                          l10n.orderId,
                           style: Theme.of(context).textTheme.labelMedium
                               ?.copyWith(color: AppColors.textSecondary),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          active.partnerName!,
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                fontWeight: FontWeight.w600,
+                          active.externalOrderId.isNotEmpty
+                              ? '#${active.externalOrderId}'
+                              : l10n.notProvided,
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.tomatoOrange,
                               ),
                         ),
+                        const SizedBox(height: 16),
+                        Text(
+                          l10n.pickedUpAt,
+                          style: Theme.of(context).textTheme.labelMedium
+                              ?.copyWith(color: AppColors.textSecondary),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          formatDeliveryDateTime(active.pickupAt, l10n),
+                          style: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                        if (active.partnerName != null &&
+                            active.partnerName!.trim().isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          Text(
+                            l10n.partner,
+                            style: Theme.of(context).textTheme.labelMedium
+                                ?.copyWith(color: AppColors.textSecondary),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            active.partnerName!,
+                            style: Theme.of(context).textTheme.bodyLarge
+                                ?.copyWith(fontWeight: FontWeight.w600),
+                          ),
+                        ],
                       ],
+                    ),
+                  ),
+                ),
+              ),
+              SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: FilledButton(
+                          onPressed: () => openFinishDelivery(
+                            context,
+                            ref,
+                            deliveryId: active.id,
+                            outcome: FinishOutcome.delivered,
+                          ),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppColors.accentOrange,
+                            foregroundColor: AppColors.white,
+                          ),
+                          child: Text(
+                            l10n.markAsDelivered,
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: OutlinedButton(
+                          onPressed: () => openFinishDelivery(
+                            context,
+                            ref,
+                            deliveryId: active.id,
+                            outcome: FinishOutcome.cancelled,
+                          ),
+                          child: Text(
+                            l10n.cancelOrder,
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                const Spacer(),
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: FilledButton(
-                    onPressed: () => openFinishDelivery(
-                      context,
-                      ref,
-                      deliveryId: active.id,
-                      outcome: FinishOutcome.delivered,
-                    ),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.accentOrange,
-                      foregroundColor: AppColors.white,
-                    ),
-                    child: Text(
-                      l10n.markAsDelivered,
-                      style: const TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: OutlinedButton(
-                    onPressed: () => openFinishDelivery(
-                      context,
-                      ref,
-                      deliveryId: active.id,
-                      outcome: FinishOutcome.cancelled,
-                    ),
-                    child: Text(
-                      l10n.cancelOrder,
-                      style: const TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           );
         },
       ),

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -241,27 +242,20 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
           extensionWithDot: ext,
         );
       } else if (_proofFile != null) {
-        if (mounted) setState(() => _uploadingProof = true);
-        try {
-          final bytes = await _proofFile!.readAsBytes();
-          final name = _proofFile!.name.isNotEmpty
-              ? _proofFile!.name
-              : 'proof.jpg';
-          final mime = _proofMime ?? 'image/jpeg';
-          final upload = await ref
-              .read(driverUploadServiceProvider)
-              .uploadOrderProof(
-                bytes: bytes,
-                contentType: mime,
-                filename: name,
-                onProgress: (p) {
-                  if (mounted) setState(() => _uploadProgress = p);
-                },
-              );
-          objectKey = upload.objectKey;
-        } finally {
-          if (mounted) setState(() => _uploadingProof = false);
-        }
+        // Keep the proof row in its ready state; the confirm button spinner
+        // already indicates processing (avoid flashing "Uploading" again).
+        final bytes = await _proofFile!.readAsBytes();
+        final name =
+            _proofFile!.name.isNotEmpty ? _proofFile!.name : 'proof.jpg';
+        final mime = _proofMime ?? 'image/jpeg';
+        final upload = await ref
+            .read(driverUploadServiceProvider)
+            .uploadOrderProof(
+              bytes: bytes,
+              contentType: mime,
+              filename: name,
+            );
+        objectKey = upload.objectKey;
       }
 
       final created = await ref.read(deliveryServiceProvider).createPickup(
@@ -292,8 +286,9 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
         // Delivery saved; location audit is best-effort.
       }
 
+      // activeDeliveryProvider watches myDeliveriesProvider — invalidating both
+      // would refetch active delivery twice and flicker Active Delivery.
       ref.invalidate(myDeliveriesProvider);
-      ref.invalidate(activeDeliveryProvider);
       ref.invalidate(pendingDeliveriesProvider);
 
       if (!mounted) return;
@@ -301,6 +296,10 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
       if (queued) {
         context.go('/deliveries/success?queued=1&stage=pickup');
       } else {
+        // Resolve once before navigating so Active Delivery opens with data
+        // instead of flashing loading → content (or null → content).
+        await ref.read(activeDeliveryProvider.future);
+        if (!mounted) return;
         context.go('/deliveries/active');
       }
     } on DeliveryServiceException catch (e) {
@@ -383,25 +382,36 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text(
-                          l10n.orderId,
-                          style: Theme.of(context).textTheme.titleSmall
-                              ?.copyWith(fontWeight: FontWeight.w600),
+                        Text.rich(
+                          TextSpan(
+                            style: Theme.of(context).textTheme.titleSmall
+                                ?.copyWith(fontWeight: FontWeight.w600),
+                            children: [
+                              TextSpan(text: l10n.orderId),
+                              const TextSpan(
+                                text: ' *',
+                                style: TextStyle(color: AppColors.rejectedRed),
+                              ),
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 10),
                         TextField(
                           controller: _orderIdController,
                           enabled: !_submitting,
+                          keyboardType: TextInputType.number,
                           textInputAction: TextInputAction.next,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
                           decoration: InputDecoration(
                             hintText: l10n.orderIdHint,
-                            helperText: l10n.required,
                           ),
                           onChanged: (_) => setState(() {}),
                         ),
                         const SizedBox(height: 24),
                         Text(
-                          l10n.uploadPickupProof,
+                          l10n.uploadPickupProofOptional,
                           style: Theme.of(context).textTheme.titleSmall
                               ?.copyWith(fontWeight: FontWeight.w600),
                         ),

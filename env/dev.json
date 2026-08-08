@@ -1,0 +1,7 @@
+{
+  "FLAVOR": "dev",
+  "SUPABASE_URL": "https://ytfmsgckjatiserpgdbz.supabase.co",
+  "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0Zm1zZ2NramF0aXNlcnBnZGJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4NDk0NzcsImV4cCI6MjA5MzQyNTQ3N30.U3a-TyxhdQTuceeQFskp1ZfFmqRR75UnoGGFmxLU-h0",
+  "ADMIN_API_BASE_URL": "https://dpdadmin.vercel.app",
+  "SENTRY_ENVIRONMENT": "development"
+}

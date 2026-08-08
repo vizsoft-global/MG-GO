@@ -1,30 +1,31 @@
 # Release process (Musallam driver app)
 
-Distribution is **Google Play only**, on a **single release channel** (`production`).
-In-app APK / sideload OTA, `REQUEST_INSTALL_PACKAGES`, the admin **App Releases**
-uploader, and the beta / internal channels were all removed for Play Store policy.
+Distribution is **Google Play only**. In-app APK / sideload OTA, `REQUEST_INSTALL_PACKAGES`,
+admin **App Releases** APK push, Android product flavors, and separate app-update
+channels were removed. The app targets a **single production stack**.
 
 The app also **refuses to run while Android Developer options are enabled**.
 
 ---
 
-## 1. Environment separation — THE critical rules
+## 1. Production stack — THE critical rules
 
-There are two completely separate stacks. They do **not** share a database and
-do **not** share an R2 bucket. Never assume "shared".
+The driver app uses one live stack only:
 
-| Thing                 | Dev / testing                         | Production                                  |
-| --------------------- | ------------------------------------- | ------------------------------------------- |
-| Flavor                | `dev`                                 | `prod`                                      |
-| App env file          | `env/dev.json`                        | `env/prod.json`                             |
-| Supabase project      | `ytfmsgckjatiserpgdbz`                | `eoksxkdssptgyqyywdju`                      |
-| Admin API base URL    | `https://dpdadmin.vercel.app`         | `https://dpdadmin-prod.vercel.app`          |
-| R2 bucket             | `dpd-private`                         | `dpd-private-prod`                          |
-| Firebase project      | (dev)                                 | `musallam-delivery-prod`                    |
+| Thing | Production |
+| ----- | ---------- |
+| App env file | `env/prod.json` (build-time source of truth via dart-define) |
+| Supabase project | `eoksxkdssptgyqyywdju` |
+| Admin API base URL | `https://dpdadmin-prod.vercel.app` |
+| Admin repo | `../dpd adminpannel/dpdadmin-prod` |
+| R2 bucket | `dpd-private-prod` |
+| Firebase project | `musallam-delivery-prod` |
+| `applicationId` | `com.musallam_delivery.app` (**do not change**) |
 
-**Backend changes must be migrated to prod too.** RPCs the app depends on must
-exist in **production** Supabase, not just testing. If a feature "works on
-testing but not prod", check the function/migration exists in `eoksxkdssptgyqyywdju`.
+External testing projects may still exist; this app **must not** point at them.
+`Env.validateConfiguration()` fails fast if Supabase/Admin are not production.
+
+**Backend RPCs/migrations the app depends on must exist on production Supabase.**
 
 ---
 
@@ -36,14 +37,17 @@ Source of truth is `pubspec.yaml`: `version: <versionName>+<versionCode>`.
   whose code is <= one already uploaded.
 - **Bump `versionName` only when the user explicitly asks.**
 
+Same `applicationId` + same signing cert + increasing `versionCode` keeps
+existing Play/MDM installs upgradeable in place.
+
 ---
 
-## 3. Release signing — required
+## 3. Release signing — required (unchanged)
 
-All release builds must use the production keystore. Play upload signing depends
-on it, and Android rejects certificate changes over an existing install.
+All release builds must use the **existing** production keystore. Do not
+regenerate or replace it — certificate changes block in-place upgrades.
 
-### One-time setup
+### One-time setup (local machine; secrets stay out of git)
 
 | Item | Location |
 |------|----------|
@@ -60,6 +64,13 @@ cp android/key.properties.example android/key.properties
 `android/app/build.gradle.kts` loads `key.properties` for `buildTypes.release`.
 If the file is missing, **release builds fail** (no silent fallback to debug signing).
 
+Gates:
+
+```bash
+./scripts/check_release_keystore.sh
+./scripts/verify_apk_signing.sh build/app/outputs/flutter-apk/app-release.apk
+```
+
 ### Keystore rules
 
 - **Same keystore for every future build.**
@@ -70,38 +81,35 @@ If the file is missing, **release builds fail** (no silent fallback to debug sig
 ## 4. Publish to Google Play
 
 ```bash
-cd "/Users/wb/Desktop/MG-GO userapp"
-
 # 1. Bump versionCode in pubspec.yaml (e.g. 1.0.8+37 -> 1.0.8+38)
 # 2. Make sure env/prod.json exists (gitignored; copy from env/prod.json.example)
 
 ./scripts/build_play.sh
-# -> build/app/outputs/bundle/prodRelease/app-prod-release.aab
+# -> build/app/outputs/bundle/release/app-release.aab
 ```
 
-Upload the AAB in the Play Console (internal testing → closed → production track
-as appropriate). Drivers install and update **only** from Google Play.
+Upload the AAB in the Play Console. Drivers install and update **only** from Google Play.
 
-For local QA builds only:
+For local/MDM APK only (still production stack + production signing):
 
 ```bash
-./scripts/build_dev.sh    # dev flavor APK, testing stack
-./scripts/build_prod.sh   # prod flavor APK, internal testing only
+./scripts/build_prod.sh
+# -> build/app/outputs/flutter-apk/app-release.apk
 ```
 
 ---
 
 ## 5. Version adoption (admin)
 
-The app still reports its installed build so admin can see adoption:
+The app reports its installed build so admin can see adoption:
 
 ```
 GET {ADMIN_API_BASE_URL}/api/driver-app/active-release
       ?platform=android&versionCode=<n>&versionName=<x.y.z>
 ```
 
-That endpoint records `drivers.current_app_*` (always channel `production`) and
-**always returns `null`** — it never serves an APK.
+That endpoint records `drivers.current_app_*` and **always returns `null`** —
+it never serves an APK (OTA removed).
 
 ```sql
 SELECT employee_id, current_app_version_code, app_version_seen_at

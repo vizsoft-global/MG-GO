@@ -6,74 +6,70 @@ Flutter companion app for the DPD admin panel. Drivers sign in with **driver cod
 
 - Flutter 3.11+
 - Android device or emulator (Android-only app)
-- **Testing** Supabase `ytfmsgckjatiserpgdbz` + admin `dpdadmin.vercel.app`
 - **Production** Supabase `eoksxkdssptgyqyywdju` + admin `dpdadmin-prod.vercel.app`
-- Edge Function `driver-passcode-login` deployed on **both** Supabase projects (see below)
+- Edge Function `driver-passcode-login` deployed on production Supabase
+- Firebase project `musallam-delivery-prod`
 
 ## Configuration
 
-Android builds use a single flavor dimension `env` (`dev` / `prod`). Distribution is **Google Play only** — in-app APK / sideload OTA and `REQUEST_INSTALL_PACKAGES` were removed for Play Store policy. The app **refuses to run** when Android Developer options are enabled.
+Single production app — **no Android product flavors**, no separate update channels,
+no in-app APK / sideload OTA. Distribution is **Google Play only**. The app
+**refuses to run** when Android Developer options are enabled.
 
-| Flavor | Launcher label | Supabase | Admin API |
-|--------|----------------|----------|-----------|
-| **dev** | Musallam Dev | `ytfmsgckjatiserpgdbz` | `dpdadmin.vercel.app` |
-| **prod** | Musallam Delivery | `eoksxkdssptgyqyywdju` | `dpdadmin-prod.vercel.app` |
+| | Value |
+|--|--------|
+| Launcher label | Musallam Delivery |
+| `applicationId` | `com.musallam_delivery.app` |
+| Supabase | `eoksxkdssptgyqyywdju` |
+| Admin API | `https://dpdadmin-prod.vercel.app` |
+| Firebase | `musallam-delivery-prod` |
+| Env file | `env/prod.json` (dart-define source of truth) |
 
 ### First-time setup
 
 ```bash
-cp env/dev.json.example env/dev.json
-# Edit env/dev.json — set SUPABASE_ANON_KEY from testing Supabase dashboard
-
 cp env/prod.json.example env/prod.json
 # Edit env/prod.json — set prod SUPABASE_ANON_KEY (never commit prod.json)
+
+cp android/key.properties.example android/key.properties
+# Point storeFile at the existing production keystore; fill passwords
 ```
 
 ### Run (Android)
 
 ```bash
-./scripts/run_dev.sh          # dev flavor → testing stack
-./scripts/run_prod.sh         # prod flavor → production stack
+./scripts/run_prod.sh
+# or:
+flutter run --dart-define-from-file=env/prod.json
 ```
 
-Or manually:
+### Build
+
+Requires `android/key.properties` + existing production keystore (see
+[docs/RELEASE_PROCESS.md](docs/RELEASE_PROCESS.md) section 3).
 
 ```bash
-flutter run --flavor dev --dart-define-from-file=env/dev.json
-flutter run --flavor prod --dart-define-from-file=env/prod.json
-# Play Store AAB:
-./scripts/build_play.sh
+./scripts/build_play.sh       # Play Store AAB → bundle/release/app-release.aab
+./scripts/build_prod.sh       # signed APK for local/MDM only
 ```
-
-### Build release APK
-
-Requires `android/key.properties` + `~/musallam-release.jks` (see `android/key.properties.example` and [docs/RELEASE_PROCESS.md](docs/RELEASE_PROCESS.md) section 4).
-
-```bash
-./scripts/build_dev.sh        # local QA APK only
-./scripts/build_prod.sh       # internal test APK only — production ships via Play
-```
-
-Build scripts verify the APK is **not** debug-signed before finishing.
 
 ### Updates (Google Play only)
 
-In-app OTA / admin "App Releases" APK push is **removed**. Ship all driver app updates with `./scripts/build_play.sh` and the Play Console.
-
-See `env/*.json.example` for all dart-define keys. Real `env/dev.json` and `env/prod.json` are gitignored.
+In-app OTA / admin "App Releases" APK push is **removed**. Ship updates with
+`./scripts/build_play.sh` and the Play Console.
 
 Full auth/endpoint matrix: [docs/FLAVOR_INTEGRATION.md](docs/FLAVOR_INTEGRATION.md).
 
-### Verification (both flavors)
+### Verification
 
-| Check | dev | prod |
-|-------|-----|------|
-| Login | Test driver on testing Supabase | Prod driver on prod Supabase |
-| Launcher label | Musallam Dev | Musallam Delivery |
-| Distribution | Google Play only | Google Play only |
-| Dev banner | Orange DEV strip + Supabase host | Hidden |
+| Check | Expected |
+|-------|----------|
+| Login | Prod driver on prod Supabase |
+| Launcher label | Musallam Delivery |
+| Stack | prod Supabase + `dpdadmin-prod` + prod Firebase |
+| Distribution | Google Play only |
 
-Copy the anon key from admin `.env.local` (`NEXT_PUBLIC_SUPABASE_ANON_KEY`) for the matching environment.
+Copy the anon key from `dpdadmin-prod` `.env.local` (`NEXT_PUBLIC_SUPABASE_ANON_KEY`).
 
 ## Passcode login
 
@@ -101,18 +97,11 @@ Drivers start from **Home** or the **Deliveries** tab (**Pickup Order** when idl
 - **On-duty lock (Android):** overlay keeps the app foregrounded and blocks duty when GPS is off
 - **Developer options:** app hard-blocks when Developer options are ON (Play policy / anti-sideload)
 
-```bash
-flutter run \
-  --dart-define=ADMIN_API_BASE_URL=https://dpdadmin.vercel.app
-```
-
-Ensure Vercel `DRIVER_APP_ORIGINS` includes your Flutter web origin for uploads.
-
-Deploy the edge function from the admin repo:
+Deploy the edge function from the **prod** admin repo:
 
 ```bash
-cd "../dpd adminpannel/dpdadmin"
-supabase functions deploy driver-passcode-login --project-ref ytfmsgckjatiserpgdbz
+cd "../dpd adminpannel/dpdadmin-prod"
+supabase functions deploy driver-passcode-login --project-ref eoksxkdssptgyqyywdju
 ```
 
 ## Project structure
@@ -160,5 +149,5 @@ See handoff doc §9: `../dpd adminpannel/dpdadmin/docs/DRIVER_APP_HANDOFF.md`.
 
 ## Related
 
-- Admin panel: `../dpd adminpannel/dpdadmin`
+- Admin panel (prod): `../dpd adminpannel/dpdadmin-prod`
 - Handoff doc: `../dpd adminpannel/dpdadmin/docs/DRIVER_APP_HANDOFF.md`
