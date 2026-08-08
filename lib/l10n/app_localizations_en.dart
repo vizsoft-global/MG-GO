@@ -1524,6 +1524,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get uploadPickupProof => 'Upload Pickup Proof';
 
   @override
+  String get uploadPickupProofOptional => 'Upload Pickup Proof (optional)';
+
+  @override
   String get cancelOrder => 'Cancel Order';
 
   @override

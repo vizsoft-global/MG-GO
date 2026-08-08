@@ -2774,6 +2774,12 @@ abstract class AppLocalizations {
   /// **'Upload Pickup Proof'**
   String get uploadPickupProof;
 
+  /// No description provided for @uploadPickupProofOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload Pickup Proof (optional)'**
+  String get uploadPickupProofOptional;
+
   /// No description provided for @cancelOrder.
   ///
   /// In en, this message translates to:

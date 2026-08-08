@@ -1515,6 +1515,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get uploadPickupProof => 'رفع صورة الاستلام';
 
   @override
+  String get uploadPickupProofOptional => 'رفع صورة الاستلام (اختياري)';
+
+  @override
   String get cancelOrder => 'إلغاء الطلب';
 
   @override

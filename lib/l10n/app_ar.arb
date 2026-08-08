@@ -463,6 +463,7 @@
   "confirmPickup": "تأكيد الاستلام",
   "pickedUpAt": "تم الاستلام في",
   "uploadPickupProof": "رفع صورة الاستلام",
+  "uploadPickupProofOptional": "رفع صورة الاستلام (اختياري)",
   "cancelOrder": "إلغاء الطلب",
   "confirmCancel": "تأكيد الإلغاء",
   "cancelledAt": "تم الإلغاء في",

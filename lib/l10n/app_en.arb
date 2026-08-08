@@ -846,6 +846,7 @@
   "confirmPickup": "Confirm Pickup",
   "pickedUpAt": "Picked up at",
   "uploadPickupProof": "Upload Pickup Proof",
+  "uploadPickupProofOptional": "Upload Pickup Proof (optional)",
   "cancelOrder": "Cancel Order",
   "confirmCancel": "Confirm Cancel",
   "cancelledAt": "Cancelled at",

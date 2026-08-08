@@ -187,27 +187,20 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
           extensionWithDot: ext,
         );
       } else if (_proofFile != null) {
-        if (mounted) setState(() => _uploadingProof = true);
-        try {
-          final bytes = await _proofFile!.readAsBytes();
-          final name = _proofFile!.name.isNotEmpty
-              ? _proofFile!.name
-              : 'proof.jpg';
-          final mime = _proofMime ?? 'image/jpeg';
-          final upload = await ref
-              .read(driverUploadServiceProvider)
-              .uploadOrderProof(
-                bytes: bytes,
-                contentType: mime,
-                filename: name,
-                onProgress: (p) {
-                  if (mounted) setState(() => _uploadProgress = p);
-                },
-              );
-          objectKey = upload.objectKey;
-        } finally {
-          if (mounted) setState(() => _uploadingProof = false);
-        }
+        // Keep the proof row in its ready state; the confirm button spinner
+        // already indicates processing (avoid flashing "Uploading" again).
+        final bytes = await _proofFile!.readAsBytes();
+        final name =
+            _proofFile!.name.isNotEmpty ? _proofFile!.name : 'proof.jpg';
+        final mime = _proofMime ?? 'image/jpeg';
+        final upload = await ref
+            .read(driverUploadServiceProvider)
+            .uploadOrderProof(
+              bytes: bytes,
+              contentType: mime,
+              filename: name,
+            );
+        objectKey = upload.objectKey;
       }
 
       final cancelReason = _cancelReason == null
@@ -251,16 +244,19 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
 
       await setActiveDeliverySession(null);
 
-      ref.invalidate(myDeliveriesProvider);
-      ref.invalidate(activeDeliveryProvider);
-      ref.invalidate(pendingDeliveriesProvider);
-
       if (!mounted) return;
       final queued = created.status == 'queued';
       final stage = _outcome == FinishOutcome.delivered ? 'delivered' : 'cancelled';
+      // Navigate to success before invalidating active delivery. Invalidating
+      // first lets ActiveDeliveryScreen (still under the stack) race to /home.
       context.go(
         '/deliveries/success?queued=${queued ? '1' : '0'}&stage=$stage',
       );
+
+      // activeDeliveryProvider watches myDeliveriesProvider — invalidating both
+      // would refetch active delivery twice.
+      ref.invalidate(myDeliveriesProvider);
+      ref.invalidate(pendingDeliveriesProvider);
     } on DeliveryServiceException catch (e) {
       if (await handleDeliveryServiceExceptionActions(e, ref)) return;
       if (mounted) {
@@ -403,9 +399,7 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
                 child: FilledButton(
                   onPressed: _canSubmit ? _submit : null,
                   style: FilledButton.styleFrom(
-                    backgroundColor: isDelivered
-                        ? AppColors.accentOrange
-                        : AppColors.textSecondary,
+                    backgroundColor: AppColors.accentOrange,
                     foregroundColor: AppColors.white,
                   ),
                   child: _submitting
