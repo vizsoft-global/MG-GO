@@ -43,18 +43,8 @@ android {
         }
     }
 
-    // env → variants: dev, prod (Play Store only — no sideload OTA dimension)
-    flavorDimensions += listOf("env")
-    productFlavors {
-        create("dev") {
-            dimension = "env"
-            resValue("string", "app_name", "Musallam Dev")
-        }
-        create("prod") {
-            dimension = "env"
-            resValue("string", "app_name", "Musallam Delivery")
-        }
-    }
+    // applicationId and release signing must stay unchanged for Play/MDM upgrades.
+    // Launcher label: android/app/src/main/res/values/strings.xml (Musallam Delivery).
 
     signingConfigs {
         create("release") {

@@ -26,6 +26,8 @@ Mapping (Android):
 4. Ship via **Google Play only** (`./scripts/build_play.sh` → Play Console AAB).
    In-app APK OTA / admin `/app-releases` upload is permanently removed.
 5. The app hard-blocks when Android Developer options are enabled (release builds).
+6. **Do not change** `applicationId` (`com.musallam_delivery.app`) or regenerate
+   the production keystore — both are required for in-place Play/MDM upgrades.
 
 ### Quick reference for incrementing
 
@@ -39,56 +41,40 @@ Mapping (Android):
 
 Full procedure: **`docs/RELEASE_PROCESS.md`** (Play Store only — no sideload OTA).
 
-Dev/testing and production are **separate stacks** — separate Supabase DBs **and**
-separate R2 buckets. Never assume they share anything.
+The driver app targets **one production stack only**. There are no Android flavors
+and no separate app-update channels in this app.
 
-| Thing            | Dev/testing                   | Production                          |
-| ---------------- | ----------------------------- | ----------------------------------- |
-| Flavor / channel | `dev` / `internal`            | `prod` / `production`               |
-| App env file     | `env/dev.json`                | `env/prod.json`                     |
-| Supabase project | `ytfmsgckjatiserpgdbz`        | `eoksxkdssptgyqyywdju`              |
-| Admin API URL    | `dpdadmin.vercel.app`         | `dpdadmin-prod.vercel.app`          |
-| Admin repo       | `../dpd adminpannel/dpdadmin` | `../dpd adminpannel/dpdadmin-prod`  |
-| R2 bucket        | `dpd-private`                 | `dpd-private-prod`                  |
+| Thing            | Production                          |
+| ---------------- | ----------------------------------- |
+| App env file     | `env/prod.json`                     |
+| Supabase project | `eoksxkdssptgyqyywdju`              |
+| Admin API URL    | `dpdadmin-prod.vercel.app`          |
+| Admin repo       | `../dpd adminpannel/dpdadmin-prod`  |
+| R2 bucket        | `dpd-private-prod`                  |
+| Firebase         | `musallam-delivery-prod`            |
+| `applicationId`  | `com.musallam_delivery.app`         |
 
-1. **Publish prod through `dpdadmin-prod`, never `dpdadmin`.** `scripts/release.sh`
-   picks the dir by flavor (`prod` → `DPDADMIN_PROD_DIR` = `dpdadmin-prod`).
-   Publishing prod through the testing repo lands the release in the testing DB +
-   testing bucket and **drivers never get it** (this has already burned us once).
-2. **Standard prod release:**
-   `./scripts/release.sh production --flavor prod --required --notes "..."`
-   (bump `versionCode` first; ensure `env/prod.json` exists).
-3. **Never hand-insert an `app_releases` row without uploading the APK** to that
-   environment's bucket — the presigned URL will 404 at download time. Use the
-   publish CLI; it verifies the upload with `HeadObject`.
-4. The publish CLI reads `.env.local` in the admin repo. The three secrets
-   (`SUPABASE_SERVICE_ROLE_KEY`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`) are
-   **Sensitive in Vercel and come back empty from `vercel env pull`** — they must
-   be filled by hand from the Supabase/Cloudflare dashboards (or the user).
-5. **Backend changes (RPCs/migrations) must be applied to prod Supabase too**, not
-   just testing — otherwise a feature "works on testing but not prod".
-6. **Verify after publish** (against `eoksxkdssptgyqyywdju`): exactly one
-   `is_active = true` row at the new `version_code` on `channel='production'`.
-7. **Debugging "didn't get the update":** check `drivers.current_app_channel` /
-   `current_app_version_code` to see what the phone reports, confirm an active prod
-   release exists with a higher code, and confirm the APK object is in
-   `dpd-private-prod`. The update check only fires on launch/resume/sign-in.
+1. **Standard release:** bump `versionCode`, ensure `env/prod.json` exists, run
+   `./scripts/build_play.sh`, upload AAB in Play Console.
+2. **Backend changes (RPCs/migrations) must be applied to prod Supabase**
+   (`eoksxkdssptgyqyywdju`).
+3. OTA / `app_releases` sideload publishing is removed (`scripts/release.sh` exits).
+4. External testing infra may still exist; **do not wire the app to it**.
 
-## Android release signing — CRITICAL (MDM + OTA)
+## Android release signing — CRITICAL
 
-Full checklist: **`docs/RELEASE_PROCESS.md` section 4**. Cursor rule: `.cursor/rules/android-release-signing.mdc`.
+Full checklist: **`docs/RELEASE_PROCESS.md` section 3**. Cursor rule: `.cursor/rules/android-release-signing.mdc`.
 
 1. **Never ship debug-signed APKs.** Release builds load `android/key.properties` and
-   use `~/musallam-release.jks` (alias `musallam_delivery`). Gradle fails if
-   `key.properties` is missing. `scripts/verify_apk_signing.sh` rejects
-   `CN=Android Debug` before publish.
+   use the existing keystore (documented as `~/musallam-release.jks`, alias
+   `musallam_delivery`). Gradle fails if `key.properties` is missing.
+   `scripts/verify_apk_signing.sh` rejects `CN=Android Debug`.
 2. **First-time setup:** copy `android/key.properties.example` → `android/key.properties`,
    point `storeFile` at the keystore, fill passwords. Back up the `.jks` — losing it
    blocks all future updates on installed phones.
 3. **Same keystore forever.** Do not regenerate the keystore unless every driver phone
    will uninstall and reinstall (certificate change blocks in-place upgrades).
-4. **MDM (Motorola etc.):** upload the prod APK from
-   `build/app/outputs/flutter-apk/app-prod-release.apk`. If phones had older
-   **debug-signed** builds, drivers must uninstall first.
+4. **MDM:** upload `build/app/outputs/flutter-apk/app-release.apk` if needed.
+   If phones had older **debug-signed** builds, drivers must uninstall first.
 5. **Before any build/publish I generate:** run `./scripts/check_release_keystore.sh`,
    build, then confirm `verify_apk_signing.sh` passes (cert DN = `CN=Musallam Delivery`).

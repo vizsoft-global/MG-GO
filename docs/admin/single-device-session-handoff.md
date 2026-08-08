@@ -137,13 +137,13 @@ On success, the function also writes `device_id` into `auth.users.user_metadata.
 
 `dpdadmin/supabase/migrations/20260715100000_device_session_enforcement.sql`
 
-Apply to project **DPD** (`ytfmsgckjatiserpgdbz`) before shipping the new APK.
+Apply to production Supabase (`eoksxkdssptgyqyywdju`) before shipping the new APK.
 
 Deploy edge function:
 
 ```bash
-cd dpdadmin
-supabase functions deploy driver-passcode-login --project-ref ytfmsgckjatiserpgdbz
+cd "../dpd adminpannel/dpdadmin-prod"
+supabase functions deploy driver-passcode-login --project-ref eoksxkdssptgyqyywdju
 ```
 
 ## Admin panel implementation checklist

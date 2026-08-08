@@ -43,7 +43,6 @@ app.*.map.json
 # Local env (never commit secrets)
 .env
 .env.local
-env/dev.json
 env/prod.json
 lib/core/config/env.local.dart
 

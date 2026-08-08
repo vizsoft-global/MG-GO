@@ -11,11 +11,11 @@ Admin issues passcodes when a driver becomes **active** (`/drivers/[id]` → Pas
 
 ## Deploy Edge Function
 
-From `dpdadmin`:
+From **prod** admin (`dpdadmin-prod`):
 
 ```bash
-cd "../dpd adminpannel/dpdadmin"
-supabase functions deploy driver-passcode-login --project-ref ytfmsgckjatiserpgdbz
+cd "../dpd adminpannel/dpdadmin-prod"
+supabase functions deploy driver-passcode-login --project-ref eoksxkdssptgyqyywdju
 ```
 
 Requires `SUPABASE_SERVICE_ROLE_KEY` in the Supabase project (automatic on hosted).
@@ -23,10 +23,13 @@ Requires `SUPABASE_SERVICE_ROLE_KEY` in the Supabase project (automatic on hoste
 ## Run the app
 
 ```bash
-flutter run -d chrome
+./scripts/run_prod.sh
+# or:
+flutter run --dart-define-from-file=env/prod.json
 ```
 
-Uses `SUPABASE_URL` / `SUPABASE_ANON_KEY` from `lib/core/config/env.dart` defaults or `--dart-define`.
+Uses `SUPABASE_URL` / `SUPABASE_ANON_KEY` from `env/prod.json` (dart-define) with
+production defaults in `lib/core/config/env.dart`.
 
 ## Errors
 

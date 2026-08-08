@@ -13,10 +13,10 @@ fi
 "$(dirname "$0")/check_release_keystore.sh"
 
 flutter build apk \
-  --flavor prod \
   --dart-define-from-file="$ENV_FILE" \
   --release \
   "$@"
 
-APK="build/app/outputs/flutter-apk/app-prod-release.apk"
-echo "APK (internal test only — distribute via Play Store for production): $APK"
+APK="build/app/outputs/flutter-apk/app-release.apk"
+echo "APK (local/MDM test only — distribute via Play Store for production): $APK"
+"$(dirname "$0")/verify_apk_signing.sh" "$APK"

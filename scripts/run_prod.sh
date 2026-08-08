@@ -12,7 +12,6 @@ if [[ ! -f "$ENV_FILE" ]]; then
 fi
 
 flutter run \
-  --flavor prod \
   --dart-define-from-file="$ENV_FILE" \
   ${SENTRY_DSN:+--dart-define=SENTRY_DSN="$SENTRY_DSN"} \
   "$@"

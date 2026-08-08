@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fail if an APK is debug-signed. Release/MDM/OTA builds must use the production keystore.
+# Fail if an APK is debug-signed. Release/MDM builds must use the production keystore.
 set -euo pipefail
 
 APK="${1:?Usage: verify_apk_signing.sh <path-to.apk>}"

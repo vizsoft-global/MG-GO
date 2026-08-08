@@ -40,7 +40,6 @@ Future<void> configureSentryOptions(SentryFlutterOptions options) async {
 
   await Sentry.configureScope((scope) {
     scope.setTag('app', 'musallam-driver');
-    scope.setTag('flavor', Env.appFlavor.label);
   });
 }
 

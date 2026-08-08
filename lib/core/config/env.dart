@@ -1,40 +1,18 @@
 /// Supabase and backend config. Pass values via `--dart-define-from-file`
-/// (see `env/dev.json.example`, `scripts/run_dev.sh`).
-enum AppFlavor {
-  dev,
-  prod;
-
-  static AppFlavor fromString(String value) {
-    switch (value.trim().toLowerCase()) {
-      case 'prod':
-      case 'production':
-        return AppFlavor.prod;
-      default:
-        return AppFlavor.dev;
-    }
-  }
-
-  String get label => switch (this) {
-        AppFlavor.dev => 'dev',
-        AppFlavor.prod => 'prod',
-      };
-}
-
+/// (see `env/prod.json.example`, `scripts/run_prod.sh`).
+///
+/// Build-time source of truth for secrets/URLs is `env/prod.json`.
+/// Defaults below match the single production stack and fail closed if miswired.
 class Env {
-  static const flavor = String.fromEnvironment('FLAVOR', defaultValue: 'dev');
-
-  static AppFlavor get appFlavor => AppFlavor.fromString(flavor);
-
-  static bool get isDev => appFlavor == AppFlavor.dev;
-
-  static bool get isProd => appFlavor == AppFlavor.prod;
+  static const prodSupabaseRef = 'eoksxkdssptgyqyywdju';
+  static const prodAdminHost = 'dpdadmin-prod';
 
   static const supabaseUrl = String.fromEnvironment(
     'SUPABASE_URL',
     defaultValue: 'https://eoksxkdssptgyqyywdju.supabase.co',
   );
 
-  /// Testing anon key default for local dev builds only. Prod builds must pass
+  /// Prod anon key default for local runs. Release builds must pass
   /// `SUPABASE_ANON_KEY` via `env/prod.json`.
   static const supabaseAnonKey = String.fromEnvironment(
     'SUPABASE_ANON_KEY',
@@ -45,7 +23,7 @@ class Env {
   /// Admin panel origin for driver R2 presign/confirm (no R2 keys in app).
   static const adminApiBaseUrl = String.fromEnvironment(
     'ADMIN_API_BASE_URL',
-    defaultValue: 'https://dpdadmin.vercel.app',
+    defaultValue: 'https://dpdadmin-prod.vercel.app',
   );
 
   static String get passcodeLoginUrl =>
@@ -54,88 +32,67 @@ class Env {
   static bool get isConfigured =>
       supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
 
-  /// Fail fast when a flavor build points at the wrong backend stack.
+  /// Fail fast if a build points at a non-production backend stack.
   static void validateConfiguration() {
-    // Live DPD Control Tower stack (must match admin panel / migrations):
-    // eoksxkdssptgyqyywdju + dpdadmin-prod.vercel.app
-    const prodSupabaseRef = 'eoksxkdssptgyqyywdju';
-    if (isProd) {
-      if (!supabaseUrl.contains(prodSupabaseRef)) {
-        throw StateError(
-          'Prod flavor must use live Supabase ($prodSupabaseRef). '
-          'Got: $supabaseUrl',
-        );
-      }
-      if (!adminApiBaseUrl.contains('dpdadmin-prod')) {
-        throw StateError(
-          'Prod flavor must use prod admin (dpdadmin-prod.vercel.app). '
-          'Got: $adminApiBaseUrl',
-        );
-      }
-    } else {
-      // Dev builds may share the live DB for local QA, but must never ship
-      // a "DEV" flavor with silent defaults to a different stack by accident.
-      if (adminApiBaseUrl.contains('dpdadmin-prod') && !supabaseUrl.contains(prodSupabaseRef)) {
-        throw StateError(
-          'Dev flavor admin/prod mismatch. Got admin=$adminApiBaseUrl supabase=$supabaseUrl',
-        );
-      }
+    if (!supabaseUrl.contains(prodSupabaseRef)) {
+      throw StateError(
+        'App must use live Supabase ($prodSupabaseRef). Got: $supabaseUrl',
+      );
+    }
+    if (!adminApiBaseUrl.contains(prodAdminHost)) {
+      throw StateError(
+        'App must use prod admin (dpdadmin-prod.vercel.app). '
+        'Got: $adminApiBaseUrl',
+      );
     }
 
     assert(() {
-      if (isProd) {
-        assert(supabaseUrl.contains(prodSupabaseRef));
-        assert(adminApiBaseUrl.contains('dpdadmin-prod'));
-      }
+      assert(supabaseUrl.contains(prodSupabaseRef));
+      assert(adminApiBaseUrl.contains(prodAdminHost));
       return true;
     }());
   }
 
-  static String _firebaseOverride(String key, String devDefault, String prodDefault) {
+  static String _firebaseValue(String key, String prodDefault) {
     final override = String.fromEnvironment(key, defaultValue: '');
     if (override.isNotEmpty) return override;
-    return isProd ? prodDefault : devDefault;
+    return prodDefault;
   }
 
-  /// Firebase client SDK overrides (optional — defaults match flavor Firebase).
-  static String get firebaseProjectId => _firebaseOverride(
+  /// Firebase client SDK overrides (optional — defaults match prod Firebase).
+  static String get firebaseProjectId => _firebaseValue(
         'FIREBASE_PROJECT_ID',
-        'musallam-delivery-kw',
         'musallam-delivery-prod',
       );
 
-  static String get firebaseApiKey => _firebaseOverride(
+  static String get firebaseApiKey => _firebaseValue(
         'FIREBASE_API_KEY',
-        'AIzaSyBeDbxBUMG6tOv6cwYVwvtWJ6dQPWsodH4',
         'AIzaSyDm2hMXvmb7f-OdmPZUPfTzOpm4hGMhh1A',
       );
 
-  static String get firebaseAppId => _firebaseOverride(
+  static String get firebaseAppId => _firebaseValue(
         'FIREBASE_APP_ID',
-        '1:942102607123:android:59cc3922258a64d28096e6',
         '1:579224507592:android:eaa8cdda265bc0914981fd',
       );
 
-  static String get firebaseMessagingSenderId => _firebaseOverride(
+  static String get firebaseMessagingSenderId => _firebaseValue(
         'FIREBASE_MESSAGING_SENDER_ID',
-        '942102607123',
         '579224507592',
       );
 
-  static String get firebaseStorageBucket => _firebaseOverride(
+  static String get firebaseStorageBucket => _firebaseValue(
         'FIREBASE_STORAGE_BUCKET',
-        'musallam-delivery-kw.firebasestorage.app',
         'musallam-delivery-prod.firebasestorage.app',
       );
 
   static const firebaseIosAppId = String.fromEnvironment(
     'FIREBASE_IOS_APP_ID',
-    defaultValue: '1:942102607123:ios:442ef4381a6480f48096e6',
+    defaultValue: '1:579224507592:ios:unused',
   );
 
   static const firebaseIosBundleId = String.fromEnvironment(
     'FIREBASE_IOS_BUNDLE_ID',
-    defaultValue: 'kw.musallam.delivery',
+    defaultValue: 'com.musallam_delivery.app',
   );
 
   static bool get isFirebaseConfigured => firebaseProjectId.isNotEmpty;
@@ -150,12 +107,12 @@ class Env {
   static String get sentryEnvironment {
     const override = String.fromEnvironment('SENTRY_ENVIRONMENT');
     if (override.isNotEmpty) return override;
-    return isProd ? 'production' : 'development';
+    return 'production';
   }
 
   static bool get isSentryConfigured => sentryDsn.isNotEmpty;
 
-  /// Short host label for dev-only diagnostics (e.g. flavor banner).
+  /// Short host label for diagnostics.
   static String get supabaseHost {
     final uri = Uri.tryParse(supabaseUrl);
     return uri?.host ?? supabaseUrl;
