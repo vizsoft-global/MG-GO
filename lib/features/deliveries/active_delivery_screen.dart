@@ -9,6 +9,12 @@ import 'active_delivery_provider.dart';
 import 'add_delivery_flow.dart';
 import 'delivery_models.dart';
 
+/// Content pad (16) + system nav / home-indicator inset.
+/// Prefer [MediaQuery.viewPadding] over [MediaQuery.padding] for edge-to-edge.
+double activeDeliveryFooterBottomInset(BuildContext context) {
+  return 16 + MediaQuery.viewPaddingOf(context).bottom;
+}
+
 class ActiveDeliveryScreen extends ConsumerWidget {
   const ActiveDeliveryScreen({super.key});
 
@@ -106,52 +112,57 @@ class ActiveDeliveryScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      SizedBox(
-                        width: double.infinity,
-                        height: 52,
-                        child: FilledButton(
-                          onPressed: () => openFinishDelivery(
-                            context,
-                            ref,
-                            deliveryId: active.id,
-                            outcome: FinishOutcome.delivered,
-                          ),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.accentOrange,
-                            foregroundColor: AppColors.white,
-                          ),
-                          child: Text(
-                            l10n.markAsDelivered,
-                            style: const TextStyle(fontWeight: FontWeight.w700),
-                          ),
+              // Use viewPadding (not only SafeArea padding): on Android
+              // edge-to-edge, MediaQuery.padding.bottom can be 0 while the
+              // system nav / gesture bar still covers the footer.
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  0,
+                  16,
+                  activeDeliveryFooterBottomInset(context),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: FilledButton(
+                        onPressed: () => openFinishDelivery(
+                          context,
+                          ref,
+                          deliveryId: active.id,
+                          outcome: FinishOutcome.delivered,
+                        ),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.accentOrange,
+                          foregroundColor: AppColors.white,
+                        ),
+                        child: Text(
+                          l10n.markAsDelivered,
+                          style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 52,
-                        child: OutlinedButton(
-                          onPressed: () => openFinishDelivery(
-                            context,
-                            ref,
-                            deliveryId: active.id,
-                            outcome: FinishOutcome.cancelled,
-                          ),
-                          child: Text(
-                            l10n.cancelOrder,
-                            style: const TextStyle(fontWeight: FontWeight.w700),
-                          ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: OutlinedButton(
+                        onPressed: () => openFinishDelivery(
+                          context,
+                          ref,
+                          deliveryId: active.id,
+                          outcome: FinishOutcome.cancelled,
+                        ),
+                        child: Text(
+                          l10n.cancelOrder,
+                          style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],
