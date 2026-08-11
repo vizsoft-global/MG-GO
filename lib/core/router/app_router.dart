@@ -37,6 +37,7 @@ import '../../features/support/esign_documents_screen.dart';
 import '../../features/support/esign_viewer_screen.dart';
 import '../../features/support/my_requests_screen.dart';
 import '../../features/support/my_visits_screen.dart';
+import '../../features/support/request_acknowledged_screen.dart';
 import '../../features/support/request_detail_screen.dart';
 import '../../features/support/request_form_screen.dart';
 import '../../features/support/request_submitted_screen.dart';
@@ -261,12 +262,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: '/profile/support/requests/:id/acknowledged',
+        name: 'support_request_acknowledged',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => RequestAcknowledgedScreen(
+          requestCode: state.uri.queryParameters['code'] ?? '',
+          requestType: state.uri.queryParameters['type'] ?? '',
+        ),
+      ),
+      GoRoute(
         path: '/profile/support/submitted',
         name: 'support_request_submitted',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => RequestSubmittedScreen(
           requestCode: state.uri.queryParameters['code'] ?? 'RCM',
           requestId: state.uri.queryParameters['id'],
+          requestType: state.uri.queryParameters['type'],
         ),
       ),
       GoRoute(

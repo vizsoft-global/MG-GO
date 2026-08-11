@@ -1,17 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
+import 'support_providers.dart';
 
-class SupportHubScreen extends StatelessWidget {
+/// RSup/01 — Help & Support hub. YOUR ACTIVITY leads with **My requests** +
+/// **My visits** (Figma 2-tile grid); the action-required badge on My
+/// requests substitutes for a separate hub tile (Figma shows the banner on
+/// RSup/09 instead). Documents to sign / Appointments keep a compact
+/// secondary entry point since their screens still need hub discoverability.
+class SupportHubScreen extends ConsumerWidget {
   const SupportHubScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final requestsAsync = ref.watch(myRequestsProvider);
+    final actionCount = requestsAsync.asData?.value
+            .where((r) => r.status == 'needs_clarification' || r.awaitingDriverAck)
+            .length ??
+        0;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Help & Support'),
+        title: const Text('Help & support'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.canPop() ? context.pop() : context.go('/profile'),
@@ -20,14 +33,7 @@ class SupportHubScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: [
-          Text(
-            'RAISE A REQUEST',
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: AppColors.textSecondary,
-              letterSpacing: 0.6,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          _SectionLabel(theme, 'RAISE A REQUEST'),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -40,23 +46,23 @@ class SupportHubScreen extends StatelessWidget {
               ),
               _Tile(
                 icon: Icons.medical_services_outlined,
-                label: 'Sick / Accident',
+                label: 'Sick / Accident Leave',
                 onTap: () =>
                     context.push('/profile/support/requests/new?type=sick_leave'),
               ),
               _Tile(
                 icon: Icons.inventory_2_outlined,
-                label: 'Asset',
+                label: 'Asset request',
                 onTap: () => context.push('/profile/support/requests/new?type=asset'),
               ),
               _Tile(
                 icon: Icons.local_gas_station_outlined,
-                label: 'Fuel',
+                label: 'Fuel reimbursement',
                 onTap: () => context.push('/profile/support/requests/new?type=fuel'),
               ),
               _Tile(
                 icon: Icons.description_outlined,
-                label: 'Document',
+                label: 'Document request',
                 onTap: () =>
                     context.push('/profile/support/requests/new?type=document'),
               ),
@@ -68,78 +74,99 @@ class SupportHubScreen extends StatelessWidget {
               ),
               _Tile(
                 icon: Icons.payments_outlined,
-                label: 'Salary justification',
+                label: 'Salary Justification',
                 onTap: () => context
                     .push('/profile/support/requests/new?type=salary_justification'),
               ),
               _Tile(
                 icon: Icons.account_balance_wallet_outlined,
-                label: 'Loan / Advance',
+                label: 'Loan Request',
                 onTap: () => context.push('/profile/support/requests/new?type=loan'),
               ),
             ],
           ),
           const SizedBox(height: 20),
-          Text(
-            'VISIT US',
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: AppColors.textSecondary,
-              letterSpacing: 0.6,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          _SectionLabel(theme, 'VISIT US'),
           const SizedBox(height: 8),
           _WideTile(
             icon: Icons.apartment_outlined,
-            title: 'Schedule a visit',
-            subtitle: 'Book a slot at Central Tower',
+            title: 'Schedule a visit to Central Tower',
+            subtitle: 'Book a time slot for in-person help',
             onTap: () => context.push('/profile/support/visits/book'),
           ),
           const SizedBox(height: 20),
-          Text(
-            'YOUR ACTIVITY',
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: AppColors.textSecondary,
-              letterSpacing: 0.6,
-              fontWeight: FontWeight.w700,
+          _SectionLabel(theme, 'YOUR ACTIVITY'),
+          const SizedBox(height: 8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _ActivityTile(
+                  icon: Icons.list_alt_rounded,
+                  title: 'My requests',
+                  subtitle: 'Track your requests',
+                  badgeCount: actionCount,
+                  onTap: () => context.push('/profile/support/requests'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _ActivityTile(
+                  icon: Icons.confirmation_num_outlined,
+                  title: 'My visits',
+                  subtitle: 'Booked tower visits',
+                  onTap: () => context.push('/profile/support/visits'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Material(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(14),
+            child: Column(
+              children: [
+                _MoreRow(
+                  icon: Icons.priority_high_rounded,
+                  label: 'Action required',
+                  badgeCount: actionCount,
+                  onTap: () => context.push('/profile/support/action-required'),
+                ),
+                const Divider(height: 1, indent: 52),
+                _MoreRow(
+                  icon: Icons.draw_outlined,
+                  label: 'Documents to sign',
+                  onTap: () => context.push('/profile/support/sign'),
+                ),
+                const Divider(height: 1, indent: 52),
+                _MoreRow(
+                  icon: Icons.event_note_outlined,
+                  label: 'Appointments',
+                  onTap: () => context.push('/profile/support/appointments'),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 8),
-          _WideTile(
-            icon: Icons.priority_high_rounded,
-            title: 'Action required',
-            subtitle: 'Clarifications and acknowledgements',
-            onTap: () => context.push('/profile/support/action-required'),
-          ),
-          const SizedBox(height: 8),
-          _WideTile(
-            icon: Icons.inbox_outlined,
-            title: 'My requests',
-            subtitle: 'Track RCM status and clarifications',
-            onTap: () => context.push('/profile/support/requests'),
-          ),
-          const SizedBox(height: 8),
-          _WideTile(
-            icon: Icons.draw_outlined,
-            title: 'Documents to sign',
-            subtitle: 'Pending signatures and signed proofs',
-            onTap: () => context.push('/profile/support/sign'),
-          ),
-          const SizedBox(height: 8),
-          _WideTile(
-            icon: Icons.event_note_outlined,
-            title: 'Appointments',
-            subtitle: 'Scheduled meetings at Central Tower',
-            onTap: () => context.push('/profile/support/appointments'),
-          ),
-          const SizedBox(height: 8),
-          _WideTile(
-            icon: Icons.qr_code_2_outlined,
-            title: 'My visits',
-            subtitle: 'Upcoming and past bookings',
-            onTap: () => context.push('/profile/support/visits'),
-          ),
         ],
+      ),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.theme, this.text);
+
+  final ThemeData theme;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: theme.textTheme.labelSmall?.copyWith(
+        color: AppColors.textSecondary,
+        letterSpacing: 0.6,
+        fontWeight: FontWeight.w700,
       ),
     );
   }
@@ -161,22 +188,34 @@ class _Tile extends StatelessWidget {
     return SizedBox(
       width: (MediaQuery.sizeOf(context).width - 40) / 2,
       child: Material(
-        color: Theme.of(context).cardColor,
+        color: AppColors.primaryBlue,
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.all(14),
-            child: Column(
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(icon, color: AppColors.primaryBlue),
-                const SizedBox(height: 10),
-                Text(
-                  label,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(icon, color: AppColors.white),
+                      const SizedBox(height: 10),
+                      Text(
+                        label,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.white,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+                const Icon(Icons.chevron_right_rounded,
+                    color: AppColors.white, size: 18),
               ],
             ),
           ),
@@ -212,6 +251,123 @@ class _WideTile extends StatelessWidget {
         subtitle: Text(subtitle),
         trailing: const Icon(Icons.chevron_right),
       ),
+    );
+  }
+}
+
+/// Figma RSup/01 2-col "Your activity" tile: icon chip + chevron badge.
+class _ActivityTile extends StatelessWidget {
+  const _ActivityTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+    this.badgeCount = 0,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+  final int badgeCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Theme.of(context).cardColor,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.pageBackground,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Icon(icon, size: 18, color: AppColors.textSecondary),
+                  ),
+                  const Spacer(),
+                  if (badgeCount > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.underReviewAmber,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        '$badgeCount',
+                        style: const TextStyle(
+                          color: AppColors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    )
+                  else
+                    const Icon(Icons.chevron_right_rounded,
+                        size: 18, color: AppColors.textSecondary),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MoreRow extends StatelessWidget {
+  const _MoreRow({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.badgeCount = 0,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final int badgeCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      dense: true,
+      onTap: onTap,
+      leading: Icon(icon, color: AppColors.primaryBlue, size: 20),
+      title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+      trailing: badgeCount > 0
+          ? Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.underReviewAmber.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                '$badgeCount new',
+                style: const TextStyle(
+                  color: AppColors.underReviewAmber,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            )
+          : const Icon(Icons.chevron_right_rounded, size: 18),
     );
   }
 }

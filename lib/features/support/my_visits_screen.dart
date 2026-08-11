@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../core/theme/app_colors.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
 
+const _monthsShort = [
+  'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+  'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC',
+];
+
+/// RSup/16 — My visits: date-badge cards with QR + reschedule/cancel.
 class MyVisitsScreen extends ConsumerStatefulWidget {
   const MyVisitsScreen({super.key});
 
@@ -32,6 +39,11 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen>
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(myVisitsProvider);
+    final deptsAsync = ref.watch(visitDepartmentsProvider);
+    final deptLabels = <String, String>{
+      for (final d in deptsAsync.asData?.value ?? const <VisitDepartment>[])
+        d.key: d.labelEn,
+    };
     return Scaffold(
       appBar: AppBar(
         title: const Text('My visits'),
@@ -75,6 +87,7 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen>
                 _VisitList(
                   rows: upcoming,
                   empty: 'No upcoming visits',
+                  deptLabels: deptLabels,
                   onCancel: (id) async {
                     try {
                       await ref.read(supportServiceProvider).cancelVisit(id);
@@ -127,6 +140,7 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen>
                 _VisitList(
                   rows: past,
                   empty: 'No past visits',
+                  deptLabels: deptLabels,
                 ),
               ],
             );
@@ -141,12 +155,14 @@ class _VisitList extends StatelessWidget {
   const _VisitList({
     required this.rows,
     required this.empty,
+    required this.deptLabels,
     this.onCancel,
     this.onReschedule,
   });
 
   final List<VisitBooking> rows;
   final String empty;
+  final Map<String, String> deptLabels;
   final Future<void> Function(String id)? onCancel;
   final Future<void> Function(VisitBooking row)? onReschedule;
 
@@ -163,71 +179,155 @@ class _VisitList extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: rows.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      separatorBuilder: (_, _) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
         final row = rows[index];
-        return Card(
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+        final date = DateTime.tryParse(row.scheduledDate);
+        final canManage = onCancel != null && row.status == 'confirmed';
+        return Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (date != null) _DateBadge(date: date),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          deptLabels[row.departmentKey] ?? row.departmentKey,
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        Text(
+                          'Central Tower',
+                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _StatusPill(status: row.status),
+                ],
+              ),
+              if (canManage) ...[
+                const Divider(height: 20),
                 Row(
                   children: [
-                    Expanded(
-                      child: Text(
-                        row.bookingCode,
-                        style: const TextStyle(fontWeight: FontWeight.w800),
+                    if (onReschedule != null)
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => onReschedule!(row),
+                          child: const Text('Reschedule'),
+                        ),
                       ),
-                    ),
-                    Text(
-                      row.status,
-                      style: TextStyle(
-                        color: row.status == 'confirmed'
-                            ? AppColors.progressGreen
-                            : AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
+                    if (onReschedule != null) const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.rejectedRed,
+                          side: BorderSide(color: AppColors.rejectedRed.withValues(alpha: 0.4)),
+                          backgroundColor: AppColors.rejectedRed.withValues(alpha: 0.06),
+                        ),
+                        onPressed: () => onCancel!(row.id),
+                        child: const Text('Cancel'),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
-                Text(row.departmentKey),
-                Text(row.scheduledDate),
-                const SizedBox(height: 4),
-                const Text(
-                  'Scan at reception · Central Tower',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                if (onCancel != null && row.status == 'confirmed') ...[
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      if (onReschedule != null)
-                        TextButton(
-                          onPressed: () => onReschedule!(row),
-                          child: const Text('Reschedule'),
-                        ),
-                      TextButton(
-                        onPressed: () => onCancel!(row.id),
-                        child: const Text(
-                          'Cancel',
-                          style: TextStyle(color: AppColors.rejectedRed),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
               ],
-            ),
+              if (row.status == 'confirmed') ...[
+                const Divider(height: 20),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    QrImageView(data: row.bookingCode.isEmpty ? 'visit' : row.bookingCode, size: 48),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Scan at reception',
+                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                          Text(
+                            'Booking token ${row.bookingCode}. Keep this ready on arrival.',
+                            style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
           ),
         );
       },
+    );
+  }
+}
+
+class _DateBadge extends StatelessWidget {
+  const _DateBadge({required this.date});
+
+  final DateTime date;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 44,
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.primaryBlue.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        children: [
+          Text(_monthsShort[date.month - 1],
+              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.primaryBlue)),
+          Text('${date.day}',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.primaryBlue)),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({required this.status});
+
+  final String status;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = switch (status) {
+      'confirmed' => AppColors.progressGreen,
+      'checked_in' => AppColors.primaryBlue,
+      'completed' => AppColors.progressGreen,
+      'cancelled' => AppColors.rejectedRed,
+      _ => AppColors.textSecondary,
+    };
+    final label = switch (status) {
+      'confirmed' => 'Confirmed',
+      'checked_in' => 'Checked in',
+      'completed' => 'Completed',
+      'cancelled' => 'Cancelled',
+      _ => status,
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(label, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w700)),
     );
   }
 }

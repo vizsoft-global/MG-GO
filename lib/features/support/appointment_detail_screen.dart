@@ -6,6 +6,12 @@ import '../../core/theme/app_colors.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
 
+/// RSup/28 — appointment request detail. Figma shows Accept / Reject /
+/// Propose time actions, but `appointment_status` only has
+/// scheduled/completed/cancelled (no driver-response columns) and there is
+/// no `driver_respond_appointment` RPC. BLOCKED: buttons are shown for
+/// layout parity but degrade honestly instead of faking success — see QA
+/// notes for RSup/28–29.
 class AppointmentDetailScreen extends ConsumerWidget {
   const AppointmentDetailScreen({required this.appointmentId, super.key});
 
@@ -21,12 +27,22 @@ class AppointmentDetailScreen extends ConsumerWidget {
     return '$y-$m-$d · $h:$min';
   }
 
+  void _notSupported(BuildContext context, String action) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          '$action isn\'t available yet — coming soon. This appointment is already on your schedule.',
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(driverAppointmentsProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Appointment'),
+        title: const Text('Appointment request'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
@@ -47,71 +63,134 @@ class AppointmentDetailScreen extends ConsumerWidget {
             return const Center(child: Text('Appointment not found'));
           }
           final appointment = row;
-          return ListView(
-            padding: const EdgeInsets.all(16),
+          final needsResponse = appointment.status == 'scheduled';
+          return Column(
             children: [
-              if (appointment.isUpcoming) ...[
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: AppColors.progressGreen.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppColors.progressGreen.withValues(alpha: 0.35),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
+                            child: const Icon(Icons.event_note_outlined, color: AppColors.primaryBlue),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(appointment.title,
+                                    style: const TextStyle(fontWeight: FontWeight.w800)),
+                                Text('${appointment.appointmentCode} · From admin',
+                                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                              ],
+                            ),
+                          ),
+                          if (needsResponse)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppColors.underReviewAmber.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: const Text('Action required',
+                                  style: TextStyle(
+                                      color: AppColors.underReviewAmber,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700)),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Details', style: TextStyle(fontWeight: FontWeight.w700)),
+                          const SizedBox(height: 8),
+                          if (appointment.reason != null && appointment.reason!.trim().isNotEmpty)
+                            _DetailRow(label: 'Purpose', value: appointment.reason!),
+                          _DetailRow(label: 'Proposed date/time', value: _formatDateTime(appointment.scheduledFor)),
+                          _DetailRow(label: 'Location', value: appointment.locationLabel ?? 'Central Tower'),
+                          if (appointment.adminNote != null && appointment.adminNote!.trim().isNotEmpty)
+                            _DetailRow(label: 'Note', value: appointment.adminNote!),
+                          _DetailRow(label: 'Status', value: appointment.status),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.cardBlue,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        needsResponse
+                            ? 'This is already on your schedule. Accept / reject / propose actions are coming soon.'
+                            : 'Your appointment is scheduled. Arrive on time at reception.',
+                        style: const TextStyle(color: AppColors.primaryBlue, fontSize: 12.5),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (needsResponse)
+                SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppColors.rejectedRed,
+                                  side: BorderSide(color: AppColors.rejectedRed.withValues(alpha: 0.4)),
+                                ),
+                                onPressed: () => _notSupported(context, 'Reject'),
+                                child: const Text('Reject'),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () => _notSupported(context, 'Propose time'),
+                                child: const Text('Propose time'),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton(
+                            style: FilledButton.styleFrom(backgroundColor: AppColors.blueberry),
+                            onPressed: () => _notSupported(context, 'Accept appointment'),
+                            child: const Text('Accept appointment'),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.check_circle, color: AppColors.progressGreen),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Your appointment is scheduled. Arrive on time at reception.',
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
-                const SizedBox(height: 16),
-              ],
-              Text(
-                appointment.appointmentCode,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                appointment.title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 12),
-              _DetailRow(
-                label: 'When',
-                value: _formatDateTime(appointment.scheduledFor),
-              ),
-              _DetailRow(
-                label: 'Location',
-                value: appointment.locationLabel ?? 'Central Tower',
-              ),
-              _DetailRow(label: 'Status', value: appointment.status),
-              if (appointment.reason != null &&
-                  appointment.reason!.trim().isNotEmpty)
-                _DetailRow(label: 'Reason', value: appointment.reason!),
-              if (appointment.adminNote != null &&
-                  appointment.adminNote!.trim().isNotEmpty)
-                _DetailRow(label: 'Note', value: appointment.adminNote!),
-              const SizedBox(height: 24),
-              OutlinedButton(
-                onPressed: () => context.go('/profile/support/appointments'),
-                child: const Text('Back to appointments'),
-              ),
             ],
           );
         },
@@ -134,7 +213,7 @@ class _DetailRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 88,
+            width: 120,
             child: Text(
               label,
               style: const TextStyle(color: AppColors.textSecondary),

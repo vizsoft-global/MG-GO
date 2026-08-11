@@ -96,13 +96,14 @@ class SupportService {
   Future<void> submitClarification({
     required String requestId,
     required String answer,
+    List<String> attachmentKeys = const [],
   }) async {
     final result = await _client.rpc(
       'driver_submit_clarification',
       params: {
         'p_request_id': requestId,
         'p_answer': answer,
-        'p_attachment_keys': <String>[],
+        'p_attachment_keys': attachmentKeys,
       },
     );
     final map = _asMap(result);
@@ -148,6 +149,18 @@ class SupportService {
     return (rows as List)
         .map((e) => ComplaintCategory.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList();
+  }
+
+  Future<VisitBranch?> getCentralTowerBranch() async {
+    final rows = await _client
+        .from('visit_branches')
+        .select('key, name, address')
+        .eq('is_active', true)
+        .order('sort_order')
+        .limit(1);
+    final list = rows as List;
+    if (list.isEmpty) return null;
+    return VisitBranch.fromJson(Map<String, dynamic>.from(list.first as Map));
   }
 
   Future<List<VisitDepartment>> listVisitDepartments() async {

@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class SupportRequestSummary {
   const SupportRequestSummary({
     required this.id,
@@ -8,6 +10,7 @@ class SupportRequestSummary {
     this.createdAt,
     this.amountKwd,
     this.awaitingDriverAck = false,
+    this.acknowledged = false,
   });
 
   final String id;
@@ -18,6 +21,7 @@ class SupportRequestSummary {
   final DateTime? createdAt;
   final double? amountKwd;
   final bool awaitingDriverAck;
+  final bool acknowledged;
 
   factory SupportRequestSummary.fromJson(Map<String, dynamic> json) {
     final payload = json['payload'];
@@ -38,6 +42,7 @@ class SupportRequestSummary {
           : null,
       awaitingDriverAck: payloadMap['awaiting_driver_ack'] == true &&
           payloadMap['driver_ack_at'] == null,
+      acknowledged: payloadMap['driver_ack_at'] != null,
     );
   }
 }
@@ -81,6 +86,50 @@ class VisitDepartment {
     return VisitDepartment(
       key: json['key'] as String,
       labelEn: json['label_en'] as String? ?? json['key'] as String,
+    );
+  }
+}
+
+/// Figma RSup/12 department icon per `kVisitDepartmentKeys`.
+IconData visitDepartmentIcon(String key) {
+  switch (key) {
+    case 'hr_services':
+      return Icons.people_alt_outlined;
+    case 'legal':
+      return Icons.balance_outlined;
+    case 'operations_services':
+      return Icons.settings_suggest_outlined;
+    case 'exit_process':
+      return Icons.logout_outlined;
+    case 'documents_signatures':
+      return Icons.draw_outlined;
+    case 'training':
+      return Icons.menu_book_outlined;
+    case 'meeting_request':
+      return Icons.groups_outlined;
+    default:
+      return Icons.more_horiz_rounded;
+  }
+}
+
+/// Figma RSup/11 Central Tower info card. `name`/`address` are DB-backed
+/// (`visit_branches`); hours/contact have no schema column yet — static text.
+class VisitBranch {
+  const VisitBranch({
+    required this.key,
+    required this.name,
+    this.address,
+  });
+
+  final String key;
+  final String name;
+  final String? address;
+
+  factory VisitBranch.fromJson(Map<String, dynamic> json) {
+    return VisitBranch(
+      key: json['key'] as String,
+      name: json['name'] as String? ?? 'Central Tower',
+      address: json['address'] as String?,
     );
   }
 }
@@ -176,6 +225,46 @@ class ComplaintCategory {
     );
   }
 }
+
+/// Figma RSup/09 status pill: label + semantic color key.
+/// `acknowledged` = driver already tapped Acknowledge on an ack-gated request
+/// (payload.driver_ack_at set); `awaitingAck` = still needs the driver's ack.
+class RequestStatusView {
+  const RequestStatusView(this.label, this.colorKey);
+
+  final String label;
+  final RequestStatusColor colorKey;
+
+  static RequestStatusView of({
+    required String status,
+    required bool awaitingAck,
+    required bool acknowledged,
+  }) {
+    if (awaitingAck) return const RequestStatusView('Awaiting ack', RequestStatusColor.amber);
+    if (acknowledged) return const RequestStatusView('Acknowledged', RequestStatusColor.green);
+    switch (status) {
+      case 'pending':
+      case 'submitted':
+        return const RequestStatusView('Pending', RequestStatusColor.amber);
+      case 'in_review':
+        return const RequestStatusView('In progress', RequestStatusColor.blue);
+      case 'approved':
+        return const RequestStatusView('Approved', RequestStatusColor.green);
+      case 'needs_clarification':
+        return const RequestStatusView('Action required', RequestStatusColor.amber);
+      case 'rejected':
+        return const RequestStatusView('Rejected', RequestStatusColor.red);
+      case 'solved':
+        return const RequestStatusView('Solved', RequestStatusColor.green);
+      case 'overdue':
+        return const RequestStatusView('Overdue', RequestStatusColor.red);
+      default:
+        return RequestStatusView(status, RequestStatusColor.grey);
+    }
+  }
+}
+
+enum RequestStatusColor { amber, blue, green, red, grey }
 
 /// Figma User App RSup/12 primary departments (exclude admin-only catalog aliases).
 const kVisitDepartmentKeys = <String>{

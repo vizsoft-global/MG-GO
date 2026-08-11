@@ -275,7 +275,7 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
       ref.invalidate(myRequestsProvider);
       if (!mounted) return;
       context.pushReplacement(
-        '/profile/support/submitted?code=${Uri.encodeComponent(created.requestCode)}&id=${created.id}',
+        '/profile/support/submitted?code=${Uri.encodeComponent(created.requestCode)}&id=${created.id}&type=${widget.type}',
       );
     } catch (e) {
       if (mounted) {
@@ -613,7 +613,7 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
           ],
           if (widget.type == 'salary_justification') ...[
             _DateRow(
-              label: 'Salary month',
+              label: 'Salary Month',
               value: _salaryMonth,
               onTap: () =>
                   _pickDate(onPicked: (d) => setState(() => _salaryMonth = d)),

@@ -23,6 +23,11 @@ final myVisitsProvider =
   return ref.read(supportServiceProvider).listMyVisits();
 });
 
+final centralTowerBranchProvider =
+    FutureProvider.autoDispose<VisitBranch?>((ref) {
+  return ref.read(supportServiceProvider).getCentralTowerBranch();
+});
+
 final visitDepartmentsProvider =
     FutureProvider.autoDispose<List<VisitDepartment>>((ref) {
   return ref.read(supportServiceProvider).listVisitDepartments();
