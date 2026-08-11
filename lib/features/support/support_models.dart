@@ -112,24 +112,30 @@ IconData visitDepartmentIcon(String key) {
   }
 }
 
-/// Figma RSup/11 Central Tower info card. `name`/`address` are DB-backed
-/// (`visit_branches`); hours/contact have no schema column yet — static text.
+/// Figma RSup/11 Central Tower info card — `name`/`address`/`working_hours`/
+/// `contact_phone` are all DB-backed (`visit_branches`).
 class VisitBranch {
   const VisitBranch({
     required this.key,
     required this.name,
     this.address,
+    this.workingHours,
+    this.contactPhone,
   });
 
   final String key;
   final String name;
   final String? address;
+  final String? workingHours;
+  final String? contactPhone;
 
   factory VisitBranch.fromJson(Map<String, dynamic> json) {
     return VisitBranch(
       key: json['key'] as String,
       name: json['name'] as String? ?? 'Central Tower',
       address: json['address'] as String?,
+      workingHours: json['working_hours'] as String?,
+      contactPhone: json['contact_phone'] as String?,
     );
   }
 }
@@ -405,6 +411,11 @@ class DriverAppointment {
     this.reason,
     this.locationLabel,
     this.adminNote,
+    this.requestedByName,
+    this.requestedByRole,
+    this.proposedFor,
+    this.driverResponseNote,
+    this.respondedAt,
     this.createdAt,
   });
 
@@ -416,10 +427,22 @@ class DriverAppointment {
   final String? reason;
   final String? locationLabel;
   final String? adminNote;
+  final String? requestedByName;
+  final String? requestedByRole;
+  final DateTime? proposedFor;
+  final String? driverResponseNote;
+  final DateTime? respondedAt;
   final DateTime? createdAt;
 
+  /// RSup/28 — awaiting Accept / Reject / Propose from the driver.
+  bool get needsResponse => status == 'pending';
+
   bool get isUpcoming =>
-      status == 'scheduled' || status == 'confirmed' || status == 'checked_in';
+      status == 'pending' ||
+      status == 'accepted' ||
+      status == 'scheduled' ||
+      status == 'confirmed' ||
+      status == 'checked_in';
 
   factory DriverAppointment.fromJson(Map<String, dynamic> json) {
     return DriverAppointment(
@@ -431,6 +454,11 @@ class DriverAppointment {
       reason: json['reason'] as String?,
       locationLabel: json['location_label'] as String?,
       adminNote: json['admin_note'] as String?,
+      requestedByName: json['requested_by_name'] as String?,
+      requestedByRole: json['requested_by_role'] as String?,
+      proposedFor: _parseDateTime(json['proposed_for']),
+      driverResponseNote: json['driver_response_note'] as String?,
+      respondedAt: _parseDateTime(json['responded_at']),
       createdAt: _parseDateTime(json['created_at']),
     );
   }

@@ -14,13 +14,15 @@ import 'support_providers.dart';
 /// driver-ack flows. The "Request details" card renders the real structured
 /// fields captured at submission per type (`amount_kwd`, `tenure_months`,
 /// `reason`, `asset_type`, `asset_current_status`, `leave_subtype`,
-/// `start_date`/`end_date`, attachments) — see `_typedDetailRows`. Admin
-/// decisions only carry `decision_reason` + `decided_at` (no distinct
-/// `approved_amount` / `penalty_amount` override columns exist and
-/// `admin_decide_request` never populates one), so the "Admin response"
-/// card still cannot show a revised amount different from what the driver
-/// requested — that half of RSup/10b–10c stays a documented DB/product gap
-/// (BLOCKED), not invented. See QA notes for RSup/10b–10d.
+/// `start_date`/`end_date`, attachments) — see `_typedDetailRows`. The
+/// "Admin response" card (`_AdminResponseCard`) reads structured
+/// approved-amount/installments/penalty/approver fields from the decided
+/// step's `meta` jsonb when present (see `_lastDecisionMeta`) and falls
+/// back to the driver's own submitted values otherwise — `admin_decide_request`
+/// accepts a `p_meta` argument but the admin UI sends `{}` today, so a
+/// revised amount that truly differs from the request stays a documented
+/// DB/product gap (BLOCKED) until the admin side starts populating it, not
+/// invented. See QA notes for RSup/10b–10d.
 class RequestDetailScreen extends ConsumerStatefulWidget {
   const RequestDetailScreen({required this.requestId, super.key});
 
@@ -165,6 +167,13 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
         }
         final keys = await _uploadFiles();
         note = 'Documents uploaded: ${keys.join(', ')}${note != null ? ' · $note' : ''}';
+      } else if (note == null) {
+        // No custom note typed — record what the driver is actually
+        // acknowledging (real submitted/decided terms) so the ack carries
+        // more than a bare timestamp. `driver_acknowledge_request` only
+        // accepts free text, so this is stored via `p_note` → payload.
+        final detail = ref.read(requestDetailProvider(widget.requestId)).asData?.value;
+        if (detail != null) note = _ackTermsSummary(detail);
       }
       await ref.read(supportServiceProvider).acknowledgeRequest(
             requestId: widget.requestId,
@@ -402,12 +411,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
   static List<(String, String)> _typedDetailRows(SupportRequestDetail detail) {
     final payload = detail.payload;
     final req = detail.request;
-
-    String money(dynamic v) {
-      if (v == null) return '—';
-      final n = v is num ? v : num.tryParse('$v');
-      return n == null ? '—' : 'KWD ${n.toStringAsFixed(3)}';
-    }
+    final money = _money;
 
     String firstAttachmentName() => detail.attachments.isNotEmpty
         ? (detail.attachments.first['file_name']?.toString().trim().isNotEmpty ==
@@ -480,6 +484,57 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
         return rows;
       default:
         return const [];
+    }
+  }
+
+  static String _money(dynamic v) {
+    if (v == null) return '—';
+    final n = v is num ? v : num.tryParse('$v');
+    return n == null ? '—' : 'KWD ${n.toStringAsFixed(3)}';
+  }
+
+  /// The admin's decision `meta` (jsonb) on the last completed approval
+  /// step — `admin_decide_request` already threads a `p_meta` argument onto
+  /// `request_approval_steps.meta`, it's just never populated by the admin
+  /// UI today. Reading it here means revised terms (approved amount,
+  /// penalty, who approved) show up the moment the admin side starts
+  /// sending them, without inventing placeholder values in the meantime.
+  static Map<String, dynamic> _lastDecisionMeta(SupportRequestDetail detail) {
+    for (final step in detail.steps.reversed) {
+      if (step['status'] == 'completed') {
+        final meta = step['meta'];
+        if (meta is Map && meta.isNotEmpty) {
+          return Map<String, dynamic>.from(meta);
+        }
+      }
+    }
+    return const {};
+  }
+
+  /// Builds a plain-language summary of the real terms being acknowledged,
+  /// for storage via `driver_acknowledge_request`'s `p_note` (the only ack
+  /// field the RPC accepts) when the driver doesn't type their own note.
+  static String? _ackTermsSummary(SupportRequestDetail detail) {
+    final req = detail.request;
+    final payload = detail.payload;
+    final meta = _lastDecisionMeta(detail);
+    switch (detail.requestType) {
+      case 'loan':
+        final amount = meta['approved_amount'] ?? req['amount_kwd'];
+        if (amount == null) return null;
+        final tenure = meta['approved_tenure_months'] ?? payload['tenure_months'];
+        return tenure != null
+            ? 'Acknowledged loan terms: ${_money(amount)} over $tenure months.'
+            : 'Acknowledged loan terms: ${_money(amount)}.';
+      case 'asset':
+        final assetType = payload['asset_type']?.toString();
+        final penalty = meta['penalty_amount'];
+        if (assetType == null || assetType.isEmpty) return null;
+        return penalty != null
+            ? 'Acknowledged asset terms: $assetType — penalty ${_money(penalty)}.'
+            : 'Acknowledged asset request: $assetType.';
+      default:
+        return null;
     }
   }
 
@@ -657,18 +712,67 @@ class _ClarificationReasonCard extends StatelessWidget {
   }
 }
 
-/// Renders the real structured fields captured at submission again (as
-/// Figma's admin-response card repeats them) plus whatever the admin
-/// actually stored (`decision_reason`). There is no distinct
-/// `approved_amount` / `penalty_amount` override column and
-/// `admin_decide_request` never populates one, so a revised amount that
-/// differs from the driver's original request cannot be shown — that part
-/// of RSup/10b (loan) / RSup/10c (asset penalty) stays a documented DB gap
-/// (BLOCKED), not invented copy.
+/// Figma RSup/10b–10d "Admin response" card: structured Requested/Approved
+/// amount, installments, penalty and "Approved/Requested by" rows.
+/// `admin_decide_request` already threads a `p_meta` jsonb argument onto
+/// `request_approval_steps.meta` — [_rows] reads it via
+/// `_lastDecisionMeta` so revised terms render the moment the admin side
+/// populates it. The admin UI sends `p_meta: {}` today, so in practice
+/// these rows fall back to the real submitted values (no distinct
+/// override exists yet) rather than inventing a revised figure — that
+/// half of RSup/10b (loan)/10c (asset penalty/approver) stays a
+/// documented gap (BLOCKED), not fake copy.
 class _AdminResponseCard extends StatelessWidget {
   const _AdminResponseCard({required this.detail});
 
   final SupportRequestDetail detail;
+
+  static List<(String, String)> _rows(
+    SupportRequestDetail detail,
+    Map<String, dynamic> meta,
+  ) {
+    final req = detail.request;
+    final payload = detail.payload;
+    final money = _RequestDetailScreenState._money;
+    switch (detail.requestType) {
+      case 'loan':
+        final rows = <(String, String)>[
+          ('Requested amount', money(req['amount_kwd'])),
+        ];
+        if (meta['approved_amount'] != null) {
+          rows.add(('Approved amount', money(meta['approved_amount'])));
+        }
+        final tenure = meta['approved_tenure_months'] ?? payload['tenure_months'];
+        if (tenure != null) {
+          rows.add(('Installments', '$tenure months'));
+        }
+        return rows;
+      case 'asset':
+        final rows = <(String, String)>[];
+        final assetType = payload['asset_type']?.toString();
+        if (assetType != null && assetType.isNotEmpty) {
+          rows.add(('Asset', assetType));
+        }
+        if (meta['penalty_amount'] != null) {
+          rows.add(('Penalty amount', money(meta['penalty_amount'])));
+        }
+        if (meta['approved_by'] != null) {
+          rows.add(('Approved by', '${meta['approved_by']}'));
+        }
+        return rows;
+      case 'sick_leave':
+        final rows = <(String, String)>[
+          ('Status', 'On hold'),
+          ('Required', meta['required_document']?.toString() ?? 'Medical certificate'),
+        ];
+        if (meta['requested_by'] != null) {
+          rows.add(('Requested by', '${meta['requested_by']}'));
+        }
+        return rows;
+      default:
+        return const [];
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -678,14 +782,14 @@ class _AdminResponseCard extends StatelessWidget {
         : detail.requestType == 'sick_leave'
             ? AppColors.primaryBlue
             : AppColors.underReviewAmber;
-    final allRows = _RequestDetailScreenState._typedDetailRows(detail);
-    final rows = switch (detail.requestType) {
-      'loan' => allRows,
-      'asset' => allRows.where((r) => r.$1 == 'Asset').toList(),
-      _ => const <(String, String)>[],
-    };
+    final meta = _RequestDetailScreenState._lastDecisionMeta(detail);
+    final rows = _rows(detail, meta);
+    final amountChanged = detail.requestType == 'loan' &&
+        meta['approved_amount'] != null &&
+        '${meta['approved_amount']}' != '${detail.request['amount_kwd']}';
     final badge = switch (detail.requestType) {
-      'asset' => 'Review required',
+      'loan' => amountChanged ? 'Amount changed' : 'Update',
+      'asset' => meta['penalty_amount'] != null ? 'Penalty applied' : 'Review required',
       'sick_leave' => 'Documents required',
       _ => 'Update',
     };
@@ -714,10 +818,6 @@ class _AdminResponseCard extends StatelessWidget {
           if (rows.isNotEmpty) ...[
             const SizedBox(height: 8),
             ...rows.map((r) => _RequestDetailScreenState._kv(r.$1, r.$2)),
-          ],
-          if (detail.requestType == 'sick_leave') ...[
-            _RequestDetailScreenState._kv('Status', 'Awaiting your document'),
-            _RequestDetailScreenState._kv('Required', 'Medical certificate'),
           ],
           const SizedBox(height: 8),
           Container(

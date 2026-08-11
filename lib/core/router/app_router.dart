@@ -29,6 +29,7 @@ import '../../features/profile/profile_screen.dart';
 import '../../features/shell/app_exit_scope.dart';
 import '../../features/shell/main_shell.dart';
 import '../../features/support/action_required_screen.dart';
+import '../../features/support/appointment_confirmed_screen.dart';
 import '../../features/support/appointment_detail_screen.dart';
 import '../../features/support/appointments_inbox_screen.dart';
 import '../../features/support/esign_capture_screen.dart';
@@ -329,6 +330,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'support_appointments',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const AppointmentsInboxScreen(),
+      ),
+      GoRoute(
+        path: '/profile/support/appointments/:id/confirmed',
+        name: 'support_appointment_confirmed',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => AppointmentConfirmedScreen(
+          appointmentId: state.pathParameters['id']!,
+        ),
       ),
       GoRoute(
         path: '/profile/support/appointments/:id',

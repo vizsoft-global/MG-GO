@@ -154,7 +154,7 @@ class SupportService {
   Future<VisitBranch?> getCentralTowerBranch() async {
     final rows = await _client
         .from('visit_branches')
-        .select('key, name, address')
+        .select('key, name, address, working_hours, contact_phone')
         .eq('is_active', true)
         .order('sort_order')
         .limit(1);
@@ -341,5 +341,27 @@ class SupportService {
     return _asMapList(map['rows'])
         .map(DriverAppointment.fromJson)
         .toList();
+  }
+
+  Future<String> respondAppointment({
+    required String appointmentId,
+    required String action,
+    DateTime? proposedFor,
+    String? note,
+  }) async {
+    final result = await _client.rpc(
+      'driver_respond_appointment',
+      params: {
+        'p_id': appointmentId,
+        'p_action': action,
+        'p_proposed_for': proposedFor?.toIso8601String(),
+        'p_note': note,
+      },
+    );
+    final map = _asMap(result);
+    if (map['ok'] == false) {
+      throw Exception(map['error']?.toString() ?? 'respond_failed');
+    }
+    return map['status']?.toString() ?? '';
   }
 }

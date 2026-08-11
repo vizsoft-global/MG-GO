@@ -14,8 +14,8 @@ const _months = [
 const _weekdays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 /// RSup/11–15 — Tower intro → visit reason → date & slot → review → ticket.
-/// `Working hours` / `Contact` on the intro card have no schema column yet
-/// (`visit_branches` only stores name/address) — shown as static copy.
+/// The intro card's Location/Working hours/Contact are all DB-backed via
+/// `visit_branches` (`address`/`working_hours`/`contact_phone`).
 class VisitBookingFlowScreen extends ConsumerStatefulWidget {
   const VisitBookingFlowScreen({this.initialNote, super.key});
 
@@ -184,12 +184,10 @@ class _VisitBookingFlowScreenState
   }
 }
 
-/// RSup/11 — Central Tower intro. `visit_branches.name`/`address` are
-/// DB-backed (seeded "Musallam Central Tower" to match Figma copy); there is
-/// no schema column for working hours or a contact number, so those two
-/// rows render Figma's static example text as display-only copy — documented
-/// assumption, not a fake data source. Revisit if/when the client wants
-/// these editable per branch.
+/// RSup/11 — Central Tower intro. `visit_branches.name`/`address`/
+/// `working_hours`/`contact_phone` are all DB-backed; the literals below are
+/// only a fallback for the (unexpected) case the branch row hasn't loaded
+/// yet or a future branch leaves a field blank.
 class _TowerIntroStep extends ConsumerWidget {
   const _TowerIntroStep({required this.onBook});
 
@@ -245,16 +243,16 @@ class _TowerIntroStep extends ConsumerWidget {
                 value: branch?.address ?? 'Sheikh Zayed Rd, Kuwait',
               ),
               const SizedBox(height: 10),
-              const _InfoRow(
+              _InfoRow(
                 icon: Icons.access_time_rounded,
                 label: 'Working hours',
-                value: 'Sun – Thu, 9:00 AM – 5:00 PM',
+                value: branch?.workingHours ?? 'Sun - Thu, 9:00 AM - 5:00 PM',
               ),
               const SizedBox(height: 10),
-              const _InfoRow(
+              _InfoRow(
                 icon: Icons.call_outlined,
                 label: 'Contact',
-                value: '+971 4 XXX XXXX',
+                value: branch?.contactPhone ?? '+971 4 XXX XXXX',
               ),
               const SizedBox(height: 16),
               SizedBox(
