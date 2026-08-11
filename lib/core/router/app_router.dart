@@ -28,6 +28,7 @@ import '../../features/notifications/notifications_inbox_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/shell/app_exit_scope.dart';
 import '../../features/shell/main_shell.dart';
+import '../../features/support/action_required_screen.dart';
 import '../../features/support/my_requests_screen.dart';
 import '../../features/support/my_visits_screen.dart';
 import '../../features/support/request_detail_screen.dart';
@@ -223,6 +224,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'support',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const SupportHubScreen(),
+      ),
+      GoRoute(
+        path: '/profile/support/action-required',
+        name: 'support_action_required',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const ActionRequiredScreen(),
       ),
       GoRoute(
         path: '/profile/support/requests',

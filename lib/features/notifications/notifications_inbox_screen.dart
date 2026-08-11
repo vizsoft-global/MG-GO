@@ -136,6 +136,8 @@ class NotificationsInboxScreen extends ConsumerWidget {
       actionParams: item.actionParams,
       category: item.category,
       priority: item.priority,
+      deepLink: item.actionParams['deep_link']?.toString() ??
+          item.actionParams['deepLink']?.toString(),
       title: item.title,
       body: item.body,
       screenshotRestricted: item.screenshotRestricted,

@@ -125,6 +125,18 @@ class NotificationRouter {
       case 'notifications':
       case 'inbox':
         return '/notifications';
+      case 'support':
+      case 'help_support':
+        return '/profile/support';
+      case 'support_action_required':
+      case 'action_required':
+        return '/profile/support/action-required';
+      case 'support_visits':
+      case 'my_visits':
+        return '/profile/support/visits';
+      case 'support_requests':
+      case 'my_requests':
+        return '/profile/support/requests';
       default:
         return '/home';
     }
@@ -169,6 +181,15 @@ class NotificationRouter {
           return '/deliveries?delivery_id=$recordId';
         }
         return '/deliveries';
+      case 'request':
+      case 'rcm':
+        if (recordId != null && recordId.isNotEmpty) {
+          return '/profile/support/requests/$recordId';
+        }
+        return '/profile/support/requests';
+      case 'visit':
+      case 'visit_booking':
+        return '/profile/support/visits';
       default:
         return _routeForScreen(params);
     }

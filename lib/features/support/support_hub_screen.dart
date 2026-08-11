@@ -106,6 +106,13 @@ class SupportHubScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _WideTile(
+            icon: Icons.priority_high_rounded,
+            title: 'Action required',
+            subtitle: 'Clarifications and acknowledgements',
+            onTap: () => context.push('/profile/support/action-required'),
+          ),
+          const SizedBox(height: 8),
+          _WideTile(
             icon: Icons.inbox_outlined,
             title: 'My requests',
             subtitle: 'Track RCM status and clarifications',
