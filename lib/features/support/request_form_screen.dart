@@ -44,7 +44,7 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
   DateTime? _to;
   DateTime? _neededBy;
   DateTime? _salaryMonth;
-  bool _declaration = true;
+  bool _declaration = false;
   bool _submitting = false;
   final List<({String name, Uint8List bytes, String contentType})> _files = [];
 
@@ -307,6 +307,13 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
   Widget build(BuildContext context) {
     final tenureAsync = ref.watch(loanTenureOptionsProvider);
     final categoriesAsync = ref.watch(complaintCategoriesProvider);
+    final loanGated = widget.type == 'loan' &&
+        (tenureAsync.asData?.value.isEmpty ?? true);
+    final complaintGated = widget.type == 'complaint' &&
+        (categoriesAsync.asData?.value.isEmpty ?? true);
+    final catalogBlocked = loanGated || complaintGated;
+    final needsDeclaration =
+        {'leave', 'loan', 'asset'}.contains(widget.type) && !_declaration;
 
     return Scaffold(
       appBar: AppBar(
@@ -351,6 +358,16 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
               controller: _justificationCtrl,
               maxLines: 3,
               decoration: const InputDecoration(labelText: 'Justification *'),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: _pickFile,
+              icon: const Icon(Icons.upload_file),
+              label: Text(
+                _files.isEmpty
+                    ? 'Attachment (optional)'
+                    : '${_files.length} file(s) selected',
+              ),
             ),
           ],
           if (widget.type == 'sick_leave') ...[
@@ -624,15 +641,67 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
               decoration: const InputDecoration(labelText: 'Justification *'),
             ),
           ],
+          if (widget.type == 'loan') ...[
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: _pickFile,
+              icon: const Icon(Icons.upload_file),
+              label: Text(
+                _files.isEmpty
+                    ? 'Supporting document'
+                    : '${_files.length} file(s) selected',
+              ),
+            ),
+          ],
+          if (widget.type == 'asset') ...[
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: _pickFile,
+              icon: const Icon(Icons.photo_camera_outlined),
+              label: Text(
+                _files.isEmpty
+                    ? 'Photo (optional)'
+                    : '${_files.length} file(s) selected',
+              ),
+            ),
+          ],
+          if (widget.type == 'complaint') ...[
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: _pickFile,
+              icon: const Icon(Icons.upload_file),
+              label: Text(
+                _files.isEmpty
+                    ? 'Attachment (optional)'
+                    : '${_files.length} file(s) selected',
+              ),
+            ),
+          ],
+          if (widget.type == 'salary_justification') ...[
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: _pickFile,
+              icon: const Icon(Icons.upload_file),
+              label: Text(
+                _files.isEmpty
+                    ? 'Attach payslip (optional)'
+                    : '${_files.length} file(s) selected',
+              ),
+            ),
+          ],
           if ({'leave', 'loan', 'asset'}.contains(widget.type)) ...[
             const SizedBox(height: 12),
             CheckboxListTile(
               contentPadding: EdgeInsets.zero,
               value: _declaration,
               onChanged: (v) => setState(() => _declaration = v ?? false),
-              title: const Text(
-                'I confirm the information provided is accurate.',
-                style: TextStyle(fontSize: 13),
+              title: Text(
+                widget.type == 'leave'
+                    ? 'Declaration: I am entitled to return on time, otherwise the company to apply the list of penalties in case of late return.'
+                    : widget.type == 'loan'
+                        ? 'Declaration: I am committed to pay the full amount to the company or the company to deduct it as per the installments from my salary.'
+                        : 'Declaration: In the case of lost or damaged item replacement i am entitled for any charges from the company to receive a new one.',
+                style: const TextStyle(fontSize: 12),
               ),
               controlAffinity: ListTileControlAffinity.leading,
             ),
@@ -643,14 +712,19 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
           child: FilledButton(
-            onPressed: _submitting ? null : _submit,
+            onPressed:
+                (_submitting || catalogBlocked || needsDeclaration) ? null : _submit,
             child: _submitting
                 ? const SizedBox(
                     height: 18,
                     width: 18,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Submit request'),
+                : Text(
+                    catalogBlocked
+                        ? 'Temporarily unavailable'
+                        : 'Submit request',
+                  ),
           ),
         ),
       ),

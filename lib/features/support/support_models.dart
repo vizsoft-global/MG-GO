@@ -7,6 +7,7 @@ class SupportRequestSummary {
     this.currentStepLabel,
     this.createdAt,
     this.amountKwd,
+    this.awaitingDriverAck = false,
   });
 
   final String id;
@@ -16,8 +17,13 @@ class SupportRequestSummary {
   final String? currentStepLabel;
   final DateTime? createdAt;
   final double? amountKwd;
+  final bool awaitingDriverAck;
 
   factory SupportRequestSummary.fromJson(Map<String, dynamic> json) {
+    final payload = json['payload'];
+    final payloadMap = payload is Map
+        ? Map<String, dynamic>.from(payload)
+        : <String, dynamic>{};
     return SupportRequestSummary(
       id: json['id'] as String,
       requestCode: json['request_code'] as String? ?? '',
@@ -30,6 +36,8 @@ class SupportRequestSummary {
       amountKwd: json['amount_kwd'] != null
           ? (json['amount_kwd'] as num).toDouble()
           : null,
+      awaitingDriverAck: payloadMap['awaiting_driver_ack'] == true &&
+          payloadMap['driver_ack_at'] == null,
     );
   }
 }

@@ -272,14 +272,14 @@ class _VisitBookingFlowScreenState
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                 child: FilledButton(
-                  onPressed: _submitting
+                  onPressed: _submitting ||
+                          (_step == 0 && _dept == null) ||
+                          (_step == 1 && (_date == null || _slot == null))
                       ? null
                       : () async {
                           if (_step == 0) {
-                            if (_dept == null) return;
                             setState(() => _step = 1);
                           } else if (_step == 1) {
-                            if (_date == null || _slot == null) return;
                             setState(() => _step = 2);
                           } else {
                             await _confirm();

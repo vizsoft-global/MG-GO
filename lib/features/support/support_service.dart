@@ -111,6 +111,23 @@ class SupportService {
     }
   }
 
+  Future<void> acknowledgeRequest({
+    required String requestId,
+    String? note,
+  }) async {
+    final result = await _client.rpc(
+      'driver_acknowledge_request',
+      params: {
+        'p_request_id': requestId,
+        'p_note': note,
+      },
+    );
+    final map = _asMap(result);
+    if (map['ok'] == false) {
+      throw Exception(map['error']?.toString() ?? 'ack_failed');
+    }
+  }
+
   Future<List<LoanTenureOption>> listTenureOptions() async {
     final rows = await _client
         .from('loan_tenure_options')

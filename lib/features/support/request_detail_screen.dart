@@ -53,6 +53,30 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     }
   }
 
+  Future<void> _acknowledge() async {
+    setState(() => _submitting = true);
+    try {
+      await ref.read(supportServiceProvider).acknowledgeRequest(
+            requestId: widget.requestId,
+          );
+      ref.invalidate(requestDetailProvider(widget.requestId));
+      ref.invalidate(myRequestsProvider);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Acknowledged')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(requestDetailProvider(widget.requestId));
@@ -69,6 +93,11 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
         error: (e, _) => Center(child: Text('$e')),
         data: (detail) {
           final needsClarify = detail.status == 'needs_clarification';
+          final awaitingAck = detail.payload['awaiting_driver_ack'] == true &&
+              detail.payload['driver_ack_at'] == null;
+          final payloadEntries = detail.payload.entries
+              .where((e) => e.key != 'awaiting_driver_ack' && e.key != 'driver_ack_at')
+              .toList();
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
@@ -87,6 +116,68 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
               if (detail.currentStepLabel != null) ...[
                 const SizedBox(height: 4),
                 Text('Current step: ${detail.currentStepLabel}'),
+              ],
+              if (payloadEntries.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                const Text(
+                  'Request details',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 8),
+                ...payloadEntries.map(
+                  (e) => Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            e.key,
+                            style: const TextStyle(color: AppColors.textSecondary),
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            '${e.value}',
+                            textAlign: TextAlign.end,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+              if (awaitingAck) ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: AppColors.underReviewAmber.withValues(alpha: 0.12),
+                    border: Border.all(color: AppColors.underReviewAmber),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        detail.requestType == 'loan'
+                            ? 'Acknowledge revised loan terms'
+                            : detail.requestType == 'asset'
+                                ? 'Acknowledge asset penalty'
+                                : detail.requestType == 'sick_leave'
+                                    ? 'Acknowledge document request'
+                                    : 'Acknowledge update',
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 8),
+                      FilledButton(
+                        onPressed: _submitting ? null : _acknowledge,
+                        child: const Text('Acknowledge'),
+                      ),
+                    ],
+                  ),
+                ),
               ],
               const SizedBox(height: 16),
               const Text(
