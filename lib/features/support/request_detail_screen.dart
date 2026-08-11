@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -15,14 +16,12 @@ import 'support_providers.dart';
 /// fields captured at submission per type (`amount_kwd`, `tenure_months`,
 /// `reason`, `asset_type`, `asset_current_status`, `leave_subtype`,
 /// `start_date`/`end_date`, attachments) — see `_typedDetailRows`. The
-/// "Admin response" card (`_AdminResponseCard`) reads structured
-/// approved-amount/installments/penalty/approver fields from the decided
-/// step's `meta` jsonb when present (see `_lastDecisionMeta`) and falls
-/// back to the driver's own submitted values otherwise — `admin_decide_request`
-/// accepts a `p_meta` argument but the admin UI sends `{}` today, so a
-/// revised amount that truly differs from the request stays a documented
-/// DB/product gap (BLOCKED) until the admin side starts populating it, not
-/// invented. See QA notes for RSup/10b–10d.
+/// "Admin response" card (`_AdminResponseCard`) reads the decision terms the
+/// admin wrote through `admin_set_request_decision_meta` into the latest
+/// completed `request_approval_steps.meta` — `approved_amount`,
+/// `approved_tenure_months`, `deduction_start_date`, `penalty_amount`,
+/// `required_document`, `approved_by`. A term that was never set is not
+/// rendered (or is shown as "Not specified"); no value is ever invented.
 class RequestDetailScreen extends ConsumerStatefulWidget {
   const RequestDetailScreen({required this.requestId, super.key});
 
@@ -39,6 +38,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
   final _noteFocus = FocusNode();
   final List<({String name, Uint8List bytes})> _files = [];
   bool _submitting = false;
+  bool _noteVisible = false;
 
   @override
   void dispose() {
@@ -62,6 +62,38 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     if (picked == null) return;
     final bytes = await picked.readAsBytes();
     setState(() => _files.add((name: picked.name, bytes: bytes)));
+  }
+
+  /// RSup/10d — the frame shows only "Add note" / "Upload documents", so the
+  /// picker is opened from the primary button instead of a permanently
+  /// visible drop-zone.
+  Future<void> _chooseDocumentSource() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.image_outlined),
+              title: const Text('Choose from gallery'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickFile();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt_outlined),
+              title: const Text('Take a photo'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _captureFile();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<List<String>> _uploadFiles() async {
@@ -251,10 +283,10 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                       const Text('Request details',
                           style: TextStyle(fontWeight: FontWeight.w700)),
                       const SizedBox(height: 8),
-                      ...typedRows.map((r) => _kv(r.$1, r.$2)),
+                      ...typedRows.map((r) => _kv(r.$1, r.$2, chip: r.$3)),
                       ...payloadEntries.map((e) => _kv(_labelize(e.key), '${e.value}')),
                       if (detail.currentStepLabel != null)
-                        _kv('Status', detail.currentStepLabel!),
+                        _kv('Status', detail.currentStepLabel!, chip: true),
                     ],
                   ),
                 ),
@@ -331,30 +363,34 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                 // when the admin response requires a document; there is no
                 // DB field distinguishing this ack subtype, so we key off
                 // request type (sick_leave) as the closest real signal.
-                if (isDocumentType) ...[
-                  DottedUploadBox(
-                    label: 'Upload requested document',
-                    hint: 'Choose image or capture the document',
-                    fileCount: _files.length,
-                    onUpload: _pickFile,
-                    onCapture: _captureFile,
+                if (isDocumentType && _files.isNotEmpty) ...[
+                  _AttachedFilesRow(
+                    names: _files.map((f) => f.name).toList(),
+                    onRemove: (i) => setState(() => _files.removeAt(i)),
                   ),
                   const SizedBox(height: 12),
                 ],
-                TextField(
-                  controller: _noteCtrl,
-                  focusNode: _noteFocus,
-                  decoration: const InputDecoration(
-                    labelText: 'Note (optional)',
-                    border: OutlineInputBorder(),
+                if (_noteVisible) ...[
+                  TextField(
+                    controller: _noteCtrl,
+                    focusNode: _noteFocus,
+                    decoration: const InputDecoration(
+                      labelText: 'Note (optional)',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
+                  const SizedBox(height: 12),
+                ],
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: _submitting ? null : () => _noteFocus.requestFocus(),
+                        onPressed: _submitting
+                            ? null
+                            : () {
+                                setState(() => _noteVisible = true);
+                                _noteFocus.requestFocus();
+                              },
                         child: const Text('Add note'),
                       ),
                     ),
@@ -364,7 +400,13 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                         style: FilledButton.styleFrom(backgroundColor: AppColors.progressGreen),
                         onPressed: _submitting
                             ? null
-                            : () => _acknowledge(withUpload: isDocumentType),
+                            : () {
+                                if (isDocumentType && _files.isEmpty) {
+                                  _chooseDocumentSource();
+                                  return;
+                                }
+                                _acknowledge(withUpload: isDocumentType);
+                              },
                         child: _submitting
                             ? const SizedBox(
                                 height: 18, width: 18,
@@ -383,21 +425,42 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     );
   }
 
-  static Widget _kv(String label, String value) {
+  /// [chip] renders the value as the grey pill Figma uses for the last row of
+  /// the "Request details" card (status / evidence / attachment).
+  static Widget _kv(String label, String value, {bool chip = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
             child: Text(label, style: const TextStyle(color: AppColors.textSecondary)),
           ),
-          Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.end,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
+          Flexible(
+            child: chip
+                ? Align(
+                    alignment: Alignment.centerRight,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF4F4F5),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        value,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF52525B),
+                        ),
+                      ),
+                    ),
+                  )
+                : Text(
+                    value,
+                    textAlign: TextAlign.end,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
           ),
         ],
       ),
@@ -408,7 +471,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
   /// columns/payload captured at submission (`amount_kwd`, `tenure_months`,
   /// `reason`, `asset_type`, `asset_current_status`, `leave_subtype`,
   /// `start_date`/`end_date`, `request_attachments`) — no invented values.
-  static List<(String, String)> _typedDetailRows(SupportRequestDetail detail) {
+  static List<(String, String, bool)> _typedDetailRows(SupportRequestDetail detail) {
     final payload = detail.payload;
     final req = detail.request;
     final money = _money;
@@ -439,76 +502,120 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
 
     switch (detail.requestType) {
       case 'loan':
-        final rows = <(String, String)>[
-          ('Requested', money(req['amount_kwd'])),
+        final rows = <(String, String, bool)>[
+          ('Requested', money(req['amount_kwd']), false),
         ];
         if (payload['tenure_months'] != null) {
-          rows.add(('Installments', '${payload['tenure_months']} months'));
+          rows.add(('Installments', '${payload['tenure_months']} months', false));
         }
         final reason = payload['reason']?.toString().trim();
         if (reason != null && reason.isNotEmpty) {
-          rows.add(('Purpose', reason));
+          rows.add(('Purpose', reason, false));
         }
         return rows;
       case 'asset':
-        final rows = <(String, String)>[];
+        final rows = <(String, String, bool)>[];
         final assetType = payload['asset_type']?.toString();
         if (assetType != null && assetType.isNotEmpty) {
           final size = payload['size']?.toString();
           rows.add((
             'Asset',
             size != null && size.isNotEmpty ? '$assetType ($size)' : assetType,
+            false,
           ));
         }
         if (payload['quantity'] != null) {
-          rows.add(('Quantity', '${payload['quantity']}'));
+          rows.add(('Quantity', '${payload['quantity']}', false));
         }
         final condition = payload['asset_current_status']?.toString();
         if (condition != null && condition.isNotEmpty) {
-          rows.add(('Condition', condition));
+          rows.add(('Condition', condition, false));
         }
-        rows.add(('Evidence', firstAttachmentName()));
+        rows.add(('Evidence', firstAttachmentName(), true));
         return rows;
       case 'sick_leave':
-        final rows = <(String, String)>[];
+        final rows = <(String, String, bool)>[];
         final subtype = payload['leave_subtype']?.toString();
         if (subtype != null && subtype.isNotEmpty) {
-          rows.add(('Leave type', subtype));
+          rows.add(('Leave type', subtype, false));
         }
-        rows.add(('Dates', dateRange()));
+        rows.add(('Dates', dateRange(), false));
         final duration = durationDays();
         if (duration != null) {
-          rows.add(('Duration', '$duration day${duration == 1 ? '' : 's'}'));
+          rows.add(('Duration', '$duration day${duration == 1 ? '' : 's'}', false));
         }
-        rows.add(('Attachment', firstAttachmentName()));
+        rows.add(('Attachment', firstAttachmentName(), true));
         return rows;
       default:
         return const [];
     }
   }
 
+  static final _moneyFormat = NumberFormat('#,##0.000');
+
   static String _money(dynamic v) {
     if (v == null) return '—';
     final n = v is num ? v : num.tryParse('$v');
-    return n == null ? '—' : 'KWD ${n.toStringAsFixed(3)}';
+    return n == null ? '—' : 'KWD ${_moneyFormat.format(n)}';
   }
 
-  /// The admin's decision `meta` (jsonb) on the last completed approval
-  /// step — `admin_decide_request` already threads a `p_meta` argument onto
-  /// `request_approval_steps.meta`, it's just never populated by the admin
-  /// UI today. Reading it here means revised terms (approved amount,
-  /// penalty, who approved) show up the moment the admin side starts
-  /// sending them, without inventing placeholder values in the meantime.
+  /// Completed approval steps newest-first, using the same ordering as
+  /// `admin_set_request_decision_meta` (`decided_at DESC NULLS LAST,
+  /// step_order DESC`) so the driver reads back exactly the step the admin
+  /// wrote the decision terms to.
+  static List<Map<String, dynamic>> _completedStepsNewestFirst(
+    SupportRequestDetail detail,
+  ) {
+    final steps =
+        detail.steps.where((s) => s['status'] == 'completed').toList();
+    steps.sort((a, b) {
+      final da = DateTime.tryParse(a['decided_at']?.toString() ?? '');
+      final db = DateTime.tryParse(b['decided_at']?.toString() ?? '');
+      if (da != null && db != null && da != db) return db.compareTo(da);
+      if (da == null && db != null) return 1;
+      if (db == null && da != null) return -1;
+      final oa = (a['step_order'] as num?)?.toInt() ?? 0;
+      final ob = (b['step_order'] as num?)?.toInt() ?? 0;
+      return ob.compareTo(oa);
+    });
+    return steps;
+  }
+
+  /// The decision terms the admin wrote via `admin_set_request_decision_meta`
+  /// (`request_approval_steps.meta`). Keys are read verbatim — a term the
+  /// admin never set stays absent rather than being replaced by a guess.
   static Map<String, dynamic> _lastDecisionMeta(SupportRequestDetail detail) {
-    for (final step in detail.steps.reversed) {
-      if (step['status'] == 'completed') {
-        final meta = step['meta'];
-        if (meta is Map && meta.isNotEmpty) {
-          return Map<String, dynamic>.from(meta);
-        }
+    for (final step in _completedStepsNewestFirst(detail)) {
+      final meta = step['meta'];
+      if (meta is Map && meta.isNotEmpty) {
+        return Map<String, dynamic>.from(meta);
       }
     }
     return const {};
+  }
+
+  /// Figma's "Comment from admin" block. `admin_decide_request` stores the
+  /// approver's note on the step (`decision_note`) and only writes
+  /// `requests.decision_reason` for clarify/reject/solve, so the step note is
+  /// the primary source here.
+  static String? _adminComment(SupportRequestDetail detail) {
+    for (final step in _completedStepsNewestFirst(detail)) {
+      final note = step['decision_note']?.toString().trim();
+      if (note != null && note.isNotEmpty) return note;
+    }
+    final reason = detail.request['decision_reason']?.toString().trim();
+    return (reason != null && reason.isNotEmpty) ? reason : null;
+  }
+
+  /// `deduction_start_date` arrives as `YYYY-MM-DD`; render it the way the
+  /// rest of the screen renders dates, falling back to the raw string if it
+  /// is not parseable.
+  static String _formatDay(dynamic value) {
+    final text = value?.toString().trim() ?? '';
+    if (text.isEmpty) return '—';
+    final parsed = DateTime.tryParse(text);
+    if (parsed == null) return text;
+    return '${parsed.day} ${_monthShort(parsed.month)} ${parsed.year}';
   }
 
   /// Builds a plain-language summary of the real terms being acknowledged,
@@ -712,16 +819,61 @@ class _ClarificationReasonCard extends StatelessWidget {
   }
 }
 
-/// Figma RSup/10b–10d "Admin response" card: structured Requested/Approved
-/// amount, installments, penalty and "Approved/Requested by" rows.
-/// `admin_decide_request` already threads a `p_meta` jsonb argument onto
-/// `request_approval_steps.meta` — [_rows] reads it via
-/// `_lastDecisionMeta` so revised terms render the moment the admin side
-/// populates it. The admin UI sends `p_meta: {}` today, so in practice
-/// these rows fall back to the real submitted values (no distinct
-/// override exists yet) rather than inventing a revised figure — that
-/// half of RSup/10b (loan)/10c (asset penalty/approver) stays a
-/// documented gap (BLOCKED), not fake copy.
+/// Per-type palette for the RSup/10b–10d "Admin response" card.
+class _AdminResponseTheme {
+  const _AdminResponseTheme({
+    required this.border,
+    required this.badgeBg,
+    required this.badgeFg,
+    required this.commentBg,
+    required this.commentTitle,
+    required this.commentBody,
+  });
+
+  final Color border;
+  final Color badgeBg;
+  final Color badgeFg;
+  final Color commentBg;
+  final Color commentTitle;
+  final Color commentBody;
+
+  /// RSup/10b amber, RSup/10c red, RSup/10d amber card + blue badge.
+  static const loan = _AdminResponseTheme(
+    border: Color(0xFFFFE0C2),
+    badgeBg: Color(0xFFFEF3E7),
+    badgeFg: Color(0xFFB5470A),
+    commentBg: Color(0xFFFFF7ED),
+    commentTitle: Color(0xFF9A3412),
+    commentBody: Color(0xFFB5470A),
+  );
+
+  static const asset = _AdminResponseTheme(
+    border: Color(0xFFFECACA),
+    badgeBg: Color(0xFFFEE2E2),
+    badgeFg: Color(0xFFDC2626),
+    commentBg: Color(0xFFFEF2F2),
+    commentTitle: Color(0xFF991B1B),
+    commentBody: Color(0xFFB91C1C),
+  );
+
+  static const sickLeave = _AdminResponseTheme(
+    border: Color(0xFFFFE0C2),
+    badgeBg: Color(0xFFDBEAFE),
+    badgeFg: Color(0xFF1D4ED8),
+    commentBg: Color(0xFFFFF7ED),
+    commentTitle: Color(0xFF9A3412),
+    commentBody: Color(0xFFB5470A),
+  );
+}
+
+/// Figma RSup/10b (loan) / 10c (asset penalty) / 10d (sick-leave documents)
+/// "Admin response" card. Every term comes from the decision meta the admin
+/// wrote via `admin_set_request_decision_meta` on the latest completed
+/// approval step: `approved_amount`, `approved_tenure_months`,
+/// `deduction_start_date`, `penalty_amount`, `required_document`,
+/// `approved_by`. Terms the admin did not set are omitted — the one
+/// exception is 10d's "Required" row, which stays visible as
+/// "Not specified" because the frame's whole point is naming the document.
 class _AdminResponseCard extends StatelessWidget {
   const _AdminResponseCard({required this.detail});
 
@@ -746,6 +898,15 @@ class _AdminResponseCard extends StatelessWidget {
         if (tenure != null) {
           rows.add(('Installments', '$tenure months'));
         }
+        if (meta['deduction_start_date'] != null) {
+          rows.add((
+            'Deduction starts',
+            _RequestDetailScreenState._formatDay(meta['deduction_start_date']),
+          ));
+        }
+        if (meta['approved_by'] != null) {
+          rows.add(('Approved by', '${meta['approved_by']}'));
+        }
         return rows;
       case 'asset':
         final rows = <(String, String)>[];
@@ -761,12 +922,16 @@ class _AdminResponseCard extends StatelessWidget {
         }
         return rows;
       case 'sick_leave':
+        final required = meta['required_document']?.toString().trim();
         final rows = <(String, String)>[
           ('Status', 'On hold'),
-          ('Required', meta['required_document']?.toString() ?? 'Medical certificate'),
+          (
+            'Required',
+            required != null && required.isNotEmpty ? required : 'Not specified',
+          ),
         ];
-        if (meta['requested_by'] != null) {
-          rows.add(('Requested by', '${meta['requested_by']}'));
+        if (meta['approved_by'] != null) {
+          rows.add(('Requested by', '${meta['approved_by']}'));
         }
         return rows;
       default:
@@ -776,14 +941,14 @@ class _AdminResponseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final reason = detail.request['decision_reason']?.toString();
-    final tint = detail.requestType == 'asset'
-        ? AppColors.rejectedRed
-        : detail.requestType == 'sick_leave'
-            ? AppColors.primaryBlue
-            : AppColors.underReviewAmber;
+    final theme = switch (detail.requestType) {
+      'asset' => _AdminResponseTheme.asset,
+      'sick_leave' => _AdminResponseTheme.sickLeave,
+      _ => _AdminResponseTheme.loan,
+    };
     final meta = _RequestDetailScreenState._lastDecisionMeta(detail);
     final rows = _rows(detail, meta);
+    final comment = _RequestDetailScreenState._adminComment(detail);
     final amountChanged = detail.requestType == 'loan' &&
         meta['approved_amount'] != null &&
         '${meta['approved_amount']}' != '${detail.request['amount_kwd']}';
@@ -793,49 +958,137 @@ class _AdminResponseCard extends StatelessWidget {
       'sick_leave' => 'Documents required',
       _ => 'Update',
     };
-    return _Card(
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: theme.border),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               const Expanded(
-                child: Text('Admin response', style: TextStyle(fontWeight: FontWeight.w700)),
+                child: Text(
+                  'Admin response',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
                 decoration: BoxDecoration(
-                  color: tint.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(999),
+                  color: theme.badgeBg,
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   badge,
-                  style: TextStyle(color: tint, fontSize: 11, fontWeight: FontWeight.w700),
+                  style: TextStyle(
+                    color: theme.badgeFg,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
           ),
-          if (rows.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            ...rows.map((r) => _RequestDetailScreenState._kv(r.$1, r.$2)),
-          ],
-          const SizedBox(height: 8),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: tint.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(10),
+          ...rows.map((r) => _TermRow(label: r.$1, value: r.$2)),
+          if (comment != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: theme.commentBg,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Comment from admin',
+                    style: TextStyle(
+                      color: theme.commentTitle,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    comment,
+                    style: TextStyle(color: theme.commentBody, fontSize: 12),
+                  ),
+                ],
+              ),
             ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// One "label … value" line inside the Admin response card (Figma 13px,
+/// grey label / semibold near-black value).
+class _TermRow extends StatelessWidget {
+  const _TermRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
             child: Text(
-              (reason != null && reason.trim().isNotEmpty)
-                  ? reason
-                  : 'Your request was approved. Please review and acknowledge to continue.',
-              style: TextStyle(color: tint.withAlpha(230), fontSize: 12.5),
+              label,
+              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Files the driver attached for an RSup/10d document ack, before upload.
+class _AttachedFilesRow extends StatelessWidget {
+  const _AttachedFilesRow({required this.names, required this.onRemove});
+
+  final List<String> names;
+  final ValueChanged<int> onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (var i = 0; i < names.length; i++)
+          Chip(
+            label: Text(names[i], style: const TextStyle(fontSize: 12)),
+            avatar: const Icon(Icons.insert_drive_file_outlined, size: 16),
+            onDeleted: () => onRemove(i),
+          ),
+      ],
     );
   }
 }
