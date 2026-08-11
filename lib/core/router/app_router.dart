@@ -28,6 +28,13 @@ import '../../features/notifications/notifications_inbox_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/shell/app_exit_scope.dart';
 import '../../features/shell/main_shell.dart';
+import '../../features/support/my_requests_screen.dart';
+import '../../features/support/my_visits_screen.dart';
+import '../../features/support/request_detail_screen.dart';
+import '../../features/support/request_form_screen.dart';
+import '../../features/support/request_submitted_screen.dart';
+import '../../features/support/support_hub_screen.dart';
+import '../../features/support/visit_booking_flow_screen.dart';
 import '../../features/vehicle/vehicle_screen.dart';
 import '../branding/app_branding_provider.dart';
 
@@ -210,6 +217,56 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'notifications',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const NotificationsInboxScreen(),
+      ),
+      GoRoute(
+        path: '/profile/support',
+        name: 'support',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const SupportHubScreen(),
+      ),
+      GoRoute(
+        path: '/profile/support/requests',
+        name: 'support_requests',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const MyRequestsScreen(),
+      ),
+      GoRoute(
+        path: '/profile/support/requests/new',
+        name: 'support_request_new',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) {
+          final type = state.uri.queryParameters['type'] ?? 'leave';
+          return RequestFormScreen(type: type);
+        },
+      ),
+      GoRoute(
+        path: '/profile/support/requests/:id',
+        name: 'support_request_detail',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => RequestDetailScreen(
+          requestId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
+        path: '/profile/support/submitted',
+        name: 'support_request_submitted',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => RequestSubmittedScreen(
+          requestCode: state.uri.queryParameters['code'] ?? 'RCM',
+          requestId: state.uri.queryParameters['id'],
+        ),
+      ),
+      GoRoute(
+        path: '/profile/support/visits',
+        name: 'support_visits',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const MyVisitsScreen(),
+      ),
+      GoRoute(
+        path: '/profile/support/visits/book',
+        name: 'support_visit_book',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const VisitBookingFlowScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
