@@ -9,12 +9,6 @@ import 'active_delivery_provider.dart';
 import 'add_delivery_flow.dart';
 import 'delivery_models.dart';
 
-/// Content pad (16) + system nav / home-indicator inset.
-/// Prefer [MediaQuery.viewPadding] over [MediaQuery.padding] for edge-to-edge.
-double activeDeliveryFooterBottomInset(BuildContext context) {
-  return 16 + MediaQuery.viewPaddingOf(context).bottom;
-}
-
 class ActiveDeliveryScreen extends ConsumerWidget {
   const ActiveDeliveryScreen({super.key});
 
@@ -112,15 +106,14 @@ class ActiveDeliveryScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              // Use viewPadding (not only SafeArea padding): on Android
-              // edge-to-edge, MediaQuery.padding.bottom can be 0 while the
-              // system nav / gesture bar still covers the footer.
+              // Android edge-to-edge: MediaQuery.padding.bottom is often 0 while
+              // the system nav still overlaps. Use viewPadding (handoff §11).
               Padding(
                 padding: EdgeInsets.fromLTRB(
                   16,
                   0,
                   16,
-                  activeDeliveryFooterBottomInset(context),
+                  16 + MediaQuery.viewPaddingOf(context).bottom,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
