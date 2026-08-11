@@ -20,6 +20,78 @@ class EsignViewerScreen extends ConsumerStatefulWidget {
 class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
   String? _documentUrl;
   bool _loadingDoc = false;
+  bool _declining = false;
+
+  Future<void> _decline() async {
+    final ctrl = TextEditingController();
+    final confirmed = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          left: 20, right: 20, top: 20,
+          bottom: 20 + MediaQuery.viewInsetsOf(ctx).bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Decline document',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 6),
+            const Text(
+              'Let admin know why you cannot sign this document.',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: ctrl,
+              maxLines: 3,
+              autofocus: true,
+              decoration: const InputDecoration(
+                hintText: 'Reason (optional)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.rejectedRed,
+                  side: BorderSide(color: AppColors.rejectedRed.withValues(alpha: 0.4)),
+                ),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Decline document'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _declining = true);
+    try {
+      await ref.read(supportServiceProvider).declineEsignature(
+            requestId: widget.requestId,
+            reason: ctrl.text.trim().isEmpty ? null : ctrl.text.trim(),
+          );
+      ref.invalidate(esignRequestsProvider);
+      ref.invalidate(esignRequestDetailProvider(widget.requestId));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Document declined')),
+        );
+        context.go('/profile/support/sign');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      }
+    } finally {
+      if (mounted) setState(() => _declining = false);
+    }
+  }
 
   Future<void> _loadDocument(String? storageKey) async {
     if (storageKey == null || storageKey.trim().isEmpty) return;
@@ -82,7 +154,7 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
           restricted: detail.screenshotRestricted,
           child: Scaffold(
             appBar: AppBar(
-              title: Text(detail.requestCode),
+              title: const Text('Review document'),
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back_rounded),
                 onPressed: () => context.pop(),
@@ -94,37 +166,30 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                 if (detail.screenshotRestricted)
                   const ScreenshotRestrictionBanner(),
                 if (detail.screenshotRestricted) const SizedBox(height: 12),
-                Text(
-                  detail.title,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                if (detail.categoryLabel != null) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    detail.categoryLabel!,
-                    style: const TextStyle(color: AppColors.textSecondary),
-                  ),
-                ],
-                const SizedBox(height: 4),
-                Text(
-                  'Due ${_formatDate(detail.dueAt)}',
-                  style: const TextStyle(color: AppColors.textSecondary),
-                ),
-                const SizedBox(height: 16),
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(14),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Document preview',
-                          style: TextStyle(fontWeight: FontWeight.w700),
+                        Text(
+                          detail.title,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
-                        const SizedBox(height: 8),
+                        if (detail.categoryLabel != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            detail.categoryLabel!,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 12),
                         if (_loadingDoc)
                           const Center(child: CircularProgressIndicator())
                         else if (detail.documentStorageKey == null)
@@ -164,17 +229,55 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 10),
+                Text(
+                  '${detail.requestCode}'
+                  '${detail.categoryLabel != null ? ' · ${detail.categoryLabel}' : ''}'
+                  ' · From admin',
+                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Due ${_formatDate(detail.dueAt)}',
+                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                ),
               ],
             ),
             bottomNavigationBar: detail.isPending
                 ? SafeArea(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                      child: FilledButton(
-                        onPressed: () => context.push(
-                          '/profile/support/sign/${widget.requestId}/capture',
-                        ),
-                        child: const Text('Sign document'),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.rejectedRed,
+                                side: BorderSide(
+                                  color: AppColors.rejectedRed.withValues(alpha: 0.4),
+                                ),
+                              ),
+                              onPressed: _declining ? null : _decline,
+                              child: _declining
+                                  ? const SizedBox(
+                                      height: 18, width: 18,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    )
+                                  : const Text('Decline'),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: FilledButton(
+                              onPressed: _declining
+                                  ? null
+                                  : () => context.push(
+                                        '/profile/support/sign/${widget.requestId}/capture',
+                                      ),
+                              child: const Text('Sign document'),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   )

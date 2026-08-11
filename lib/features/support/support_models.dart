@@ -346,6 +346,7 @@ class EsignRequestSummary {
 
   bool get isPending => status == 'pending';
   bool get isSigned => status == 'signed';
+  bool get isDeclined => status == 'cancelled';
 
   factory EsignRequestSummary.fromJson(Map<String, dynamic> json) {
     return EsignRequestSummary(
@@ -389,6 +390,9 @@ class EsignRequestDetail {
 
   bool get isPending => status == 'pending';
   bool get isSigned => status == 'signed';
+  bool get isDeclined => status == 'cancelled';
+  DateTime? get declinedAt => _parseDateTime(signerMeta['declined_at']);
+  String? get declinedReason => signerMeta['declined_reason'] as String?;
 }
 
 class DriverAppointment {

@@ -52,6 +52,7 @@ class EsignDocumentsScreen extends ConsumerWidget {
             }
             final pending = rows.where((r) => r.isPending).toList();
             final signed = rows.where((r) => r.isSigned).toList();
+            final declined = rows.where((r) => r.isDeclined).toList();
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               children: [
@@ -69,6 +70,15 @@ class EsignDocumentsScreen extends ConsumerWidget {
                   ...signed.map((row) => _EsignCard(
                         row: row,
                         dueLabel: _formatDate(row.signedAt ?? row.dueAt),
+                        onTap: () => context.push('/profile/support/sign/${row.id}'),
+                      )),
+                ],
+                if (declined.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  _SectionLabel(title: 'Declined'),
+                  ...declined.map((row) => _EsignCard(
+                        row: row,
+                        dueLabel: _formatDate(row.dueAt),
                         onTap: () => context.push('/profile/support/sign/${row.id}'),
                       )),
                 ],
@@ -116,9 +126,13 @@ class _EsignCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pending = row.isPending;
-    final statusColor =
-        pending ? AppColors.underReviewAmber : AppColors.progressGreen;
-    final statusLabel = pending ? 'Pending' : 'Signed';
+    final statusColor = pending
+        ? AppColors.underReviewAmber
+        : row.isDeclined
+            ? AppColors.rejectedRed
+            : AppColors.progressGreen;
+    final statusLabel =
+        pending ? 'Pending' : (row.isDeclined ? 'Declined' : 'Signed');
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: InkWell(
@@ -173,7 +187,9 @@ class _EsignCard extends StatelessWidget {
               ],
               const SizedBox(height: 6),
               Text(
-                pending ? 'Due $dueLabel' : 'Signed $dueLabel',
+                pending
+                    ? 'Due $dueLabel'
+                    : (row.isDeclined ? 'Declined' : 'Signed $dueLabel'),
                 style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary,

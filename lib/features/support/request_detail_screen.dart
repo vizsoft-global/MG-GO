@@ -11,11 +11,16 @@ import 'support_models.dart';
 import 'support_providers.dart';
 
 /// RSup/10, 10b–10e, 17, 20 — request detail with clarify-response and
-/// driver-ack flows. Admin decisions here only carry `decision_reason` +
-/// `decided_at` (no structured `admin_comment` / `approved_amount` /
-/// `penalty_amount` columns exist on `requests` yet), so the "Admin
-/// response" card renders whatever real data exists instead of inventing
-/// Figma's example copy — see QA notes for RSup/10b–10d (BLOCKED: DB gap).
+/// driver-ack flows. The "Request details" card renders the real structured
+/// fields captured at submission per type (`amount_kwd`, `tenure_months`,
+/// `reason`, `asset_type`, `asset_current_status`, `leave_subtype`,
+/// `start_date`/`end_date`, attachments) — see `_typedDetailRows`. Admin
+/// decisions only carry `decision_reason` + `decided_at` (no distinct
+/// `approved_amount` / `penalty_amount` override columns exist and
+/// `admin_decide_request` never populates one), so the "Admin response"
+/// card still cannot show a revised amount different from what the driver
+/// requested — that half of RSup/10b–10c stays a documented DB/product gap
+/// (BLOCKED), not invented. See QA notes for RSup/10b–10d.
 class RequestDetailScreen extends ConsumerStatefulWidget {
   const RequestDetailScreen({required this.requestId, super.key});
 
@@ -204,12 +209,15 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
               detail.payload['driver_ack_at'] == null;
           final isDocumentType = detail.requestType == 'document' ||
               detail.requestType == 'sick_leave';
-          final payloadEntries = detail.payload.entries
-              .where((e) =>
-                  e.key != 'awaiting_driver_ack' &&
-                  e.key != 'driver_ack_at' &&
-                  e.key != 'driver_ack_note')
-              .toList();
+          final typedRows = _typedDetailRows(detail);
+          final payloadEntries = typedRows.isNotEmpty
+              ? const <MapEntry<String, dynamic>>[]
+              : detail.payload.entries
+                  .where((e) =>
+                      e.key != 'awaiting_driver_ack' &&
+                      e.key != 'driver_ack_at' &&
+                      e.key != 'driver_ack_note')
+                  .toList();
           final view = RequestStatusView.of(
             status: detail.status,
             awaitingAck: awaitingAck,
@@ -226,7 +234,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                 view: view,
               ),
               const SizedBox(height: 12),
-              if (payloadEntries.isNotEmpty) ...[
+              if (typedRows.isNotEmpty || payloadEntries.isNotEmpty) ...[
                 _Card(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,6 +242,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                       const Text('Request details',
                           style: TextStyle(fontWeight: FontWeight.w700)),
                       const SizedBox(height: 8),
+                      ...typedRows.map((r) => _kv(r.$1, r.$2)),
                       ...payloadEntries.map((e) => _kv(_labelize(e.key), '${e.value}')),
                       if (detail.currentStepLabel != null)
                         _kv('Status', detail.currentStepLabel!),
@@ -385,6 +394,101 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
       ),
     );
   }
+
+  /// Figma RSup/10b–10d "Request details" fields, sourced only from real
+  /// columns/payload captured at submission (`amount_kwd`, `tenure_months`,
+  /// `reason`, `asset_type`, `asset_current_status`, `leave_subtype`,
+  /// `start_date`/`end_date`, `request_attachments`) — no invented values.
+  static List<(String, String)> _typedDetailRows(SupportRequestDetail detail) {
+    final payload = detail.payload;
+    final req = detail.request;
+
+    String money(dynamic v) {
+      if (v == null) return '—';
+      final n = v is num ? v : num.tryParse('$v');
+      return n == null ? '—' : 'KWD ${n.toStringAsFixed(3)}';
+    }
+
+    String firstAttachmentName() => detail.attachments.isNotEmpty
+        ? (detail.attachments.first['file_name']?.toString().trim().isNotEmpty ==
+                true
+            ? detail.attachments.first['file_name'].toString()
+            : 'Attached file')
+        : 'None attached';
+
+    DateTime? start = req['start_date'] != null
+        ? DateTime.tryParse(req['start_date'].toString())
+        : null;
+    DateTime? end = req['end_date'] != null
+        ? DateTime.tryParse(req['end_date'].toString())
+        : null;
+    String dateRange() {
+      if (start == null) return '—';
+      String fmt(DateTime d) => '${d.day} ${_monthShort(d.month)} ${d.year}';
+      return end == null ? fmt(start) : '${fmt(start)} – ${fmt(end)}';
+    }
+
+    int? durationDays() {
+      if (start == null || end == null) return null;
+      return end.difference(start).inDays + 1;
+    }
+
+    switch (detail.requestType) {
+      case 'loan':
+        final rows = <(String, String)>[
+          ('Requested', money(req['amount_kwd'])),
+        ];
+        if (payload['tenure_months'] != null) {
+          rows.add(('Installments', '${payload['tenure_months']} months'));
+        }
+        final reason = payload['reason']?.toString().trim();
+        if (reason != null && reason.isNotEmpty) {
+          rows.add(('Purpose', reason));
+        }
+        return rows;
+      case 'asset':
+        final rows = <(String, String)>[];
+        final assetType = payload['asset_type']?.toString();
+        if (assetType != null && assetType.isNotEmpty) {
+          final size = payload['size']?.toString();
+          rows.add((
+            'Asset',
+            size != null && size.isNotEmpty ? '$assetType ($size)' : assetType,
+          ));
+        }
+        if (payload['quantity'] != null) {
+          rows.add(('Quantity', '${payload['quantity']}'));
+        }
+        final condition = payload['asset_current_status']?.toString();
+        if (condition != null && condition.isNotEmpty) {
+          rows.add(('Condition', condition));
+        }
+        rows.add(('Evidence', firstAttachmentName()));
+        return rows;
+      case 'sick_leave':
+        final rows = <(String, String)>[];
+        final subtype = payload['leave_subtype']?.toString();
+        if (subtype != null && subtype.isNotEmpty) {
+          rows.add(('Leave type', subtype));
+        }
+        rows.add(('Dates', dateRange()));
+        final duration = durationDays();
+        if (duration != null) {
+          rows.add(('Duration', '$duration day${duration == 1 ? '' : 's'}'));
+        }
+        rows.add(('Attachment', firstAttachmentName()));
+        return rows;
+      default:
+        return const [];
+    }
+  }
+
+  static const _monthNames = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+
+  static String _monthShort(int month) => _monthNames[month - 1];
 
   static String _labelize(String key) {
     return key.split('_').map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}').join(' ');
@@ -553,8 +657,14 @@ class _ClarificationReasonCard extends StatelessWidget {
   }
 }
 
-/// Renders whatever the admin actually stored (`decision_reason`,
-/// `decided_at`) — no invented amounts/comments (BLOCKED, see file header).
+/// Renders the real structured fields captured at submission again (as
+/// Figma's admin-response card repeats them) plus whatever the admin
+/// actually stored (`decision_reason`). There is no distinct
+/// `approved_amount` / `penalty_amount` override column and
+/// `admin_decide_request` never populates one, so a revised amount that
+/// differs from the driver's original request cannot be shown — that part
+/// of RSup/10b (loan) / RSup/10c (asset penalty) stays a documented DB gap
+/// (BLOCKED), not invented copy.
 class _AdminResponseCard extends StatelessWidget {
   const _AdminResponseCard({required this.detail});
 
@@ -565,7 +675,20 @@ class _AdminResponseCard extends StatelessWidget {
     final reason = detail.request['decision_reason']?.toString();
     final tint = detail.requestType == 'asset'
         ? AppColors.rejectedRed
-        : AppColors.underReviewAmber;
+        : detail.requestType == 'sick_leave'
+            ? AppColors.primaryBlue
+            : AppColors.underReviewAmber;
+    final allRows = _RequestDetailScreenState._typedDetailRows(detail);
+    final rows = switch (detail.requestType) {
+      'loan' => allRows,
+      'asset' => allRows.where((r) => r.$1 == 'Asset').toList(),
+      _ => const <(String, String)>[],
+    };
+    final badge = switch (detail.requestType) {
+      'asset' => 'Review required',
+      'sick_leave' => 'Documents required',
+      _ => 'Update',
+    };
     return _Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -582,12 +705,20 @@ class _AdminResponseCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  detail.requestType == 'asset' ? 'Penalty applied' : 'Update',
+                  badge,
                   style: TextStyle(color: tint, fontSize: 11, fontWeight: FontWeight.w700),
                 ),
               ),
             ],
           ),
+          if (rows.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            ...rows.map((r) => _RequestDetailScreenState._kv(r.$1, r.$2)),
+          ],
+          if (detail.requestType == 'sick_leave') ...[
+            _RequestDetailScreenState._kv('Status', 'Awaiting your document'),
+            _RequestDetailScreenState._kv('Required', 'Medical certificate'),
+          ],
           const SizedBox(height: 8),
           Container(
             width: double.infinity,

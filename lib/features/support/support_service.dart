@@ -315,6 +315,20 @@ class SupportService {
     }
   }
 
+  Future<void> declineEsignature({
+    required String requestId,
+    String? reason,
+  }) async {
+    final result = await _client.rpc(
+      'driver_decline_esignature',
+      params: {'p_id': requestId, 'p_reason': reason},
+    );
+    final map = _asMap(result);
+    if (map['ok'] == false) {
+      throw Exception(map['error']?.toString() ?? 'decline_failed');
+    }
+  }
+
   Future<List<DriverAppointment>> listAppointments() async {
     final result = await _client.rpc(
       'driver_list_appointments',

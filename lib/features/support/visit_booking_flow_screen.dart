@@ -184,7 +184,12 @@ class _VisitBookingFlowScreenState
   }
 }
 
-/// RSup/11.
+/// RSup/11 — Central Tower intro. `visit_branches.name`/`address` are
+/// DB-backed (seeded "Musallam Central Tower" to match Figma copy); there is
+/// no schema column for working hours or a contact number, so those two
+/// rows render Figma's static example text as display-only copy — documented
+/// assumption, not a fake data source. Revisit if/when the client wants
+/// these editable per branch.
 class _TowerIntroStep extends ConsumerWidget {
   const _TowerIntroStep({required this.onBook});
 
@@ -226,7 +231,7 @@ class _TowerIntroStep extends ConsumerWidget {
                           branch?.name ?? 'Musallam Central Tower',
                           style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
                         ),
-                        const Text('Head office · rider services',
+                        const Text('Head office - rider services',
                             style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
                       ],
                     ),
