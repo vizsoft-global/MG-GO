@@ -137,6 +137,13 @@ class NotificationRouter {
       case 'support_requests':
       case 'my_requests':
         return '/profile/support/requests';
+      case 'support_sign':
+      case 'documents_to_sign':
+      case 'esign':
+        return '/profile/support/sign';
+      case 'support_appointments':
+      case 'appointments':
+        return '/profile/support/appointments';
       default:
         return '/home';
     }
@@ -190,6 +197,16 @@ class NotificationRouter {
       case 'visit':
       case 'visit_booking':
         return '/profile/support/visits';
+      case 'esign':
+        if (recordId != null && recordId.isNotEmpty) {
+          return '/profile/support/sign/$recordId';
+        }
+        return '/profile/support/sign';
+      case 'appointment':
+        if (recordId != null && recordId.isNotEmpty) {
+          return '/profile/support/appointments/$recordId';
+        }
+        return '/profile/support/appointments';
       default:
         return _routeForScreen(params);
     }

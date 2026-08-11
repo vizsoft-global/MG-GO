@@ -221,3 +221,132 @@ const kDocumentTypes = [
   'Vehicle document copy',
   'Salary certification',
 ];
+
+class EsignRequestSummary {
+  const EsignRequestSummary({
+    required this.id,
+    required this.requestCode,
+    required this.title,
+    required this.status,
+    this.dueAt,
+    this.signedAt,
+    this.screenshotRestricted = true,
+    this.categoryKey,
+    this.categoryLabel,
+    this.createdAt,
+  });
+
+  final String id;
+  final String requestCode;
+  final String title;
+  final String status;
+  final DateTime? dueAt;
+  final DateTime? signedAt;
+  final bool screenshotRestricted;
+  final String? categoryKey;
+  final String? categoryLabel;
+  final DateTime? createdAt;
+
+  bool get isPending => status == 'pending';
+  bool get isSigned => status == 'signed';
+
+  factory EsignRequestSummary.fromJson(Map<String, dynamic> json) {
+    return EsignRequestSummary(
+      id: json['id'] as String,
+      requestCode: json['request_code'] as String? ?? '',
+      title: json['title'] as String? ?? '',
+      status: json['status'] as String? ?? '',
+      dueAt: _parseDate(json['due_at']),
+      signedAt: _parseDateTime(json['signed_at']),
+      screenshotRestricted: json['screenshot_restricted'] as bool? ?? true,
+      categoryKey: json['category_key'] as String?,
+      categoryLabel: json['category_label'] as String?,
+      createdAt: _parseDateTime(json['created_at']),
+    );
+  }
+}
+
+class EsignRequestDetail {
+  const EsignRequestDetail({required this.raw});
+
+  final Map<String, dynamic> raw;
+
+  String get id => raw['id'] as String;
+  String get requestCode => raw['request_code'] as String? ?? '';
+  String get title => raw['title'] as String? ?? '';
+  String get status => raw['status'] as String? ?? '';
+  bool get screenshotRestricted => raw['screenshot_restricted'] as bool? ?? true;
+  String? get categoryLabel => raw['category_label'] as String?;
+  String? get documentStorageKey => raw['document_storage_key'] as String?;
+  String? get signatureStorageKey => raw['signature_storage_key'] as String?;
+  String? get signerDisplayName => raw['signer_display_name'] as String?;
+  Map<String, dynamic> get signerMeta {
+    final meta = raw['signer_meta'];
+    if (meta is Map<String, dynamic>) return meta;
+    if (meta is Map) return Map<String, dynamic>.from(meta);
+    return {};
+  }
+
+  DateTime? get dueAt => _parseDate(raw['due_at']);
+  DateTime? get signedAt => _parseDateTime(raw['signed_at']);
+
+  bool get isPending => status == 'pending';
+  bool get isSigned => status == 'signed';
+}
+
+class DriverAppointment {
+  const DriverAppointment({
+    required this.id,
+    required this.appointmentCode,
+    required this.title,
+    required this.scheduledFor,
+    required this.status,
+    this.reason,
+    this.locationLabel,
+    this.adminNote,
+    this.createdAt,
+  });
+
+  final String id;
+  final String appointmentCode;
+  final String title;
+  final DateTime? scheduledFor;
+  final String status;
+  final String? reason;
+  final String? locationLabel;
+  final String? adminNote;
+  final DateTime? createdAt;
+
+  bool get isUpcoming =>
+      status == 'scheduled' || status == 'confirmed' || status == 'checked_in';
+
+  factory DriverAppointment.fromJson(Map<String, dynamic> json) {
+    return DriverAppointment(
+      id: json['id'] as String,
+      appointmentCode: json['appointment_code'] as String? ?? '',
+      title: json['title'] as String? ?? 'Appointment',
+      scheduledFor: _parseDateTime(json['scheduled_for']),
+      status: json['status'] as String? ?? '',
+      reason: json['reason'] as String?,
+      locationLabel: json['location_label'] as String?,
+      adminNote: json['admin_note'] as String?,
+      createdAt: _parseDateTime(json['created_at']),
+    );
+  }
+}
+
+DateTime? _parseDate(dynamic value) {
+  if (value == null) return null;
+  if (value is DateTime) return value;
+  final text = value.toString();
+  if (text.length >= 10) {
+    return DateTime.tryParse(text.length == 10 ? '${text}T00:00:00' : text);
+  }
+  return DateTime.tryParse(text);
+}
+
+DateTime? _parseDateTime(dynamic value) {
+  if (value == null) return null;
+  if (value is DateTime) return value;
+  return DateTime.tryParse(value.toString());
+}

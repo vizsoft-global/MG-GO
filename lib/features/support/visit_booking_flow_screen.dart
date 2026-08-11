@@ -7,7 +7,9 @@ import 'support_models.dart';
 import 'support_providers.dart';
 
 class VisitBookingFlowScreen extends ConsumerStatefulWidget {
-  const VisitBookingFlowScreen({super.key});
+  const VisitBookingFlowScreen({this.initialNote, super.key});
+
+  final String? initialNote;
 
   @override
   ConsumerState<VisitBookingFlowScreen> createState() =>
@@ -25,6 +27,14 @@ class _VisitBookingFlowScreenState
   bool _loadingSlots = false;
   bool _submitting = false;
   String? _bookingCode;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialNote != null && widget.initialNote!.trim().isNotEmpty) {
+      _noteCtrl.text = widget.initialNote!.trim();
+    }
+  }
 
   @override
   void dispose() {

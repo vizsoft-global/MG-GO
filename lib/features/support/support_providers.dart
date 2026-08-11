@@ -37,3 +37,18 @@ final complaintCategoriesProvider =
     FutureProvider.autoDispose<List<ComplaintCategory>>((ref) {
   return ref.read(supportServiceProvider).listComplaintCategories();
 });
+
+final esignRequestsProvider =
+    FutureProvider.autoDispose<List<EsignRequestSummary>>((ref) {
+  return ref.read(supportServiceProvider).listEsignRequests();
+});
+
+final esignRequestDetailProvider =
+    FutureProvider.autoDispose.family<EsignRequestDetail, String>((ref, id) {
+  return ref.read(supportServiceProvider).getEsignRequest(id);
+});
+
+final driverAppointmentsProvider =
+    FutureProvider.autoDispose<List<DriverAppointment>>((ref) {
+  return ref.read(supportServiceProvider).listAppointments();
+});

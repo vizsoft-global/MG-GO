@@ -120,6 +120,20 @@ class SupportHubScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _WideTile(
+            icon: Icons.draw_outlined,
+            title: 'Documents to sign',
+            subtitle: 'Pending signatures and signed proofs',
+            onTap: () => context.push('/profile/support/sign'),
+          ),
+          const SizedBox(height: 8),
+          _WideTile(
+            icon: Icons.event_note_outlined,
+            title: 'Appointments',
+            subtitle: 'Scheduled meetings at Central Tower',
+            onTap: () => context.push('/profile/support/appointments'),
+          ),
+          const SizedBox(height: 8),
+          _WideTile(
             icon: Icons.qr_code_2_outlined,
             title: 'My visits',
             subtitle: 'Upcoming and past bookings',

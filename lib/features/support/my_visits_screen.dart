@@ -87,6 +87,42 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen>
                       }
                     }
                   },
+                  onReschedule: (row) async {
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('Reschedule visit?'),
+                        content: Text(
+                          'Cancel ${row.bookingCode} and book a new slot?',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: const Text('Keep'),
+                          ),
+                          FilledButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: const Text('Reschedule'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirmed != true || !context.mounted) return;
+                    try {
+                      await ref.read(supportServiceProvider).cancelVisit(row.id);
+                      ref.invalidate(myVisitsProvider);
+                      if (!context.mounted) return;
+                      context.push(
+                        '/profile/support/visits/book?note=${Uri.encodeComponent('Reschedule ${row.bookingCode}')}',
+                      );
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('$e')),
+                        );
+                      }
+                    }
+                  },
                 ),
                 _VisitList(
                   rows: past,
@@ -106,11 +142,13 @@ class _VisitList extends StatelessWidget {
     required this.rows,
     required this.empty,
     this.onCancel,
+    this.onReschedule,
   });
 
   final List<VisitBooking> rows;
   final String empty;
   final Future<void> Function(String id)? onCancel;
+  final Future<void> Function(VisitBooking row)? onReschedule;
 
   @override
   Widget build(BuildContext context) {
@@ -167,15 +205,22 @@ class _VisitList extends StatelessWidget {
                 ),
                 if (onCancel != null && row.status == 'confirmed') ...[
                   const SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () => onCancel!(row.id),
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(color: AppColors.rejectedRed),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      if (onReschedule != null)
+                        TextButton(
+                          onPressed: () => onReschedule!(row),
+                          child: const Text('Reschedule'),
+                        ),
+                      TextButton(
+                        onPressed: () => onCancel!(row.id),
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(color: AppColors.rejectedRed),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ],

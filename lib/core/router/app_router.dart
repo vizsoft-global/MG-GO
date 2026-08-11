@@ -29,6 +29,12 @@ import '../../features/profile/profile_screen.dart';
 import '../../features/shell/app_exit_scope.dart';
 import '../../features/shell/main_shell.dart';
 import '../../features/support/action_required_screen.dart';
+import '../../features/support/appointment_detail_screen.dart';
+import '../../features/support/appointments_inbox_screen.dart';
+import '../../features/support/esign_capture_screen.dart';
+import '../../features/support/esign_confirmed_screen.dart';
+import '../../features/support/esign_documents_screen.dart';
+import '../../features/support/esign_viewer_screen.dart';
 import '../../features/support/my_requests_screen.dart';
 import '../../features/support/my_visits_screen.dart';
 import '../../features/support/request_detail_screen.dart';
@@ -273,7 +279,53 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/profile/support/visits/book',
         name: 'support_visit_book',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const VisitBookingFlowScreen(),
+        builder: (context, state) => VisitBookingFlowScreen(
+          initialNote: state.uri.queryParameters['note'],
+        ),
+      ),
+      GoRoute(
+        path: '/profile/support/sign',
+        name: 'support_esign_list',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const EsignDocumentsScreen(),
+      ),
+      GoRoute(
+        path: '/profile/support/sign/:id/capture',
+        name: 'support_esign_capture',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => EsignCaptureScreen(
+          requestId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
+        path: '/profile/support/sign/:id/confirmed',
+        name: 'support_esign_confirmed',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => EsignConfirmedScreen(
+          requestId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
+        path: '/profile/support/sign/:id',
+        name: 'support_esign_detail',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => EsignViewerScreen(
+          requestId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
+        path: '/profile/support/appointments',
+        name: 'support_appointments',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const AppointmentsInboxScreen(),
+      ),
+      GoRoute(
+        path: '/profile/support/appointments/:id',
+        name: 'support_appointment_detail',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => AppointmentDetailScreen(
+          appointmentId: state.pathParameters['id']!,
+        ),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {

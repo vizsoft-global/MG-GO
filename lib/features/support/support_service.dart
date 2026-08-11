@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'support_models.dart';
@@ -208,6 +210,92 @@ class SupportService {
         .order('scheduled_date', ascending: false);
     return (rows as List)
         .map((e) => VisitBooking.fromJson(Map<String, dynamic>.from(e as Map)))
+        .toList();
+  }
+
+  Future<List<EsignRequestSummary>> listEsignRequests() async {
+    final result = await _client.rpc(
+      'driver_list_esign_requests',
+      params: {'p_limit': 50, 'p_offset': 0},
+    );
+    final map = _asMap(result);
+    if (map['ok'] == false) {
+      throw Exception(map['error']?.toString() ?? 'list_failed');
+    }
+    return _asMapList(map['rows'])
+        .map(EsignRequestSummary.fromJson)
+        .toList();
+  }
+
+  Future<EsignRequestDetail> getEsignRequest(String id) async {
+    final result = await _client.rpc(
+      'driver_get_esign_request',
+      params: {'p_id': id},
+    );
+    final map = _asMap(result);
+    if (map['ok'] == false) {
+      throw Exception(map['error']?.toString() ?? 'not_found');
+    }
+    return EsignRequestDetail(raw: _asMap(map['request']));
+  }
+
+  Future<String> uploadEsignSignature({
+    required String requestId,
+    required Uint8List pngBytes,
+  }) async {
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null) throw Exception('not_authenticated');
+    final key = '$uid/$requestId/signature.png';
+    await _client.storage.from('esign-documents').uploadBinary(
+          key,
+          pngBytes,
+          fileOptions: const FileOptions(
+            contentType: 'image/png',
+            upsert: true,
+          ),
+        );
+    return key;
+  }
+
+  Future<String?> signedEsignDocumentUrl(String storageKey) async {
+    if (storageKey.trim().isEmpty) return null;
+    return _client.storage
+        .from('esign-documents')
+        .createSignedUrl(storageKey, 3600);
+  }
+
+  Future<void> submitEsignature({
+    required String requestId,
+    required String signatureStorageKey,
+    String? signerDisplayName,
+    Map<String, dynamic> signerMeta = const {},
+  }) async {
+    final result = await _client.rpc(
+      'driver_submit_esignature',
+      params: {
+        'p_id': requestId,
+        'p_signature_storage_key': signatureStorageKey,
+        'p_signer_display_name': signerDisplayName,
+        'p_signer_meta': signerMeta,
+      },
+    );
+    final map = _asMap(result);
+    if (map['ok'] == false) {
+      throw Exception(map['error']?.toString() ?? 'sign_failed');
+    }
+  }
+
+  Future<List<DriverAppointment>> listAppointments() async {
+    final result = await _client.rpc(
+      'driver_list_appointments',
+      params: {'p_limit': 50, 'p_offset': 0},
+    );
+    final map = _asMap(result);
+    if (map['ok'] == false) {
+      throw Exception(map['error']?.toString() ?? 'list_failed');
+    }
+    return _asMapList(map['rows'])
+        .map(DriverAppointment.fromJson)
         .toList();
   }
 }
