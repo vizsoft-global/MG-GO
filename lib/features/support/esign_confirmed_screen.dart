@@ -5,20 +5,21 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/theme/app_colors.dart';
+import 'support_models.dart';
 import 'support_providers.dart';
 
 /// RSup/27 — "Signed" confirmation.
 ///
-/// Two honest deviations from the Figma frame, both DB-backed rather than
-/// invented:
-///  * "IP address" reads `Not captured` — nothing in this app or in
-///    `driver_submit_esignature`'s `signer_meta` resolves a client IP.
-///  * The download serves the document the admin sent
-///    (`esign_requests.document_storage_key`). There is no merged signed PDF:
-///    the schema stores the signature PNG separately
-///    (`signature_storage_key`) and nothing composes the two, so the button
-///    and caption say exactly what the file is instead of calling it a
-///    "signed copy".
+/// One honest deviation from the Figma frame: "IP address" reads
+/// `Not captured` — nothing in this app or in `driver_submit_esignature`'s
+/// `signer_meta` resolves a client IP.
+///
+/// The download serves the composed signature-stamped copy
+/// (`signed_document_storage_key`) once the `esign-compose-signed-document`
+/// edge function has written it. Opening this screen is what triggers
+/// composition: the device only asks, the function runs with the service role
+/// and is the sole writer of the artifact. Until it lands, the button falls
+/// back to the original and says so.
 class EsignConfirmedScreen extends ConsumerStatefulWidget {
   const EsignConfirmedScreen({required this.requestId, super.key});
 
@@ -30,10 +31,30 @@ class EsignConfirmedScreen extends ConsumerStatefulWidget {
 
 class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
   bool _downloading = false;
+  bool _composeRequested = false;
 
   String _formatDateTime(DateTime? value) {
     if (value == null) return '—';
     return DateFormat('d MMM yyyy, HH:mm').format(value);
+  }
+
+  /// Fire once per screen mount when the composed copy is still missing.
+  void _ensureSignedCopy(EsignRequestDetail detail) {
+    if (_composeRequested || !detail.signedDocumentPending) return;
+    _composeRequested = true;
+    Future<void>(() async {
+      try {
+        await ref
+            .read(supportServiceProvider)
+            .composeSignedEsignDocument(widget.requestId);
+      } catch (_) {
+        // The RPC records the failure in `signed_document_error`; the refresh
+        // below surfaces it as "signed copy unavailable" rather than a toast.
+      }
+      if (mounted) {
+        ref.invalidate(esignRequestDetailProvider(widget.requestId));
+      }
+    });
   }
 
   Future<void> _openStoredFile(String? storageKey) async {
@@ -74,6 +95,7 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('$e')),
         data: (detail) {
+          _ensureSignedCopy(detail);
           final model = detail.signerMeta['device_model'] as String?;
           final manufacturer = detail.signerMeta['device_manufacturer'] as String?;
           final device = [manufacturer, model]
@@ -163,22 +185,36 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
                 child: OutlinedButton.icon(
                   onPressed: _downloading
                       ? null
-                      : () => _openStoredFile(detail.documentStorageKey),
+                      : () => _openStoredFile(detail.downloadStorageKey),
                   icon: _downloading
                       ? const SizedBox(
                           height: 16, width: 16,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.download_outlined),
-                  label: const Text('Download document'),
+                  label: Text(
+                    detail.signedDocumentReady
+                        ? 'Download signed copy'
+                        : 'Download document',
+                  ),
                 ),
               ),
               const SizedBox(height: 6),
-              const Text(
-                'This is the document you were sent. Your signature is stored '
-                'with the request — a merged signed PDF is not generated yet.',
+              Text(
+                detail.signedDocumentReady
+                    ? 'Your signature is stamped on the last page of this copy.'
+                    : detail.signedDocumentPending
+                        ? 'Preparing your signed copy — this is the original '
+                            'document until it is ready. Reopen this screen in '
+                            'a moment.'
+                        : 'Signed copy unavailable, so this is the original '
+                            'document you were sent. Your signature is stored '
+                            'with the request.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  color: AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: 12),
               SizedBox(

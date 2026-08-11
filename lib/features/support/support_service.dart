@@ -287,6 +287,29 @@ class SupportService {
     return key;
   }
 
+  /// Asks the server to compose the signature-stamped copy.
+  ///
+  /// The device only triggers this; the edge function runs with the service
+  /// role, re-reads the original document, and is the sole writer of
+  /// `signed_document_storage_key`. Safe to call repeatedly — it overwrites a
+  /// deterministic object key rather than stamping again.
+  Future<String?> composeSignedEsignDocument(String requestId) async {
+    try {
+      final response = await _client.functions.invoke(
+        'esign-compose-signed-document',
+        body: {'request_id': requestId},
+      );
+      final map = _asMap(response.data);
+      if (map['ok'] != true) {
+        throw Exception(map['error']?.toString() ?? 'compose_failed');
+      }
+      return map['storage_key'] as String?;
+    } on FunctionException catch (e) {
+      final map = _asMap(e.details);
+      throw Exception(map['error']?.toString() ?? 'compose_failed');
+    }
+  }
+
   Future<String?> signedEsignDocumentUrl(String storageKey) async {
     if (storageKey.trim().isEmpty) return null;
     return _client.storage

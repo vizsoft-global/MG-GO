@@ -384,6 +384,25 @@ class EsignRequestDetail {
   String? get documentStorageKey => raw['document_storage_key'] as String?;
   String? get signatureStorageKey => raw['signature_storage_key'] as String?;
   String? get signerDisplayName => raw['signer_display_name'] as String?;
+
+  /// Composed signature-stamped copy, written server-side by the
+  /// `esign-compose-signed-document` edge function.
+  String? get signedDocumentStorageKey =>
+      raw['signed_document_storage_key'] as String?;
+
+  /// The key the driver should download: the signed copy once composed,
+  /// otherwise the original the admin sent.
+  String? get downloadStorageKey =>
+      raw['download_storage_key'] as String? ?? documentStorageKey;
+
+  bool get signedDocumentReady => raw['signed_document_ready'] as bool? ?? false;
+
+  /// Signed, but the composed copy has not been written yet and no attempt
+  /// has failed — i.e. generation is still expected to succeed.
+  bool get signedDocumentPending =>
+      raw['signed_document_pending'] as bool? ?? false;
+
+  String? get signedDocumentError => raw['signed_document_error'] as String?;
   Map<String, dynamic> get signerMeta {
     final meta = raw['signer_meta'];
     if (meta is Map<String, dynamic>) return meta;
