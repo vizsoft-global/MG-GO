@@ -211,10 +211,13 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                           ),
                         ],
                         const SizedBox(height: 12),
-                        if (_loadingDoc)
-                          const Center(child: CircularProgressIndicator())
-                        else if (detail.documentStorageKey == null)
+                        if (detail.documentStorageKey == null)
                           Text(l10n.esignNoDocumentAttached)
+                        // `!_docRequested` covers the first frame, before the
+                        // post-frame callback has started the fetch — without it
+                        // the failure branch flashes for one frame.
+                        else if (_loadingDoc || !_docRequested)
+                          const Center(child: CircularProgressIndicator())
                         else if (_docLoadFailed || _documentUrl == null)
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
