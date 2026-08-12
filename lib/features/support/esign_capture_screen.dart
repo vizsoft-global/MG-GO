@@ -41,6 +41,7 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
 
   Future<void> _submit(RiderProfile? profile) async {
     final l10n = context.l10n;
+    final devicePixelRatio = MediaQuery.devicePixelRatioOf(context);
     if (!_legalAccepted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.supportErrorAcceptDeclaration)),
@@ -55,8 +56,14 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
     }
     setState(() => _submitting = true);
     try {
-      const padSize = Size(360, 180);
-      final pngBytes = await _padController.toPngBytes(size: padSize);
+      final padSize = _padController.padSize;
+      if (padSize == null) {
+        throw Exception('signature_empty');
+      }
+      final pngBytes = await _padController.toPngBytes(
+        size: padSize,
+        pixelRatio: devicePixelRatio,
+      );
       if (pngBytes == null) {
         throw Exception('signature_empty');
       }

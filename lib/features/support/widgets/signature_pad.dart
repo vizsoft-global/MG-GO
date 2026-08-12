@@ -6,6 +6,12 @@ import 'package:flutter/material.dart';
 class SignaturePadController extends ChangeNotifier {
   final List<List<Offset>> _strokes = [];
   List<Offset>? _currentStroke;
+  Size? _padSize;
+
+  /// The pad's real laid-out size, published by [SignaturePad]. Strokes are
+  /// recorded in this coordinate space, so an export at any other size clips
+  /// or letterboxes the signature.
+  Size? get padSize => _padSize;
 
   bool get hasInk =>
       _strokes.any((stroke) => stroke.length > 1) ||
@@ -43,10 +49,14 @@ class SignaturePadController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<Uint8List?> toPngBytes({required Size size}) async {
+  Future<Uint8List?> toPngBytes({
+    required Size size,
+    double pixelRatio = 1,
+  }) async {
     if (!hasInk) return null;
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
+    canvas.scale(pixelRatio);
     canvas.drawRect(
       Rect.fromLTWH(0, 0, size.width, size.height),
       Paint()..color = Colors.white,
@@ -70,8 +80,8 @@ class SignaturePadController extends ChangeNotifier {
     }
     final picture = recorder.endRecording();
     final image = await picture.toImage(
-      size.width.ceil(),
-      size.height.ceil(),
+      (size.width * pixelRatio).ceil(),
+      (size.height * pixelRatio).ceil(),
     );
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
     return bytes?.buffer.asUint8List();
@@ -93,6 +103,10 @@ class SignaturePad extends StatelessWidget {
       builder: (context, _) {
         return LayoutBuilder(
           builder: (context, constraints) {
+            controller._padSize = Size(
+              constraints.maxWidth,
+              constraints.maxHeight,
+            );
             return GestureDetector(
               onPanStart: (d) => controller.startStroke(d.localPosition),
               onPanUpdate: (d) => controller.extendStroke(d.localPosition),
