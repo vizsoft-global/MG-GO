@@ -183,7 +183,7 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
                 Text(
                   [
                     profile?.fullName ?? l10n.esignSignerYou,
-                    if (profile?.driverCode != null) profile!.driverCode!,
+                    if (profile?.employeeId != null) profile!.employeeId!,
                     _signedAtLabel(_capturedAt, l10n),
                   ].join(' · '),
                   style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),

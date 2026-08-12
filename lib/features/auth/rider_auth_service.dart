@@ -42,6 +42,7 @@ class RiderProfile {
     required this.email,
     required this.role,
     this.driverCode,
+    this.employeeId,
     this.avatarObjectKey,
     this.avatarUrl,
     this.avatarUpdatedAt,
@@ -52,6 +53,7 @@ class RiderProfile {
   final String? email;
   final String role;
   final String? driverCode;
+  final String? employeeId;
   final String? avatarObjectKey;
 
   /// Direct http(s) URL only. R2 object keys are resolved lazily via
@@ -386,16 +388,20 @@ class RiderAuthService {
     // there. `drivers.avatar_updated_at` is used as a cache buster so that
     // a new admin upload invalidates any previously cached image.
     String? driverCode;
+    String? employeeId;
     String? driverAvatarKey;
     DateTime? avatarUpdatedAt;
     if (role == 'rider') {
       try {
         final driver = await _client
             .from('drivers')
-            .select('driver_code, avatar_object_key, avatar_updated_at')
+            .select(
+              'driver_code, employee_id, avatar_object_key, avatar_updated_at',
+            )
             .eq('id', user.id)
             .maybeSingle();
         driverCode = driver?['driver_code'] as String?;
+        employeeId = driver?['employee_id'] as String?;
         final keyRaw = (driver?['avatar_object_key'] as String?)?.trim();
         driverAvatarKey = (keyRaw == null || keyRaw.isEmpty) ? null : keyRaw;
         final updatedRaw = driver?['avatar_updated_at'] as String?;
@@ -426,6 +432,7 @@ class RiderAuthService {
       email: row['email'] as String? ?? user.email,
       role: role.isEmpty ? 'rider' : role,
       driverCode: driverCode,
+      employeeId: employeeId,
       avatarObjectKey: avatarObjectKey,
       avatarUrl: immediateAvatarUrl,
       avatarUpdatedAt: avatarUpdatedAt,
