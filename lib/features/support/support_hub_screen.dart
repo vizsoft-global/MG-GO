@@ -170,20 +170,50 @@ class _RaiseRequestTiles extends ConsumerWidget {
                 ))
             .toList();
 
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: tiles
-          .map(
-            (t) => _Tile(
-              icon: t.icon,
-              label: t.label,
-              onTap: () => context.push(
-                '/profile/support/requests/new?type=${Uri.encodeComponent(t.key)}',
+    // Paired into rows rather than laid out in a Wrap: an admin-created type can carry a label
+    // long enough to wrap onto a second line, and a Wrap would leave its neighbour short.
+    final tileRows = <Widget>[];
+    for (var i = 0; i < tiles.length; i += 2) {
+      final left = tiles[i];
+      final right = i + 1 < tiles.length ? tiles[i + 1] : null;
+      tileRows.add(
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: _tileFor(context, left)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: right == null
+                    ? const SizedBox.shrink()
+                    : _tileFor(context, right),
               ),
-            ),
-          )
-          .toList(),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        for (var i = 0; i < tileRows.length; i++) ...[
+          if (i > 0) const SizedBox(height: 8),
+          tileRows[i],
+        ],
+      ],
+    );
+  }
+
+  Widget _tileFor(
+    BuildContext context,
+    ({String key, IconData icon, String label}) tile,
+  ) {
+    return _Tile(
+      icon: tile.icon,
+      label: tile.label,
+      onTap: () => context.push(
+        '/profile/support/requests/new?type=${Uri.encodeComponent(tile.key)}',
+      ),
     );
   }
 }
@@ -220,39 +250,36 @@ class _Tile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: (MediaQuery.sizeOf(context).width - 40) / 2,
-      child: Material(
-        color: AppColors.primaryBlue,
+    return Material(
+      color: AppColors.primaryBlue,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
         borderRadius: BorderRadius.circular(14),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(icon, color: AppColors.white),
-                      const SizedBox(height: 10),
-                      Text(
-                        label,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.white,
-                        ),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(icon, color: AppColors.white),
+                    const SizedBox(height: 10),
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.white,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                const Icon(Icons.chevron_right_rounded,
-                    color: AppColors.white, size: 18),
-              ],
-            ),
+              ),
+              const Icon(Icons.chevron_right_rounded,
+                  color: AppColors.white, size: 18),
+            ],
           ),
         ),
       ),

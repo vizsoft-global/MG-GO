@@ -126,10 +126,10 @@ const _riderProfile = RiderProfile(
   employeeId: 'EMP-2048',
 );
 
-Widget _harness(Widget home) {
+Widget _harness(Widget home, {List<RequestTypeDefinition>? types}) {
   return ProviderScope(
     overrides: [
-      requestTypesProvider.overrideWith((ref) async => _typeDefinitions),
+      requestTypesProvider.overrideWith((ref) async => types ?? _typeDefinitions),
       requestFieldsProvider(_customType).overrideWith((ref) async => _fields),
       riderProfileProvider.overrideWith((ref) async => _riderProfile),
       esignRequestDetailProvider(_esignId).overrideWith((ref) async => _esignDetail),
@@ -149,11 +149,15 @@ Widget _harness(Widget home) {
   );
 }
 
-Future<void> _pumpAtPixel9(WidgetTester tester, Widget home) async {
+Future<void> _pumpAtPixel9(
+  WidgetTester tester,
+  Widget home, {
+  List<RequestTypeDefinition>? types,
+}) async {
   tester.view.devicePixelRatio = 1.0;
   tester.view.physicalSize = _pixel9;
   addTearDown(tester.view.reset);
-  await tester.pumpWidget(_harness(home));
+  await tester.pumpWidget(_harness(home, types: types));
   await tester.pumpAndSettle();
 }
 
@@ -185,6 +189,47 @@ void main() {
       find.byType(SupportHubScreen),
       matchesGoldenFile('goldens/ar_support_hub.png'),
     );
+  });
+
+  // A label an admin writes can be long enough to wrap. Before the tiles were
+  // paired into rows, the neighbour kept its one-line height and the row read
+  // as two mismatched cards.
+  testWidgets('a wrapping tile label does not leave its neighbour short',
+      (tester) async {
+    const longLabel = 'طلب استبدال معدات التوصيل التالفة';
+    const shortLabel = 'سلفة';
+    await _pumpAtPixel9(
+      tester,
+      const SupportHubScreen(),
+      types: [
+        RequestTypeDefinition.fromJson(const {
+          'key': 'equipment_swap',
+          'label_en': 'Equipment swap',
+          'label_ar': longLabel,
+          'is_system': false,
+          'sort_order': 1,
+        }),
+        RequestTypeDefinition.fromJson(const {
+          'key': 'petty_cash',
+          'label_en': 'Petty cash',
+          'label_ar': shortLabel,
+          'is_system': false,
+          'sort_order': 2,
+        }),
+      ],
+    );
+
+    Rect tile(String label) => tester.getRect(
+          find.ancestor(of: find.text(label), matching: find.byType(Material)).first,
+        );
+
+    final long = tile(longLabel);
+    final short = tile(shortLabel);
+    expect(short.height, long.height);
+    // Both sit in the same row, so a shared height is only meaningful if the
+    // long one actually wrapped.
+    expect(long.top, short.top);
+    expect(long.height, greaterThan(90));
   });
 
   testWidgets('dynamic request form in Arabic', (tester) async {
