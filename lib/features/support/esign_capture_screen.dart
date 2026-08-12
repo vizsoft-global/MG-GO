@@ -33,6 +33,11 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
   bool _legalAccepted = false;
   bool _submitting = false;
 
+  /// Stamped once when the screen opens and re-stamped at the instant the
+  /// rider submits. Deriving it in build() showed the last render time, which
+  /// drifts away from the server's signed_at the longer the screen is open.
+  DateTime _capturedAt = DateTime.now();
+
   @override
   void dispose() {
     _padController.dispose();
@@ -54,7 +59,10 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
       );
       return;
     }
-    setState(() => _submitting = true);
+    setState(() {
+      _submitting = true;
+      _capturedAt = DateTime.now();
+    });
     try {
       final padSize = _padController.padSize;
       if (padSize == null) {
@@ -167,7 +175,7 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
                   [
                     profile?.fullName ?? l10n.esignSignerYou,
                     if (profile?.driverCode != null) profile!.driverCode!,
-                    _signedAtLabel(DateTime.now(), l10n),
+                    _signedAtLabel(_capturedAt, l10n),
                   ].join(' · '),
                   style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                 ),
