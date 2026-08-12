@@ -707,9 +707,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                   Text('${step['step_name']}',
                       style: const TextStyle(fontWeight: FontWeight.w600)),
                   Text(
-                    decidedAt != null
-                        ? '${_statusWord(status)} · ${_fmtDateTime(decidedAt)}'
-                        : _statusWord(status),
+                    _stepSubtitle(status, decidedAt),
                     style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                   ),
                 ],
@@ -723,14 +721,28 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
 
   static String _statusWord(String status) => switch (status) {
         'completed' => 'Approved',
-        'in_progress' => 'In review since',
+        'in_progress' => 'In review',
         'rejected' => 'Rejected',
         _ => 'Pending',
       };
 
-  /// Figma RSup/10b–10d print the decision moment as "12 Jul, 09:14".
-  /// `decided_at` is a timestamptz, so parse-then-`toLocal` before formatting;
-  /// otherwise the step reads back in UTC, three hours behind Kuwait.
+  /// Figma RSup/10b–10d: a decided step reads "Approved · 12 Jul, 11:02" while
+  /// the step still open reads "In review since 12 Jul" — no dot, no clock.
+  ///
+  /// `request_approval_steps` has no `started_at`, and `decided_at` is null
+  /// until someone acts, so an open step has no date to hang "since" on; fall
+  /// back to the bare word rather than printing a dangling "In review since".
+  static String _stepSubtitle(String status, DateTime? decidedAt) {
+    final word = _statusWord(status);
+    if (decidedAt == null) return word;
+    if (status == 'in_progress') return '$word since ${_fmtDay(decidedAt)}';
+    return '$word · ${_fmtDateTime(decidedAt)}';
+  }
+
+  /// `decided_at` is a timestamptz, so convert before formatting; otherwise the
+  /// step reads back in UTC, three hours behind Kuwait.
+  static String _fmtDay(DateTime d) => DateFormat('d MMM').format(d.toLocal());
+
   static String _fmtDateTime(DateTime d) =>
       DateFormat('d MMM, HH:mm').format(d.toLocal());
 }
