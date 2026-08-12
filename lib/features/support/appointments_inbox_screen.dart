@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
@@ -21,10 +22,11 @@ class AppointmentsInboxScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final async = ref.watch(driverAppointmentsProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Appointments'),
+        title: Text(l10n.supportAppointments),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.canPop() ? context.pop() : context.go('/profile/support'),
@@ -46,9 +48,9 @@ class AppointmentsInboxScreen extends ConsumerWidget {
           data: (rows) {
             if (rows.isEmpty) {
               return ListView(
-                children: const [
-                  SizedBox(height: 120),
-                  Center(child: Text('No appointments scheduled')),
+                children: [
+                  const SizedBox(height: 120),
+                  Center(child: Text(l10n.apptNoneScheduled)),
                 ],
               );
             }

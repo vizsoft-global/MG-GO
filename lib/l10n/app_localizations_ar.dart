@@ -2738,4 +2738,107 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get esignBackToDocuments => 'العودة إلى المستندات';
+
+  @override
+  String get apptNoneScheduled => 'لا توجد مواعيد مجدولة';
+
+  @override
+  String get apptRequestTitle => 'طلب موعد';
+
+  @override
+  String get apptNotFound => 'الموعد غير موجود';
+
+  @override
+  String apptFromRequester(String code, String name) {
+    return '$code · من $name';
+  }
+
+  @override
+  String get apptRequesterAdmin => 'الإدارة';
+
+  @override
+  String get apptDetails => 'التفاصيل';
+
+  @override
+  String get apptFieldPurpose => 'الغرض';
+
+  @override
+  String get apptFieldProposedDateTime => 'التاريخ والوقت المقترحان';
+
+  @override
+  String get apptFieldLocation => 'الموقع';
+
+  @override
+  String get apptFieldNote => 'ملاحظة';
+
+  @override
+  String get apptFieldYourProposedTime => 'الوقت الذي اقترحته';
+
+  @override
+  String get apptFieldYourNote => 'ملاحظتك';
+
+  @override
+  String get apptNoticeAccepted =>
+      'لقد قبلت هذا الموعد. يرجى الحضور في الوقت المحدد إلى الاستقبال.';
+
+  @override
+  String get apptNoticeRejected => 'لقد رفضت هذا الموعد.';
+
+  @override
+  String get apptNoticeRescheduleRequested =>
+      'لقد اقترحت وقتاً جديداً. في انتظار تأكيد الإدارة.';
+
+  @override
+  String get apptNoticeScheduled =>
+      'تم جدولة موعدك. يرجى الحضور في الوقت المحدد إلى الاستقبال.';
+
+  @override
+  String get apptReject => 'رفض';
+
+  @override
+  String get apptProposeTime => 'اقتراح وقت';
+
+  @override
+  String get apptAcceptAppointment => 'قبول الموعد';
+
+  @override
+  String get apptRejectAppointment => 'رفض الموعد';
+
+  @override
+  String get apptRejectBody => 'أبلغ الإدارة بسبب عدم تمكنك من الحضور.';
+
+  @override
+  String get supportReasonOptionalHint => 'السبب (اختياري)';
+
+  @override
+  String get apptRejected => 'تم رفض الموعد';
+
+  @override
+  String get apptProposeNewTime => 'اقتراح وقت جديد';
+
+  @override
+  String get apptNoteForAdminHint => 'ملاحظة للإدارة (اختياري)';
+
+  @override
+  String get apptSendProposedTime => 'إرسال الوقت المقترح';
+
+  @override
+  String get apptProposedTimeSent => 'تم إرسال الوقت المقترح إلى الإدارة';
+
+  @override
+  String get apptConfirmedTitle => 'تم تأكيد الموعد';
+
+  @override
+  String get apptConfirmedBody => 'تمت إضافته إلى جدولك. سنذكّرك قبل موعده.';
+
+  @override
+  String get apptDone => 'تم';
+
+  @override
+  String get apptViewInCalendar => 'عرض في التقويم';
+
+  @override
+  String apptTitleWithTime(String title, String time) {
+    return '$title · $time';
+  }
 }

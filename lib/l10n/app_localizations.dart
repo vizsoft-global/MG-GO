@@ -5023,6 +5023,198 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Back to documents'**
   String get esignBackToDocuments;
+
+  /// No description provided for @apptNoneScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'No appointments scheduled'**
+  String get apptNoneScheduled;
+
+  /// No description provided for @apptRequestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Appointment request'**
+  String get apptRequestTitle;
+
+  /// No description provided for @apptNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Appointment not found'**
+  String get apptNotFound;
+
+  /// No description provided for @apptFromRequester.
+  ///
+  /// In en, this message translates to:
+  /// **'{code} · From {name}'**
+  String apptFromRequester(String code, String name);
+
+  /// No description provided for @apptRequesterAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'admin'**
+  String get apptRequesterAdmin;
+
+  /// No description provided for @apptDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get apptDetails;
+
+  /// No description provided for @apptFieldPurpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Purpose'**
+  String get apptFieldPurpose;
+
+  /// No description provided for @apptFieldProposedDateTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Proposed date/time'**
+  String get apptFieldProposedDateTime;
+
+  /// No description provided for @apptFieldLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get apptFieldLocation;
+
+  /// No description provided for @apptFieldNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get apptFieldNote;
+
+  /// No description provided for @apptFieldYourProposedTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Your proposed time'**
+  String get apptFieldYourProposedTime;
+
+  /// No description provided for @apptFieldYourNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Your note'**
+  String get apptFieldYourNote;
+
+  /// No description provided for @apptNoticeAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'You accepted this appointment. Arrive on time at reception.'**
+  String get apptNoticeAccepted;
+
+  /// No description provided for @apptNoticeRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'You rejected this appointment.'**
+  String get apptNoticeRejected;
+
+  /// No description provided for @apptNoticeRescheduleRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'You proposed a new time. Waiting for admin to confirm.'**
+  String get apptNoticeRescheduleRequested;
+
+  /// No description provided for @apptNoticeScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Your appointment is scheduled. Arrive on time at reception.'**
+  String get apptNoticeScheduled;
+
+  /// No description provided for @apptReject.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get apptReject;
+
+  /// No description provided for @apptProposeTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Propose time'**
+  String get apptProposeTime;
+
+  /// No description provided for @apptAcceptAppointment.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept appointment'**
+  String get apptAcceptAppointment;
+
+  /// No description provided for @apptRejectAppointment.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject appointment'**
+  String get apptRejectAppointment;
+
+  /// No description provided for @apptRejectBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Let admin know why you cannot make it.'**
+  String get apptRejectBody;
+
+  /// No description provided for @supportReasonOptionalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason (optional)'**
+  String get supportReasonOptionalHint;
+
+  /// No description provided for @apptRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Appointment rejected'**
+  String get apptRejected;
+
+  /// No description provided for @apptProposeNewTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Propose a new time'**
+  String get apptProposeNewTime;
+
+  /// No description provided for @apptNoteForAdminHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Note for admin (optional)'**
+  String get apptNoteForAdminHint;
+
+  /// No description provided for @apptSendProposedTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Send proposed time'**
+  String get apptSendProposedTime;
+
+  /// No description provided for @apptProposedTimeSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Proposed time sent to admin'**
+  String get apptProposedTimeSent;
+
+  /// No description provided for @apptConfirmedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Appointment confirmed'**
+  String get apptConfirmedTitle;
+
+  /// No description provided for @apptConfirmedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It\'s been added to your schedule. We\'ll remind you before it starts.'**
+  String get apptConfirmedBody;
+
+  /// No description provided for @apptDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get apptDone;
+
+  /// No description provided for @apptViewInCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'View in calendar'**
+  String get apptViewInCalendar;
+
+  /// No description provided for @apptTitleWithTime.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} · {time}'**
+  String apptTitleWithTime(String title, String time);
 }
 
 class _AppLocalizationsDelegate

@@ -1424,5 +1424,57 @@
   "esignSignedCopyReady": "Your signature is stamped on the last page of this copy.",
   "esignSignedCopyPending": "Preparing your signed copy — this is the original document until it is ready. Reopen this screen in a moment.",
   "esignSignedCopyUnavailable": "Signed copy unavailable, so this is the original document you were sent. Your signature is stored with the request.",
-  "esignBackToDocuments": "Back to documents"
+  "esignBackToDocuments": "Back to documents",
+  "apptNoneScheduled": "No appointments scheduled",
+  "apptRequestTitle": "Appointment request",
+  "apptNotFound": "Appointment not found",
+  "apptFromRequester": "{code} · From {name}",
+  "@apptFromRequester": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "apptRequesterAdmin": "admin",
+  "apptDetails": "Details",
+  "apptFieldPurpose": "Purpose",
+  "apptFieldProposedDateTime": "Proposed date/time",
+  "apptFieldLocation": "Location",
+  "apptFieldNote": "Note",
+  "apptFieldYourProposedTime": "Your proposed time",
+  "apptFieldYourNote": "Your note",
+  "apptNoticeAccepted": "You accepted this appointment. Arrive on time at reception.",
+  "apptNoticeRejected": "You rejected this appointment.",
+  "apptNoticeRescheduleRequested": "You proposed a new time. Waiting for admin to confirm.",
+  "apptNoticeScheduled": "Your appointment is scheduled. Arrive on time at reception.",
+  "apptReject": "Reject",
+  "apptProposeTime": "Propose time",
+  "apptAcceptAppointment": "Accept appointment",
+  "apptRejectAppointment": "Reject appointment",
+  "apptRejectBody": "Let admin know why you cannot make it.",
+  "supportReasonOptionalHint": "Reason (optional)",
+  "apptRejected": "Appointment rejected",
+  "apptProposeNewTime": "Propose a new time",
+  "apptNoteForAdminHint": "Note for admin (optional)",
+  "apptSendProposedTime": "Send proposed time",
+  "apptProposedTimeSent": "Proposed time sent to admin",
+  "apptConfirmedTitle": "Appointment confirmed",
+  "apptConfirmedBody": "It's been added to your schedule. We'll remind you before it starts.",
+  "apptDone": "Done",
+  "apptViewInCalendar": "View in calendar",
+  "apptTitleWithTime": "{title} · {time}",
+  "@apptTitleWithTime": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  }
 }

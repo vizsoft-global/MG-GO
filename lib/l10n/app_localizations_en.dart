@@ -2748,4 +2748,108 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get esignBackToDocuments => 'Back to documents';
+
+  @override
+  String get apptNoneScheduled => 'No appointments scheduled';
+
+  @override
+  String get apptRequestTitle => 'Appointment request';
+
+  @override
+  String get apptNotFound => 'Appointment not found';
+
+  @override
+  String apptFromRequester(String code, String name) {
+    return '$code · From $name';
+  }
+
+  @override
+  String get apptRequesterAdmin => 'admin';
+
+  @override
+  String get apptDetails => 'Details';
+
+  @override
+  String get apptFieldPurpose => 'Purpose';
+
+  @override
+  String get apptFieldProposedDateTime => 'Proposed date/time';
+
+  @override
+  String get apptFieldLocation => 'Location';
+
+  @override
+  String get apptFieldNote => 'Note';
+
+  @override
+  String get apptFieldYourProposedTime => 'Your proposed time';
+
+  @override
+  String get apptFieldYourNote => 'Your note';
+
+  @override
+  String get apptNoticeAccepted =>
+      'You accepted this appointment. Arrive on time at reception.';
+
+  @override
+  String get apptNoticeRejected => 'You rejected this appointment.';
+
+  @override
+  String get apptNoticeRescheduleRequested =>
+      'You proposed a new time. Waiting for admin to confirm.';
+
+  @override
+  String get apptNoticeScheduled =>
+      'Your appointment is scheduled. Arrive on time at reception.';
+
+  @override
+  String get apptReject => 'Reject';
+
+  @override
+  String get apptProposeTime => 'Propose time';
+
+  @override
+  String get apptAcceptAppointment => 'Accept appointment';
+
+  @override
+  String get apptRejectAppointment => 'Reject appointment';
+
+  @override
+  String get apptRejectBody => 'Let admin know why you cannot make it.';
+
+  @override
+  String get supportReasonOptionalHint => 'Reason (optional)';
+
+  @override
+  String get apptRejected => 'Appointment rejected';
+
+  @override
+  String get apptProposeNewTime => 'Propose a new time';
+
+  @override
+  String get apptNoteForAdminHint => 'Note for admin (optional)';
+
+  @override
+  String get apptSendProposedTime => 'Send proposed time';
+
+  @override
+  String get apptProposedTimeSent => 'Proposed time sent to admin';
+
+  @override
+  String get apptConfirmedTitle => 'Appointment confirmed';
+
+  @override
+  String get apptConfirmedBody =>
+      'It\'s been added to your schedule. We\'ll remind you before it starts.';
+
+  @override
+  String get apptDone => 'Done';
+
+  @override
+  String get apptViewInCalendar => 'View in calendar';
+
+  @override
+  String apptTitleWithTime(String title, String time) {
+    return '$title · $time';
+  }
 }

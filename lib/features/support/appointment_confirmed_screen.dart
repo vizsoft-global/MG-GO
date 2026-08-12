@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
@@ -20,10 +21,11 @@ class AppointmentConfirmedScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final async = ref.watch(driverAppointmentsProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Appointment confirmed'),
+        title: Text(l10n.apptConfirmedTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.go('/profile/support/appointments'),
@@ -49,28 +51,28 @@ class AppointmentConfirmedScreen extends ConsumerWidget {
                 color: AppColors.progressGreen,
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Appointment confirmed',
+              Text(
+                l10n.apptConfirmedTitle,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 8),
-              const Text(
-                "It's been added to your schedule. We'll remind you before it starts.",
+              Text(
+                l10n.apptConfirmedBody,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.textSecondary),
+                style: const TextStyle(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 20),
               if (appointment != null) _AppointmentSummaryCard(appointment: appointment),
               const SizedBox(height: 20),
               FilledButton(
                 onPressed: () => context.go('/profile/support/appointments'),
-                child: const Text('Done'),
+                child: Text(l10n.apptDone),
               ),
               const SizedBox(height: 10),
               OutlinedButton(
                 onPressed: () => context.go('/profile/support/appointments'),
-                child: const Text('View in calendar'),
+                child: Text(l10n.apptViewInCalendar),
               ),
             ],
           );
@@ -87,6 +89,7 @@ class _AppointmentSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final when = appointment.scheduledFor;
     return Container(
       padding: const EdgeInsets.all(14),
@@ -134,14 +137,17 @@ class _AppointmentSummaryCard extends StatelessWidget {
               children: [
                 Text(
                   when != null
-                      ? '${appointment.title} · ${DateFormat('HH:mm').format(when)}'
+                      ? l10n.apptTitleWithTime(
+                          appointment.title,
+                          DateFormat('HH:mm').format(when),
+                        )
                       : appointment.title,
                   style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   [
-                    appointment.locationLabel ?? 'Central Tower',
+                    appointment.locationLabel ?? l10n.visitCentralTower,
                     if (appointment.adminNote != null &&
                         appointment.adminNote!.trim().isNotEmpty)
                       appointment.adminNote!,

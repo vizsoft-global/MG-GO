@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
@@ -57,6 +58,7 @@ class _AppointmentDetailScreenState
   }
 
   Future<void> _reject() async {
+    final l10n = context.l10n;
     final ctrl = TextEditingController();
     final confirmed = await showModalBottomSheet<bool>(
       context: context,
@@ -70,21 +72,21 @@ class _AppointmentDetailScreenState
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Reject appointment',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            Text(l10n.apptRejectAppointment,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
             const SizedBox(height: 6),
-            const Text(
-              'Let admin know why you cannot make it.',
-              style: TextStyle(color: AppColors.textSecondary),
+            Text(
+              l10n.apptRejectBody,
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: ctrl,
               maxLines: 3,
               autofocus: true,
-              decoration: const InputDecoration(
-                hintText: 'Reason (optional)',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: l10n.supportReasonOptionalHint,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),
@@ -96,7 +98,7 @@ class _AppointmentDetailScreenState
                   side: BorderSide(color: AppColors.rejectedRed.withValues(alpha: 0.4)),
                 ),
                 onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Reject appointment'),
+                child: Text(l10n.apptRejectAppointment),
               ),
             ),
           ],
@@ -114,7 +116,7 @@ class _AppointmentDetailScreenState
       ref.invalidate(driverAppointmentsProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Appointment rejected')),
+          SnackBar(content: Text(l10n.apptRejected)),
         );
         context.pop();
       }
@@ -128,6 +130,7 @@ class _AppointmentDetailScreenState
   }
 
   Future<void> _proposeTime() async {
+    final l10n = context.l10n;
     final now = DateTime.now();
     final date = await showDatePicker(
       context: context,
@@ -156,8 +159,8 @@ class _AppointmentDetailScreenState
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Propose a new time',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            Text(l10n.apptProposeNewTime,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
             const SizedBox(height: 6),
             Text(
               _formatDateTime(proposed),
@@ -167,9 +170,9 @@ class _AppointmentDetailScreenState
             TextField(
               controller: ctrl,
               maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: 'Note for admin (optional)',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: l10n.apptNoteForAdminHint,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),
@@ -177,7 +180,7 @@ class _AppointmentDetailScreenState
               width: double.infinity,
               child: FilledButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Send proposed time'),
+                child: Text(l10n.apptSendProposedTime),
               ),
             ),
           ],
@@ -196,7 +199,7 @@ class _AppointmentDetailScreenState
       ref.invalidate(driverAppointmentsProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Proposed time sent to admin')),
+          SnackBar(content: Text(l10n.apptProposedTimeSent)),
         );
         context.pop();
       }
@@ -211,10 +214,11 @@ class _AppointmentDetailScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final async = ref.watch(driverAppointmentsProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Appointment request'),
+        title: Text(l10n.apptRequestTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
@@ -232,7 +236,7 @@ class _AppointmentDetailScreenState
             }
           }
           if (row == null) {
-            return const Center(child: Text('Appointment not found'));
+            return Center(child: Text(l10n.apptNotFound));
           }
           final appointment = row;
           final needsResponse =
@@ -264,8 +268,11 @@ class _AppointmentDetailScreenState
                                 Text(appointment.title,
                                     style: const TextStyle(fontWeight: FontWeight.w800)),
                                 Text(
-                                  '${appointment.appointmentCode} · From '
-                                  '${appointment.requestedByName ?? 'admin'}',
+                                  l10n.apptFromRequester(
+                                    appointment.appointmentCode,
+                                    appointment.requestedByName ??
+                                        l10n.apptRequesterAdmin,
+                                  ),
                                   style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                                 ),
                               ],
@@ -278,8 +285,8 @@ class _AppointmentDetailScreenState
                                 color: AppColors.underReviewAmber.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(999),
                               ),
-                              child: const Text('Action required',
-                                  style: TextStyle(
+                              child: Text(l10n.supportActionRequired,
+                                  style: const TextStyle(
                                       color: AppColors.underReviewAmber,
                                       fontSize: 11,
                                       fontWeight: FontWeight.w700)),
@@ -298,23 +305,23 @@ class _AppointmentDetailScreenState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Details', style: TextStyle(fontWeight: FontWeight.w700)),
+                          Text(l10n.apptDetails, style: const TextStyle(fontWeight: FontWeight.w700)),
                           const SizedBox(height: 8),
                           if (appointment.reason != null && appointment.reason!.trim().isNotEmpty)
-                            _DetailRow(label: 'Purpose', value: appointment.reason!),
-                          _DetailRow(label: 'Proposed date/time', value: _formatDateTime(appointment.scheduledFor)),
-                          _DetailRow(label: 'Location', value: appointment.locationLabel ?? 'Central Tower'),
+                            _DetailRow(label: l10n.apptFieldPurpose, value: appointment.reason!),
+                          _DetailRow(label: l10n.apptFieldProposedDateTime, value: _formatDateTime(appointment.scheduledFor)),
+                          _DetailRow(label: l10n.apptFieldLocation, value: appointment.locationLabel ?? l10n.visitCentralTower),
                           if (appointment.adminNote != null && appointment.adminNote!.trim().isNotEmpty)
-                            _DetailRow(label: 'Note', value: appointment.adminNote!),
+                            _DetailRow(label: l10n.apptFieldNote, value: appointment.adminNote!),
                           if (appointment.proposedFor != null)
                             _DetailRow(
-                              label: 'Your proposed time',
+                              label: l10n.apptFieldYourProposedTime,
                               value: _formatDateTime(appointment.proposedFor),
                             ),
                           if (appointment.driverResponseNote != null &&
                               appointment.driverResponseNote!.trim().isNotEmpty)
-                            _DetailRow(label: 'Your note', value: appointment.driverResponseNote!),
-                          _DetailRow(label: 'Status', value: appointment.status),
+                            _DetailRow(label: l10n.apptFieldYourNote, value: appointment.driverResponseNote!),
+                          _DetailRow(label: l10n.status, value: appointment.status),
                         ],
                       ),
                     ),
@@ -328,11 +335,11 @@ class _AppointmentDetailScreenState
                         ),
                         child: Text(
                           switch (appointment.status) {
-                            'accepted' => 'You accepted this appointment. Arrive on time at reception.',
-                            'rejected' => 'You rejected this appointment.',
+                            'accepted' => l10n.apptNoticeAccepted,
+                            'rejected' => l10n.apptNoticeRejected,
                             'reschedule_requested' =>
-                              'You proposed a new time. Waiting for admin to confirm.',
-                            _ => 'Your appointment is scheduled. Arrive on time at reception.',
+                              l10n.apptNoticeRescheduleRequested,
+                            _ => l10n.apptNoticeScheduled,
                           },
                           style: const TextStyle(color: AppColors.primaryBlue, fontSize: 12.5),
                         ),
@@ -356,14 +363,14 @@ class _AppointmentDetailScreenState
                                   side: BorderSide(color: AppColors.rejectedRed.withValues(alpha: 0.4)),
                                 ),
                                 onPressed: _submitting ? null : _reject,
-                                child: const Text('Reject'),
+                                child: Text(l10n.apptReject),
                               ),
                             ),
                             const SizedBox(width: 10),
                             Expanded(
                               child: OutlinedButton(
                                 onPressed: _submitting ? null : _proposeTime,
-                                child: const Text('Propose time'),
+                                child: Text(l10n.apptProposeTime),
                               ),
                             ),
                           ],
@@ -379,7 +386,7 @@ class _AppointmentDetailScreenState
                                     height: 18, width: 18,
                                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                                   )
-                                : const Text('Accept appointment'),
+                                : Text(l10n.apptAcceptAppointment),
                           ),
                         ),
                       ],
