@@ -24,6 +24,15 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
   bool _docRequested = false;
   bool _docLoadFailed = false;
   bool _declining = false;
+  bool _viewedMarked = false;
+
+  /// Fire-and-forget: the rider must never be blocked, or shown an error, because
+  /// a read receipt failed to record.
+  void _markViewed() {
+    if (_viewedMarked) return;
+    _viewedMarked = true;
+    ref.read(supportServiceProvider).markEsignViewed(widget.requestId).ignore();
+  }
 
   Future<void> _decline() async {
     final ctrl = TextEditingController();
@@ -116,6 +125,9 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
           _docLoadFailed = url == null;
         });
       }
+      // "Viewed" means the rider could actually see the document, so it is
+      // stamped only once the document resolves — never on a failed load.
+      if (url != null) _markViewed();
     } catch (_) {
       if (mounted) {
         setState(() {

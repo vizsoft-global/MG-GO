@@ -123,6 +123,7 @@ IconData visitDepartmentIcon(String key) {
 /// `contact_phone` are all DB-backed (`visit_branches`).
 class VisitBranch {
   const VisitBranch({
+    required this.id,
     required this.key,
     required this.name,
     this.address,
@@ -130,6 +131,7 @@ class VisitBranch {
     this.contactPhone,
   });
 
+  final String id;
   final String key;
   final String name;
   final String? address;
@@ -138,6 +140,7 @@ class VisitBranch {
 
   factory VisitBranch.fromJson(Map<String, dynamic> json) {
     return VisitBranch(
+      id: json['id'] as String? ?? '',
       key: json['key'] as String,
       name: json['name'] as String? ?? 'Central Tower',
       address: json['address'] as String?,

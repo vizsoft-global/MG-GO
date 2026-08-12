@@ -175,7 +175,7 @@ class SupportService {
   Future<VisitBranch?> getCentralTowerBranch() async {
     final rows = await _client
         .from('visit_branches')
-        .select('key, name, address, working_hours, contact_phone')
+        .select('id, key, name, address, working_hours, contact_phone')
         .eq('is_active', true)
         .order('is_default', ascending: false)
         .order('sort_order')
@@ -185,12 +185,17 @@ class SupportService {
     return VisitBranch.fromJson(Map<String, dynamic>.from(list.first as Map));
   }
 
-  Future<List<VisitDepartment>> listVisitDepartments() async {
-    final rows = await _client
+  /// Departments offered at [branchId]. A department with a null `branch_id` is
+  /// offered everywhere; one pinned to another branch must not be bookable here.
+  Future<List<VisitDepartment>> listVisitDepartments({String? branchId}) async {
+    var query = _client
         .from('visit_departments')
-        .select('key, label_en')
-        .eq('is_active', true)
-        .order('sort_order');
+        .select('key, label_en, branch_id')
+        .eq('is_active', true);
+    if (branchId != null) {
+      query = query.or('branch_id.is.null,branch_id.eq.$branchId');
+    }
+    final rows = await query.order('sort_order');
     return (rows as List)
         .map((e) => VisitDepartment.fromJson(Map<String, dynamic>.from(e as Map)))
         .where((d) => kVisitDepartmentKeys.contains(d.key))
@@ -358,6 +363,12 @@ class SupportService {
     if (map['ok'] == false) {
       throw Exception(map['error']?.toString() ?? 'sign_failed');
     }
+  }
+
+  /// Records the first time the rider opened the document. The server keeps the
+  /// earliest stamp, so re-opening is harmless.
+  Future<void> markEsignViewed(String requestId) async {
+    await _client.rpc('driver_mark_esign_viewed', params: {'p_id': requestId});
   }
 
   Future<void> declineEsignature({

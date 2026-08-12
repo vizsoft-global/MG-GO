@@ -28,9 +28,13 @@ final centralTowerBranchProvider =
   return ref.read(supportServiceProvider).getCentralTowerBranch();
 });
 
+/// Scoped to the branch the rider will actually visit, so a department pinned to
+/// a different branch never appears in the picker.
 final visitDepartmentsProvider =
-    FutureProvider.autoDispose<List<VisitDepartment>>((ref) {
-  return ref.read(supportServiceProvider).listVisitDepartments();
+    FutureProvider.autoDispose<List<VisitDepartment>>((ref) async {
+  final branch = await ref.watch(centralTowerBranchProvider.future);
+  final branchId = (branch?.id.isEmpty ?? true) ? null : branch!.id;
+  return ref.read(supportServiceProvider).listVisitDepartments(branchId: branchId);
 });
 
 final loanTenureOptionsProvider =
