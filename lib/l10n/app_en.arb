@@ -1126,5 +1126,112 @@
   "supportDeclarationLoan": "Declaration: I am committed to pay the full amount to the company or the company to deduct it as per the installments from my salary.",
   "supportDeclarationAsset": "Declaration: In the case of lost or damaged item replacement i am entitled for any charges from the company to receive a new one.",
   "supportTemporarilyUnavailable": "Temporarily unavailable",
-  "supportSubmitRequest": "Submit request"
+  "supportSubmitRequest": "Submit request",
+  "supportChooseFromGallery": "Choose from gallery",
+  "supportTakeAPhoto": "Take a photo",
+  "supportResponseSubmitted": "Response submitted",
+  "supportAskQuestion": "Ask a question",
+  "supportAskQuestionBody": "Send a note to the ops team about this request. They will reply here.",
+  "supportAskQuestionHint": "e.g. Which side of the Emirates ID do you need?",
+  "supportSendQuestion": "Send question",
+  "supportAttachDocumentFirst": "Please attach the requested document first",
+  "supportRequestDetailsTitle": "Request details",
+  "supportFromManagement": "From management",
+  "supportApprovalProgress": "Approval progress",
+  "supportUploadRequestedDocument": "Upload requested document",
+  "supportUploadHintChooseOrCapture": "Choose image or capture the delivery proof",
+  "supportYourResponse": "Your response",
+  "supportSubmitResponse": "Submit response",
+  "supportNoteOptional": "Note (optional)",
+  "supportAddNote": "Add note",
+  "supportUploadDocuments": "Upload documents",
+  "supportAcknowledge": "Acknowledge",
+  "supportAttachedFile": "Attached file",
+  "supportNoneAttached": "None attached",
+  "supportFieldRequested": "Requested",
+  "supportFieldInstallments": "Installments",
+  "supportMonthsCount": "{count} months",
+  "@supportMonthsCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "supportFieldPurpose": "Purpose",
+  "supportFieldAsset": "Asset",
+  "supportAssetWithSize": "{asset} ({size})",
+  "@supportAssetWithSize": {
+    "placeholders": {
+      "asset": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "supportFieldCondition": "Condition",
+  "supportFieldEvidence": "Evidence",
+  "supportFieldDates": "Dates",
+  "supportFieldDuration": "Duration",
+  "supportDaysCount": "{count, plural, =1{1 day} other{{count} days}}",
+  "@supportDaysCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "supportFieldAttachment": "Attachment",
+  "supportStepInReview": "In review",
+  "supportStepSince": "{word} since {date}",
+  "@supportStepSince": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "supportStepDecidedAt": "{word} · {dateTime}",
+  "@supportStepDecidedAt": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      },
+      "dateTime": {
+        "type": "String"
+      }
+    }
+  },
+  "supportReason": "Reason",
+  "supportAdminResponse": "Admin response",
+  "supportCommentFromAdmin": "Comment from admin",
+  "supportFieldRequestedAmount": "Requested amount",
+  "supportFieldApprovedAmount": "Approved amount",
+  "supportFieldDeductionStarts": "Deduction starts",
+  "supportFieldApprovedBy": "Approved by",
+  "supportFieldPenaltyAmount": "Penalty amount",
+  "supportFieldRequestedBy": "Requested by",
+  "supportStatusOnHold": "On hold",
+  "supportFieldRequired": "Required",
+  "supportNotSpecified": "Not specified",
+  "supportBadgeAmountChanged": "Amount changed",
+  "supportBadgeUpdate": "Update",
+  "supportBadgePenaltyApplied": "Penalty applied",
+  "supportBadgeReviewRequired": "Review required",
+  "supportBadgeDocumentsRequired": "Documents required",
+  "supportFilesReady": "{count} file(s) ready",
+  "@supportFilesReady": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "supportUpload": "Upload",
+  "supportCapture": "Capture"
 }

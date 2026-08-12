@@ -8,7 +8,9 @@ import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n/l10n.dart';
+import '../../core/l10n/locale_formatters.dart';
 import '../../core/theme/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
 
@@ -77,7 +79,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.image_outlined),
-              title: const Text('Choose from gallery'),
+              title: Text(ctx.l10n.supportChooseFromGallery),
               onTap: () {
                 Navigator.pop(ctx);
                 _pickFile();
@@ -85,7 +87,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.camera_alt_outlined),
-              title: const Text('Take a photo'),
+              title: Text(ctx.l10n.supportTakeAPhoto),
               onTap: () {
                 Navigator.pop(ctx);
                 _captureFile();
@@ -130,7 +132,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
       ref.invalidate(myRequestsProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Response submitted')),
+          SnackBar(content: Text(context.l10n.supportResponseSubmitted)),
         );
       }
     } catch (e) {
@@ -156,20 +158,21 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Ask a question', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            Text(ctx.l10n.supportAskQuestion,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
             const SizedBox(height: 6),
-            const Text(
-              'Send a note to the ops team about this request. They will reply here.',
-              style: TextStyle(color: AppColors.textSecondary),
+            Text(
+              ctx.l10n.supportAskQuestionBody,
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: ctrl,
               maxLines: 3,
               autofocus: true,
-              decoration: const InputDecoration(
-                hintText: 'e.g. Which side of the Emirates ID do you need?',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: ctx.l10n.supportAskQuestionHint,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),
@@ -177,7 +180,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
               width: double.infinity,
               child: FilledButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Send question'),
+                child: Text(ctx.l10n.supportSendQuestion),
               ),
             ),
           ],
@@ -191,12 +194,13 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
   }
 
   Future<void> _acknowledge({bool withUpload = false}) async {
+    final l10n = context.l10n;
     setState(() => _submitting = true);
     try {
       String? note = _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim();
       if (withUpload) {
         if (_files.isEmpty) {
-          throw Exception('Please attach the requested document first');
+          throw Exception(l10n.supportAttachDocumentFirst);
         }
         final keys = await _uploadFiles();
         note = 'Documents uploaded: ${keys.join(', ')}${note != null ? ' · $note' : ''}';
@@ -233,10 +237,11 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final async = ref.watch(requestDetailProvider(widget.requestId));
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Request details'),
+        title: Text(l10n.supportRequestDetailsTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
@@ -251,7 +256,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
               detail.payload['driver_ack_at'] == null;
           final isDocumentType = detail.requestType == 'document' ||
               detail.requestType == 'sick_leave';
-          final typedRows = _typedDetailRows(detail);
+          final typedRows = _typedDetailRows(detail, l10n);
           final payloadEntries = typedRows.isNotEmpty
               ? const <MapEntry<String, dynamic>>[]
               : detail.payload.entries
@@ -261,7 +266,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                       e.key != 'driver_ack_note')
                   .toList();
           final view = RequestStatusView.of(
-            l10n: context.l10n,
+            l10n: l10n,
             status: detail.status,
             awaitingAck: awaitingAck,
             acknowledged: detail.payload['driver_ack_at'] != null,
@@ -271,9 +276,9 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
             padding: const EdgeInsets.all(16),
             children: [
               _HeaderCard(
-                title: _typeLabel(detail.requestType),
+                title: _typeLabel(detail.requestType, l10n),
                 code: detail.requestCode,
-                caption: needsClarify ? 'From management' : null,
+                caption: needsClarify ? l10n.supportFromManagement : null,
                 view: view,
               ),
               const SizedBox(height: 12),
@@ -282,13 +287,13 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Request details',
-                          style: TextStyle(fontWeight: FontWeight.w700)),
+                      Text(l10n.supportRequestDetailsTitle,
+                          style: const TextStyle(fontWeight: FontWeight.w700)),
                       const SizedBox(height: 8),
                       ...typedRows.map((r) => _kv(r.$1, r.$2, chip: r.$3)),
                       ...payloadEntries.map((e) => _kv(_labelize(e.key), '${e.value}')),
                       if (detail.currentStepLabel != null)
-                        _kv('Status', detail.currentStepLabel!, chip: true),
+                        _kv(l10n.status, detail.currentStepLabel!, chip: true),
                     ],
                   ),
                 ),
@@ -306,10 +311,10 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Approval progress',
-                        style: TextStyle(fontWeight: FontWeight.w700)),
+                    Text(l10n.supportApprovalProgress,
+                        style: const TextStyle(fontWeight: FontWeight.w700)),
                     const SizedBox(height: 10),
-                    ..._stepsWithConnectors(detail.steps),
+                    ..._stepsWithConnectors(detail.steps, l10n),
                   ],
                 ),
               ),
@@ -317,8 +322,8 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                 const SizedBox(height: 16),
                 if (isDocumentType) ...[
                   DottedUploadBox(
-                    label: 'Upload requested document',
-                    hint: 'Choose image or capture the delivery proof',
+                    label: l10n.supportUploadRequestedDocument,
+                    hint: l10n.supportUploadHintChooseOrCapture,
                     fileCount: _files.length,
                     onUpload: _pickFile,
                     onCapture: _captureFile,
@@ -328,10 +333,10 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                 TextField(
                   controller: _answerCtrl,
                   maxLines: 4,
-                  decoration: const InputDecoration(
-                    labelText: 'Your response',
-                    hintText: 'Your response',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: l10n.supportYourResponse,
+                    hintText: l10n.supportYourResponse,
+                    border: const OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -340,7 +345,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: _submitting ? null : _askQuestion,
-                        child: const Text('Ask a question'),
+                        child: Text(l10n.supportAskQuestion),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -353,7 +358,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                                 height: 18, width: 18,
                                 child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                               )
-                            : const Text('Submit response'),
+                            : Text(l10n.supportSubmitResponse),
                       ),
                     ),
                   ],
@@ -376,9 +381,9 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                   TextField(
                     controller: _noteCtrl,
                     focusNode: _noteFocus,
-                    decoration: const InputDecoration(
-                      labelText: 'Note (optional)',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l10n.supportNoteOptional,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -393,7 +398,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                                 setState(() => _noteVisible = true);
                                 _noteFocus.requestFocus();
                               },
-                        child: const Text('Add note'),
+                        child: Text(l10n.supportAddNote),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -414,7 +419,9 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                                 height: 18, width: 18,
                                 child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                               )
-                            : Text(isDocumentType ? 'Upload documents' : 'Acknowledge'),
+                            : Text(isDocumentType
+                                ? l10n.supportUploadDocuments
+                                : l10n.supportAcknowledge),
                       ),
                     ),
                   ],
@@ -473,7 +480,10 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
   /// columns/payload captured at submission (`amount_kwd`, `tenure_months`,
   /// `reason`, `asset_type`, `asset_current_status`, `leave_subtype`,
   /// `start_date`/`end_date`, `request_attachments`) — no invented values.
-  static List<(String, String, bool)> _typedDetailRows(SupportRequestDetail detail) {
+  static List<(String, String, bool)> _typedDetailRows(
+    SupportRequestDetail detail,
+    AppLocalizations l10n,
+  ) {
     final payload = detail.payload;
     final req = detail.request;
     final money = _money;
@@ -482,8 +492,8 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
         ? (detail.attachments.first['file_name']?.toString().trim().isNotEmpty ==
                 true
             ? detail.attachments.first['file_name'].toString()
-            : 'Attached file')
-        : 'None attached';
+            : l10n.supportAttachedFile)
+        : l10n.supportNoneAttached;
 
     DateTime? start = req['start_date'] != null
         ? DateTime.tryParse(req['start_date'].toString())
@@ -493,7 +503,8 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
         : null;
     String dateRange() {
       if (start == null) return '—';
-      String fmt(DateTime d) => '${d.day} ${_monthShort(d.month)} ${d.year}';
+      String fmt(DateTime d) =>
+          '${d.day} ${monthShortNames(l10n)[d.month - 1]} ${d.year}';
       return end == null ? fmt(start) : '${fmt(start)} – ${fmt(end)}';
     }
 
@@ -505,14 +516,18 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     switch (detail.requestType) {
       case 'loan':
         final rows = <(String, String, bool)>[
-          ('Requested', money(req['amount_kwd']), false),
+          (l10n.supportFieldRequested, money(req['amount_kwd']), false),
         ];
         if (payload['tenure_months'] != null) {
-          rows.add(('Installments', '${payload['tenure_months']} months', false));
+          rows.add((
+            l10n.supportFieldInstallments,
+            l10n.supportMonthsCount('${payload['tenure_months']}'),
+            false,
+          ));
         }
         final reason = payload['reason']?.toString().trim();
         if (reason != null && reason.isNotEmpty) {
-          rows.add(('Purpose', reason, false));
+          rows.add((l10n.supportFieldPurpose, reason, false));
         }
         return rows;
       case 'asset':
@@ -521,32 +536,38 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
         if (assetType != null && assetType.isNotEmpty) {
           final size = payload['size']?.toString();
           rows.add((
-            'Asset',
-            size != null && size.isNotEmpty ? '$assetType ($size)' : assetType,
+            l10n.supportFieldAsset,
+            size != null && size.isNotEmpty
+                ? l10n.supportAssetWithSize(assetType, size)
+                : assetType,
             false,
           ));
         }
         if (payload['quantity'] != null) {
-          rows.add(('Quantity', '${payload['quantity']}', false));
+          rows.add((l10n.supportFieldQuantity, '${payload['quantity']}', false));
         }
         final condition = payload['asset_current_status']?.toString();
         if (condition != null && condition.isNotEmpty) {
-          rows.add(('Condition', condition, false));
+          rows.add((l10n.supportFieldCondition, condition, false));
         }
-        rows.add(('Evidence', firstAttachmentName(), true));
+        rows.add((l10n.supportFieldEvidence, firstAttachmentName(), true));
         return rows;
       case 'sick_leave':
         final rows = <(String, String, bool)>[];
         final subtype = payload['leave_subtype']?.toString();
         if (subtype != null && subtype.isNotEmpty) {
-          rows.add(('Leave type', subtype, false));
+          rows.add((l10n.supportFieldLeaveType, subtype, false));
         }
-        rows.add(('Dates', dateRange(), false));
+        rows.add((l10n.supportFieldDates, dateRange(), false));
         final duration = durationDays();
         if (duration != null) {
-          rows.add(('Duration', '$duration day${duration == 1 ? '' : 's'}', false));
+          rows.add((
+            l10n.supportFieldDuration,
+            l10n.supportDaysCount(duration),
+            false,
+          ));
         }
-        rows.add(('Attachment', firstAttachmentName(), true));
+        rows.add((l10n.supportFieldAttachment, firstAttachmentName(), true));
         return rows;
       default:
         return const [];
@@ -612,12 +633,12 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
   /// `deduction_start_date` arrives as `YYYY-MM-DD`; render it the way the
   /// rest of the screen renders dates, falling back to the raw string if it
   /// is not parseable.
-  static String _formatDay(dynamic value) {
+  static String _formatDay(dynamic value, AppLocalizations l10n) {
     final text = value?.toString().trim() ?? '';
     if (text.isEmpty) return '—';
     final parsed = DateTime.tryParse(text);
     if (parsed == null) return text;
-    return '${parsed.day} ${_monthShort(parsed.month)} ${parsed.year}';
+    return '${parsed.day} ${monthShortNames(l10n)[parsed.month - 1]} ${parsed.year}';
   }
 
   /// Builds a plain-language summary of the real terms being acknowledged,
@@ -647,32 +668,28 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     }
   }
 
-  static const _monthNames = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ];
-
-  static String _monthShort(int month) => _monthNames[month - 1];
-
   static String _labelize(String key) {
     return key.split('_').map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}').join(' ');
   }
 
-  static String _typeLabel(String type) {
+  static String _typeLabel(String type, AppLocalizations l10n) {
     return switch (type) {
-      'leave' => 'Leave request',
-      'sick_leave' => 'Sick & accident leave',
-      'asset' => 'Asset request',
-      'fuel' => 'Fuel reimbursement',
-      'document' => 'Document re-upload',
-      'complaint' => 'Complaint',
-      'salary_justification' => 'Salary justification',
-      'loan' => 'Advance / Loan',
-      _ => 'Request',
+      'leave' => l10n.supportRequestTypeLeaveRequest,
+      'sick_leave' => l10n.supportRequestTypeSickLeave,
+      'asset' => l10n.supportRequestTypeAsset,
+      'fuel' => l10n.supportRequestTypeFuel,
+      'document' => l10n.supportRequestTypeDocumentReupload,
+      'complaint' => l10n.supportRequestTypeComplaint,
+      'salary_justification' => l10n.supportRequestTypeSalaryJustification,
+      'loan' => l10n.supportRequestTypeLoanAdvance,
+      _ => l10n.supportRequestTypeGeneric,
     };
   }
 
-  static List<Widget> _stepsWithConnectors(List<Map<String, dynamic>> steps) {
+  static List<Widget> _stepsWithConnectors(
+    List<Map<String, dynamic>> steps,
+    AppLocalizations l10n,
+  ) {
     return steps.map((step) {
       final status = step['status']?.toString() ?? '';
       final decidedAt = step['decided_at'] != null
@@ -709,7 +726,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                   Text('${step['step_name']}',
                       style: const TextStyle(fontWeight: FontWeight.w600)),
                   Text(
-                    _stepSubtitle(status, decidedAt),
+                    _stepSubtitle(status, decidedAt, l10n),
                     style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                   ),
                 ],
@@ -721,11 +738,12 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     }).toList();
   }
 
-  static String _statusWord(String status) => switch (status) {
-        'completed' => 'Approved',
-        'in_progress' => 'In review',
-        'rejected' => 'Rejected',
-        _ => 'Pending',
+  static String _statusWord(String status, AppLocalizations l10n) =>
+      switch (status) {
+        'completed' => l10n.approved,
+        'in_progress' => l10n.supportStepInReview,
+        'rejected' => l10n.rejected,
+        _ => l10n.pending,
       };
 
   /// Figma RSup/10b–10d: a decided step reads "Approved · 12 Jul, 11:02" while
@@ -734,11 +752,17 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
   /// `request_approval_steps` has no `started_at`, and `decided_at` is null
   /// until someone acts, so an open step has no date to hang "since" on; fall
   /// back to the bare word rather than printing a dangling "In review since".
-  static String _stepSubtitle(String status, DateTime? decidedAt) {
-    final word = _statusWord(status);
+  static String _stepSubtitle(
+    String status,
+    DateTime? decidedAt,
+    AppLocalizations l10n,
+  ) {
+    final word = _statusWord(status, l10n);
     if (decidedAt == null) return word;
-    if (status == 'in_progress') return '$word since ${_fmtDay(decidedAt)}';
-    return '$word · ${_fmtDateTime(decidedAt)}';
+    if (status == 'in_progress') {
+      return l10n.supportStepSince(word, _fmtDay(decidedAt));
+    }
+    return l10n.supportStepDecidedAt(word, _fmtDateTime(decidedAt));
   }
 
   /// `decided_at` is a timestamptz, so convert before formatting; otherwise the
@@ -819,7 +843,9 @@ class _ClarificationReasonCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Reason', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+          Text(context.l10n.supportReason,
+              style: const TextStyle(
+                  color: AppColors.textSecondary, fontSize: 12)),
           const SizedBox(height: 6),
           ...open.map((c) => Padding(
                 padding: const EdgeInsets.only(bottom: 8),
@@ -894,6 +920,7 @@ class _AdminResponseCard extends StatelessWidget {
   static List<(String, String)> _rows(
     SupportRequestDetail detail,
     Map<String, dynamic> meta,
+    AppLocalizations l10n,
   ) {
     final req = detail.request;
     final payload = detail.payload;
@@ -901,49 +928,61 @@ class _AdminResponseCard extends StatelessWidget {
     switch (detail.requestType) {
       case 'loan':
         final rows = <(String, String)>[
-          ('Requested amount', money(req['amount_kwd'])),
+          (l10n.supportFieldRequestedAmount, money(req['amount_kwd'])),
         ];
         if (meta['approved_amount'] != null) {
-          rows.add(('Approved amount', money(meta['approved_amount'])));
+          rows.add((
+            l10n.supportFieldApprovedAmount,
+            money(meta['approved_amount']),
+          ));
         }
         final tenure = meta['approved_tenure_months'] ?? payload['tenure_months'];
         if (tenure != null) {
-          rows.add(('Installments', '$tenure months'));
+          rows.add((
+            l10n.supportFieldInstallments,
+            l10n.supportMonthsCount('$tenure'),
+          ));
         }
         if (meta['deduction_start_date'] != null) {
           rows.add((
-            'Deduction starts',
-            _RequestDetailScreenState._formatDay(meta['deduction_start_date']),
+            l10n.supportFieldDeductionStarts,
+            _RequestDetailScreenState._formatDay(
+                meta['deduction_start_date'], l10n),
           ));
         }
         if (meta['approved_by'] != null) {
-          rows.add(('Approved by', '${meta['approved_by']}'));
+          rows.add((l10n.supportFieldApprovedBy, '${meta['approved_by']}'));
         }
         return rows;
       case 'asset':
         final rows = <(String, String)>[];
         final assetType = payload['asset_type']?.toString();
         if (assetType != null && assetType.isNotEmpty) {
-          rows.add(('Asset', assetType));
+          rows.add((l10n.supportFieldAsset, assetType));
         }
         if (meta['penalty_amount'] != null) {
-          rows.add(('Penalty amount', money(meta['penalty_amount'])));
+          rows.add((
+            l10n.supportFieldPenaltyAmount,
+            money(meta['penalty_amount']),
+          ));
         }
         if (meta['approved_by'] != null) {
-          rows.add(('Approved by', '${meta['approved_by']}'));
+          rows.add((l10n.supportFieldApprovedBy, '${meta['approved_by']}'));
         }
         return rows;
       case 'sick_leave':
         final required = meta['required_document']?.toString().trim();
         final rows = <(String, String)>[
-          ('Status', 'On hold'),
+          (l10n.status, l10n.supportStatusOnHold),
           (
-            'Required',
-            required != null && required.isNotEmpty ? required : 'Not specified',
+            l10n.supportFieldRequired,
+            required != null && required.isNotEmpty
+                ? required
+                : l10n.supportNotSpecified,
           ),
         ];
         if (meta['approved_by'] != null) {
-          rows.add(('Requested by', '${meta['approved_by']}'));
+          rows.add((l10n.supportFieldRequestedBy, '${meta['approved_by']}'));
         }
         return rows;
       default:
@@ -953,22 +992,27 @@ class _AdminResponseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final theme = switch (detail.requestType) {
       'asset' => _AdminResponseTheme.asset,
       'sick_leave' => _AdminResponseTheme.sickLeave,
       _ => _AdminResponseTheme.loan,
     };
     final meta = _RequestDetailScreenState._lastDecisionMeta(detail);
-    final rows = _rows(detail, meta);
+    final rows = _rows(detail, meta, l10n);
     final comment = _RequestDetailScreenState._adminComment(detail);
     final amountChanged = detail.requestType == 'loan' &&
         meta['approved_amount'] != null &&
         '${meta['approved_amount']}' != '${detail.request['amount_kwd']}';
     final badge = switch (detail.requestType) {
-      'loan' => amountChanged ? 'Amount changed' : 'Update',
-      'asset' => meta['penalty_amount'] != null ? 'Penalty applied' : 'Review required',
-      'sick_leave' => 'Documents required',
-      _ => 'Update',
+      'loan' => amountChanged
+          ? l10n.supportBadgeAmountChanged
+          : l10n.supportBadgeUpdate,
+      'asset' => meta['penalty_amount'] != null
+          ? l10n.supportBadgePenaltyApplied
+          : l10n.supportBadgeReviewRequired,
+      'sick_leave' => l10n.supportBadgeDocumentsRequired,
+      _ => l10n.supportBadgeUpdate,
     };
     return Container(
       width: double.infinity,
@@ -983,10 +1027,11 @@ class _AdminResponseCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Admin response',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                  l10n.supportAdminResponse,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w700, fontSize: 15),
                 ),
               ),
               Container(
@@ -1020,7 +1065,7 @@ class _AdminResponseCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Comment from admin',
+                    l10n.supportCommentFromAdmin,
                     style: TextStyle(
                       color: theme.commentTitle,
                       fontSize: 12,
@@ -1133,7 +1178,10 @@ class DottedUploadBox extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text(fileCount > 0 ? '$fileCount file(s) ready' : label,
+          Text(
+              fileCount > 0
+                  ? context.l10n.supportFilesReady(fileCount)
+                  : label,
               style: const TextStyle(fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
           Text(hint, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
@@ -1144,13 +1192,13 @@ class DottedUploadBox extends StatelessWidget {
               OutlinedButton.icon(
                 onPressed: onUpload,
                 icon: const Icon(Icons.image_outlined, size: 18),
-                label: const Text('Upload'),
+                label: Text(context.l10n.supportUpload),
               ),
               const SizedBox(width: 10),
               OutlinedButton.icon(
                 onPressed: onCapture,
                 icon: const Icon(Icons.camera_alt_outlined, size: 18),
-                label: const Text('Capture'),
+                label: Text(context.l10n.supportCapture),
               ),
             ],
           ),

@@ -2161,4 +2161,194 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get supportSubmitRequest => 'Submit request';
+
+  @override
+  String get supportChooseFromGallery => 'Choose from gallery';
+
+  @override
+  String get supportTakeAPhoto => 'Take a photo';
+
+  @override
+  String get supportResponseSubmitted => 'Response submitted';
+
+  @override
+  String get supportAskQuestion => 'Ask a question';
+
+  @override
+  String get supportAskQuestionBody =>
+      'Send a note to the ops team about this request. They will reply here.';
+
+  @override
+  String get supportAskQuestionHint =>
+      'e.g. Which side of the Emirates ID do you need?';
+
+  @override
+  String get supportSendQuestion => 'Send question';
+
+  @override
+  String get supportAttachDocumentFirst =>
+      'Please attach the requested document first';
+
+  @override
+  String get supportRequestDetailsTitle => 'Request details';
+
+  @override
+  String get supportFromManagement => 'From management';
+
+  @override
+  String get supportApprovalProgress => 'Approval progress';
+
+  @override
+  String get supportUploadRequestedDocument => 'Upload requested document';
+
+  @override
+  String get supportUploadHintChooseOrCapture =>
+      'Choose image or capture the delivery proof';
+
+  @override
+  String get supportYourResponse => 'Your response';
+
+  @override
+  String get supportSubmitResponse => 'Submit response';
+
+  @override
+  String get supportNoteOptional => 'Note (optional)';
+
+  @override
+  String get supportAddNote => 'Add note';
+
+  @override
+  String get supportUploadDocuments => 'Upload documents';
+
+  @override
+  String get supportAcknowledge => 'Acknowledge';
+
+  @override
+  String get supportAttachedFile => 'Attached file';
+
+  @override
+  String get supportNoneAttached => 'None attached';
+
+  @override
+  String get supportFieldRequested => 'Requested';
+
+  @override
+  String get supportFieldInstallments => 'Installments';
+
+  @override
+  String supportMonthsCount(String count) {
+    return '$count months';
+  }
+
+  @override
+  String get supportFieldPurpose => 'Purpose';
+
+  @override
+  String get supportFieldAsset => 'Asset';
+
+  @override
+  String supportAssetWithSize(String asset, String size) {
+    return '$asset ($size)';
+  }
+
+  @override
+  String get supportFieldCondition => 'Condition';
+
+  @override
+  String get supportFieldEvidence => 'Evidence';
+
+  @override
+  String get supportFieldDates => 'Dates';
+
+  @override
+  String get supportFieldDuration => 'Duration';
+
+  @override
+  String supportDaysCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get supportFieldAttachment => 'Attachment';
+
+  @override
+  String get supportStepInReview => 'In review';
+
+  @override
+  String supportStepSince(String word, String date) {
+    return '$word since $date';
+  }
+
+  @override
+  String supportStepDecidedAt(String word, String dateTime) {
+    return '$word · $dateTime';
+  }
+
+  @override
+  String get supportReason => 'Reason';
+
+  @override
+  String get supportAdminResponse => 'Admin response';
+
+  @override
+  String get supportCommentFromAdmin => 'Comment from admin';
+
+  @override
+  String get supportFieldRequestedAmount => 'Requested amount';
+
+  @override
+  String get supportFieldApprovedAmount => 'Approved amount';
+
+  @override
+  String get supportFieldDeductionStarts => 'Deduction starts';
+
+  @override
+  String get supportFieldApprovedBy => 'Approved by';
+
+  @override
+  String get supportFieldPenaltyAmount => 'Penalty amount';
+
+  @override
+  String get supportFieldRequestedBy => 'Requested by';
+
+  @override
+  String get supportStatusOnHold => 'On hold';
+
+  @override
+  String get supportFieldRequired => 'Required';
+
+  @override
+  String get supportNotSpecified => 'Not specified';
+
+  @override
+  String get supportBadgeAmountChanged => 'Amount changed';
+
+  @override
+  String get supportBadgeUpdate => 'Update';
+
+  @override
+  String get supportBadgePenaltyApplied => 'Penalty applied';
+
+  @override
+  String get supportBadgeReviewRequired => 'Review required';
+
+  @override
+  String get supportBadgeDocumentsRequired => 'Documents required';
+
+  @override
+  String supportFilesReady(int count) {
+    return '$count file(s) ready';
+  }
+
+  @override
+  String get supportUpload => 'Upload';
+
+  @override
+  String get supportCapture => 'Capture';
 }

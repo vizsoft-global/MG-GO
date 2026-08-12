@@ -3949,6 +3949,342 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Submit request'**
   String get supportSubmitRequest;
+
+  /// No description provided for @supportChooseFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from gallery'**
+  String get supportChooseFromGallery;
+
+  /// No description provided for @supportTakeAPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get supportTakeAPhoto;
+
+  /// No description provided for @supportResponseSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Response submitted'**
+  String get supportResponseSubmitted;
+
+  /// No description provided for @supportAskQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask a question'**
+  String get supportAskQuestion;
+
+  /// No description provided for @supportAskQuestionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a note to the ops team about this request. They will reply here.'**
+  String get supportAskQuestionBody;
+
+  /// No description provided for @supportAskQuestionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Which side of the Emirates ID do you need?'**
+  String get supportAskQuestionHint;
+
+  /// No description provided for @supportSendQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Send question'**
+  String get supportSendQuestion;
+
+  /// No description provided for @supportAttachDocumentFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Please attach the requested document first'**
+  String get supportAttachDocumentFirst;
+
+  /// No description provided for @supportRequestDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request details'**
+  String get supportRequestDetailsTitle;
+
+  /// No description provided for @supportFromManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'From management'**
+  String get supportFromManagement;
+
+  /// No description provided for @supportApprovalProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Approval progress'**
+  String get supportApprovalProgress;
+
+  /// No description provided for @supportUploadRequestedDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload requested document'**
+  String get supportUploadRequestedDocument;
+
+  /// No description provided for @supportUploadHintChooseOrCapture.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose image or capture the delivery proof'**
+  String get supportUploadHintChooseOrCapture;
+
+  /// No description provided for @supportYourResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Your response'**
+  String get supportYourResponse;
+
+  /// No description provided for @supportSubmitResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit response'**
+  String get supportSubmitResponse;
+
+  /// No description provided for @supportNoteOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get supportNoteOptional;
+
+  /// No description provided for @supportAddNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Add note'**
+  String get supportAddNote;
+
+  /// No description provided for @supportUploadDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload documents'**
+  String get supportUploadDocuments;
+
+  /// No description provided for @supportAcknowledge.
+  ///
+  /// In en, this message translates to:
+  /// **'Acknowledge'**
+  String get supportAcknowledge;
+
+  /// No description provided for @supportAttachedFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Attached file'**
+  String get supportAttachedFile;
+
+  /// No description provided for @supportNoneAttached.
+  ///
+  /// In en, this message translates to:
+  /// **'None attached'**
+  String get supportNoneAttached;
+
+  /// No description provided for @supportFieldRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Requested'**
+  String get supportFieldRequested;
+
+  /// No description provided for @supportFieldInstallments.
+  ///
+  /// In en, this message translates to:
+  /// **'Installments'**
+  String get supportFieldInstallments;
+
+  /// No description provided for @supportMonthsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} months'**
+  String supportMonthsCount(String count);
+
+  /// No description provided for @supportFieldPurpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Purpose'**
+  String get supportFieldPurpose;
+
+  /// No description provided for @supportFieldAsset.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset'**
+  String get supportFieldAsset;
+
+  /// No description provided for @supportAssetWithSize.
+  ///
+  /// In en, this message translates to:
+  /// **'{asset} ({size})'**
+  String supportAssetWithSize(String asset, String size);
+
+  /// No description provided for @supportFieldCondition.
+  ///
+  /// In en, this message translates to:
+  /// **'Condition'**
+  String get supportFieldCondition;
+
+  /// No description provided for @supportFieldEvidence.
+  ///
+  /// In en, this message translates to:
+  /// **'Evidence'**
+  String get supportFieldEvidence;
+
+  /// No description provided for @supportFieldDates.
+  ///
+  /// In en, this message translates to:
+  /// **'Dates'**
+  String get supportFieldDates;
+
+  /// No description provided for @supportFieldDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get supportFieldDuration;
+
+  /// No description provided for @supportDaysCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day} other{{count} days}}'**
+  String supportDaysCount(int count);
+
+  /// No description provided for @supportFieldAttachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachment'**
+  String get supportFieldAttachment;
+
+  /// No description provided for @supportStepInReview.
+  ///
+  /// In en, this message translates to:
+  /// **'In review'**
+  String get supportStepInReview;
+
+  /// No description provided for @supportStepSince.
+  ///
+  /// In en, this message translates to:
+  /// **'{word} since {date}'**
+  String supportStepSince(String word, String date);
+
+  /// No description provided for @supportStepDecidedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'{word} · {dateTime}'**
+  String supportStepDecidedAt(String word, String dateTime);
+
+  /// No description provided for @supportReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get supportReason;
+
+  /// No description provided for @supportAdminResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin response'**
+  String get supportAdminResponse;
+
+  /// No description provided for @supportCommentFromAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment from admin'**
+  String get supportCommentFromAdmin;
+
+  /// No description provided for @supportFieldRequestedAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Requested amount'**
+  String get supportFieldRequestedAmount;
+
+  /// No description provided for @supportFieldApprovedAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved amount'**
+  String get supportFieldApprovedAmount;
+
+  /// No description provided for @supportFieldDeductionStarts.
+  ///
+  /// In en, this message translates to:
+  /// **'Deduction starts'**
+  String get supportFieldDeductionStarts;
+
+  /// No description provided for @supportFieldApprovedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved by'**
+  String get supportFieldApprovedBy;
+
+  /// No description provided for @supportFieldPenaltyAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Penalty amount'**
+  String get supportFieldPenaltyAmount;
+
+  /// No description provided for @supportFieldRequestedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Requested by'**
+  String get supportFieldRequestedBy;
+
+  /// No description provided for @supportStatusOnHold.
+  ///
+  /// In en, this message translates to:
+  /// **'On hold'**
+  String get supportStatusOnHold;
+
+  /// No description provided for @supportFieldRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get supportFieldRequired;
+
+  /// No description provided for @supportNotSpecified.
+  ///
+  /// In en, this message translates to:
+  /// **'Not specified'**
+  String get supportNotSpecified;
+
+  /// No description provided for @supportBadgeAmountChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount changed'**
+  String get supportBadgeAmountChanged;
+
+  /// No description provided for @supportBadgeUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get supportBadgeUpdate;
+
+  /// No description provided for @supportBadgePenaltyApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Penalty applied'**
+  String get supportBadgePenaltyApplied;
+
+  /// No description provided for @supportBadgeReviewRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Review required'**
+  String get supportBadgeReviewRequired;
+
+  /// No description provided for @supportBadgeDocumentsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Documents required'**
+  String get supportBadgeDocumentsRequired;
+
+  /// No description provided for @supportFilesReady.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} file(s) ready'**
+  String supportFilesReady(int count);
+
+  /// No description provided for @supportUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload'**
+  String get supportUpload;
+
+  /// No description provided for @supportCapture.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture'**
+  String get supportCapture;
 }
 
 class _AppLocalizationsDelegate

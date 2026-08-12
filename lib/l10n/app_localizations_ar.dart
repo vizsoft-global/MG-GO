@@ -2150,4 +2150,195 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get supportSubmitRequest => 'إرسال الطلب';
+
+  @override
+  String get supportChooseFromGallery => 'الاختيار من المعرض';
+
+  @override
+  String get supportTakeAPhoto => 'التقاط صورة';
+
+  @override
+  String get supportResponseSubmitted => 'تم إرسال الرد';
+
+  @override
+  String get supportAskQuestion => 'طرح سؤال';
+
+  @override
+  String get supportAskQuestionBody =>
+      'أرسل ملاحظة إلى فريق العمليات بخصوص هذا الطلب، وسيتم الرد عليك هنا.';
+
+  @override
+  String get supportAskQuestionHint =>
+      'مثال: أي وجه من البطاقة المدنية تحتاجون؟';
+
+  @override
+  String get supportSendQuestion => 'إرسال السؤال';
+
+  @override
+  String get supportAttachDocumentFirst => 'يرجى إرفاق المستند المطلوب أولاً';
+
+  @override
+  String get supportRequestDetailsTitle => 'تفاصيل الطلب';
+
+  @override
+  String get supportFromManagement => 'من الإدارة';
+
+  @override
+  String get supportApprovalProgress => 'مسار الموافقة';
+
+  @override
+  String get supportUploadRequestedDocument => 'ارفع المستند المطلوب';
+
+  @override
+  String get supportUploadHintChooseOrCapture =>
+      'اختر صورة أو التقط إثبات التوصيل';
+
+  @override
+  String get supportYourResponse => 'ردك';
+
+  @override
+  String get supportSubmitResponse => 'إرسال الرد';
+
+  @override
+  String get supportNoteOptional => 'ملاحظة (اختياري)';
+
+  @override
+  String get supportAddNote => 'إضافة ملاحظة';
+
+  @override
+  String get supportUploadDocuments => 'رفع المستندات';
+
+  @override
+  String get supportAcknowledge => 'إقرار بالاطلاع';
+
+  @override
+  String get supportAttachedFile => 'ملف مرفق';
+
+  @override
+  String get supportNoneAttached => 'لا يوجد مرفق';
+
+  @override
+  String get supportFieldRequested => 'المبلغ المطلوب';
+
+  @override
+  String get supportFieldInstallments => 'الأقساط';
+
+  @override
+  String supportMonthsCount(String count) {
+    return '$count شهراً';
+  }
+
+  @override
+  String get supportFieldPurpose => 'الغرض';
+
+  @override
+  String get supportFieldAsset => 'العهدة';
+
+  @override
+  String supportAssetWithSize(String asset, String size) {
+    return '$asset ($size)';
+  }
+
+  @override
+  String get supportFieldCondition => 'الحالة';
+
+  @override
+  String get supportFieldEvidence => 'الإثبات';
+
+  @override
+  String get supportFieldDates => 'التواريخ';
+
+  @override
+  String get supportFieldDuration => 'المدة';
+
+  @override
+  String supportDaysCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count يوماً',
+      few: '$count أيام',
+      two: 'يومان',
+      one: 'يوم واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get supportFieldAttachment => 'المرفق';
+
+  @override
+  String get supportStepInReview => 'قيد المراجعة';
+
+  @override
+  String supportStepSince(String word, String date) {
+    return '$word منذ $date';
+  }
+
+  @override
+  String supportStepDecidedAt(String word, String dateTime) {
+    return '$word · $dateTime';
+  }
+
+  @override
+  String get supportReason => 'السبب';
+
+  @override
+  String get supportAdminResponse => 'رد الإدارة';
+
+  @override
+  String get supportCommentFromAdmin => 'تعليق الإدارة';
+
+  @override
+  String get supportFieldRequestedAmount => 'المبلغ المطلوب';
+
+  @override
+  String get supportFieldApprovedAmount => 'المبلغ المعتمد';
+
+  @override
+  String get supportFieldDeductionStarts => 'بداية الخصم';
+
+  @override
+  String get supportFieldApprovedBy => 'تمت الموافقة بواسطة';
+
+  @override
+  String get supportFieldPenaltyAmount => 'مبلغ الغرامة';
+
+  @override
+  String get supportFieldRequestedBy => 'الطلب من';
+
+  @override
+  String get supportStatusOnHold => 'معلّق';
+
+  @override
+  String get supportFieldRequired => 'المطلوب';
+
+  @override
+  String get supportNotSpecified => 'غير محدد';
+
+  @override
+  String get supportBadgeAmountChanged => 'تم تعديل المبلغ';
+
+  @override
+  String get supportBadgeUpdate => 'تحديث';
+
+  @override
+  String get supportBadgePenaltyApplied => 'تم تطبيق غرامة';
+
+  @override
+  String get supportBadgeReviewRequired => 'يتطلب مراجعة';
+
+  @override
+  String get supportBadgeDocumentsRequired => 'مستندات مطلوبة';
+
+  @override
+  String supportFilesReady(int count) {
+    return '$count ملف جاهز';
+  }
+
+  @override
+  String get supportUpload => 'رفع';
+
+  @override
+  String get supportCapture => 'التقاط';
 }
