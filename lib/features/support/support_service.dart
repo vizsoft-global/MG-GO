@@ -156,6 +156,7 @@ class SupportService {
         .from('visit_branches')
         .select('key, name, address, working_hours, contact_phone')
         .eq('is_active', true)
+        .order('is_default', ascending: false)
         .order('sort_order')
         .limit(1);
     final list = rows as List;
