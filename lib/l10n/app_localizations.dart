@@ -5033,7 +5033,7 @@ abstract class AppLocalizations {
   /// No description provided for @esignScreenshotsRestricted.
   ///
   /// In en, this message translates to:
-  /// **'Screenshots are restricted for this document.'**
+  /// **'Screenshots disabled for this document'**
   String get esignScreenshotsRestricted;
 
   /// No description provided for @esignContentHidden.

@@ -2744,8 +2744,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'الأحد - الخميس، 9:00 صباحاً - 5:00 مساءً';
 
   @override
-  String get esignScreenshotsRestricted =>
-      'التقاط لقطات الشاشة محظور لهذا المستند.';
+  String get esignScreenshotsRestricted => 'لقطات الشاشة معطّلة لهذا المستند';
 
   @override
   String get esignContentHidden => 'المحتوى مخفي';

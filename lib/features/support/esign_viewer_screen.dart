@@ -258,10 +258,8 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                           Expanded(
                             child: OutlinedButton(
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.rejectedRed,
-                                side: BorderSide(
-                                  color: AppColors.rejectedRed.withValues(alpha: 0.4),
-                                ),
+                                foregroundColor: AppColors.neutralActionText,
+                                side: const BorderSide(color: AppColors.border),
                               ),
                               onPressed: _declining ? null : _decline,
                               child: _declining

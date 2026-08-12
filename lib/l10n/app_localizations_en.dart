@@ -2754,7 +2754,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get esignScreenshotsRestricted =>
-      'Screenshots are restricted for this document.';
+      'Screenshots disabled for this document';
 
   @override
   String get esignContentHidden => 'Content hidden';

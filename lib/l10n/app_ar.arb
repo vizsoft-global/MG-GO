@@ -840,7 +840,7 @@
   "esignSignedCopyUnavailable": "النسخة الموقّعة غير متاحة، لذا هذه هي النسخة الأصلية المرسلة إليك. توقيعك محفوظ مع الطلب.",
   "esignBackToDocuments": "العودة إلى المستندات",
   "visitDefaultWorkingHours": "الأحد - الخميس، 9:00 صباحاً - 5:00 مساءً",
-  "esignScreenshotsRestricted": "التقاط لقطات الشاشة محظور لهذا المستند.",
+  "esignScreenshotsRestricted": "لقطات الشاشة معطّلة لهذا المستند",
   "esignContentHidden": "المحتوى مخفي",
   "apptNoneScheduled": "لا توجد مواعيد مجدولة",
   "apptRequestTitle": "طلب موعد",

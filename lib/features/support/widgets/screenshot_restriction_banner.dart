@@ -10,23 +10,23 @@ class ScreenshotRestrictionBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
-        color: AppColors.bannerLavender,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.cardBorder),
+        color: AppColors.bannerAmberBg,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.bannerAmberBorder),
       ),
       child: Row(
         children: [
-          const Icon(Icons.no_photography_outlined, size: 18, color: AppColors.primaryBlue),
+          const Icon(Icons.lock_outline, size: 16, color: AppColors.bannerAmberText),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               context.l10n.esignScreenshotsRestricted,
               style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w500,
+                color: AppColors.bannerAmberText,
               ),
             ),
           ),

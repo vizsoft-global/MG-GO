@@ -17,7 +17,10 @@ abstract final class AppColors {
   static const dayLabelGrey = Color(0xFF999999);
   static const mutedLabel = Color(0xFF999999);
   static const cardBorder = Color(0x26000000);
-  static const bannerLavender = Color(0xFFE8E4F5);
+  static const bannerAmberBg = Color(0xFFFFF7ED);
+  static const bannerAmberBorder = Color(0xFFFED7AA);
+  static const bannerAmberText = Color(0xFFB45309);
+  static const neutralActionText = Color(0xFF374151);
   static const textPrimary = Color(0xFF1A1A1A);
   static const textSecondary = Color(0xFF6B7280);
   static const border = Color(0xFFE5E7EB);

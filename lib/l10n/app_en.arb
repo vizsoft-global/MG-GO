@@ -1426,7 +1426,7 @@
   "esignSignedCopyUnavailable": "Signed copy unavailable, so this is the original document you were sent. Your signature is stored with the request.",
   "esignBackToDocuments": "Back to documents",
   "visitDefaultWorkingHours": "Sun - Thu, 9:00 AM - 5:00 PM",
-  "esignScreenshotsRestricted": "Screenshots are restricted for this document.",
+  "esignScreenshotsRestricted": "Screenshots disabled for this document",
   "esignContentHidden": "Content hidden",
   "apptNoneScheduled": "No appointments scheduled",
   "apptRequestTitle": "Appointment request",
