@@ -5233,6 +5233,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{title} · {time}'**
   String apptTitleWithTime(String title, String time);
+
+  /// No description provided for @supportStatusRescheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Rescheduled'**
+  String get supportStatusRescheduled;
+
+  /// No description provided for @supportStatusResponded.
+  ///
+  /// In en, this message translates to:
+  /// **'Responded'**
+  String get supportStatusResponded;
+
+  /// No description provided for @supportStatusClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get supportStatusClosed;
+
+  /// No description provided for @supportActionRescheduleProposed.
+  ///
+  /// In en, this message translates to:
+  /// **'New dates proposed'**
+  String get supportActionRescheduleProposed;
+
+  /// No description provided for @supportRescheduleProposedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New dates proposed'**
+  String get supportRescheduleProposedTitle;
+
+  /// No description provided for @supportRescheduleNewStart.
+  ///
+  /// In en, this message translates to:
+  /// **'New start date'**
+  String get supportRescheduleNewStart;
+
+  /// No description provided for @supportRescheduleNewEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'New end date'**
+  String get supportRescheduleNewEnd;
+
+  /// No description provided for @supportRescheduleProposedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Proposed by'**
+  String get supportRescheduleProposedBy;
+
+  /// No description provided for @supportRescheduleAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept dates'**
+  String get supportRescheduleAccept;
+
+  /// No description provided for @supportRescheduleDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get supportRescheduleDecline;
+
+  /// No description provided for @supportRescheduleAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Dates accepted. Your request is back under review.'**
+  String get supportRescheduleAccepted;
+
+  /// No description provided for @supportRescheduleDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Dates declined. Your request is back under review.'**
+  String get supportRescheduleDeclined;
 }
 
 class _AppLocalizationsDelegate

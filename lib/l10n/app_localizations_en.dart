@@ -2862,4 +2862,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String apptTitleWithTime(String title, String time) {
     return '$title · $time';
   }
+
+  @override
+  String get supportStatusRescheduled => 'Rescheduled';
+
+  @override
+  String get supportStatusResponded => 'Responded';
+
+  @override
+  String get supportStatusClosed => 'Closed';
+
+  @override
+  String get supportActionRescheduleProposed => 'New dates proposed';
+
+  @override
+  String get supportRescheduleProposedTitle => 'New dates proposed';
+
+  @override
+  String get supportRescheduleNewStart => 'New start date';
+
+  @override
+  String get supportRescheduleNewEnd => 'New end date';
+
+  @override
+  String get supportRescheduleProposedBy => 'Proposed by';
+
+  @override
+  String get supportRescheduleAccept => 'Accept dates';
+
+  @override
+  String get supportRescheduleDecline => 'Decline';
+
+  @override
+  String get supportRescheduleAccepted =>
+      'Dates accepted. Your request is back under review.';
+
+  @override
+  String get supportRescheduleDeclined =>
+      'Dates declined. Your request is back under review.';
 }

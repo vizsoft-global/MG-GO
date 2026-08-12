@@ -16,7 +16,9 @@ class MyRequestsScreen extends ConsumerWidget {
   const MyRequestsScreen({super.key});
 
   static bool _needsAction(SupportRequestSummary row) {
-    return row.status == 'needs_clarification' || row.awaitingDriverAck;
+    return row.status == 'needs_clarification' ||
+        row.awaitingDriverAck ||
+        row.awaitingReschedule;
   }
 
   @override

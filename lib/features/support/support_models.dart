@@ -13,6 +13,7 @@ class SupportRequestSummary {
     this.amountKwd,
     this.awaitingDriverAck = false,
     this.acknowledged = false,
+    this.awaitingReschedule = false,
   });
 
   final String id;
@@ -24,6 +25,9 @@ class SupportRequestSummary {
   final double? amountKwd;
   final bool awaitingDriverAck;
   final bool acknowledged;
+
+  /// An approver proposed new dates and is waiting on the driver's answer.
+  final bool awaitingReschedule;
 
   factory SupportRequestSummary.fromJson(Map<String, dynamic> json) {
     final payload = json['payload'];
@@ -45,6 +49,7 @@ class SupportRequestSummary {
       awaitingDriverAck: payloadMap['awaiting_driver_ack'] == true &&
           payloadMap['driver_ack_at'] == null,
       acknowledged: payloadMap['driver_ack_at'] != null,
+      awaitingReschedule: payloadMap['awaiting_driver_reschedule'] == true,
     );
   }
 }
@@ -280,6 +285,16 @@ class RequestStatusView {
       case 'overdue':
         return RequestStatusView(
             l10n.supportStatusOverdue, RequestStatusColor.red);
+      // Waiting on the driver, like a clarification, so it carries the same amber.
+      case 'rescheduled':
+        return RequestStatusView(
+            l10n.supportStatusRescheduled, RequestStatusColor.amber);
+      case 'responded':
+        return RequestStatusView(
+            l10n.supportStatusResponded, RequestStatusColor.green);
+      case 'closed':
+        return RequestStatusView(
+            l10n.supportStatusClosed, RequestStatusColor.grey);
       default:
         return RequestStatusView(status, RequestStatusColor.grey);
     }

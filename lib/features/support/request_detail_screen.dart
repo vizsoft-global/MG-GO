@@ -235,6 +235,39 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     }
   }
 
+  /// Accepting applies the proposed dates and returns the request to the same approver;
+  /// declining returns it with the driver's reason. Either way the approver decides again.
+  Future<void> _respondToReschedule({required bool accept}) async {
+    setState(() => _submitting = true);
+    try {
+      final note = _noteCtrl.text.trim();
+      await ref.read(supportServiceProvider).respondToReschedule(
+            requestId: widget.requestId,
+            accept: accept,
+            note: note.isEmpty ? null : note,
+          );
+      _noteCtrl.clear();
+      ref.invalidate(requestDetailProvider(widget.requestId));
+      ref.invalidate(myRequestsProvider);
+      if (mounted) {
+        setState(() => _noteVisible = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(accept
+                ? context.l10n.supportRescheduleAccepted
+                : context.l10n.supportRescheduleDeclined),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      }
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -254,6 +287,11 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
           final needsClarify = detail.status == 'needs_clarification';
           final awaitingAck = detail.payload['awaiting_driver_ack'] == true &&
               detail.payload['driver_ack_at'] == null;
+          final awaitingReschedule =
+              detail.payload['awaiting_driver_reschedule'] == true;
+          final reschedule = detail.payload['reschedule'] is Map
+              ? Map<String, dynamic>.from(detail.payload['reschedule'] as Map)
+              : const <String, dynamic>{};
           final isDocumentType = detail.requestType == 'document' ||
               detail.requestType == 'sick_leave';
           final typedRows = _typedDetailRows(detail, l10n);
@@ -263,7 +301,9 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                   .where((e) =>
                       e.key != 'awaiting_driver_ack' &&
                       e.key != 'driver_ack_at' &&
-                      e.key != 'driver_ack_note')
+                      e.key != 'driver_ack_note' &&
+                      e.key != 'awaiting_driver_reschedule' &&
+                      e.key != 'reschedule')
                   .toList();
           final view = RequestStatusView.of(
             l10n: l10n,
@@ -305,6 +345,10 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
               ],
               if (awaitingAck) ...[
                 _AdminResponseCard(detail: detail),
+                const SizedBox(height: 12),
+              ],
+              if (awaitingReschedule) ...[
+                _ReschedulePropositionCard(reschedule: reschedule),
                 const SizedBox(height: 12),
               ],
               _Card(
@@ -359,6 +403,55 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                                 child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                               )
                             : Text(l10n.supportSubmitResponse),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+              if (awaitingReschedule) ...[
+                const SizedBox(height: 16),
+                if (_noteVisible) ...[
+                  TextField(
+                    controller: _noteCtrl,
+                    focusNode: _noteFocus,
+                    decoration: InputDecoration(
+                      labelText: l10n.supportNoteOptional,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: _submitting
+                            ? null
+                            : () {
+                                if (!_noteVisible) {
+                                  setState(() => _noteVisible = true);
+                                  _noteFocus.requestFocus();
+                                  return;
+                                }
+                                _respondToReschedule(accept: false);
+                              },
+                        child: Text(l10n.supportRescheduleDecline),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: FilledButton(
+                        style: FilledButton.styleFrom(
+                            backgroundColor: AppColors.progressGreen),
+                        onPressed:
+                            _submitting ? null : () => _respondToReschedule(accept: true),
+                        child: _submitting
+                            ? const SizedBox(
+                                height: 18, width: 18,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.white),
+                              )
+                            : Text(l10n.supportRescheduleAccept),
                       ),
                     ),
                   ],
@@ -854,6 +947,74 @@ class _ClarificationReasonCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// The dates an approver proposed, plus their reason. Nothing is inferred: a date that was
+/// not proposed is simply absent from the card.
+class _ReschedulePropositionCard extends StatelessWidget {
+  const _ReschedulePropositionCard({required this.reschedule});
+
+  final Map<String, dynamic> reschedule;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final start = reschedule['proposed_start_date']?.toString();
+    final end = reschedule['proposed_end_date']?.toString();
+    final note = reschedule['note']?.toString().trim();
+    final by = reschedule['proposed_by']?.toString().trim();
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF7ED),
+        border: Border.all(color: const Color(0xFFFFE0C2)),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.supportRescheduleProposedTitle,
+            style: const TextStyle(
+                fontWeight: FontWeight.w700, color: Color(0xFF9A3412)),
+          ),
+          const SizedBox(height: 8),
+          if (start != null && start.isNotEmpty)
+            _row(l10n.supportRescheduleNewStart, _date(context, start)),
+          if (end != null && end.isNotEmpty)
+            _row(l10n.supportRescheduleNewEnd, _date(context, end)),
+          if (by != null && by.isNotEmpty)
+            _row(l10n.supportRescheduleProposedBy, by),
+          if (note != null && note.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(note, style: const TextStyle(color: Color(0xFFB5470A))),
+          ],
+        ],
+      ),
+    );
+  }
+
+  static Widget _row(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label,
+              style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+
+  static String _date(BuildContext context, String raw) {
+    final parsed = DateTime.tryParse(raw);
+    if (parsed == null) return raw;
+    final l10n = context.l10n;
+    return '${parsed.day} ${monthShortNames(l10n)[parsed.month - 1]} ${parsed.year}';
   }
 }
 

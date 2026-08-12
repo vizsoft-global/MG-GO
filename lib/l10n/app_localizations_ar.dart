@@ -2851,4 +2851,42 @@ class AppLocalizationsAr extends AppLocalizations {
   String apptTitleWithTime(String title, String time) {
     return '$title · $time';
   }
+
+  @override
+  String get supportStatusRescheduled => 'أُعيد تحديد الموعد';
+
+  @override
+  String get supportStatusResponded => 'تم الرد';
+
+  @override
+  String get supportStatusClosed => 'مُغلق';
+
+  @override
+  String get supportActionRescheduleProposed => 'مواعيد جديدة مقترحة';
+
+  @override
+  String get supportRescheduleProposedTitle => 'مواعيد جديدة مقترحة';
+
+  @override
+  String get supportRescheduleNewStart => 'تاريخ البداية الجديد';
+
+  @override
+  String get supportRescheduleNewEnd => 'تاريخ النهاية الجديد';
+
+  @override
+  String get supportRescheduleProposedBy => 'مقترح من';
+
+  @override
+  String get supportRescheduleAccept => 'قبول المواعيد';
+
+  @override
+  String get supportRescheduleDecline => 'رفض';
+
+  @override
+  String get supportRescheduleAccepted =>
+      'تم قبول المواعيد. طلبك قيد المراجعة مرة أخرى.';
+
+  @override
+  String get supportRescheduleDeclined =>
+      'تم رفض المواعيد. طلبك قيد المراجعة مرة أخرى.';
 }

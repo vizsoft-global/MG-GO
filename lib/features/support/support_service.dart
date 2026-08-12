@@ -129,6 +129,27 @@ class SupportService {
     }
   }
 
+  /// An approver proposed different dates. Accepting applies them and sends the request back
+  /// to the same approver; declining sends it back with the driver's reason attached.
+  Future<void> respondToReschedule({
+    required String requestId,
+    required bool accept,
+    String? note,
+  }) async {
+    final result = await _client.rpc(
+      'driver_respond_reschedule',
+      params: {
+        'p_request_id': requestId,
+        'p_accept': accept,
+        'p_note': note,
+      },
+    );
+    final map = _asMap(result);
+    if (map['ok'] == false) {
+      throw Exception(map['error']?.toString() ?? 'reschedule_reply_failed');
+    }
+  }
+
   Future<List<LoanTenureOption>> listTenureOptions() async {
     final rows = await _client
         .from('loan_tenure_options')

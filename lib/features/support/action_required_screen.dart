@@ -7,7 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
 import 'support_providers.dart';
 
-enum _ActionKind { clarify, ack, esign, appointment }
+enum _ActionKind { clarify, ack, reschedule, esign, appointment }
 
 class _ActionItem {
   const _ActionItem({
@@ -51,6 +51,15 @@ class ActionRequiredScreen extends ConsumerWidget {
           kind: _ActionKind.clarify,
           code: row.requestCode,
           title: l10n.supportReasonClarificationNeeded,
+          subtitle: _requestTypeLabel(row.requestType, l10n),
+          route: '/profile/support/requests/${row.id}',
+          at: row.createdAt,
+        ));
+      } else if (row.awaitingReschedule) {
+        items.add(_ActionItem(
+          kind: _ActionKind.reschedule,
+          code: row.requestCode,
+          title: l10n.supportActionRescheduleProposed,
           subtitle: _requestTypeLabel(row.requestType, l10n),
           route: '/profile/support/requests/${row.id}',
           at: row.createdAt,
@@ -159,6 +168,7 @@ class ActionRequiredScreen extends ConsumerWidget {
     return switch (kind) {
       _ActionKind.clarify => Icons.help_outline_rounded,
       _ActionKind.ack => Icons.notifications_active_outlined,
+      _ActionKind.reschedule => Icons.event_repeat_outlined,
       _ActionKind.esign => Icons.draw_outlined,
       _ActionKind.appointment => Icons.event_note_outlined,
     };

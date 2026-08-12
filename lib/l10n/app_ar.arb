@@ -873,5 +873,17 @@
   "apptConfirmedBody": "تمت إضافته إلى جدولك. سنذكّرك قبل موعده.",
   "apptDone": "تم",
   "apptViewInCalendar": "عرض في التقويم",
-  "apptTitleWithTime": "{title} · {time}"
+  "apptTitleWithTime": "{title} · {time}",
+  "supportStatusRescheduled": "أُعيد تحديد الموعد",
+  "supportStatusResponded": "تم الرد",
+  "supportStatusClosed": "مُغلق",
+  "supportActionRescheduleProposed": "مواعيد جديدة مقترحة",
+  "supportRescheduleProposedTitle": "مواعيد جديدة مقترحة",
+  "supportRescheduleNewStart": "تاريخ البداية الجديد",
+  "supportRescheduleNewEnd": "تاريخ النهاية الجديد",
+  "supportRescheduleProposedBy": "مقترح من",
+  "supportRescheduleAccept": "قبول المواعيد",
+  "supportRescheduleDecline": "رفض",
+  "supportRescheduleAccepted": "تم قبول المواعيد. طلبك قيد المراجعة مرة أخرى.",
+  "supportRescheduleDeclined": "تم رفض المواعيد. طلبك قيد المراجعة مرة أخرى."
 }

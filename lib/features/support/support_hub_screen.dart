@@ -20,7 +20,10 @@ class SupportHubScreen extends ConsumerWidget {
     final l10n = context.l10n;
     final requestsAsync = ref.watch(myRequestsProvider);
     final actionCount = requestsAsync.asData?.value
-            .where((r) => r.status == 'needs_clarification' || r.awaitingDriverAck)
+            .where((r) =>
+                r.status == 'needs_clarification' ||
+                r.awaitingDriverAck ||
+                r.awaitingReschedule)
             .length ??
         0;
 

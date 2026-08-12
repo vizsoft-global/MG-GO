@@ -1479,5 +1479,17 @@
         "type": "String"
       }
     }
-  }
+  },
+  "supportStatusRescheduled": "Rescheduled",
+  "supportStatusResponded": "Responded",
+  "supportStatusClosed": "Closed",
+  "supportActionRescheduleProposed": "New dates proposed",
+  "supportRescheduleProposedTitle": "New dates proposed",
+  "supportRescheduleNewStart": "New start date",
+  "supportRescheduleNewEnd": "New end date",
+  "supportRescheduleProposedBy": "Proposed by",
+  "supportRescheduleAccept": "Accept dates",
+  "supportRescheduleDecline": "Decline",
+  "supportRescheduleAccepted": "Dates accepted. Your request is back under review.",
+  "supportRescheduleDeclined": "Dates declined. Your request is back under review."
 }
