@@ -250,11 +250,21 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                           if (_isImageKey(detail.documentStorageKey!))
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
-                              child: Image.network(
-                                _documentUrl!,
-                                fit: BoxFit.contain,
-                                errorBuilder: (_, _, _) => Text(
-                                  l10n.esignPreviewUnavailable,
+                              // Width must be tight: left to size itself an
+                              // Image renders at its pixel size divided by the
+                              // device pixel ratio, so a document scan came out
+                              // at a third of the card on a 3x screen.
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxHeight: 420,
+                                ),
+                                child: Image.network(
+                                  _documentUrl!,
+                                  width: double.infinity,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (_, _, _) => Text(
+                                    l10n.esignPreviewUnavailable,
+                                  ),
                                 ),
                               ),
                             )
