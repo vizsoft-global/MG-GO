@@ -853,17 +853,28 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     final word = _statusWord(status, l10n);
     if (decidedAt == null) return word;
     if (status == 'in_progress') {
-      return l10n.supportStepSince(word, _fmtDay(decidedAt));
+      return l10n.supportStepSince(word, _fmtDay(decidedAt, l10n));
     }
-    return l10n.supportStepDecidedAt(word, _fmtDateTime(decidedAt));
+    return l10n.supportStepDecidedAt(word, _fmtDateTime(decidedAt, l10n));
   }
 
   /// `decided_at` is a timestamptz, so convert before formatting; otherwise the
   /// step reads back in UTC, three hours behind Kuwait.
-  static String _fmtDay(DateTime d) => DateFormat('d MMM').format(d.toLocal());
+  ///
+  /// The month comes from the ARB strings rather than `DateFormat('d MMM')`,
+  /// which resolves against intl's default locale and so printed "9 Aug" in an
+  /// Arabic timeline while the list next to it printed "9 أغس".
+  static String _fmtDay(DateTime d, AppLocalizations l10n) {
+    final local = d.toLocal();
+    return '${local.day} ${monthShortNames(l10n)[local.month - 1]}';
+  }
 
-  static String _fmtDateTime(DateTime d) =>
-      DateFormat('d MMM, HH:mm').format(d.toLocal());
+  static String _fmtDateTime(DateTime d, AppLocalizations l10n) {
+    final local = d.toLocal();
+    final hour = local.hour.toString().padLeft(2, '0');
+    final minute = local.minute.toString().padLeft(2, '0');
+    return '${_fmtDay(d, l10n)}, $hour:$minute';
+  }
 }
 
 class _HeaderCard extends StatelessWidget {

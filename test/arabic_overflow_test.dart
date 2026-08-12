@@ -7,8 +7,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dpd_userapp/features/auth/rider_auth_service.dart';
+import 'package:dpd_userapp/features/support/widgets/booking_qr.dart';
 import 'package:dpd_userapp/features/support/dynamic_request_form_screen.dart';
 import 'package:dpd_userapp/features/support/esign_capture_screen.dart';
+import 'package:dpd_userapp/features/support/my_requests_screen.dart';
+import 'package:dpd_userapp/features/support/my_visits_screen.dart';
+import 'package:dpd_userapp/features/support/request_detail_screen.dart';
 import 'package:dpd_userapp/features/support/request_type_definition.dart';
 import 'package:dpd_userapp/features/support/support_hub_screen.dart';
 import 'package:dpd_userapp/features/support/support_models.dart';
@@ -117,6 +121,122 @@ final _esignDetail = EsignRequestDetail(raw: const {
   'category_label': 'السكن',
 });
 
+const _requestId = 'qa-request';
+
+/// One row per shape the list can take: a plain sent request, one waiting on a
+/// clarification, one waiting on an acknowledgement, and one waiting on a
+/// reschedule answer. The last three also drive the amber attention banner.
+final _myRequests = [
+  SupportRequestSummary.fromJson(const {
+    'id': _requestId,
+    'request_code': 'RCM-0001',
+    'request_type': 'loan',
+    'status': 'needs_clarification',
+    'created_at': '2026-08-09T09:15:00Z',
+    'amount_kwd': 250,
+  }),
+  SupportRequestSummary.fromJson(const {
+    'id': 'qa-2',
+    'request_code': 'RCM-0002',
+    'request_type': 'salary_justification',
+    'status': 'in_review',
+    'created_at': '2026-08-07T11:00:00Z',
+  }),
+  SupportRequestSummary.fromJson(const {
+    'id': 'qa-3',
+    'request_code': 'RCM-0003',
+    'request_type': 'asset',
+    'status': 'approved',
+    'created_at': '2026-08-05T08:30:00Z',
+    'payload': {'awaiting_driver_ack': true},
+  }),
+  SupportRequestSummary.fromJson(const {
+    'id': 'qa-4',
+    'request_code': 'RCM-0004',
+    'request_type': 'leave',
+    'status': 'in_review',
+    'created_at': '2026-08-02T07:45:00Z',
+    'payload': {'awaiting_driver_reschedule': true},
+  }),
+];
+
+/// A loan sent back for clarification: the widest detail screen, since it
+/// renders the typed rows, the reason card, the step timeline and the response
+/// form at once.
+final _requestDetail = SupportRequestDetail(
+  request: const {
+    'id': _requestId,
+    'request_code': 'RCM-0001',
+    'request_type': 'loan',
+    'status': 'needs_clarification',
+    'current_step_label': 'بانتظار موافقة مدير الموارد البشرية',
+    'amount_kwd': 250,
+    'payload': {
+      'tenure_months': 12,
+      'reason': 'مصاريف علاج عاجلة لأحد أفراد الأسرة خارج التغطية التأمينية',
+    },
+  },
+  steps: const [
+    {
+      'step_order': 1,
+      'step_name': 'مدير التشغيل المباشر',
+      'status': 'completed',
+      'decided_at': '2026-08-09T10:00:00Z',
+      'decision_note': 'تمت المراجعة الأولية والموافقة على رفع الطلب',
+    },
+    {
+      'step_order': 2,
+      'step_name': 'إدارة الموارد البشرية والشؤون الإدارية',
+      'status': 'in_progress',
+    },
+    {
+      'step_order': 3,
+      'step_name': 'الرواتب',
+      'status': 'pending',
+    },
+  ],
+  clarifications: const [
+    {
+      'id': 'qa-clarify',
+      'question':
+          'يرجى توضيح سبب طلب السلفة وإرفاق ما يثبت المصاريف العلاجية المذكورة.',
+      'answered_at': null,
+    },
+  ],
+  attachments: const [],
+);
+
+/// `label_en` is what the screen renders whatever the locale, so this pairs a
+/// department an admin named in Arabic with one left in English — the mix a
+/// Kuwait tenant actually produces today.
+final _visitDepartments = [
+  VisitDepartment.fromJson(const {
+    'key': 'call_center',
+    'label_en': 'إدارة مركز الاتصال وخدمة العملاء',
+  }),
+  VisitDepartment.fromJson(const {
+    'key': 'human_resources',
+    'label_en': 'Human Resources',
+  }),
+];
+
+final _myVisits = [
+  VisitBooking.fromJson(const {
+    'id': 'qa-visit-1',
+    'booking_code': 'VIS-99001',
+    'department_key': 'call_center',
+    'scheduled_date': '2026-08-20',
+    'status': 'confirmed',
+  }),
+  VisitBooking.fromJson(const {
+    'id': 'qa-visit-2',
+    'booking_code': 'VIS-98800',
+    'department_key': 'human_resources',
+    'scheduled_date': '2026-07-14',
+    'status': 'completed',
+  }),
+];
+
 const _riderProfile = RiderProfile(
   id: 'qa-rider',
   fullName: 'عبد الرحمن الشمري',
@@ -133,6 +253,10 @@ Widget _harness(Widget home, {List<RequestTypeDefinition>? types}) {
       requestFieldsProvider(_customType).overrideWith((ref) async => _fields),
       riderProfileProvider.overrideWith((ref) async => _riderProfile),
       esignRequestDetailProvider(_esignId).overrideWith((ref) async => _esignDetail),
+      myRequestsProvider.overrideWith((ref) async => _myRequests),
+      requestDetailProvider(_requestId).overrideWith((ref) async => _requestDetail),
+      myVisitsProvider.overrideWith((ref) async => _myVisits),
+      visitDepartmentsProvider.overrideWith((ref) async => _visitDepartments),
     ],
     child: MaterialApp(
       locale: const Locale('ar'),
@@ -254,6 +378,62 @@ void main() {
     final confirm = tester.getRect(find.text('تأكيد التوقيع'));
     expect(confirm.left, greaterThanOrEqualTo(0));
     expect(confirm.right, lessThanOrEqualTo(_pixel9.width));
+  });
+
+  // The row is a ListTile: the trailing status pill takes its intrinsic width
+  // first, so a long Arabic status leaves the type label whatever is left.
+  testWidgets('my requests list in Arabic', (tester) async {
+    await _pumpAtPixel9(tester, const MyRequestsScreen());
+    await expectLater(
+      find.byType(MyRequestsScreen),
+      matchesGoldenFile('goldens/ar_my_requests.png'),
+    );
+
+    for (final code in ['RCM-0001', 'RCM-0002', 'RCM-0003', 'RCM-0004']) {
+      final row = tester.getRect(find.textContaining(code));
+      expect(row.left, greaterThanOrEqualTo(0), reason: code);
+      expect(row.right, lessThanOrEqualTo(_pixel9.width), reason: code);
+    }
+  });
+
+  testWidgets('request detail in Arabic', (tester) async {
+    await _pumpAtPixel9(tester, const RequestDetailScreen(requestId: _requestId));
+    await expectLater(
+      find.byType(RequestDetailScreen),
+      matchesGoldenFile('goldens/ar_request_detail.png'),
+    );
+
+    // The longest strings on the screen are the clarification question and the
+    // middle approval step; neither may be clipped by the card.
+    for (final needle in [
+      'يرجى توضيح سبب طلب السلفة',
+      'إدارة الموارد البشرية والشؤون الإدارية',
+    ]) {
+      final text = tester.getRect(find.textContaining(needle));
+      expect(text.left, greaterThanOrEqualTo(0), reason: needle);
+      expect(text.right, lessThanOrEqualTo(_pixel9.width), reason: needle);
+    }
+
+    // The decided step used DateFormat without a locale, so the timeline read
+    // "9 Aug" while the list one tap away read "9 أغس".
+    expect(find.textContaining('أغس'), findsWidgets);
+    expect(find.textContaining('Aug'), findsNothing);
+  });
+
+  testWidgets('visit ticket in Arabic', (tester) async {
+    await _pumpAtPixel9(tester, const MyVisitsScreen());
+    await expectLater(
+      find.byType(MyVisitsScreen),
+      matchesGoldenFile('goldens/ar_my_visits.png'),
+    );
+
+    // The QR is the one thing on the ticket that must not be squeezed: it sits
+    // in a Row beside text that wraps.
+    // The 48pt code plus the 1pt hairline border on each side.
+    final qr = tester.getRect(find.byType(BookingQr));
+    expect(qr.size, const Size(50, 50));
+    // RTL puts the QR on the right edge of the card, not the left.
+    expect(qr.center.dx, greaterThan(_pixel9.width / 2));
   });
 
   testWidgets('largest accessibility text scale still lays out', (tester) async {
