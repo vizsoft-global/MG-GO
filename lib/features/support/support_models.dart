@@ -365,7 +365,12 @@ class EsignRequestSummary {
 
   bool get isPending => status == 'pending';
   bool get isSigned => status == 'signed';
-  bool get isDeclined => status == 'cancelled';
+
+  /// The rider refused to sign. `driver_decline_esignature` writes this status
+  /// as of migration 20260829110000; `cancelled` now only ever means the admin
+  /// withdrew the request, which is why the two are separate here.
+  bool get isDeclined => status == 'declined';
+  bool get isCancelled => status == 'cancelled';
 
   factory EsignRequestSummary.fromJson(Map<String, dynamic> json) {
     return EsignRequestSummary(
@@ -428,7 +433,8 @@ class EsignRequestDetail {
 
   bool get isPending => status == 'pending';
   bool get isSigned => status == 'signed';
-  bool get isDeclined => status == 'cancelled';
+  bool get isDeclined => status == 'declined';
+  bool get isCancelled => status == 'cancelled';
   DateTime? get declinedAt => _parseDateTime(signerMeta['declined_at']);
   String? get declinedReason => signerMeta['declined_reason'] as String?;
 }

@@ -54,7 +54,10 @@ class EsignDocumentsScreen extends ConsumerWidget {
             }
             final pending = rows.where((r) => r.isPending).toList();
             final signed = rows.where((r) => r.isSigned).toList();
-            final declined = rows.where((r) => r.isDeclined).toList();
+            // An admin withdrawal is not a decline, but for the rider both are
+            // simply no longer actionable, so they share the closing section.
+            final declined =
+                rows.where((r) => r.isDeclined || r.isCancelled).toList();
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               children: [
@@ -133,10 +136,16 @@ class _EsignCard extends StatelessWidget {
         ? AppColors.underReviewAmber
         : row.isDeclined
             ? AppColors.rejectedRed
-            : AppColors.progressGreen;
+            : row.isCancelled
+                ? AppColors.textSecondary
+                : AppColors.progressGreen;
     final statusLabel = pending
         ? l10n.esignSectionPending
-        : (row.isDeclined ? l10n.esignSectionDeclined : l10n.esignSectionSigned);
+        : row.isDeclined
+            ? l10n.esignSectionDeclined
+            : row.isCancelled
+                ? l10n.statusCancelled
+                : l10n.esignSectionSigned;
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: InkWell(
@@ -193,9 +202,11 @@ class _EsignCard extends StatelessWidget {
               Text(
                 pending
                     ? l10n.esignDueOn(dueLabel)
-                    : (row.isDeclined
+                    : row.isDeclined
                         ? l10n.esignSectionDeclined
-                        : l10n.esignSignedOn(dueLabel)),
+                        : row.isCancelled
+                            ? l10n.statusCancelled
+                            : l10n.esignSignedOn(dueLabel),
                 style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary,
