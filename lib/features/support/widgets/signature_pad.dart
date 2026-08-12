@@ -123,6 +123,13 @@ class SignaturePad extends StatelessWidget {
   }
 }
 
+/// Figma's in-pad guides: a signing baseline with a "x" start marker. They are
+/// painted here and deliberately not in [SignaturePadController.toPngBytes], so
+/// the stored signature is the rider's ink only.
+const _guideColor = Color(0xFFD1D5DB);
+const _guideInset = 24.0;
+const _guideMarkerSize = 10.0;
+
 class _SignaturePainter extends CustomPainter {
   _SignaturePainter({required this.strokes});
 
@@ -134,6 +141,7 @@ class _SignaturePainter extends CustomPainter {
       Rect.fromLTWH(0, 0, size.width, size.height),
       Paint()..color = Colors.white,
     );
+    _paintGuides(canvas, size);
     final paint = Paint()
       ..color = Colors.black
       ..strokeWidth = 3
@@ -148,6 +156,33 @@ class _SignaturePainter extends CustomPainter {
       }
       canvas.drawPath(path, paint);
     }
+  }
+
+  void _paintGuides(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = _guideColor
+      ..strokeWidth = 1.2
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+    final baselineY = size.height * 0.72;
+    const half = _guideMarkerSize / 2;
+    final centerX = _guideInset + half;
+    final centerY = baselineY - half;
+    canvas.drawLine(
+      Offset(centerX - half, centerY - half),
+      Offset(centerX + half, centerY + half),
+      paint,
+    );
+    canvas.drawLine(
+      Offset(centerX - half, centerY + half),
+      Offset(centerX + half, centerY - half),
+      paint,
+    );
+    canvas.drawLine(
+      Offset(_guideInset + _guideMarkerSize + 6, baselineY),
+      Offset(size.width - _guideInset, baselineY),
+      paint,
+    );
   }
 
   @override
