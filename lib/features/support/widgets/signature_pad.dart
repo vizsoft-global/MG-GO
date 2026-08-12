@@ -127,8 +127,13 @@ class SignaturePad extends StatelessWidget {
 /// painted here and deliberately not in [SignaturePadController.toPngBytes], so
 /// the stored signature is the rider's ink only.
 const _guideColor = Color(0xFFD1D5DB);
-const _guideInset = 24.0;
-const _guideMarkerSize = 10.0;
+
+/// Ratios read off RSup/26 `4388:17186`, whose pad is 361x190: the baseline
+/// frame sits at y=145 and runs x=30..330, and the "x" marker shares the
+/// line's start x rather than standing clear of it.
+const _guideInsetRatio = 30 / 361;
+const _guideBaselineRatio = 145 / 190;
+const _guideMarkerSize = 8.0;
 
 class _SignaturePainter extends CustomPainter {
   _SignaturePainter({required this.strokes});
@@ -164,10 +169,11 @@ class _SignaturePainter extends CustomPainter {
       ..strokeWidth = 1.2
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
-    final baselineY = size.height * 0.72;
+    final inset = size.width * _guideInsetRatio;
+    final baselineY = size.height * _guideBaselineRatio;
     const half = _guideMarkerSize / 2;
-    final centerX = _guideInset + half;
-    final centerY = baselineY - half;
+    final centerX = inset + half;
+    final centerY = baselineY - half - 2;
     canvas.drawLine(
       Offset(centerX - half, centerY - half),
       Offset(centerX + half, centerY + half),
@@ -179,8 +185,8 @@ class _SignaturePainter extends CustomPainter {
       paint,
     );
     canvas.drawLine(
-      Offset(_guideInset + _guideMarkerSize + 6, baselineY),
-      Offset(size.width - _guideInset, baselineY),
+      Offset(inset, baselineY),
+      Offset(size.width - inset, baselineY),
       paint,
     );
   }

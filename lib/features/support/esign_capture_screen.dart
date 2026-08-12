@@ -147,7 +147,9 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
           const SizedBox(height: 10),
           _DashedBox(
             child: SizedBox(
-              height: 180,
+              // RSup/26 `4388:17186` is 361x190; the guide ratios in
+              // SignaturePad are read off that same box.
+              height: 190,
               width: double.infinity,
               child: SignaturePad(controller: _padController),
             ),
