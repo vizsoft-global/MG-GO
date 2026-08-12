@@ -88,7 +88,9 @@ class RequestSubmittedScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
-                          l10n.pending,
+                          // driver_create_request inserts the row as 'submitted', so the
+                          // confirmation screen has to say the same word the list will.
+                          l10n.submitted,
                           style: const TextStyle(
                             color: AppColors.underReviewAmber,
                             fontSize: 11,

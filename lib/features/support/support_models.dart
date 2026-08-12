@@ -259,8 +259,11 @@ class RequestStatusView {
     }
     switch (status) {
       case 'pending':
-      case 'submitted':
         return RequestStatusView(l10n.pending, RequestStatusColor.amber);
+      // Figma draws these as two different words, and they are two different things: the
+      // request has been submitted, but nobody has picked it up yet.
+      case 'submitted':
+        return RequestStatusView(l10n.submitted, RequestStatusColor.amber);
       case 'in_review':
         return RequestStatusView(
             l10n.supportStatusInProgress, RequestStatusColor.blue);
