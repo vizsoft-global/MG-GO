@@ -448,7 +448,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
           Flexible(
             child: chip
                 ? Align(
-                    alignment: Alignment.centerRight,
+                    alignment: AlignmentDirectional.centerEnd,
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                       decoration: BoxDecoration(

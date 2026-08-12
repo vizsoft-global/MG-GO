@@ -136,7 +136,7 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
             ),
           ),
           Align(
-            alignment: Alignment.centerRight,
+            alignment: AlignmentDirectional.centerEnd,
             child: TextButton(
               onPressed: _padController.clear,
               style: TextButton.styleFrom(foregroundColor: AppColors.accentOrange),
@@ -191,6 +191,10 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
             children: [
               Expanded(
                 child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.neutralActionText,
+                    side: const BorderSide(color: AppColors.border),
+                  ),
                   onPressed: _submitting ? null : () => context.pop(),
                   child: Text(l10n.cancel),
                 ),
