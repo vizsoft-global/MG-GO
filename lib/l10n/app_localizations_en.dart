@@ -2750,6 +2750,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get esignBackToDocuments => 'Back to documents';
 
   @override
+  String get visitDefaultWorkingHours => 'Sun - Thu, 9:00 AM - 5:00 PM';
+
+  @override
+  String get esignScreenshotsRestricted =>
+      'Screenshots are restricted for this document.';
+
+  @override
+  String get esignContentHidden => 'Content hidden';
+
+  @override
   String get apptNoneScheduled => 'No appointments scheduled';
 
   @override

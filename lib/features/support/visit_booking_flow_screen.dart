@@ -259,7 +259,7 @@ class _TowerIntroStep extends ConsumerWidget {
               _InfoRow(
                 icon: Icons.access_time_rounded,
                 label: l10n.visitFieldWorkingHours,
-                value: branch?.workingHours ?? 'Sun - Thu, 9:00 AM - 5:00 PM',
+                value: branch?.workingHours ?? l10n.visitDefaultWorkingHours,
               ),
               const SizedBox(height: 10),
               _InfoRow(

@@ -2740,6 +2740,17 @@ class AppLocalizationsAr extends AppLocalizations {
   String get esignBackToDocuments => 'العودة إلى المستندات';
 
   @override
+  String get visitDefaultWorkingHours =>
+      'الأحد - الخميس، 9:00 صباحاً - 5:00 مساءً';
+
+  @override
+  String get esignScreenshotsRestricted =>
+      'التقاط لقطات الشاشة محظور لهذا المستند.';
+
+  @override
+  String get esignContentHidden => 'المحتوى مخفي';
+
+  @override
   String get apptNoneScheduled => 'لا توجد مواعيد مجدولة';
 
   @override

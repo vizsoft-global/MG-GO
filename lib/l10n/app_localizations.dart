@@ -5024,6 +5024,24 @@ abstract class AppLocalizations {
   /// **'Back to documents'**
   String get esignBackToDocuments;
 
+  /// No description provided for @visitDefaultWorkingHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Sun - Thu, 9:00 AM - 5:00 PM'**
+  String get visitDefaultWorkingHours;
+
+  /// No description provided for @esignScreenshotsRestricted.
+  ///
+  /// In en, this message translates to:
+  /// **'Screenshots are restricted for this document.'**
+  String get esignScreenshotsRestricted;
+
+  /// No description provided for @esignContentHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Content hidden'**
+  String get esignContentHidden;
+
   /// No description provided for @apptNoneScheduled.
   ///
   /// In en, this message translates to:

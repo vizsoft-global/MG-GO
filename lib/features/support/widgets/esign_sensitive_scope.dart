@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../core/l10n/l10n.dart';
 import '../../../core/security/screen_protector_service.dart';
 
 class EsignSensitiveScope extends StatefulWidget {
@@ -99,10 +100,10 @@ class _EsignSensitiveScopeState extends State<EsignSensitiveScope>
           Positioned.fill(
             child: ColoredBox(
               color: Colors.black.withValues(alpha: 0.92),
-              child: const Center(
+              child: Center(
                 child: Text(
-                  'Content hidden',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                  context.l10n.esignContentHidden,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
