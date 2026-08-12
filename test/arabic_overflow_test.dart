@@ -10,6 +10,7 @@ import 'package:dpd_userapp/features/auth/rider_auth_service.dart';
 import 'package:dpd_userapp/features/support/widgets/booking_qr.dart';
 import 'package:dpd_userapp/features/support/dynamic_request_form_screen.dart';
 import 'package:dpd_userapp/features/support/esign_capture_screen.dart';
+import 'package:dpd_userapp/features/support/esign_viewer_screen.dart';
 import 'package:dpd_userapp/features/support/my_requests_screen.dart';
 import 'package:dpd_userapp/features/support/my_visits_screen.dart';
 import 'package:dpd_userapp/features/support/request_detail_screen.dart';
@@ -237,6 +238,34 @@ final _myVisits = [
   }),
 ];
 
+/// The viewer has two branches reachable without a network: no document at all,
+/// and a document whose signed URL cannot be resolved. The second is what a test
+/// gets for free, since `Supabase.instance` is not initialised here and
+/// `_loadDocument` catches that into its failure state.
+const _viewerNoDocId = 'qa-esign-viewer-nodoc';
+const _viewerFailedId = 'qa-esign-viewer-failed';
+
+final _viewerNoDoc = EsignRequestDetail(raw: const {
+  'id': _viewerNoDocId,
+  'request_code': 'SIG-0143',
+  'title': 'اتفاقية سكن السائقين وملحقاتها',
+  'status': 'pending',
+  'screenshot_restricted': true,
+  'category_label': 'السكن',
+  'due_at': '2026-08-25',
+});
+
+final _viewerFailed = EsignRequestDetail(raw: const {
+  'id': _viewerFailedId,
+  'request_code': 'SIG-0144',
+  'title': 'إقرار استلام الدراجة',
+  'status': 'pending',
+  'screenshot_restricted': false,
+  'category_label': 'العهد',
+  'document_storage_key': 'admin/bike-handover.pdf',
+  'due_at': '2026-08-30',
+});
+
 const _riderProfile = RiderProfile(
   id: 'qa-rider',
   fullName: 'عبد الرحمن الشمري',
@@ -253,6 +282,10 @@ Widget _harness(Widget home, {List<RequestTypeDefinition>? types}) {
       requestFieldsProvider(_customType).overrideWith((ref) async => _fields),
       riderProfileProvider.overrideWith((ref) async => _riderProfile),
       esignRequestDetailProvider(_esignId).overrideWith((ref) async => _esignDetail),
+      esignRequestDetailProvider(_viewerNoDocId)
+          .overrideWith((ref) async => _viewerNoDoc),
+      esignRequestDetailProvider(_viewerFailedId)
+          .overrideWith((ref) async => _viewerFailed),
       myRequestsProvider.overrideWith((ref) async => _myRequests),
       requestDetailProvider(_requestId).overrideWith((ref) async => _requestDetail),
       myVisitsProvider.overrideWith((ref) async => _myVisits),
@@ -434,6 +467,41 @@ void main() {
     expect(qr.size, const Size(50, 50));
     // RTL puts the QR on the right edge of the card, not the left.
     expect(qr.center.dx, greaterThan(_pixel9.width / 2));
+  });
+
+  // Only the resolved preview needs a network: an image goes through
+  // Image.network and a PDF through url_launcher. Everything around it — the
+  // restriction banner, the meta lines, the two footer buttons — is plain
+  // layout, and those are where Arabic can overflow.
+  testWidgets('e-sign viewer chrome in Arabic, no document attached',
+      (tester) async {
+    await _pumpAtPixel9(tester, const EsignViewerScreen(requestId: _viewerNoDocId));
+    await expectLater(
+      find.byType(EsignViewerScreen),
+      matchesGoldenFile('goldens/ar_esign_viewer.png'),
+    );
+
+    expect(find.text('لا يوجد مستند مرفق.'), findsOneWidget);
+    // The restriction banner is a full-width strip whose Arabic runs longer
+    // than the English.
+    expect(find.textContaining('لقطات'), findsOneWidget);
+
+    for (final label in ['رفض', 'توقيع المستند']) {
+      final button = tester.getRect(find.text(label));
+      expect(button.left, greaterThanOrEqualTo(0), reason: label);
+      expect(button.right, lessThanOrEqualTo(_pixel9.width), reason: label);
+    }
+  });
+
+  testWidgets('e-sign viewer preview failure in Arabic', (tester) async {
+    await _pumpAtPixel9(tester, const EsignViewerScreen(requestId: _viewerFailedId));
+
+    // Supabase is not initialised under flutter test, so resolving the signed
+    // URL throws and the screen must land on its retry state rather than an
+    // empty card or a stuck spinner.
+    expect(find.text('تعذّر تحميل معاينة المستند.'), findsOneWidget);
+    expect(find.text('حاول مرة أخرى'), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
   testWidgets('largest accessibility text scale still lays out', (tester) async {
