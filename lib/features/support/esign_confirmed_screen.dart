@@ -5,7 +5,9 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/l10n/l10n.dart';
+import '../../core/l10n/locale_formatters.dart';
 import '../../core/theme/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
 
@@ -34,9 +36,11 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
   bool _downloading = false;
   bool _composeRequested = false;
 
-  String _formatDateTime(DateTime? value) {
+  String _formatDateTime(DateTime? value, AppLocalizations l10n) {
     if (value == null) return '—';
-    return DateFormat('d MMM yyyy, HH:mm').format(value);
+    final month = monthShortNames(l10n)[value.month - 1];
+    return '${value.day} $month ${value.year}, '
+        '${DateFormat('HH:mm').format(value)}';
   }
 
   /// Fire once per screen mount when the composed copy is still missing.
@@ -176,7 +180,7 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
                     ),
                     _MetaRow(
                       label: l10n.esignFieldDateTime,
-                      value: _formatDateTime(detail.signedAt),
+                      value: _formatDateTime(detail.signedAt, l10n),
                     ),
                     _MetaRow(
                         label: l10n.esignFieldIpAddress,

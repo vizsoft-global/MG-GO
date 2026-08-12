@@ -5,7 +5,9 @@ import 'package:intl/intl.dart';
 
 import '../../core/device/device_identity_service.dart';
 import '../../core/l10n/l10n.dart';
+import '../../core/l10n/locale_formatters.dart';
 import '../../core/theme/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 import '../auth/rider_auth_service.dart';
 import 'support_providers.dart';
 import 'widgets/signature_pad.dart';
@@ -158,7 +160,7 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
                   [
                     profile?.fullName ?? l10n.esignSignerYou,
                     if (profile?.driverCode != null) profile!.driverCode!,
-                    DateFormat('d MMM yyyy, HH:mm').format(DateTime.now()),
+                    _signedAtLabel(DateTime.now(), l10n),
                   ].join(' · '),
                   style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                 ),
@@ -193,6 +195,12 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
       ),
     );
   }
+}
+
+String _signedAtLabel(DateTime value, AppLocalizations l10n) {
+  final month = monthShortNames(l10n)[value.month - 1];
+  return '${value.day} $month ${value.year}, '
+      '${DateFormat('HH:mm').format(value)}';
 }
 
 class _DashedBox extends StatelessWidget {

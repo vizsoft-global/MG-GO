@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/l10n/l10n.dart';
+import '../../core/l10n/locale_formatters.dart';
 import '../../core/theme/app_colors.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
@@ -111,7 +112,9 @@ class _AppointmentSummaryCard extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  when != null ? DateFormat('MMM').format(when).toUpperCase() : '—',
+                  when != null
+                      ? monthShortNames(l10n)[when.month - 1].toUpperCase()
+                      : '—',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 11,
