@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../core/theme/app_colors.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
+import 'widgets/booking_qr.dart';
 
 const _monthsShort = [
   'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
@@ -243,12 +243,12 @@ class _VisitList extends StatelessWidget {
                   ],
                 ),
               ],
-              if (row.status == 'confirmed') ...[
+              if (row.status == 'confirmed' && row.bookingCode.isNotEmpty) ...[
                 const Divider(height: 20),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    QrImageView(data: row.bookingCode.isEmpty ? 'visit' : row.bookingCode, size: 48),
+                    BookingQr(bookingCode: row.bookingCode, size: 48),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(

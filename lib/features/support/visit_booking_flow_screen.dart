@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../core/theme/app_colors.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
+import 'widgets/booking_qr.dart';
 
 const _months = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -805,30 +805,29 @@ class _TicketStep extends StatelessWidget {
                   if (date != null) _ReviewRow('Date', _ReviewStep._fmtDate(date!)),
                   if (slot != null) _ReviewRow('Time', slot!.startTime),
                   if (dept != null) _ReviewRow('Department', dept!.labelEn, isLast: true),
-                  const Divider(height: 20),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      QrImageView(
-                        data: bookingCode.isEmpty ? 'visit' : bookingCode,
-                        size: 72,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Scan at reception',
-                                style: TextStyle(fontWeight: FontWeight.w700)),
-                            Text(
-                              'Booking token $bookingCode. Keep this ready on arrival.',
-                              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                            ),
-                          ],
+                  if (bookingCode.isNotEmpty) ...[
+                    const Divider(height: 20),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        BookingQr(bookingCode: bookingCode),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('Scan at reception',
+                                  style: TextStyle(fontWeight: FontWeight.w700)),
+                              Text(
+                                'Booking token $bookingCode. Keep this ready on arrival.',
+                                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
