@@ -4609,6 +4609,420 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View my visits'**
   String get visitViewMyVisits;
+
+  /// No description provided for @visitTabUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get visitTabUpcoming;
+
+  /// No description provided for @visitTabPast.
+  ///
+  /// In en, this message translates to:
+  /// **'Past'**
+  String get visitTabPast;
+
+  /// No description provided for @visitNoUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'No upcoming visits'**
+  String get visitNoUpcoming;
+
+  /// No description provided for @visitNoPast.
+  ///
+  /// In en, this message translates to:
+  /// **'No past visits'**
+  String get visitNoPast;
+
+  /// No description provided for @visitRescheduleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reschedule visit?'**
+  String get visitRescheduleTitle;
+
+  /// No description provided for @visitRescheduleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel {code} and book a new slot?'**
+  String visitRescheduleBody(String code);
+
+  /// No description provided for @visitKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep'**
+  String get visitKeep;
+
+  /// No description provided for @visitReschedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Reschedule'**
+  String get visitReschedule;
+
+  /// No description provided for @visitStatusConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed'**
+  String get visitStatusConfirmed;
+
+  /// No description provided for @visitStatusCheckedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked in'**
+  String get visitStatusCheckedIn;
+
+  /// No description provided for @visitMonthJanUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'JAN'**
+  String get visitMonthJanUpper;
+
+  /// No description provided for @visitMonthFebUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'FEB'**
+  String get visitMonthFebUpper;
+
+  /// No description provided for @visitMonthMarUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'MAR'**
+  String get visitMonthMarUpper;
+
+  /// No description provided for @visitMonthAprUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'APR'**
+  String get visitMonthAprUpper;
+
+  /// No description provided for @visitMonthMayUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'MAY'**
+  String get visitMonthMayUpper;
+
+  /// No description provided for @visitMonthJunUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'JUN'**
+  String get visitMonthJunUpper;
+
+  /// No description provided for @visitMonthJulUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'JUL'**
+  String get visitMonthJulUpper;
+
+  /// No description provided for @visitMonthAugUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'AUG'**
+  String get visitMonthAugUpper;
+
+  /// No description provided for @visitMonthSepUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'SEP'**
+  String get visitMonthSepUpper;
+
+  /// No description provided for @visitMonthOctUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'OCT'**
+  String get visitMonthOctUpper;
+
+  /// No description provided for @visitMonthNovUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'NOV'**
+  String get visitMonthNovUpper;
+
+  /// No description provided for @visitMonthDecUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'DEC'**
+  String get visitMonthDecUpper;
+
+  /// No description provided for @esignNoDocumentsToSign.
+  ///
+  /// In en, this message translates to:
+  /// **'No documents to sign'**
+  String get esignNoDocumentsToSign;
+
+  /// No description provided for @esignSectionPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get esignSectionPending;
+
+  /// No description provided for @esignSectionSigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed'**
+  String get esignSectionSigned;
+
+  /// No description provided for @esignSectionDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined'**
+  String get esignSectionDeclined;
+
+  /// No description provided for @esignDueOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {date}'**
+  String esignDueOn(String date);
+
+  /// No description provided for @esignSignedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed {date}'**
+  String esignSignedOn(String date);
+
+  /// No description provided for @esignDeclineDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline document'**
+  String get esignDeclineDocument;
+
+  /// No description provided for @esignDeclineBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Let admin know why you cannot sign this document.'**
+  String get esignDeclineBody;
+
+  /// No description provided for @esignDeclineReasonHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason (optional)'**
+  String get esignDeclineReasonHint;
+
+  /// No description provided for @esignDocumentDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Document declined'**
+  String get esignDocumentDeclined;
+
+  /// No description provided for @esignDocumentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Document'**
+  String get esignDocumentTitle;
+
+  /// No description provided for @esignReviewDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Review document'**
+  String get esignReviewDocument;
+
+  /// No description provided for @esignNoDocumentAttached.
+  ///
+  /// In en, this message translates to:
+  /// **'No document attached.'**
+  String get esignNoDocumentAttached;
+
+  /// No description provided for @esignPreviewLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load document preview.'**
+  String get esignPreviewLoadFailed;
+
+  /// No description provided for @esignPreviewUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview unavailable — open externally.'**
+  String get esignPreviewUnavailable;
+
+  /// No description provided for @esignPdfDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF document'**
+  String get esignPdfDocument;
+
+  /// No description provided for @esignTapToOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to open'**
+  String get esignTapToOpen;
+
+  /// No description provided for @esignOpenFullDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Open full document'**
+  String get esignOpenFullDocument;
+
+  /// No description provided for @esignFromAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'From admin'**
+  String get esignFromAdmin;
+
+  /// No description provided for @esignMetaLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{code}{category} · {source}'**
+  String esignMetaLine(String code, String category, String source);
+
+  /// No description provided for @esignDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get esignDecline;
+
+  /// No description provided for @esignSignDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign document'**
+  String get esignSignDocument;
+
+  /// No description provided for @esignAddYourSignature.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your signature'**
+  String get esignAddYourSignature;
+
+  /// No description provided for @esignDrawSignatureHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw your signature in the box below'**
+  String get esignDrawSignatureHint;
+
+  /// No description provided for @esignClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get esignClear;
+
+  /// No description provided for @esignLegalDeclaration.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree this is my legal electronic signature.'**
+  String get esignLegalDeclaration;
+
+  /// No description provided for @esignPleaseDrawSignature.
+  ///
+  /// In en, this message translates to:
+  /// **'Please draw your signature'**
+  String get esignPleaseDrawSignature;
+
+  /// No description provided for @esignCapturedWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Captured with your signature:'**
+  String get esignCapturedWith;
+
+  /// No description provided for @esignSignerYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get esignSignerYou;
+
+  /// No description provided for @esignSubmitting.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitting…'**
+  String get esignSubmitting;
+
+  /// No description provided for @esignConfirmSignature.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm signature'**
+  String get esignConfirmSignature;
+
+  /// No description provided for @esignSignedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed'**
+  String get esignSignedTitle;
+
+  /// No description provided for @esignDocumentSigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Document signed'**
+  String get esignDocumentSigned;
+
+  /// No description provided for @esignDocumentSignedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your signature has been sent to admin and saved to your records.'**
+  String get esignDocumentSignedBody;
+
+  /// No description provided for @esignSignatureProof.
+  ///
+  /// In en, this message translates to:
+  /// **'Signature proof'**
+  String get esignSignatureProof;
+
+  /// No description provided for @esignFieldSignedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed by'**
+  String get esignFieldSignedBy;
+
+  /// No description provided for @esignFieldDateTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Date & time'**
+  String get esignFieldDateTime;
+
+  /// No description provided for @esignFieldIpAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'IP address'**
+  String get esignFieldIpAddress;
+
+  /// No description provided for @esignNotCaptured.
+  ///
+  /// In en, this message translates to:
+  /// **'Not captured'**
+  String get esignNotCaptured;
+
+  /// No description provided for @esignFieldDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Device'**
+  String get esignFieldDevice;
+
+  /// No description provided for @esignDownloadSignedCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Download signed copy'**
+  String get esignDownloadSignedCopy;
+
+  /// No description provided for @esignDownloadDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Download document'**
+  String get esignDownloadDocument;
+
+  /// No description provided for @esignNoDocumentToDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'No document available to download'**
+  String get esignNoDocumentToDownload;
+
+  /// No description provided for @esignSignedCopyReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Your signature is stamped on the last page of this copy.'**
+  String get esignSignedCopyReady;
+
+  /// No description provided for @esignSignedCopyPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing your signed copy — this is the original document until it is ready. Reopen this screen in a moment.'**
+  String get esignSignedCopyPending;
+
+  /// No description provided for @esignSignedCopyUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed copy unavailable, so this is the original document you were sent. Your signature is stored with the request.'**
+  String get esignSignedCopyUnavailable;
+
+  /// No description provided for @esignBackToDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to documents'**
+  String get esignBackToDocuments;
 }
 
 class _AppLocalizationsDelegate

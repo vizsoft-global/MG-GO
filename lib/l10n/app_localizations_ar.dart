@@ -2516,4 +2516,226 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get visitViewMyVisits => 'عرض زياراتي';
+
+  @override
+  String get visitTabUpcoming => 'القادمة';
+
+  @override
+  String get visitTabPast => 'السابقة';
+
+  @override
+  String get visitNoUpcoming => 'لا توجد زيارات قادمة';
+
+  @override
+  String get visitNoPast => 'لا توجد زيارات سابقة';
+
+  @override
+  String get visitRescheduleTitle => 'إعادة جدولة الزيارة؟';
+
+  @override
+  String visitRescheduleBody(String code) {
+    return 'هل تريد إلغاء $code وحجز موعد جديد؟';
+  }
+
+  @override
+  String get visitKeep => 'الإبقاء عليها';
+
+  @override
+  String get visitReschedule => 'إعادة الجدولة';
+
+  @override
+  String get visitStatusConfirmed => 'مؤكدة';
+
+  @override
+  String get visitStatusCheckedIn => 'تم تسجيل الحضور';
+
+  @override
+  String get visitMonthJanUpper => 'يناير';
+
+  @override
+  String get visitMonthFebUpper => 'فبراير';
+
+  @override
+  String get visitMonthMarUpper => 'مارس';
+
+  @override
+  String get visitMonthAprUpper => 'أبريل';
+
+  @override
+  String get visitMonthMayUpper => 'مايو';
+
+  @override
+  String get visitMonthJunUpper => 'يونيو';
+
+  @override
+  String get visitMonthJulUpper => 'يوليو';
+
+  @override
+  String get visitMonthAugUpper => 'أغسطس';
+
+  @override
+  String get visitMonthSepUpper => 'سبتمبر';
+
+  @override
+  String get visitMonthOctUpper => 'أكتوبر';
+
+  @override
+  String get visitMonthNovUpper => 'نوفمبر';
+
+  @override
+  String get visitMonthDecUpper => 'ديسمبر';
+
+  @override
+  String get esignNoDocumentsToSign => 'لا توجد مستندات للتوقيع';
+
+  @override
+  String get esignSectionPending => 'قيد الانتظار';
+
+  @override
+  String get esignSectionSigned => 'موقّعة';
+
+  @override
+  String get esignSectionDeclined => 'مرفوضة';
+
+  @override
+  String esignDueOn(String date) {
+    return 'الاستحقاق $date';
+  }
+
+  @override
+  String esignSignedOn(String date) {
+    return 'تم التوقيع $date';
+  }
+
+  @override
+  String get esignDeclineDocument => 'رفض المستند';
+
+  @override
+  String get esignDeclineBody =>
+      'أبلغ الإدارة بسبب عدم تمكنك من توقيع هذا المستند.';
+
+  @override
+  String get esignDeclineReasonHint => 'السبب (اختياري)';
+
+  @override
+  String get esignDocumentDeclined => 'تم رفض المستند';
+
+  @override
+  String get esignDocumentTitle => 'المستند';
+
+  @override
+  String get esignReviewDocument => 'مراجعة المستند';
+
+  @override
+  String get esignNoDocumentAttached => 'لا يوجد مستند مرفق.';
+
+  @override
+  String get esignPreviewLoadFailed => 'تعذّر تحميل معاينة المستند.';
+
+  @override
+  String get esignPreviewUnavailable =>
+      'المعاينة غير متاحة — افتح المستند خارجياً.';
+
+  @override
+  String get esignPdfDocument => 'مستند PDF';
+
+  @override
+  String get esignTapToOpen => 'اضغط للفتح';
+
+  @override
+  String get esignOpenFullDocument => 'فتح المستند كاملاً';
+
+  @override
+  String get esignFromAdmin => 'من الإدارة';
+
+  @override
+  String esignMetaLine(String code, String category, String source) {
+    return '$code$category · $source';
+  }
+
+  @override
+  String get esignDecline => 'رفض';
+
+  @override
+  String get esignSignDocument => 'توقيع المستند';
+
+  @override
+  String get esignAddYourSignature => 'أضف توقيعك';
+
+  @override
+  String get esignDrawSignatureHint => 'ارسم توقيعك في المربع أدناه';
+
+  @override
+  String get esignClear => 'مسح';
+
+  @override
+  String get esignLegalDeclaration =>
+      'أقر بأن هذا توقيعي الإلكتروني المعتمد قانوناً.';
+
+  @override
+  String get esignPleaseDrawSignature => 'يرجى رسم توقيعك';
+
+  @override
+  String get esignCapturedWith => 'تم تسجيل التوقيع مع البيانات التالية:';
+
+  @override
+  String get esignSignerYou => 'أنت';
+
+  @override
+  String get esignSubmitting => 'جارٍ الإرسال…';
+
+  @override
+  String get esignConfirmSignature => 'تأكيد التوقيع';
+
+  @override
+  String get esignSignedTitle => 'موقّع';
+
+  @override
+  String get esignDocumentSigned => 'تم توقيع المستند';
+
+  @override
+  String get esignDocumentSignedBody =>
+      'تم إرسال توقيعك إلى الإدارة وحفظه في سجلاتك.';
+
+  @override
+  String get esignSignatureProof => 'إثبات التوقيع';
+
+  @override
+  String get esignFieldSignedBy => 'وقّع بواسطة';
+
+  @override
+  String get esignFieldDateTime => 'التاريخ والوقت';
+
+  @override
+  String get esignFieldIpAddress => 'عنوان IP';
+
+  @override
+  String get esignNotCaptured => 'غير مسجّل';
+
+  @override
+  String get esignFieldDevice => 'الجهاز';
+
+  @override
+  String get esignDownloadSignedCopy => 'تنزيل النسخة الموقّعة';
+
+  @override
+  String get esignDownloadDocument => 'تنزيل المستند';
+
+  @override
+  String get esignNoDocumentToDownload => 'لا يوجد مستند متاح للتنزيل';
+
+  @override
+  String get esignSignedCopyReady =>
+      'تم ختم توقيعك في الصفحة الأخيرة من هذه النسخة.';
+
+  @override
+  String get esignSignedCopyPending =>
+      'يجري تجهيز نسختك الموقّعة — هذه هي النسخة الأصلية حتى تصبح جاهزة. أعد فتح هذه الشاشة بعد قليل.';
+
+  @override
+  String get esignSignedCopyUnavailable =>
+      'النسخة الموقّعة غير متاحة، لذا هذه هي النسخة الأصلية المرسلة إليك. توقيعك محفوظ مع الطلب.';
+
+  @override
+  String get esignBackToDocuments => 'العودة إلى المستندات';
 }

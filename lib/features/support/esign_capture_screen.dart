@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/device/device_identity_service.dart';
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
 import '../auth/rider_auth_service.dart';
 import 'support_providers.dart';
@@ -37,15 +38,16 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
   }
 
   Future<void> _submit(RiderProfile? profile) async {
+    final l10n = context.l10n;
     if (!_legalAccepted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please accept the declaration')),
+        SnackBar(content: Text(l10n.supportErrorAcceptDeclaration)),
       );
       return;
     }
     if (!_padController.hasInk) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please draw your signature')),
+        SnackBar(content: Text(l10n.esignPleaseDrawSignature)),
       );
       return;
     }
@@ -91,10 +93,11 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final profile = ref.watch(riderProfileProvider).asData?.value;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add your signature'),
+        title: Text(l10n.esignAddYourSignature),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
@@ -103,9 +106,9 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text(
-            'Draw your signature in the box below',
-            style: TextStyle(fontWeight: FontWeight.w600),
+          Text(
+            l10n.esignDrawSignatureHint,
+            style: const TextStyle(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 10),
           _DashedBox(
@@ -120,7 +123,7 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
             child: TextButton(
               onPressed: _padController.clear,
               style: TextButton.styleFrom(foregroundColor: AppColors.accentOrange),
-              child: const Text('Clear'),
+              child: Text(l10n.esignClear),
             ),
           ),
           const SizedBox(height: 4),
@@ -128,9 +131,9 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
             contentPadding: EdgeInsets.zero,
             value: _legalAccepted,
             onChanged: (v) => setState(() => _legalAccepted = v ?? false),
-            title: const Text(
-              'I agree this is my legal electronic signature.',
-              style: TextStyle(fontSize: 13),
+            title: Text(
+              l10n.esignLegalDeclaration,
+              style: const TextStyle(fontSize: 13),
             ),
             controlAffinity: ListTileControlAffinity.leading,
           ),
@@ -145,14 +148,15 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Captured with your signature:',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                Text(
+                  l10n.esignCapturedWith,
+                  style: const TextStyle(
+                      fontSize: 12, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   [
-                    profile?.fullName ?? 'You',
+                    profile?.fullName ?? l10n.esignSignerYou,
                     if (profile?.driverCode != null) profile!.driverCode!,
                     DateFormat('d MMM yyyy, HH:mm').format(DateTime.now()),
                   ].join(' · '),
@@ -171,14 +175,16 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
               Expanded(
                 child: OutlinedButton(
                   onPressed: _submitting ? null : () => context.pop(),
-                  child: const Text('Cancel'),
+                  child: Text(l10n.cancel),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: FilledButton(
                   onPressed: _submitting ? null : () => _submit(profile),
-                  child: Text(_submitting ? 'Submitting…' : 'Confirm signature'),
+                  child: Text(_submitting
+                      ? l10n.esignSubmitting
+                      : l10n.esignConfirmSignature),
                 ),
               ),
             ],

@@ -2526,4 +2526,226 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get visitViewMyVisits => 'View my visits';
+
+  @override
+  String get visitTabUpcoming => 'Upcoming';
+
+  @override
+  String get visitTabPast => 'Past';
+
+  @override
+  String get visitNoUpcoming => 'No upcoming visits';
+
+  @override
+  String get visitNoPast => 'No past visits';
+
+  @override
+  String get visitRescheduleTitle => 'Reschedule visit?';
+
+  @override
+  String visitRescheduleBody(String code) {
+    return 'Cancel $code and book a new slot?';
+  }
+
+  @override
+  String get visitKeep => 'Keep';
+
+  @override
+  String get visitReschedule => 'Reschedule';
+
+  @override
+  String get visitStatusConfirmed => 'Confirmed';
+
+  @override
+  String get visitStatusCheckedIn => 'Checked in';
+
+  @override
+  String get visitMonthJanUpper => 'JAN';
+
+  @override
+  String get visitMonthFebUpper => 'FEB';
+
+  @override
+  String get visitMonthMarUpper => 'MAR';
+
+  @override
+  String get visitMonthAprUpper => 'APR';
+
+  @override
+  String get visitMonthMayUpper => 'MAY';
+
+  @override
+  String get visitMonthJunUpper => 'JUN';
+
+  @override
+  String get visitMonthJulUpper => 'JUL';
+
+  @override
+  String get visitMonthAugUpper => 'AUG';
+
+  @override
+  String get visitMonthSepUpper => 'SEP';
+
+  @override
+  String get visitMonthOctUpper => 'OCT';
+
+  @override
+  String get visitMonthNovUpper => 'NOV';
+
+  @override
+  String get visitMonthDecUpper => 'DEC';
+
+  @override
+  String get esignNoDocumentsToSign => 'No documents to sign';
+
+  @override
+  String get esignSectionPending => 'Pending';
+
+  @override
+  String get esignSectionSigned => 'Signed';
+
+  @override
+  String get esignSectionDeclined => 'Declined';
+
+  @override
+  String esignDueOn(String date) {
+    return 'Due $date';
+  }
+
+  @override
+  String esignSignedOn(String date) {
+    return 'Signed $date';
+  }
+
+  @override
+  String get esignDeclineDocument => 'Decline document';
+
+  @override
+  String get esignDeclineBody =>
+      'Let admin know why you cannot sign this document.';
+
+  @override
+  String get esignDeclineReasonHint => 'Reason (optional)';
+
+  @override
+  String get esignDocumentDeclined => 'Document declined';
+
+  @override
+  String get esignDocumentTitle => 'Document';
+
+  @override
+  String get esignReviewDocument => 'Review document';
+
+  @override
+  String get esignNoDocumentAttached => 'No document attached.';
+
+  @override
+  String get esignPreviewLoadFailed => 'Could not load document preview.';
+
+  @override
+  String get esignPreviewUnavailable =>
+      'Preview unavailable — open externally.';
+
+  @override
+  String get esignPdfDocument => 'PDF document';
+
+  @override
+  String get esignTapToOpen => 'Tap to open';
+
+  @override
+  String get esignOpenFullDocument => 'Open full document';
+
+  @override
+  String get esignFromAdmin => 'From admin';
+
+  @override
+  String esignMetaLine(String code, String category, String source) {
+    return '$code$category · $source';
+  }
+
+  @override
+  String get esignDecline => 'Decline';
+
+  @override
+  String get esignSignDocument => 'Sign document';
+
+  @override
+  String get esignAddYourSignature => 'Add your signature';
+
+  @override
+  String get esignDrawSignatureHint => 'Draw your signature in the box below';
+
+  @override
+  String get esignClear => 'Clear';
+
+  @override
+  String get esignLegalDeclaration =>
+      'I agree this is my legal electronic signature.';
+
+  @override
+  String get esignPleaseDrawSignature => 'Please draw your signature';
+
+  @override
+  String get esignCapturedWith => 'Captured with your signature:';
+
+  @override
+  String get esignSignerYou => 'You';
+
+  @override
+  String get esignSubmitting => 'Submitting…';
+
+  @override
+  String get esignConfirmSignature => 'Confirm signature';
+
+  @override
+  String get esignSignedTitle => 'Signed';
+
+  @override
+  String get esignDocumentSigned => 'Document signed';
+
+  @override
+  String get esignDocumentSignedBody =>
+      'Your signature has been sent to admin and saved to your records.';
+
+  @override
+  String get esignSignatureProof => 'Signature proof';
+
+  @override
+  String get esignFieldSignedBy => 'Signed by';
+
+  @override
+  String get esignFieldDateTime => 'Date & time';
+
+  @override
+  String get esignFieldIpAddress => 'IP address';
+
+  @override
+  String get esignNotCaptured => 'Not captured';
+
+  @override
+  String get esignFieldDevice => 'Device';
+
+  @override
+  String get esignDownloadSignedCopy => 'Download signed copy';
+
+  @override
+  String get esignDownloadDocument => 'Download document';
+
+  @override
+  String get esignNoDocumentToDownload => 'No document available to download';
+
+  @override
+  String get esignSignedCopyReady =>
+      'Your signature is stamped on the last page of this copy.';
+
+  @override
+  String get esignSignedCopyPending =>
+      'Preparing your signed copy — this is the original document until it is ready. Reopen this screen in a moment.';
+
+  @override
+  String get esignSignedCopyUnavailable =>
+      'Signed copy unavailable, so this is the original document you were sent. Your signature is stored with the request.';
+
+  @override
+  String get esignBackToDocuments => 'Back to documents';
 }

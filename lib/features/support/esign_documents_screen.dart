@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
@@ -19,10 +20,11 @@ class EsignDocumentsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final async = ref.watch(esignRequestsProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Documents to sign'),
+        title: Text(l10n.supportDocumentsToSign),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.canPop() ? context.pop() : context.go('/profile/support'),
@@ -44,9 +46,9 @@ class EsignDocumentsScreen extends ConsumerWidget {
           data: (rows) {
             if (rows.isEmpty) {
               return ListView(
-                children: const [
-                  SizedBox(height: 120),
-                  Center(child: Text('No documents to sign')),
+                children: [
+                  const SizedBox(height: 120),
+                  Center(child: Text(l10n.esignNoDocumentsToSign)),
                 ],
               );
             }
@@ -57,7 +59,7 @@ class EsignDocumentsScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               children: [
                 if (pending.isNotEmpty) ...[
-                  _SectionLabel(title: 'Pending'),
+                  _SectionLabel(title: l10n.esignSectionPending),
                   ...pending.map((row) => _EsignCard(
                         row: row,
                         dueLabel: _formatDate(row.dueAt),
@@ -66,7 +68,7 @@ class EsignDocumentsScreen extends ConsumerWidget {
                 ],
                 if (signed.isNotEmpty) ...[
                   const SizedBox(height: 12),
-                  _SectionLabel(title: 'Signed'),
+                  _SectionLabel(title: l10n.esignSectionSigned),
                   ...signed.map((row) => _EsignCard(
                         row: row,
                         dueLabel: _formatDate(row.signedAt ?? row.dueAt),
@@ -75,7 +77,7 @@ class EsignDocumentsScreen extends ConsumerWidget {
                 ],
                 if (declined.isNotEmpty) ...[
                   const SizedBox(height: 12),
-                  _SectionLabel(title: 'Declined'),
+                  _SectionLabel(title: l10n.esignSectionDeclined),
                   ...declined.map((row) => _EsignCard(
                         row: row,
                         dueLabel: _formatDate(row.dueAt),
@@ -125,14 +127,16 @@ class _EsignCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final pending = row.isPending;
     final statusColor = pending
         ? AppColors.underReviewAmber
         : row.isDeclined
             ? AppColors.rejectedRed
             : AppColors.progressGreen;
-    final statusLabel =
-        pending ? 'Pending' : (row.isDeclined ? 'Declined' : 'Signed');
+    final statusLabel = pending
+        ? l10n.esignSectionPending
+        : (row.isDeclined ? l10n.esignSectionDeclined : l10n.esignSectionSigned);
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: InkWell(
@@ -188,8 +192,10 @@ class _EsignCard extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 pending
-                    ? 'Due $dueLabel'
-                    : (row.isDeclined ? 'Declined' : 'Signed $dueLabel'),
+                    ? l10n.esignDueOn(dueLabel)
+                    : (row.isDeclined
+                        ? l10n.esignSectionDeclined
+                        : l10n.esignSignedOn(dueLabel)),
                 style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary,

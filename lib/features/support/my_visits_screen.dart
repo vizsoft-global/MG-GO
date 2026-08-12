@@ -2,14 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
 import 'widgets/booking_qr.dart';
 
-const _monthsShort = [
-  'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
-  'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC',
+List<String> _monthsShort(AppLocalizations l10n) => [
+  l10n.visitMonthJanUpper,
+  l10n.visitMonthFebUpper,
+  l10n.visitMonthMarUpper,
+  l10n.visitMonthAprUpper,
+  l10n.visitMonthMayUpper,
+  l10n.visitMonthJunUpper,
+  l10n.visitMonthJulUpper,
+  l10n.visitMonthAugUpper,
+  l10n.visitMonthSepUpper,
+  l10n.visitMonthOctUpper,
+  l10n.visitMonthNovUpper,
+  l10n.visitMonthDecUpper,
 ];
 
 /// RSup/16 — My visits: date-badge cards with QR + reschedule/cancel.
@@ -38,6 +50,7 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final async = ref.watch(myVisitsProvider);
     final deptsAsync = ref.watch(visitDepartmentsProvider);
     final deptLabels = <String, String>{
@@ -46,16 +59,16 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen>
     };
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My visits'),
+        title: Text(l10n.supportMyVisitsTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
         ),
         bottom: TabBar(
           controller: _tabs,
-          tabs: const [
-            Tab(text: 'Upcoming'),
-            Tab(text: 'Past'),
+          tabs: [
+            Tab(text: l10n.visitTabUpcoming),
+            Tab(text: l10n.visitTabPast),
           ],
         ),
         actions: [
@@ -86,7 +99,7 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen>
               children: [
                 _VisitList(
                   rows: upcoming,
-                  empty: 'No upcoming visits',
+                  empty: l10n.visitNoUpcoming,
                   deptLabels: deptLabels,
                   onCancel: (id) async {
                     try {
@@ -104,18 +117,18 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen>
                     final confirmed = await showDialog<bool>(
                       context: context,
                       builder: (ctx) => AlertDialog(
-                        title: const Text('Reschedule visit?'),
+                        title: Text(l10n.visitRescheduleTitle),
                         content: Text(
-                          'Cancel ${row.bookingCode} and book a new slot?',
+                          l10n.visitRescheduleBody(row.bookingCode),
                         ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, false),
-                            child: const Text('Keep'),
+                            child: Text(l10n.visitKeep),
                           ),
                           FilledButton(
                             onPressed: () => Navigator.pop(ctx, true),
-                            child: const Text('Reschedule'),
+                            child: Text(l10n.visitReschedule),
                           ),
                         ],
                       ),
@@ -139,7 +152,7 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen>
                 ),
                 _VisitList(
                   rows: past,
-                  empty: 'No past visits',
+                  empty: l10n.visitNoPast,
                   deptLabels: deptLabels,
                 ),
               ],
@@ -208,7 +221,7 @@ class _VisitList extends StatelessWidget {
                           style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
                         Text(
-                          'Central Tower',
+                          context.l10n.visitCentralTower,
                           style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                         ),
                       ],
@@ -225,7 +238,7 @@ class _VisitList extends StatelessWidget {
                       Expanded(
                         child: OutlinedButton(
                           onPressed: () => onReschedule!(row),
-                          child: const Text('Reschedule'),
+                          child: Text(context.l10n.visitReschedule),
                         ),
                       ),
                     if (onReschedule != null) const SizedBox(width: 8),
@@ -237,7 +250,7 @@ class _VisitList extends StatelessWidget {
                           backgroundColor: AppColors.rejectedRed.withValues(alpha: 0.06),
                         ),
                         onPressed: () => onCancel!(row.id),
-                        child: const Text('Cancel'),
+                        child: Text(context.l10n.cancel),
                       ),
                     ),
                   ],
@@ -254,10 +267,12 @@ class _VisitList extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Scan at reception',
-                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                          Text(context.l10n.visitScanAtReception,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w700, fontSize: 13)),
                           Text(
-                            'Booking token ${row.bookingCode}. Keep this ready on arrival.',
+                            context.l10n
+                                .visitBookingTokenHint(row.bookingCode),
                             style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
                           ),
                         ],
@@ -290,7 +305,7 @@ class _DateBadge extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text(_monthsShort[date.month - 1],
+          Text(_monthsShort(context.l10n)[date.month - 1],
               style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.primaryBlue)),
           Text('${date.day}',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.primaryBlue)),
@@ -314,11 +329,12 @@ class _StatusPill extends StatelessWidget {
       'cancelled' => AppColors.rejectedRed,
       _ => AppColors.textSecondary,
     };
+    final l10n = context.l10n;
     final label = switch (status) {
-      'confirmed' => 'Confirmed',
-      'checked_in' => 'Checked in',
-      'completed' => 'Completed',
-      'cancelled' => 'Cancelled',
+      'confirmed' => l10n.visitStatusConfirmed,
+      'checked_in' => l10n.visitStatusCheckedIn,
+      'completed' => l10n.completed,
+      'cancelled' => l10n.statusCancelled,
       _ => status,
     };
     return Container(

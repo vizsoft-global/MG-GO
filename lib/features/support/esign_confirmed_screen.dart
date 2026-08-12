@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
@@ -60,7 +61,7 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
   Future<void> _openStoredFile(String? storageKey) async {
     if (storageKey == null || storageKey.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No document available to download')),
+        SnackBar(content: Text(context.l10n.esignNoDocumentToDownload)),
       );
       return;
     }
@@ -82,10 +83,11 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final async = ref.watch(esignRequestDetailProvider(widget.requestId));
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Signed'),
+        title: Text(l10n.esignSignedTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.go('/profile/support/sign'),
@@ -117,20 +119,21 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Document signed',
+              Text(
+                l10n.esignDocumentSigned,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 21,
                   fontWeight: FontWeight.w800,
                   color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 12),
-              const Text(
-                'Your signature has been sent to admin and saved to your records.',
+              Text(
+                l10n.esignDocumentSignedBody,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                style: const TextStyle(
+                    color: AppColors.textSecondary, fontSize: 14),
               ),
               const SizedBox(height: 16),
               Center(
@@ -141,7 +144,7 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    '${detail.requestCode} · ${detail.title}',
+                    l10n.supportCodeWithType(detail.requestCode, detail.title),
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 12.5,
@@ -161,21 +164,26 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Signature proof',
-                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5),
+                    Text(
+                      l10n.esignSignatureProof,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w700, fontSize: 12.5),
                     ),
                     const SizedBox(height: 8),
                     _MetaRow(
-                      label: 'Signed by',
+                      label: l10n.esignFieldSignedBy,
                       value: detail.signerDisplayName ?? '—',
                     ),
                     _MetaRow(
-                      label: 'Date & time',
+                      label: l10n.esignFieldDateTime,
                       value: _formatDateTime(detail.signedAt),
                     ),
-                    const _MetaRow(label: 'IP address', value: 'Not captured'),
-                    _MetaRow(label: 'Device', value: device.isEmpty ? '—' : device),
+                    _MetaRow(
+                        label: l10n.esignFieldIpAddress,
+                        value: l10n.esignNotCaptured),
+                    _MetaRow(
+                        label: l10n.esignFieldDevice,
+                        value: device.isEmpty ? '—' : device),
                   ],
                 ),
               ),
@@ -194,22 +202,18 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
                       : const Icon(Icons.download_outlined),
                   label: Text(
                     detail.signedDocumentReady
-                        ? 'Download signed copy'
-                        : 'Download document',
+                        ? l10n.esignDownloadSignedCopy
+                        : l10n.esignDownloadDocument,
                   ),
                 ),
               ),
               const SizedBox(height: 6),
               Text(
                 detail.signedDocumentReady
-                    ? 'Your signature is stamped on the last page of this copy.'
+                    ? l10n.esignSignedCopyReady
                     : detail.signedDocumentPending
-                        ? 'Preparing your signed copy — this is the original '
-                            'document until it is ready. Reopen this screen in '
-                            'a moment.'
-                        : 'Signed copy unavailable, so this is the original '
-                            'document you were sent. Your signature is stored '
-                            'with the request.',
+                        ? l10n.esignSignedCopyPending
+                        : l10n.esignSignedCopyUnavailable,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 11.5,
@@ -221,7 +225,7 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
                 height: 50,
                 child: FilledButton(
                   onPressed: () => context.go('/profile/support/sign'),
-                  child: const Text('Back to documents'),
+                  child: Text(l10n.esignBackToDocuments),
                 ),
               ),
             ],

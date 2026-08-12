@@ -1321,5 +1321,108 @@
       }
     }
   },
-  "visitViewMyVisits": "View my visits"
+  "visitViewMyVisits": "View my visits",
+  "visitTabUpcoming": "Upcoming",
+  "visitTabPast": "Past",
+  "visitNoUpcoming": "No upcoming visits",
+  "visitNoPast": "No past visits",
+  "visitRescheduleTitle": "Reschedule visit?",
+  "visitRescheduleBody": "Cancel {code} and book a new slot?",
+  "@visitRescheduleBody": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "visitKeep": "Keep",
+  "visitReschedule": "Reschedule",
+  "visitStatusConfirmed": "Confirmed",
+  "visitStatusCheckedIn": "Checked in",
+  "visitMonthJanUpper": "JAN",
+  "visitMonthFebUpper": "FEB",
+  "visitMonthMarUpper": "MAR",
+  "visitMonthAprUpper": "APR",
+  "visitMonthMayUpper": "MAY",
+  "visitMonthJunUpper": "JUN",
+  "visitMonthJulUpper": "JUL",
+  "visitMonthAugUpper": "AUG",
+  "visitMonthSepUpper": "SEP",
+  "visitMonthOctUpper": "OCT",
+  "visitMonthNovUpper": "NOV",
+  "visitMonthDecUpper": "DEC",
+  "esignNoDocumentsToSign": "No documents to sign",
+  "esignSectionPending": "Pending",
+  "esignSectionSigned": "Signed",
+  "esignSectionDeclined": "Declined",
+  "esignDueOn": "Due {date}",
+  "@esignDueOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "esignSignedOn": "Signed {date}",
+  "@esignSignedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "esignDeclineDocument": "Decline document",
+  "esignDeclineBody": "Let admin know why you cannot sign this document.",
+  "esignDeclineReasonHint": "Reason (optional)",
+  "esignDocumentDeclined": "Document declined",
+  "esignDocumentTitle": "Document",
+  "esignReviewDocument": "Review document",
+  "esignNoDocumentAttached": "No document attached.",
+  "esignPreviewLoadFailed": "Could not load document preview.",
+  "esignPreviewUnavailable": "Preview unavailable — open externally.",
+  "esignPdfDocument": "PDF document",
+  "esignTapToOpen": "Tap to open",
+  "esignOpenFullDocument": "Open full document",
+  "esignFromAdmin": "From admin",
+  "esignMetaLine": "{code}{category} · {source}",
+  "@esignMetaLine": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "category": {
+        "type": "String"
+      },
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "esignDecline": "Decline",
+  "esignSignDocument": "Sign document",
+  "esignAddYourSignature": "Add your signature",
+  "esignDrawSignatureHint": "Draw your signature in the box below",
+  "esignClear": "Clear",
+  "esignLegalDeclaration": "I agree this is my legal electronic signature.",
+  "esignPleaseDrawSignature": "Please draw your signature",
+  "esignCapturedWith": "Captured with your signature:",
+  "esignSignerYou": "You",
+  "esignSubmitting": "Submitting…",
+  "esignConfirmSignature": "Confirm signature",
+  "esignSignedTitle": "Signed",
+  "esignDocumentSigned": "Document signed",
+  "esignDocumentSignedBody": "Your signature has been sent to admin and saved to your records.",
+  "esignSignatureProof": "Signature proof",
+  "esignFieldSignedBy": "Signed by",
+  "esignFieldDateTime": "Date & time",
+  "esignFieldIpAddress": "IP address",
+  "esignNotCaptured": "Not captured",
+  "esignFieldDevice": "Device",
+  "esignDownloadSignedCopy": "Download signed copy",
+  "esignDownloadDocument": "Download document",
+  "esignNoDocumentToDownload": "No document available to download",
+  "esignSignedCopyReady": "Your signature is stamped on the last page of this copy.",
+  "esignSignedCopyPending": "Preparing your signed copy — this is the original document until it is ready. Reopen this screen in a moment.",
+  "esignSignedCopyUnavailable": "Signed copy unavailable, so this is the original document you were sent. Your signature is stored with the request.",
+  "esignBackToDocuments": "Back to documents"
 }

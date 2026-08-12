@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
 import 'support_providers.dart';
 import 'widgets/esign_sensitive_scope.dart';
@@ -36,21 +37,21 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Decline document',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            Text(ctx.l10n.esignDeclineDocument,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
             const SizedBox(height: 6),
-            const Text(
-              'Let admin know why you cannot sign this document.',
-              style: TextStyle(color: AppColors.textSecondary),
+            Text(
+              ctx.l10n.esignDeclineBody,
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: ctrl,
               maxLines: 3,
               autofocus: true,
-              decoration: const InputDecoration(
-                hintText: 'Reason (optional)',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: ctx.l10n.esignDeclineReasonHint,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),
@@ -62,7 +63,7 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                   side: BorderSide(color: AppColors.rejectedRed.withValues(alpha: 0.4)),
                 ),
                 onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Decline document'),
+                child: Text(ctx.l10n.esignDeclineDocument),
               ),
             ),
           ],
@@ -80,7 +81,7 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
       ref.invalidate(esignRequestDetailProvider(widget.requestId));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Document declined')),
+          SnackBar(content: Text(context.l10n.esignDocumentDeclined)),
         );
         context.go('/profile/support/sign');
       }
@@ -126,14 +127,15 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final async = ref.watch(esignRequestDetailProvider(widget.requestId));
     return async.when(
       loading: () => Scaffold(
-        appBar: AppBar(title: const Text('Document')),
+        appBar: AppBar(title: Text(l10n.esignDocumentTitle)),
         body: const Center(child: CircularProgressIndicator()),
       ),
       error: (e, _) => Scaffold(
-        appBar: AppBar(title: const Text('Document')),
+        appBar: AppBar(title: Text(l10n.esignDocumentTitle)),
         body: Center(child: Text('$e')),
       ),
       data: (detail) {
@@ -154,7 +156,7 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
           restricted: detail.screenshotRestricted,
           child: Scaffold(
             appBar: AppBar(
-              title: const Text('Review document'),
+              title: Text(l10n.esignReviewDocument),
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back_rounded),
                 onPressed: () => context.pop(),
@@ -193,9 +195,9 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                         if (_loadingDoc)
                           const Center(child: CircularProgressIndicator())
                         else if (detail.documentStorageKey == null)
-                          const Text('No document attached.')
+                          Text(l10n.esignNoDocumentAttached)
                         else if (_documentUrl == null)
-                          const Text('Could not load document preview.')
+                          Text(l10n.esignPreviewLoadFailed)
                         else ...[
                           if (_isImageKey(detail.documentStorageKey!))
                             ClipRRect(
@@ -203,8 +205,8 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                               child: Image.network(
                                 _documentUrl!,
                                 fit: BoxFit.contain,
-                                errorBuilder: (_, _, _) => const Text(
-                                  'Preview unavailable — open externally.',
+                                errorBuilder: (_, _, _) => Text(
+                                  l10n.esignPreviewUnavailable,
                                 ),
                               ),
                             )
@@ -212,8 +214,8 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                             ListTile(
                               contentPadding: EdgeInsets.zero,
                               leading: const Icon(Icons.picture_as_pdf_outlined),
-                              title: const Text('PDF document'),
-                              subtitle: const Text('Tap to open'),
+                              title: Text(l10n.esignPdfDocument),
+                              subtitle: Text(l10n.esignTapToOpen),
                               onTap: _openDocument,
                             ),
                           if (_isImageKey(detail.documentStorageKey!)) ...[
@@ -221,7 +223,7 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                             OutlinedButton.icon(
                               onPressed: _openDocument,
                               icon: const Icon(Icons.open_in_new),
-                              label: const Text('Open full document'),
+                              label: Text(l10n.esignOpenFullDocument),
                             ),
                           ],
                         ],
@@ -231,14 +233,18 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  '${detail.requestCode}'
-                  '${detail.categoryLabel != null ? ' · ${detail.categoryLabel}' : ''}'
-                  ' · From admin',
+                  l10n.esignMetaLine(
+                    detail.requestCode,
+                    detail.categoryLabel != null
+                        ? ' · ${detail.categoryLabel}'
+                        : '',
+                    l10n.esignFromAdmin,
+                  ),
                   style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Due ${_formatDate(detail.dueAt)}',
+                  l10n.esignDueOn(_formatDate(detail.dueAt)),
                   style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                 ),
               ],
@@ -263,7 +269,7 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                                       height: 18, width: 18,
                                       child: CircularProgressIndicator(strokeWidth: 2),
                                     )
-                                  : const Text('Decline'),
+                                  : Text(l10n.esignDecline),
                             ),
                           ),
                           const SizedBox(width: 10),
@@ -274,7 +280,7 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                                   : () => context.push(
                                         '/profile/support/sign/${widget.requestId}/capture',
                                       ),
-                              child: const Text('Sign document'),
+                              child: Text(l10n.esignSignDocument),
                             ),
                           ),
                         ],
