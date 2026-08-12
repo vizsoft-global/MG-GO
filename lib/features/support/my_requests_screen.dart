@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
+import '../../core/l10n/locale_formatters.dart';
 import '../../core/theme/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
 
@@ -18,26 +21,28 @@ class MyRequestsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final async = ref.watch(myRequestsProvider);
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('My requests'),
+          title: Text(l10n.supportMyRequestsTitle),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_rounded),
             onPressed: () => context.pop(),
           ),
-          bottom: const TabBar(
+          bottom: TabBar(
             tabs: [
-              Tab(text: 'Request Sent'),
-              Tab(text: 'Request Recieved'),
+              Tab(text: l10n.supportTabRequestSent),
+              Tab(text: l10n.supportTabRequestReceived),
             ],
           ),
         ),
         body: async.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Could not load requests.\n$e')),
+          error: (e, _) =>
+              Center(child: Text(l10n.supportCouldNotLoadRequests('$e'))),
           data: (rows) {
             final needsAction = rows.where(_needsAction).toList();
             return TabBarView(
@@ -45,7 +50,7 @@ class MyRequestsScreen extends ConsumerWidget {
                 _RequestsList(
                   rows: rows,
                   attentionRows: needsAction,
-                  emptyLabel: 'No requests sent yet',
+                  emptyLabel: l10n.supportNoRequestsSent,
                   onRefresh: () async {
                     ref.invalidate(myRequestsProvider);
                     await ref.read(myRequestsProvider.future);
@@ -54,7 +59,7 @@ class MyRequestsScreen extends ConsumerWidget {
                 _RequestsList(
                   rows: needsAction,
                   attentionRows: const [],
-                  emptyLabel: 'No requests received',
+                  emptyLabel: l10n.supportNoRequestsReceived,
                   onRefresh: () async {
                     ref.invalidate(myRequestsProvider);
                     await ref.read(myRequestsProvider.future);
@@ -118,7 +123,8 @@ class _AttentionBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final reasons = rows.map((r) => _reasonLabel(r)).join(' · ');
+    final l10n = context.l10n;
+    final reasons = rows.map((r) => _reasonLabel(r, l10n)).join(' · ');
     return Material(
       color: AppColors.underReviewAmber.withValues(alpha: 0.12),
       borderRadius: BorderRadius.circular(14),
@@ -141,7 +147,7 @@ class _AttentionBanner extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${rows.length} request${rows.length == 1 ? '' : 's'} need your response',
+                      l10n.supportRequestsNeedResponse(rows.length),
                       style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
                     Text(
@@ -161,12 +167,12 @@ class _AttentionBanner extends StatelessWidget {
     );
   }
 
-  static String _reasonLabel(SupportRequestSummary row) {
-    if (row.awaitingDriverAck) return 'Awaiting your acknowledgement';
+  static String _reasonLabel(SupportRequestSummary row, AppLocalizations l10n) {
+    if (row.awaitingDriverAck) return l10n.supportReasonAwaitingAck;
     return switch (row.requestType) {
-      'document' => 'Document re-upload',
-      'loan' => 'Loan details changed',
-      _ => 'Clarification needed',
+      'document' => l10n.supportRequestTypeDocumentReupload,
+      'loan' => l10n.supportReasonLoanDetailsChanged,
+      _ => l10n.supportReasonClarificationNeeded,
     };
   }
 }
@@ -178,7 +184,9 @@ class _RequestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final view = RequestStatusView.of(
+      l10n: l10n,
       status: row.status,
       awaitingAck: row.awaitingDriverAck,
       acknowledged: row.acknowledged,
@@ -196,11 +204,11 @@ class _RequestCard extends StatelessWidget {
           child: Icon(_typeIcon(row.requestType), color: AppColors.primaryBlue, size: 18),
         ),
         title: Text(
-          _typeLabel(row.requestType),
+          _typeLabel(row.requestType, l10n),
           style: const TextStyle(fontWeight: FontWeight.w700),
         ),
         subtitle: Text(
-          '${row.requestCode}${row.createdAt != null ? ' · ${_fmt(row.createdAt!)}' : ''}',
+          '${row.requestCode}${row.createdAt != null ? ' · ${_fmt(row.createdAt!, l10n)}' : ''}',
         ),
         trailing: _StatusPill(view: view),
       ),
@@ -221,26 +229,22 @@ class _RequestCard extends StatelessWidget {
     };
   }
 
-  static String _typeLabel(String type) {
+  static String _typeLabel(String type, AppLocalizations l10n) {
     return switch (type) {
-      'leave' => 'Leave',
-      'sick_leave' => 'Sick & accident leave',
-      'asset' => 'Asset request',
-      'fuel' => 'Fuel reimbursement',
-      'document' => 'Document request',
-      'complaint' => 'Complaint',
-      'salary_justification' => 'Salary justification',
-      'loan' => 'Advance / Loan',
+      'leave' => l10n.supportRequestTypeLeave,
+      'sick_leave' => l10n.supportRequestTypeSickLeave,
+      'asset' => l10n.supportRequestTypeAsset,
+      'fuel' => l10n.supportRequestTypeFuel,
+      'document' => l10n.supportRequestTypeDocument,
+      'complaint' => l10n.supportRequestTypeComplaint,
+      'salary_justification' => l10n.supportRequestTypeSalaryJustification,
+      'loan' => l10n.supportRequestTypeLoanAdvance,
       _ => type,
     };
   }
 
-  static String _fmt(DateTime d) {
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
-    return '${d.day} ${months[d.month - 1]}';
+  static String _fmt(DateTime d, AppLocalizations l10n) {
+    return '${d.day} ${monthShortNames(l10n)[d.month - 1]}';
   }
 }
 

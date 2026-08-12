@@ -1707,4 +1707,115 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get updateApkMissing =>
       'ملف التحديث غير موجود. اضغط تنزيل للمحاولة مجددًا.';
+
+  @override
+  String get supportRequestTypeLeave => 'إجازة';
+
+  @override
+  String get supportRequestTypeLeaveRequest => 'طلب إجازة';
+
+  @override
+  String get supportRequestTypeSickLeave => 'إجازة مرضية وحوادث';
+
+  @override
+  String get supportRequestTypeAsset => 'طلب عهدة';
+
+  @override
+  String get supportRequestTypeFuel => 'استرداد قيمة الوقود';
+
+  @override
+  String get supportRequestTypeDocument => 'طلب مستند';
+
+  @override
+  String get supportRequestTypeDocumentReupload => 'إعادة رفع المستند';
+
+  @override
+  String get supportRequestTypeComplaint => 'شكوى';
+
+  @override
+  String get supportRequestTypeSalaryJustification => 'توضيح الراتب';
+
+  @override
+  String get supportRequestTypeLoanAdvance => 'سلفة / قرض';
+
+  @override
+  String get supportRequestTypeLoanRequest => 'طلب قرض';
+
+  @override
+  String get supportRequestTypeGeneric => 'طلب';
+
+  @override
+  String get supportStatusAwaitingAck => 'بانتظار الإقرار';
+
+  @override
+  String get supportStatusAcknowledged => 'تم الإقرار';
+
+  @override
+  String get supportStatusInProgress => 'قيد المعالجة';
+
+  @override
+  String get supportStatusSolved => 'تم الحل';
+
+  @override
+  String get supportStatusOverdue => 'متأخر';
+
+  @override
+  String get supportActionRequired => 'إجراء مطلوب';
+
+  @override
+  String get supportMyRequestsTitle => 'طلباتي';
+
+  @override
+  String get supportTabRequestSent => 'الطلبات المرسلة';
+
+  @override
+  String get supportTabRequestReceived => 'الطلبات الواردة';
+
+  @override
+  String supportCouldNotLoadRequests(String error) {
+    return 'تعذّر تحميل الطلبات.\n$error';
+  }
+
+  @override
+  String get supportNoRequestsSent => 'لم تُرسل أي طلبات بعد';
+
+  @override
+  String get supportNoRequestsReceived => 'لا توجد طلبات واردة';
+
+  @override
+  String supportRequestsNeedResponse(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count طلب بحاجة إلى ردك',
+      many: '$count طلباً بحاجة إلى ردك',
+      few: '$count طلبات بحاجة إلى ردك',
+      two: 'طلبان بحاجة إلى ردك',
+      one: 'طلب واحد بحاجة إلى ردك',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get supportReasonAwaitingAck => 'بانتظار إقرارك';
+
+  @override
+  String get supportReasonLoanDetailsChanged => 'تم تعديل تفاصيل القرض';
+
+  @override
+  String get supportReasonClarificationNeeded => 'مطلوب توضيح';
+
+  @override
+  String get supportActionAcknowledgeUpdate => 'الإقرار بالتحديث';
+
+  @override
+  String get supportActionDocumentToSign => 'مستند بحاجة إلى توقيع';
+
+  @override
+  String supportCouldNotLoad(String error) {
+    return 'تعذّر التحميل.\n$error';
+  }
+
+  @override
+  String get supportNoActionRequired => 'لا يوجد إجراء مطلوب حالياً';
 }

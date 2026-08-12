@@ -3121,6 +3121,198 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The downloaded update file is missing. Tap Download to try again.'**
   String get updateApkMissing;
+
+  /// No description provided for @supportRequestTypeLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get supportRequestTypeLeave;
+
+  /// No description provided for @supportRequestTypeLeaveRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave request'**
+  String get supportRequestTypeLeaveRequest;
+
+  /// No description provided for @supportRequestTypeSickLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Sick & accident leave'**
+  String get supportRequestTypeSickLeave;
+
+  /// No description provided for @supportRequestTypeAsset.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset request'**
+  String get supportRequestTypeAsset;
+
+  /// No description provided for @supportRequestTypeFuel.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuel reimbursement'**
+  String get supportRequestTypeFuel;
+
+  /// No description provided for @supportRequestTypeDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Document request'**
+  String get supportRequestTypeDocument;
+
+  /// No description provided for @supportRequestTypeDocumentReupload.
+  ///
+  /// In en, this message translates to:
+  /// **'Document re-upload'**
+  String get supportRequestTypeDocumentReupload;
+
+  /// No description provided for @supportRequestTypeComplaint.
+  ///
+  /// In en, this message translates to:
+  /// **'Complaint'**
+  String get supportRequestTypeComplaint;
+
+  /// No description provided for @supportRequestTypeSalaryJustification.
+  ///
+  /// In en, this message translates to:
+  /// **'Salary justification'**
+  String get supportRequestTypeSalaryJustification;
+
+  /// No description provided for @supportRequestTypeLoanAdvance.
+  ///
+  /// In en, this message translates to:
+  /// **'Advance / Loan'**
+  String get supportRequestTypeLoanAdvance;
+
+  /// No description provided for @supportRequestTypeLoanRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan request'**
+  String get supportRequestTypeLoanRequest;
+
+  /// No description provided for @supportRequestTypeGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Request'**
+  String get supportRequestTypeGeneric;
+
+  /// No description provided for @supportStatusAwaitingAck.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting ack'**
+  String get supportStatusAwaitingAck;
+
+  /// No description provided for @supportStatusAcknowledged.
+  ///
+  /// In en, this message translates to:
+  /// **'Acknowledged'**
+  String get supportStatusAcknowledged;
+
+  /// No description provided for @supportStatusInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get supportStatusInProgress;
+
+  /// No description provided for @supportStatusSolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Solved'**
+  String get supportStatusSolved;
+
+  /// No description provided for @supportStatusOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get supportStatusOverdue;
+
+  /// No description provided for @supportActionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Action required'**
+  String get supportActionRequired;
+
+  /// No description provided for @supportMyRequestsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My requests'**
+  String get supportMyRequestsTitle;
+
+  /// No description provided for @supportTabRequestSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Sent'**
+  String get supportTabRequestSent;
+
+  /// No description provided for @supportTabRequestReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Recieved'**
+  String get supportTabRequestReceived;
+
+  /// No description provided for @supportCouldNotLoadRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load requests.\n{error}'**
+  String supportCouldNotLoadRequests(String error);
+
+  /// No description provided for @supportNoRequestsSent.
+  ///
+  /// In en, this message translates to:
+  /// **'No requests sent yet'**
+  String get supportNoRequestsSent;
+
+  /// No description provided for @supportNoRequestsReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'No requests received'**
+  String get supportNoRequestsReceived;
+
+  /// No description provided for @supportRequestsNeedResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 request need your response} other{{count} requests need your response}}'**
+  String supportRequestsNeedResponse(int count);
+
+  /// No description provided for @supportReasonAwaitingAck.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting your acknowledgement'**
+  String get supportReasonAwaitingAck;
+
+  /// No description provided for @supportReasonLoanDetailsChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan details changed'**
+  String get supportReasonLoanDetailsChanged;
+
+  /// No description provided for @supportReasonClarificationNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Clarification needed'**
+  String get supportReasonClarificationNeeded;
+
+  /// No description provided for @supportActionAcknowledgeUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Acknowledge update'**
+  String get supportActionAcknowledgeUpdate;
+
+  /// No description provided for @supportActionDocumentToSign.
+  ///
+  /// In en, this message translates to:
+  /// **'Document to sign'**
+  String get supportActionDocumentToSign;
+
+  /// No description provided for @supportCouldNotLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load.\n{error}'**
+  String supportCouldNotLoad(String error);
+
+  /// No description provided for @supportNoActionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'No action required right now'**
+  String get supportNoActionRequired;
 }
 
 class _AppLocalizationsDelegate

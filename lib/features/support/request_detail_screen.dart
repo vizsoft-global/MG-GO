@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
@@ -260,6 +261,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                       e.key != 'driver_ack_note')
                   .toList();
           final view = RequestStatusView.of(
+            l10n: context.l10n,
             status: detail.status,
             awaitingAck: awaitingAck,
             acknowledged: detail.payload['driver_ack_at'] != null,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
+
 class SupportRequestSummary {
   const SupportRequestSummary({
     required this.id,
@@ -242,28 +244,39 @@ class RequestStatusView {
   final RequestStatusColor colorKey;
 
   static RequestStatusView of({
+    required AppLocalizations l10n,
     required String status,
     required bool awaitingAck,
     required bool acknowledged,
   }) {
-    if (awaitingAck) return const RequestStatusView('Awaiting ack', RequestStatusColor.amber);
-    if (acknowledged) return const RequestStatusView('Acknowledged', RequestStatusColor.green);
+    if (awaitingAck) {
+      return RequestStatusView(
+          l10n.supportStatusAwaitingAck, RequestStatusColor.amber);
+    }
+    if (acknowledged) {
+      return RequestStatusView(
+          l10n.supportStatusAcknowledged, RequestStatusColor.green);
+    }
     switch (status) {
       case 'pending':
       case 'submitted':
-        return const RequestStatusView('Pending', RequestStatusColor.amber);
+        return RequestStatusView(l10n.pending, RequestStatusColor.amber);
       case 'in_review':
-        return const RequestStatusView('In progress', RequestStatusColor.blue);
+        return RequestStatusView(
+            l10n.supportStatusInProgress, RequestStatusColor.blue);
       case 'approved':
-        return const RequestStatusView('Approved', RequestStatusColor.green);
+        return RequestStatusView(l10n.approved, RequestStatusColor.green);
       case 'needs_clarification':
-        return const RequestStatusView('Action required', RequestStatusColor.amber);
+        return RequestStatusView(
+            l10n.supportActionRequired, RequestStatusColor.amber);
       case 'rejected':
-        return const RequestStatusView('Rejected', RequestStatusColor.red);
+        return RequestStatusView(l10n.rejected, RequestStatusColor.red);
       case 'solved':
-        return const RequestStatusView('Solved', RequestStatusColor.green);
+        return RequestStatusView(
+            l10n.supportStatusSolved, RequestStatusColor.green);
       case 'overdue':
-        return const RequestStatusView('Overdue', RequestStatusColor.red);
+        return RequestStatusView(
+            l10n.supportStatusOverdue, RequestStatusColor.red);
       default:
         return RequestStatusView(status, RequestStatusColor.grey);
     }

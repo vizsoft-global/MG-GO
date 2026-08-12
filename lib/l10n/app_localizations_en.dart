@@ -1717,4 +1717,112 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get updateApkMissing =>
       'The downloaded update file is missing. Tap Download to try again.';
+
+  @override
+  String get supportRequestTypeLeave => 'Leave';
+
+  @override
+  String get supportRequestTypeLeaveRequest => 'Leave request';
+
+  @override
+  String get supportRequestTypeSickLeave => 'Sick & accident leave';
+
+  @override
+  String get supportRequestTypeAsset => 'Asset request';
+
+  @override
+  String get supportRequestTypeFuel => 'Fuel reimbursement';
+
+  @override
+  String get supportRequestTypeDocument => 'Document request';
+
+  @override
+  String get supportRequestTypeDocumentReupload => 'Document re-upload';
+
+  @override
+  String get supportRequestTypeComplaint => 'Complaint';
+
+  @override
+  String get supportRequestTypeSalaryJustification => 'Salary justification';
+
+  @override
+  String get supportRequestTypeLoanAdvance => 'Advance / Loan';
+
+  @override
+  String get supportRequestTypeLoanRequest => 'Loan request';
+
+  @override
+  String get supportRequestTypeGeneric => 'Request';
+
+  @override
+  String get supportStatusAwaitingAck => 'Awaiting ack';
+
+  @override
+  String get supportStatusAcknowledged => 'Acknowledged';
+
+  @override
+  String get supportStatusInProgress => 'In progress';
+
+  @override
+  String get supportStatusSolved => 'Solved';
+
+  @override
+  String get supportStatusOverdue => 'Overdue';
+
+  @override
+  String get supportActionRequired => 'Action required';
+
+  @override
+  String get supportMyRequestsTitle => 'My requests';
+
+  @override
+  String get supportTabRequestSent => 'Request Sent';
+
+  @override
+  String get supportTabRequestReceived => 'Request Recieved';
+
+  @override
+  String supportCouldNotLoadRequests(String error) {
+    return 'Could not load requests.\n$error';
+  }
+
+  @override
+  String get supportNoRequestsSent => 'No requests sent yet';
+
+  @override
+  String get supportNoRequestsReceived => 'No requests received';
+
+  @override
+  String supportRequestsNeedResponse(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count requests need your response',
+      one: '1 request need your response',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get supportReasonAwaitingAck => 'Awaiting your acknowledgement';
+
+  @override
+  String get supportReasonLoanDetailsChanged => 'Loan details changed';
+
+  @override
+  String get supportReasonClarificationNeeded => 'Clarification needed';
+
+  @override
+  String get supportActionAcknowledgeUpdate => 'Acknowledge update';
+
+  @override
+  String get supportActionDocumentToSign => 'Document to sign';
+
+  @override
+  String supportCouldNotLoad(String error) {
+    return 'Could not load.\n$error';
+  }
+
+  @override
+  String get supportNoActionRequired => 'No action required right now';
 }

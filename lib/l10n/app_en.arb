@@ -953,5 +953,58 @@
   },
   "updateChecksumFailed": "Download verification failed. Please try again.",
   "updateNoInstallerAvailable": "Couldn't open the Android installer. Please tap the downloaded APK from your Files app, or contact support.",
-  "updateApkMissing": "The downloaded update file is missing. Tap Download to try again."
+  "updateApkMissing": "The downloaded update file is missing. Tap Download to try again.",
+  "supportRequestTypeLeave": "Leave",
+  "supportRequestTypeLeaveRequest": "Leave request",
+  "supportRequestTypeSickLeave": "Sick & accident leave",
+  "supportRequestTypeAsset": "Asset request",
+  "supportRequestTypeFuel": "Fuel reimbursement",
+  "supportRequestTypeDocument": "Document request",
+  "supportRequestTypeDocumentReupload": "Document re-upload",
+  "supportRequestTypeComplaint": "Complaint",
+  "supportRequestTypeSalaryJustification": "Salary justification",
+  "supportRequestTypeLoanAdvance": "Advance / Loan",
+  "supportRequestTypeLoanRequest": "Loan request",
+  "supportRequestTypeGeneric": "Request",
+  "supportStatusAwaitingAck": "Awaiting ack",
+  "supportStatusAcknowledged": "Acknowledged",
+  "supportStatusInProgress": "In progress",
+  "supportStatusSolved": "Solved",
+  "supportStatusOverdue": "Overdue",
+  "supportActionRequired": "Action required",
+  "supportMyRequestsTitle": "My requests",
+  "supportTabRequestSent": "Request Sent",
+  "supportTabRequestReceived": "Request Recieved",
+  "supportCouldNotLoadRequests": "Could not load requests.\n{error}",
+  "@supportCouldNotLoadRequests": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "supportNoRequestsSent": "No requests sent yet",
+  "supportNoRequestsReceived": "No requests received",
+  "supportRequestsNeedResponse": "{count, plural, =1{1 request need your response} other{{count} requests need your response}}",
+  "@supportRequestsNeedResponse": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "supportReasonAwaitingAck": "Awaiting your acknowledgement",
+  "supportReasonLoanDetailsChanged": "Loan details changed",
+  "supportReasonClarificationNeeded": "Clarification needed",
+  "supportActionAcknowledgeUpdate": "Acknowledge update",
+  "supportActionDocumentToSign": "Document to sign",
+  "supportCouldNotLoad": "Could not load.\n{error}",
+  "@supportCouldNotLoad": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "supportNoActionRequired": "No action required right now"
 }
