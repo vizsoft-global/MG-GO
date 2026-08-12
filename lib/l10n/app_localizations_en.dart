@@ -1873,4 +1873,292 @@ class AppLocalizationsEn extends AppLocalizations {
   String supportBadgeNewCount(int count) {
     return '$count new';
   }
+
+  @override
+  String get supportFormTitleSickLeave => 'Sick / Accident leave';
+
+  @override
+  String get supportFormTitleLoan => 'Loan / Advance';
+
+  @override
+  String get supportFormTitleFuel => 'Fuel claim';
+
+  @override
+  String get supportFormTitleNew => 'New request';
+
+  @override
+  String get supportErrorLeaveTypeDatesRequired =>
+      'Leave type and dates are required';
+
+  @override
+  String get supportErrorJustificationRequired => 'Justification is required';
+
+  @override
+  String get supportErrorSymptomsRequired => 'Symptoms / details are required';
+
+  @override
+  String get supportErrorMedicalDocsRequired =>
+      'Medical documents are required';
+
+  @override
+  String get supportErrorAmountTenureRequired =>
+      'Amount and tenure are required';
+
+  @override
+  String get supportErrorNeededByReasonRequired =>
+      'Needed-by date and reason are required';
+
+  @override
+  String get supportErrorAssetFieldsRequired =>
+      'Asset type, mode and status are required';
+
+  @override
+  String get supportErrorAmountPeriodRequired =>
+      'Amount and period are required';
+
+  @override
+  String get supportErrorFuelReceiptsRequired => 'Fuel receipts are required';
+
+  @override
+  String get supportErrorDocumentFieldsRequired =>
+      'Document fields are required';
+
+  @override
+  String get supportErrorComplaintFieldsRequired =>
+      'Category, severity, subject and description required';
+
+  @override
+  String get supportErrorSalaryFieldsRequired => 'Salary fields are required';
+
+  @override
+  String get supportErrorAcceptDeclaration => 'Please accept the declaration';
+
+  @override
+  String get supportLeaveTypeAnnual => 'Annual';
+
+  @override
+  String get supportLeaveTypeEmergency => 'Emergency';
+
+  @override
+  String get supportLeaveTypeAccident => 'Accident';
+
+  @override
+  String get supportLeaveTypeUnpaid => 'Unpaid Leave';
+
+  @override
+  String get supportSickTypeSickLeave => 'Sick leave';
+
+  @override
+  String get supportSickTypeInjury => 'Injury';
+
+  @override
+  String get supportOptionOther => 'Other';
+
+  @override
+  String get supportAssetSimCard => 'SIM card';
+
+  @override
+  String get supportAssetFuelCard => 'Fuel card';
+
+  @override
+  String get supportAssetFuelLimitChange => 'Fuel limit change';
+
+  @override
+  String get supportAssetRaincoat => 'Raincoat';
+
+  @override
+  String get supportAssetDeliveryBag => 'Delivery bag';
+
+  @override
+  String get supportAssetReflectiveVest => 'Reflective vest';
+
+  @override
+  String get supportAssetWinterJacket => 'Winter jacket';
+
+  @override
+  String get supportAssetDeliveryAttire => 'Delivery attire';
+
+  @override
+  String get supportAssetDeliveryPants => 'Delivery pants';
+
+  @override
+  String get supportAssetNewBike => 'New bike';
+
+  @override
+  String get supportAssetHelmet => 'Helmet';
+
+  @override
+  String get supportAssetDeliveryBox => 'Delivery box';
+
+  @override
+  String get supportAssetFuelChip => 'Fuel chip';
+
+  @override
+  String get supportAssetPhone => 'Phone';
+
+  @override
+  String get supportAssetMobileHolder => 'Mobile holder';
+
+  @override
+  String get supportDocTypeCivilIdCopy => 'Civil ID copy';
+
+  @override
+  String get supportDocTypeLicenseCopy => 'License Copy';
+
+  @override
+  String get supportDocTypeWorkPermitCopy => 'Work permit copy';
+
+  @override
+  String get supportDocTypeRegistrationCopy => 'Registration copy';
+
+  @override
+  String get supportDocTypeVehicleDocumentCopy => 'Vehicle document copy';
+
+  @override
+  String get supportDocTypeSalaryCertification => 'Salary certification';
+
+  @override
+  String get supportRequestModeRenewal => 'Renewal';
+
+  @override
+  String get supportRequestModeFirstTime => 'First Time';
+
+  @override
+  String get supportAssetStatusLost => 'Lost';
+
+  @override
+  String get supportAssetStatusDamaged => 'Damaged';
+
+  @override
+  String get supportDeliveryMethodEmail => 'Email';
+
+  @override
+  String get supportDeliveryMethodPickup => 'Pickup';
+
+  @override
+  String get supportSeverityLow => 'Low';
+
+  @override
+  String get supportSeverityMedium => 'Medium';
+
+  @override
+  String get supportSeverityHigh => 'High';
+
+  @override
+  String get supportFieldLeaveType => 'Leave type';
+
+  @override
+  String get supportFieldFrom => 'From';
+
+  @override
+  String get supportFieldTo => 'To';
+
+  @override
+  String get supportFieldCommentOptional => 'Comment (optional)';
+
+  @override
+  String get supportFieldComment => 'Comment';
+
+  @override
+  String get supportHintMentionHere => 'Mention here';
+
+  @override
+  String get supportFieldJustificationRequired => 'Justification *';
+
+  @override
+  String get supportAttachmentOptional => 'Attachment (optional)';
+
+  @override
+  String supportFilesSelected(int count) {
+    return '$count file(s) selected';
+  }
+
+  @override
+  String get supportFieldSymptomsRequired => 'Symptoms / details *';
+
+  @override
+  String get supportUploadMedicalCertificate => 'Upload medical certificate *';
+
+  @override
+  String get supportFieldAmountKwdRequired => 'Amount (KWD) *';
+
+  @override
+  String get supportLoanTenureUnavailable =>
+      'Tenure options are not configured yet. Loan requests are temporarily unavailable.';
+
+  @override
+  String get supportFieldTenureRequired => 'Tenure *';
+
+  @override
+  String get supportFieldNeededBy => 'Needed by';
+
+  @override
+  String get supportFieldReasonRequired => 'Reason *';
+
+  @override
+  String get supportFieldAssetType => 'Asset type';
+
+  @override
+  String get supportFieldQuantity => 'Quantity';
+
+  @override
+  String get supportFieldPeriodMonth => 'Period (month)';
+
+  @override
+  String get supportFieldDistanceKm => 'Distance (km)';
+
+  @override
+  String get supportUploadFuelReceipts => 'Upload fuel receipts *';
+
+  @override
+  String get supportFieldDocumentType => 'Document type';
+
+  @override
+  String get supportComplaintCategoriesUnavailable =>
+      'Complaint categories are not configured yet. Complaints are temporarily unavailable.';
+
+  @override
+  String get supportFieldCategoryRequired => 'Category *';
+
+  @override
+  String get supportFieldSubjectRequired => 'Subject *';
+
+  @override
+  String get supportFieldDescriptionRequired => 'Description *';
+
+  @override
+  String get supportFieldSalaryMonth => 'Salary Month';
+
+  @override
+  String get supportFieldExpectedAmountRequired => 'Expected amount *';
+
+  @override
+  String get supportFieldReceivedAmountRequired => 'Received amount *';
+
+  @override
+  String get supportSupportingDocument => 'Supporting document';
+
+  @override
+  String get supportPhotoOptional => 'Photo (optional)';
+
+  @override
+  String get supportAttachPayslipOptional => 'Attach payslip (optional)';
+
+  @override
+  String get supportDeclarationLeave =>
+      'Declaration: I am entitled to return on time, otherwise the company to apply the list of penalties in case of late return.';
+
+  @override
+  String get supportDeclarationLoan =>
+      'Declaration: I am committed to pay the full amount to the company or the company to deduct it as per the installments from my salary.';
+
+  @override
+  String get supportDeclarationAsset =>
+      'Declaration: In the case of lost or damaged item replacement i am entitled for any charges from the company to receive a new one.';
+
+  @override
+  String get supportTemporarilyUnavailable => 'Temporarily unavailable';
+
+  @override
+  String get supportSubmitRequest => 'Submit request';
 }

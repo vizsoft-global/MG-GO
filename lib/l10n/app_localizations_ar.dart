@@ -1866,4 +1866,288 @@ class AppLocalizationsAr extends AppLocalizations {
   String supportBadgeNewCount(int count) {
     return '$count جديد';
   }
+
+  @override
+  String get supportFormTitleSickLeave => 'إجازة مرضية / حادث';
+
+  @override
+  String get supportFormTitleLoan => 'قرض / سلفة';
+
+  @override
+  String get supportFormTitleFuel => 'مطالبة وقود';
+
+  @override
+  String get supportFormTitleNew => 'طلب جديد';
+
+  @override
+  String get supportErrorLeaveTypeDatesRequired =>
+      'نوع الإجازة والتواريخ مطلوبة';
+
+  @override
+  String get supportErrorJustificationRequired => 'المبرر مطلوب';
+
+  @override
+  String get supportErrorSymptomsRequired => 'الأعراض / التفاصيل مطلوبة';
+
+  @override
+  String get supportErrorMedicalDocsRequired => 'المستندات الطبية مطلوبة';
+
+  @override
+  String get supportErrorAmountTenureRequired => 'المبلغ ومدة السداد مطلوبان';
+
+  @override
+  String get supportErrorNeededByReasonRequired =>
+      'تاريخ الحاجة والسبب مطلوبان';
+
+  @override
+  String get supportErrorAssetFieldsRequired =>
+      'نوع العهدة ونوع الطلب والحالة مطلوبة';
+
+  @override
+  String get supportErrorAmountPeriodRequired => 'المبلغ والفترة مطلوبان';
+
+  @override
+  String get supportErrorFuelReceiptsRequired => 'إيصالات الوقود مطلوبة';
+
+  @override
+  String get supportErrorDocumentFieldsRequired => 'حقول المستند مطلوبة';
+
+  @override
+  String get supportErrorComplaintFieldsRequired =>
+      'الفئة ودرجة الخطورة والموضوع والوصف مطلوبة';
+
+  @override
+  String get supportErrorSalaryFieldsRequired => 'حقول الراتب مطلوبة';
+
+  @override
+  String get supportErrorAcceptDeclaration => 'يرجى الموافقة على الإقرار';
+
+  @override
+  String get supportLeaveTypeAnnual => 'سنوية';
+
+  @override
+  String get supportLeaveTypeEmergency => 'طارئة';
+
+  @override
+  String get supportLeaveTypeAccident => 'حادث';
+
+  @override
+  String get supportLeaveTypeUnpaid => 'إجازة بدون راتب';
+
+  @override
+  String get supportSickTypeSickLeave => 'إجازة مرضية';
+
+  @override
+  String get supportSickTypeInjury => 'إصابة';
+
+  @override
+  String get supportOptionOther => 'أخرى';
+
+  @override
+  String get supportAssetSimCard => 'شريحة اتصال';
+
+  @override
+  String get supportAssetFuelCard => 'بطاقة وقود';
+
+  @override
+  String get supportAssetFuelLimitChange => 'تعديل حد الوقود';
+
+  @override
+  String get supportAssetRaincoat => 'معطف مطر';
+
+  @override
+  String get supportAssetDeliveryBag => 'حقيبة توصيل';
+
+  @override
+  String get supportAssetReflectiveVest => 'سترة عاكسة';
+
+  @override
+  String get supportAssetWinterJacket => 'جاكيت شتوي';
+
+  @override
+  String get supportAssetDeliveryAttire => 'زي التوصيل';
+
+  @override
+  String get supportAssetDeliveryPants => 'بنطال التوصيل';
+
+  @override
+  String get supportAssetNewBike => 'دراجة جديدة';
+
+  @override
+  String get supportAssetHelmet => 'خوذة';
+
+  @override
+  String get supportAssetDeliveryBox => 'صندوق التوصيل';
+
+  @override
+  String get supportAssetFuelChip => 'شريحة وقود';
+
+  @override
+  String get supportAssetPhone => 'هاتف';
+
+  @override
+  String get supportAssetMobileHolder => 'حامل الهاتف';
+
+  @override
+  String get supportDocTypeCivilIdCopy => 'نسخة البطاقة المدنية';
+
+  @override
+  String get supportDocTypeLicenseCopy => 'نسخة رخصة القيادة';
+
+  @override
+  String get supportDocTypeWorkPermitCopy => 'نسخة إذن العمل';
+
+  @override
+  String get supportDocTypeRegistrationCopy => 'نسخة دفتر المركبة';
+
+  @override
+  String get supportDocTypeVehicleDocumentCopy => 'نسخة مستندات المركبة';
+
+  @override
+  String get supportDocTypeSalaryCertification => 'شهادة راتب';
+
+  @override
+  String get supportRequestModeRenewal => 'تجديد';
+
+  @override
+  String get supportRequestModeFirstTime => 'لأول مرة';
+
+  @override
+  String get supportAssetStatusLost => 'مفقودة';
+
+  @override
+  String get supportAssetStatusDamaged => 'تالفة';
+
+  @override
+  String get supportDeliveryMethodEmail => 'بريد إلكتروني';
+
+  @override
+  String get supportDeliveryMethodPickup => 'استلام شخصي';
+
+  @override
+  String get supportSeverityLow => 'منخفضة';
+
+  @override
+  String get supportSeverityMedium => 'متوسطة';
+
+  @override
+  String get supportSeverityHigh => 'عالية';
+
+  @override
+  String get supportFieldLeaveType => 'نوع الإجازة';
+
+  @override
+  String get supportFieldFrom => 'من';
+
+  @override
+  String get supportFieldTo => 'إلى';
+
+  @override
+  String get supportFieldCommentOptional => 'ملاحظة (اختياري)';
+
+  @override
+  String get supportFieldComment => 'ملاحظة';
+
+  @override
+  String get supportHintMentionHere => 'اكتب هنا';
+
+  @override
+  String get supportFieldJustificationRequired => 'المبرر *';
+
+  @override
+  String get supportAttachmentOptional => 'مرفق (اختياري)';
+
+  @override
+  String supportFilesSelected(int count) {
+    return 'تم اختيار $count ملف';
+  }
+
+  @override
+  String get supportFieldSymptomsRequired => 'الأعراض / التفاصيل *';
+
+  @override
+  String get supportUploadMedicalCertificate => 'ارفع التقرير الطبي *';
+
+  @override
+  String get supportFieldAmountKwdRequired => 'المبلغ (د.ك) *';
+
+  @override
+  String get supportLoanTenureUnavailable =>
+      'لم يتم إعداد خيارات السداد بعد. طلبات القروض غير متاحة مؤقتاً.';
+
+  @override
+  String get supportFieldTenureRequired => 'مدة السداد *';
+
+  @override
+  String get supportFieldNeededBy => 'مطلوب بحلول';
+
+  @override
+  String get supportFieldReasonRequired => 'السبب *';
+
+  @override
+  String get supportFieldAssetType => 'نوع العهدة';
+
+  @override
+  String get supportFieldQuantity => 'الكمية';
+
+  @override
+  String get supportFieldPeriodMonth => 'الفترة (الشهر)';
+
+  @override
+  String get supportFieldDistanceKm => 'المسافة (كم)';
+
+  @override
+  String get supportUploadFuelReceipts => 'ارفع إيصالات الوقود *';
+
+  @override
+  String get supportFieldDocumentType => 'نوع المستند';
+
+  @override
+  String get supportComplaintCategoriesUnavailable =>
+      'لم يتم إعداد فئات الشكاوى بعد. الشكاوى غير متاحة مؤقتاً.';
+
+  @override
+  String get supportFieldCategoryRequired => 'الفئة *';
+
+  @override
+  String get supportFieldSubjectRequired => 'الموضوع *';
+
+  @override
+  String get supportFieldDescriptionRequired => 'الوصف *';
+
+  @override
+  String get supportFieldSalaryMonth => 'شهر الراتب';
+
+  @override
+  String get supportFieldExpectedAmountRequired => 'المبلغ المتوقع *';
+
+  @override
+  String get supportFieldReceivedAmountRequired => 'المبلغ المستلم *';
+
+  @override
+  String get supportSupportingDocument => 'مستند داعم';
+
+  @override
+  String get supportPhotoOptional => 'صورة (اختياري)';
+
+  @override
+  String get supportAttachPayslipOptional => 'إرفاق كشف الراتب (اختياري)';
+
+  @override
+  String get supportDeclarationLeave =>
+      'إقرار: ألتزم بالعودة في الموعد المحدد، وإلا يحق للشركة تطبيق قائمة الجزاءات في حال التأخر عن العودة.';
+
+  @override
+  String get supportDeclarationLoan =>
+      'إقرار: ألتزم بسداد كامل المبلغ للشركة أو أن تقوم الشركة بخصمه على أقساط من راتبي.';
+
+  @override
+  String get supportDeclarationAsset =>
+      'إقرار: في حال استبدال عهدة مفقودة أو تالفة، أتحمل أي رسوم تفرضها الشركة للحصول على بديل.';
+
+  @override
+  String get supportTemporarilyUnavailable => 'غير متاح مؤقتاً';
+
+  @override
+  String get supportSubmitRequest => 'إرسال الطلب';
 }

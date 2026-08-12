@@ -3403,6 +3403,552 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} new'**
   String supportBadgeNewCount(int count);
+
+  /// No description provided for @supportFormTitleSickLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Sick / Accident leave'**
+  String get supportFormTitleSickLeave;
+
+  /// No description provided for @supportFormTitleLoan.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan / Advance'**
+  String get supportFormTitleLoan;
+
+  /// No description provided for @supportFormTitleFuel.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuel claim'**
+  String get supportFormTitleFuel;
+
+  /// No description provided for @supportFormTitleNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New request'**
+  String get supportFormTitleNew;
+
+  /// No description provided for @supportErrorLeaveTypeDatesRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave type and dates are required'**
+  String get supportErrorLeaveTypeDatesRequired;
+
+  /// No description provided for @supportErrorJustificationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Justification is required'**
+  String get supportErrorJustificationRequired;
+
+  /// No description provided for @supportErrorSymptomsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Symptoms / details are required'**
+  String get supportErrorSymptomsRequired;
+
+  /// No description provided for @supportErrorMedicalDocsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Medical documents are required'**
+  String get supportErrorMedicalDocsRequired;
+
+  /// No description provided for @supportErrorAmountTenureRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount and tenure are required'**
+  String get supportErrorAmountTenureRequired;
+
+  /// No description provided for @supportErrorNeededByReasonRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Needed-by date and reason are required'**
+  String get supportErrorNeededByReasonRequired;
+
+  /// No description provided for @supportErrorAssetFieldsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset type, mode and status are required'**
+  String get supportErrorAssetFieldsRequired;
+
+  /// No description provided for @supportErrorAmountPeriodRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount and period are required'**
+  String get supportErrorAmountPeriodRequired;
+
+  /// No description provided for @supportErrorFuelReceiptsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuel receipts are required'**
+  String get supportErrorFuelReceiptsRequired;
+
+  /// No description provided for @supportErrorDocumentFieldsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Document fields are required'**
+  String get supportErrorDocumentFieldsRequired;
+
+  /// No description provided for @supportErrorComplaintFieldsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Category, severity, subject and description required'**
+  String get supportErrorComplaintFieldsRequired;
+
+  /// No description provided for @supportErrorSalaryFieldsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Salary fields are required'**
+  String get supportErrorSalaryFieldsRequired;
+
+  /// No description provided for @supportErrorAcceptDeclaration.
+  ///
+  /// In en, this message translates to:
+  /// **'Please accept the declaration'**
+  String get supportErrorAcceptDeclaration;
+
+  /// No description provided for @supportLeaveTypeAnnual.
+  ///
+  /// In en, this message translates to:
+  /// **'Annual'**
+  String get supportLeaveTypeAnnual;
+
+  /// No description provided for @supportLeaveTypeEmergency.
+  ///
+  /// In en, this message translates to:
+  /// **'Emergency'**
+  String get supportLeaveTypeEmergency;
+
+  /// No description provided for @supportLeaveTypeAccident.
+  ///
+  /// In en, this message translates to:
+  /// **'Accident'**
+  String get supportLeaveTypeAccident;
+
+  /// No description provided for @supportLeaveTypeUnpaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpaid Leave'**
+  String get supportLeaveTypeUnpaid;
+
+  /// No description provided for @supportSickTypeSickLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Sick leave'**
+  String get supportSickTypeSickLeave;
+
+  /// No description provided for @supportSickTypeInjury.
+  ///
+  /// In en, this message translates to:
+  /// **'Injury'**
+  String get supportSickTypeInjury;
+
+  /// No description provided for @supportOptionOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get supportOptionOther;
+
+  /// No description provided for @supportAssetSimCard.
+  ///
+  /// In en, this message translates to:
+  /// **'SIM card'**
+  String get supportAssetSimCard;
+
+  /// No description provided for @supportAssetFuelCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuel card'**
+  String get supportAssetFuelCard;
+
+  /// No description provided for @supportAssetFuelLimitChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuel limit change'**
+  String get supportAssetFuelLimitChange;
+
+  /// No description provided for @supportAssetRaincoat.
+  ///
+  /// In en, this message translates to:
+  /// **'Raincoat'**
+  String get supportAssetRaincoat;
+
+  /// No description provided for @supportAssetDeliveryBag.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery bag'**
+  String get supportAssetDeliveryBag;
+
+  /// No description provided for @supportAssetReflectiveVest.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflective vest'**
+  String get supportAssetReflectiveVest;
+
+  /// No description provided for @supportAssetWinterJacket.
+  ///
+  /// In en, this message translates to:
+  /// **'Winter jacket'**
+  String get supportAssetWinterJacket;
+
+  /// No description provided for @supportAssetDeliveryAttire.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery attire'**
+  String get supportAssetDeliveryAttire;
+
+  /// No description provided for @supportAssetDeliveryPants.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery pants'**
+  String get supportAssetDeliveryPants;
+
+  /// No description provided for @supportAssetNewBike.
+  ///
+  /// In en, this message translates to:
+  /// **'New bike'**
+  String get supportAssetNewBike;
+
+  /// No description provided for @supportAssetHelmet.
+  ///
+  /// In en, this message translates to:
+  /// **'Helmet'**
+  String get supportAssetHelmet;
+
+  /// No description provided for @supportAssetDeliveryBox.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery box'**
+  String get supportAssetDeliveryBox;
+
+  /// No description provided for @supportAssetFuelChip.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuel chip'**
+  String get supportAssetFuelChip;
+
+  /// No description provided for @supportAssetPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get supportAssetPhone;
+
+  /// No description provided for @supportAssetMobileHolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile holder'**
+  String get supportAssetMobileHolder;
+
+  /// No description provided for @supportDocTypeCivilIdCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Civil ID copy'**
+  String get supportDocTypeCivilIdCopy;
+
+  /// No description provided for @supportDocTypeLicenseCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'License Copy'**
+  String get supportDocTypeLicenseCopy;
+
+  /// No description provided for @supportDocTypeWorkPermitCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Work permit copy'**
+  String get supportDocTypeWorkPermitCopy;
+
+  /// No description provided for @supportDocTypeRegistrationCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration copy'**
+  String get supportDocTypeRegistrationCopy;
+
+  /// No description provided for @supportDocTypeVehicleDocumentCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle document copy'**
+  String get supportDocTypeVehicleDocumentCopy;
+
+  /// No description provided for @supportDocTypeSalaryCertification.
+  ///
+  /// In en, this message translates to:
+  /// **'Salary certification'**
+  String get supportDocTypeSalaryCertification;
+
+  /// No description provided for @supportRequestModeRenewal.
+  ///
+  /// In en, this message translates to:
+  /// **'Renewal'**
+  String get supportRequestModeRenewal;
+
+  /// No description provided for @supportRequestModeFirstTime.
+  ///
+  /// In en, this message translates to:
+  /// **'First Time'**
+  String get supportRequestModeFirstTime;
+
+  /// No description provided for @supportAssetStatusLost.
+  ///
+  /// In en, this message translates to:
+  /// **'Lost'**
+  String get supportAssetStatusLost;
+
+  /// No description provided for @supportAssetStatusDamaged.
+  ///
+  /// In en, this message translates to:
+  /// **'Damaged'**
+  String get supportAssetStatusDamaged;
+
+  /// No description provided for @supportDeliveryMethodEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get supportDeliveryMethodEmail;
+
+  /// No description provided for @supportDeliveryMethodPickup.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup'**
+  String get supportDeliveryMethodPickup;
+
+  /// No description provided for @supportSeverityLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get supportSeverityLow;
+
+  /// No description provided for @supportSeverityMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get supportSeverityMedium;
+
+  /// No description provided for @supportSeverityHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get supportSeverityHigh;
+
+  /// No description provided for @supportFieldLeaveType.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave type'**
+  String get supportFieldLeaveType;
+
+  /// No description provided for @supportFieldFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get supportFieldFrom;
+
+  /// No description provided for @supportFieldTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get supportFieldTo;
+
+  /// No description provided for @supportFieldCommentOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment (optional)'**
+  String get supportFieldCommentOptional;
+
+  /// No description provided for @supportFieldComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment'**
+  String get supportFieldComment;
+
+  /// No description provided for @supportHintMentionHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Mention here'**
+  String get supportHintMentionHere;
+
+  /// No description provided for @supportFieldJustificationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Justification *'**
+  String get supportFieldJustificationRequired;
+
+  /// No description provided for @supportAttachmentOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachment (optional)'**
+  String get supportAttachmentOptional;
+
+  /// No description provided for @supportFilesSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} file(s) selected'**
+  String supportFilesSelected(int count);
+
+  /// No description provided for @supportFieldSymptomsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Symptoms / details *'**
+  String get supportFieldSymptomsRequired;
+
+  /// No description provided for @supportUploadMedicalCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload medical certificate *'**
+  String get supportUploadMedicalCertificate;
+
+  /// No description provided for @supportFieldAmountKwdRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount (KWD) *'**
+  String get supportFieldAmountKwdRequired;
+
+  /// No description provided for @supportLoanTenureUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Tenure options are not configured yet. Loan requests are temporarily unavailable.'**
+  String get supportLoanTenureUnavailable;
+
+  /// No description provided for @supportFieldTenureRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Tenure *'**
+  String get supportFieldTenureRequired;
+
+  /// No description provided for @supportFieldNeededBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Needed by'**
+  String get supportFieldNeededBy;
+
+  /// No description provided for @supportFieldReasonRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason *'**
+  String get supportFieldReasonRequired;
+
+  /// No description provided for @supportFieldAssetType.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset type'**
+  String get supportFieldAssetType;
+
+  /// No description provided for @supportFieldQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get supportFieldQuantity;
+
+  /// No description provided for @supportFieldPeriodMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Period (month)'**
+  String get supportFieldPeriodMonth;
+
+  /// No description provided for @supportFieldDistanceKm.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance (km)'**
+  String get supportFieldDistanceKm;
+
+  /// No description provided for @supportUploadFuelReceipts.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload fuel receipts *'**
+  String get supportUploadFuelReceipts;
+
+  /// No description provided for @supportFieldDocumentType.
+  ///
+  /// In en, this message translates to:
+  /// **'Document type'**
+  String get supportFieldDocumentType;
+
+  /// No description provided for @supportComplaintCategoriesUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Complaint categories are not configured yet. Complaints are temporarily unavailable.'**
+  String get supportComplaintCategoriesUnavailable;
+
+  /// No description provided for @supportFieldCategoryRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Category *'**
+  String get supportFieldCategoryRequired;
+
+  /// No description provided for @supportFieldSubjectRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject *'**
+  String get supportFieldSubjectRequired;
+
+  /// No description provided for @supportFieldDescriptionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Description *'**
+  String get supportFieldDescriptionRequired;
+
+  /// No description provided for @supportFieldSalaryMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Salary Month'**
+  String get supportFieldSalaryMonth;
+
+  /// No description provided for @supportFieldExpectedAmountRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expected amount *'**
+  String get supportFieldExpectedAmountRequired;
+
+  /// No description provided for @supportFieldReceivedAmountRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Received amount *'**
+  String get supportFieldReceivedAmountRequired;
+
+  /// No description provided for @supportSupportingDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Supporting document'**
+  String get supportSupportingDocument;
+
+  /// No description provided for @supportPhotoOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo (optional)'**
+  String get supportPhotoOptional;
+
+  /// No description provided for @supportAttachPayslipOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach payslip (optional)'**
+  String get supportAttachPayslipOptional;
+
+  /// No description provided for @supportDeclarationLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Declaration: I am entitled to return on time, otherwise the company to apply the list of penalties in case of late return.'**
+  String get supportDeclarationLeave;
+
+  /// No description provided for @supportDeclarationLoan.
+  ///
+  /// In en, this message translates to:
+  /// **'Declaration: I am committed to pay the full amount to the company or the company to deduct it as per the installments from my salary.'**
+  String get supportDeclarationLoan;
+
+  /// No description provided for @supportDeclarationAsset.
+  ///
+  /// In en, this message translates to:
+  /// **'Declaration: In the case of lost or damaged item replacement i am entitled for any charges from the company to receive a new one.'**
+  String get supportDeclarationAsset;
+
+  /// No description provided for @supportTemporarilyUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Temporarily unavailable'**
+  String get supportTemporarilyUnavailable;
+
+  /// No description provided for @supportSubmitRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit request'**
+  String get supportSubmitRequest;
 }
 
 class _AppLocalizationsDelegate
