@@ -728,13 +728,11 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
         _ => 'Pending',
       };
 
-  static String _fmtDateTime(DateTime d) {
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
-    return '${d.day} ${months[d.month - 1]}';
-  }
+  /// Figma RSup/10b–10d print the decision moment as "12 Jul, 09:14".
+  /// `decided_at` is a timestamptz, so parse-then-`toLocal` before formatting;
+  /// otherwise the step reads back in UTC, three hours behind Kuwait.
+  static String _fmtDateTime(DateTime d) =>
+      DateFormat('d MMM, HH:mm').format(d.toLocal());
 }
 
 class _HeaderCard extends StatelessWidget {
