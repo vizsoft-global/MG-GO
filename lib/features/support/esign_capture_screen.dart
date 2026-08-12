@@ -48,6 +48,7 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
   Future<void> _submit(RiderProfile? profile) async {
     final l10n = context.l10n;
     final devicePixelRatio = MediaQuery.devicePixelRatioOf(context);
+    final declarationLocale = Localizations.localeOf(context).languageCode;
     if (!_legalAccepted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.supportErrorAcceptDeclaration)),
@@ -92,6 +93,13 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
           'driver_code': profile?.driverCode,
           'device_model': device.model,
           'device_manufacturer': device.manufacturer,
+          // driver_submit_esignature refuses the signature without this, and
+          // records the wording in whichever language the rider actually read.
+          // It overwrites the flag and stamps its own accepted_at, so what we
+          // send here is the evidence, not the authority.
+          'declaration_accepted': true,
+          'declaration_text': l10n.esignLegalDeclaration,
+          'declaration_locale': declarationLocale,
         },
       );
       ref.invalidate(esignRequestsProvider);
