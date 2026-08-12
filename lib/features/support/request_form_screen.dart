@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
@@ -64,26 +65,75 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
   }
 
   String get _title {
+    final l10n = context.l10n;
     switch (widget.type) {
       case 'leave':
-        return 'Leave request';
+        return l10n.supportRequestTypeLeaveRequest;
       case 'sick_leave':
-        return 'Sick / Accident leave';
+        return l10n.supportFormTitleSickLeave;
       case 'loan':
-        return 'Loan / Advance';
+        return l10n.supportFormTitleLoan;
       case 'asset':
-        return 'Asset request';
+        return l10n.supportRequestTypeAsset;
       case 'fuel':
-        return 'Fuel claim';
+        return l10n.supportFormTitleFuel;
       case 'document':
-        return 'Document request';
+        return l10n.supportRequestTypeDocument;
       case 'complaint':
-        return 'Complaint';
+        return l10n.supportRequestTypeComplaint;
       case 'salary_justification':
-        return 'Salary justification';
+        return l10n.supportRequestTypeSalaryJustification;
       default:
-        return 'New request';
+        return l10n.supportFormTitleNew;
     }
+  }
+
+  /// Chip/segment values are sent to the server verbatim (`payload.leave_type`,
+  /// `asset_type`, `severity`, …), so only the visible label is translated.
+  String _optionLabel(String value) {
+    final l10n = context.l10n;
+    return switch (value) {
+      'Annual' => l10n.supportLeaveTypeAnnual,
+      'Emergency' => l10n.supportLeaveTypeEmergency,
+      'Accident' => l10n.supportLeaveTypeAccident,
+      'Unpaid Leave' => l10n.supportLeaveTypeUnpaid,
+      'Sick leave' => l10n.supportSickTypeSickLeave,
+      'Injury' => l10n.supportSickTypeInjury,
+      'Other' => l10n.supportOptionOther,
+      'SIM card' => l10n.supportAssetSimCard,
+      'Fuel card' => l10n.supportAssetFuelCard,
+      'Fuel limit change' => l10n.supportAssetFuelLimitChange,
+      'Raincoat' => l10n.supportAssetRaincoat,
+      'Delivery bag' => l10n.supportAssetDeliveryBag,
+      'Reflective vest' => l10n.supportAssetReflectiveVest,
+      'Winter jacket' => l10n.supportAssetWinterJacket,
+      'Delivery attire' => l10n.supportAssetDeliveryAttire,
+      'Delivery pants' => l10n.supportAssetDeliveryPants,
+      'New bike' => l10n.supportAssetNewBike,
+      'Helmet' => l10n.supportAssetHelmet,
+      'Delivery box' => l10n.supportAssetDeliveryBox,
+      'Fuel chip' => l10n.supportAssetFuelChip,
+      'Phone' => l10n.supportAssetPhone,
+      'Mobile holder' => l10n.supportAssetMobileHolder,
+      'Civil ID copy' => l10n.supportDocTypeCivilIdCopy,
+      'License Copy' => l10n.supportDocTypeLicenseCopy,
+      'Work permit copy' => l10n.supportDocTypeWorkPermitCopy,
+      'Registration copy' => l10n.supportDocTypeRegistrationCopy,
+      'Vehicle document copy' => l10n.supportDocTypeVehicleDocumentCopy,
+      'Salary certification' => l10n.supportDocTypeSalaryCertification,
+      'Renewal' => l10n.supportRequestModeRenewal,
+      'First Time' => l10n.supportRequestModeFirstTime,
+      'Lost' => l10n.supportAssetStatusLost,
+      'Damaged' => l10n.supportAssetStatusDamaged,
+      'English' => l10n.english,
+      'Arabic' => l10n.arabic,
+      'Email' => l10n.supportDeliveryMethodEmail,
+      'Pickup' => l10n.supportDeliveryMethodPickup,
+      'Low' => l10n.supportSeverityLow,
+      'Medium' => l10n.supportSeverityMedium,
+      'High' => l10n.supportSeverityHigh,
+      _ => value,
+    };
   }
 
   Future<void> _pickDate({
@@ -141,6 +191,7 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
   }
 
   Future<void> _submit() async {
+    final l10n = context.l10n;
     setState(() => _submitting = true);
     try {
       final payload = <String, dynamic>{
@@ -158,10 +209,10 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
       switch (widget.type) {
         case 'leave':
           if (_chip == null || _from == null || _to == null) {
-            throw Exception('Leave type and dates are required');
+            throw Exception(l10n.supportErrorLeaveTypeDatesRequired);
           }
           if (_justificationCtrl.text.trim().isEmpty) {
-            throw Exception('Justification is required');
+            throw Exception(l10n.supportErrorJustificationRequired);
           }
           payload['leave_type'] = _chip;
           payload['leave_subtype'] = _chip;
@@ -169,13 +220,13 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
           end = _to;
         case 'sick_leave':
           if (_chip == null || _from == null || _to == null) {
-            throw Exception('Leave type and dates are required');
+            throw Exception(l10n.supportErrorLeaveTypeDatesRequired);
           }
           if (_justificationCtrl.text.trim().isEmpty) {
-            throw Exception('Symptoms / details are required');
+            throw Exception(l10n.supportErrorSymptomsRequired);
           }
           if (_files.isEmpty) {
-            throw Exception('Medical documents are required');
+            throw Exception(l10n.supportErrorMedicalDocsRequired);
           }
           payload['leave_subtype'] = _chip;
           payload['symptoms_details'] = _justificationCtrl.text.trim();
@@ -184,20 +235,20 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
         case 'loan':
           amount = double.tryParse(_amountCtrl.text.trim());
           if (amount == null || amount <= 0 || _tenureMonths == null) {
-            throw Exception('Amount and tenure are required');
+            throw Exception(l10n.supportErrorAmountTenureRequired);
           }
           if (_neededBy == null || _reasonCtrl.text.trim().isEmpty) {
-            throw Exception('Needed-by date and reason are required');
+            throw Exception(l10n.supportErrorNeededByReasonRequired);
           }
           payload['tenure_months'] = _tenureMonths;
           payload['needed_by'] = _neededBy!.toIso8601String().split('T').first;
           payload['reason'] = _reasonCtrl.text.trim();
         case 'asset':
           if (_chip == null || _mode == null || _assetStatus == null) {
-            throw Exception('Asset type, mode and status are required');
+            throw Exception(l10n.supportErrorAssetFieldsRequired);
           }
           if (_justificationCtrl.text.trim().isEmpty) {
-            throw Exception('Justification is required');
+            throw Exception(l10n.supportErrorJustificationRequired);
           }
           payload['asset_type'] = _chip;
           payload['size'] = _size;
@@ -207,10 +258,10 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
         case 'fuel':
           amount = double.tryParse(_amountCtrl.text.trim());
           if (amount == null || amount <= 0 || _salaryMonth == null) {
-            throw Exception('Amount and period are required');
+            throw Exception(l10n.supportErrorAmountPeriodRequired);
           }
           if (_files.isEmpty) {
-            throw Exception('Fuel receipts are required');
+            throw Exception(l10n.supportErrorFuelReceiptsRequired);
           }
           payload['period_month'] =
               '${_salaryMonth!.year}-${_salaryMonth!.month.toString().padLeft(2, '0')}';
@@ -221,7 +272,7 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
               _language == null ||
               _deliveryMethod == null ||
               _neededBy == null) {
-            throw Exception('Document fields are required');
+            throw Exception(l10n.supportErrorDocumentFieldsRequired);
           }
           payload['document_type'] = _chip;
           payload['language'] = _language;
@@ -232,7 +283,7 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
               _severity == null ||
               _subjectCtrl.text.trim().isEmpty ||
               _descriptionCtrl.text.trim().isEmpty) {
-            throw Exception('Category, severity, subject and description required');
+            throw Exception(l10n.supportErrorComplaintFieldsRequired);
           }
           payload['category'] = _categoryKey;
           payload['subject'] = _subjectCtrl.text.trim();
@@ -244,7 +295,7 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
               _expectedCtrl.text.trim().isEmpty ||
               _receivedCtrl.text.trim().isEmpty ||
               _justificationCtrl.text.trim().isEmpty) {
-            throw Exception('Salary fields are required');
+            throw Exception(l10n.supportErrorSalaryFieldsRequired);
           }
           payload['salary_month'] =
               '${_salaryMonth!.year}-${_salaryMonth!.month.toString().padLeft(2, '0')}';
@@ -256,7 +307,7 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
 
       if (!_declaration &&
           {'leave', 'loan', 'asset'}.contains(widget.type)) {
-        throw Exception('Please accept the declaration');
+        throw Exception(l10n.supportErrorAcceptDeclaration);
       }
 
       final attachments = _files.isEmpty ? <Map<String, dynamic>>[] : await _uploadFiles();
@@ -295,7 +346,7 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
       children: options.map((o) {
         final selected = _chip == o;
         return ChoiceChip(
-          label: Text(o),
+          label: Text(_optionLabel(o)),
           selected: selected,
           onSelected: (_) => setState(() => _chip = o),
         );
@@ -305,6 +356,7 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final tenureAsync = ref.watch(loanTenureOptionsProvider);
     final categoriesAsync = ref.watch(complaintCategoriesProvider);
     final loanGated = widget.type == 'loan' &&
@@ -327,12 +379,13 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
         children: [
           if (widget.type == 'leave') ...[
-            const Text('Leave type', style: TextStyle(fontWeight: FontWeight.w600)),
+            Text(l10n.supportFieldLeaveType,
+                style: const TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             _chips(kLeaveTypes),
             const SizedBox(height: 12),
             _DateRow(
-              label: 'From',
+              label: l10n.supportFieldFrom,
               value: _from,
               onTap: () => _pickDate(
                 onPicked: (d) => setState(() => _from = d),
@@ -340,7 +393,7 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
               ),
             ),
             _DateRow(
-              label: 'To',
+              label: l10n.supportFieldTo,
               value: _to,
               onTap: () => _pickDate(
                 onPicked: (d) => setState(() => _to = d),
@@ -349,15 +402,16 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
             ),
             TextField(
               controller: _commentCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Comment (optional)',
-                hintText: 'Mention here',
+              decoration: InputDecoration(
+                labelText: l10n.supportFieldCommentOptional,
+                hintText: l10n.supportHintMentionHere,
               ),
             ),
             TextField(
               controller: _justificationCtrl,
               maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Justification *'),
+              decoration: InputDecoration(
+                  labelText: l10n.supportFieldJustificationRequired),
             ),
             const SizedBox(height: 8),
             OutlinedButton.icon(
@@ -365,38 +419,39 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
               icon: const Icon(Icons.upload_file),
               label: Text(
                 _files.isEmpty
-                    ? 'Attachment (optional)'
-                    : '${_files.length} file(s) selected',
+                    ? l10n.supportAttachmentOptional
+                    : l10n.supportFilesSelected(_files.length),
               ),
             ),
           ],
           if (widget.type == 'sick_leave') ...[
-            const Text('Leave type', style: TextStyle(fontWeight: FontWeight.w600)),
+            Text(l10n.supportFieldLeaveType,
+                style: const TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             _chips(kSickLeaveSubtypes),
             const SizedBox(height: 12),
             _DateRow(
-              label: 'From',
+              label: l10n.supportFieldFrom,
               value: _from,
               onTap: () => _pickDate(onPicked: (d) => setState(() => _from = d)),
             ),
             _DateRow(
-              label: 'To',
+              label: l10n.supportFieldTo,
               value: _to,
               onTap: () => _pickDate(onPicked: (d) => setState(() => _to = d)),
             ),
             TextField(
               controller: _commentCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Comment',
-                hintText: 'Mention here',
+              decoration: InputDecoration(
+                labelText: l10n.supportFieldComment,
+                hintText: l10n.supportHintMentionHere,
               ),
             ),
             TextField(
               controller: _justificationCtrl,
               maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Symptoms / details *',
+              decoration: InputDecoration(
+                labelText: l10n.supportFieldSymptomsRequired,
               ),
             ),
             const SizedBox(height: 8),
@@ -405,8 +460,8 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
               icon: const Icon(Icons.upload_file),
               label: Text(
                 _files.isEmpty
-                    ? 'Upload medical certificate *'
-                    : '${_files.length} file(s) selected',
+                    ? l10n.supportUploadMedicalCertificate
+                    : l10n.supportFilesSelected(_files.length),
               ),
             ),
           ],
@@ -414,7 +469,8 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
             TextField(
               controller: _amountCtrl,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Amount (KWD) *'),
+              decoration:
+                  InputDecoration(labelText: l10n.supportFieldAmountKwdRequired),
             ),
             const SizedBox(height: 8),
             tenureAsync.when(
@@ -422,14 +478,15 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
               error: (e, _) => Text('$e'),
               data: (options) {
                 if (options.isEmpty) {
-                  return const Text(
-                    'Tenure options are not configured yet. Loan requests are temporarily unavailable.',
-                    style: TextStyle(color: AppColors.underReviewAmber),
+                  return Text(
+                    l10n.supportLoanTenureUnavailable,
+                    style: const TextStyle(color: AppColors.underReviewAmber),
                   );
                 }
                 return DropdownButtonFormField<int>(
                   initialValue: _tenureMonths,
-                  decoration: const InputDecoration(labelText: 'Tenure *'),
+                  decoration: InputDecoration(
+                      labelText: l10n.supportFieldTenureRequired),
                   items: options
                       .map(
                         (o) => DropdownMenuItem(
@@ -443,7 +500,7 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
               },
             ),
             _DateRow(
-              label: 'Needed by',
+              label: l10n.supportFieldNeededBy,
               value: _neededBy,
               onTap: () =>
                   _pickDate(onPicked: (d) => setState(() => _neededBy = d)),
@@ -451,11 +508,13 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
             TextField(
               controller: _reasonCtrl,
               maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Reason *'),
+              decoration:
+                  InputDecoration(labelText: l10n.supportFieldReasonRequired),
             ),
           ],
           if (widget.type == 'asset') ...[
-            const Text('Asset type', style: TextStyle(fontWeight: FontWeight.w600)),
+            Text(l10n.supportFieldAssetType,
+                style: const TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             _chips(kAssetTypes),
             const SizedBox(height: 8),
@@ -472,13 +531,13 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
             TextField(
               controller: _qtyCtrl,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Quantity'),
+              decoration: InputDecoration(labelText: l10n.supportFieldQuantity),
             ),
             Wrap(
               spacing: 8,
               children: ['Renewal', 'First Time'].map((m) {
                 return ChoiceChip(
-                  label: Text(m),
+                  label: Text(_optionLabel(m)),
                   selected: _mode == m,
                   onSelected: (_) => setState(() => _mode = m),
                 );
@@ -488,7 +547,7 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
               spacing: 8,
               children: ['Lost', 'Damaged'].map((s) {
                 return ChoiceChip(
-                  label: Text(s),
+                  label: Text(_optionLabel(s)),
                   selected: _assetStatus == s,
                   onSelected: (_) => setState(() => _assetStatus = s),
                 );
@@ -497,17 +556,19 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
             TextField(
               controller: _justificationCtrl,
               maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Justification *'),
+              decoration: InputDecoration(
+                  labelText: l10n.supportFieldJustificationRequired),
             ),
           ],
           if (widget.type == 'fuel') ...[
             TextField(
               controller: _amountCtrl,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Amount (KWD) *'),
+              decoration:
+                  InputDecoration(labelText: l10n.supportFieldAmountKwdRequired),
             ),
             _DateRow(
-              label: 'Period (month)',
+              label: l10n.supportFieldPeriodMonth,
               value: _salaryMonth,
               onTap: () =>
                   _pickDate(onPicked: (d) => setState(() => _salaryMonth = d)),
@@ -515,27 +576,29 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
             TextField(
               controller: _distanceCtrl,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Distance (km)'),
+              decoration:
+                  InputDecoration(labelText: l10n.supportFieldDistanceKm),
             ),
             OutlinedButton.icon(
               onPressed: _pickFile,
               icon: const Icon(Icons.upload_file),
               label: Text(
                 _files.isEmpty
-                    ? 'Upload fuel receipts *'
-                    : '${_files.length} file(s) selected',
+                    ? l10n.supportUploadFuelReceipts
+                    : l10n.supportFilesSelected(_files.length),
               ),
             ),
           ],
           if (widget.type == 'document') ...[
-            const Text('Document type', style: TextStyle(fontWeight: FontWeight.w600)),
+            Text(l10n.supportFieldDocumentType,
+                style: const TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             _chips(kDocumentTypes),
             Wrap(
               spacing: 8,
               children: ['English', 'Arabic'].map((l) {
                 return ChoiceChip(
-                  label: Text(l),
+                  label: Text(_optionLabel(l)),
                   selected: _language == l,
                   onSelected: (_) => setState(() => _language = l),
                 );
@@ -545,23 +608,23 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
               spacing: 8,
               children: ['Email', 'Pickup'].map((m) {
                 return ChoiceChip(
-                  label: Text(m),
+                  label: Text(_optionLabel(m)),
                   selected: _deliveryMethod == m,
                   onSelected: (_) => setState(() => _deliveryMethod = m),
                 );
               }).toList(),
             ),
             _DateRow(
-              label: 'Needed by',
+              label: l10n.supportFieldNeededBy,
               value: _neededBy,
               onTap: () =>
                   _pickDate(onPicked: (d) => setState(() => _neededBy = d)),
             ),
             TextField(
               controller: _commentCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Comment (optional)',
-                hintText: 'Mention here',
+              decoration: InputDecoration(
+                labelText: l10n.supportFieldCommentOptional,
+                hintText: l10n.supportHintMentionHere,
               ),
             ),
           ],
@@ -571,14 +634,15 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
               error: (e, _) => Text('$e'),
               data: (cats) {
                 if (cats.isEmpty) {
-                  return const Text(
-                    'Complaint categories are not configured yet. Complaints are temporarily unavailable.',
-                    style: TextStyle(color: AppColors.underReviewAmber),
+                  return Text(
+                    l10n.supportComplaintCategoriesUnavailable,
+                    style: const TextStyle(color: AppColors.underReviewAmber),
                   );
                 }
                 return DropdownButtonFormField<String>(
                   initialValue: _categoryKey,
-                  decoration: const InputDecoration(labelText: 'Category *'),
+                  decoration: InputDecoration(
+                      labelText: l10n.supportFieldCategoryRequired),
                   items: cats
                       .map(
                         (c) => DropdownMenuItem(
@@ -595,7 +659,7 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
               spacing: 8,
               children: ['Low', 'Medium', 'High'].map((s) {
                 return ChoiceChip(
-                  label: Text(s),
+                  label: Text(_optionLabel(s)),
                   selected: _severity == s,
                   onSelected: (_) => setState(() => _severity = s),
                 );
@@ -603,17 +667,19 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
             ),
             TextField(
               controller: _subjectCtrl,
-              decoration: const InputDecoration(labelText: 'Subject *'),
+              decoration:
+                  InputDecoration(labelText: l10n.supportFieldSubjectRequired),
             ),
             TextField(
               controller: _descriptionCtrl,
               maxLines: 4,
-              decoration: const InputDecoration(labelText: 'Description *'),
+              decoration: InputDecoration(
+                  labelText: l10n.supportFieldDescriptionRequired),
             ),
           ],
           if (widget.type == 'salary_justification') ...[
             _DateRow(
-              label: 'Salary Month',
+              label: l10n.supportFieldSalaryMonth,
               value: _salaryMonth,
               onTap: () =>
                   _pickDate(onPicked: (d) => setState(() => _salaryMonth = d)),
@@ -621,24 +687,27 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
             TextField(
               controller: _expectedCtrl,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Expected amount *'),
+              decoration: InputDecoration(
+                  labelText: l10n.supportFieldExpectedAmountRequired),
             ),
             TextField(
               controller: _receivedCtrl,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Received amount *'),
+              decoration: InputDecoration(
+                  labelText: l10n.supportFieldReceivedAmountRequired),
             ),
             TextField(
               controller: _commentCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Comment',
-                hintText: 'Mention here',
+              decoration: InputDecoration(
+                labelText: l10n.supportFieldComment,
+                hintText: l10n.supportHintMentionHere,
               ),
             ),
             TextField(
               controller: _justificationCtrl,
               maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Justification *'),
+              decoration: InputDecoration(
+                  labelText: l10n.supportFieldJustificationRequired),
             ),
           ],
           if (widget.type == 'loan') ...[
@@ -648,8 +717,8 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
               icon: const Icon(Icons.upload_file),
               label: Text(
                 _files.isEmpty
-                    ? 'Supporting document'
-                    : '${_files.length} file(s) selected',
+                    ? l10n.supportSupportingDocument
+                    : l10n.supportFilesSelected(_files.length),
               ),
             ),
           ],
@@ -660,8 +729,8 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
               icon: const Icon(Icons.photo_camera_outlined),
               label: Text(
                 _files.isEmpty
-                    ? 'Photo (optional)'
-                    : '${_files.length} file(s) selected',
+                    ? l10n.supportPhotoOptional
+                    : l10n.supportFilesSelected(_files.length),
               ),
             ),
           ],
@@ -672,8 +741,8 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
               icon: const Icon(Icons.upload_file),
               label: Text(
                 _files.isEmpty
-                    ? 'Attachment (optional)'
-                    : '${_files.length} file(s) selected',
+                    ? l10n.supportAttachmentOptional
+                    : l10n.supportFilesSelected(_files.length),
               ),
             ),
           ],
@@ -684,8 +753,8 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
               icon: const Icon(Icons.upload_file),
               label: Text(
                 _files.isEmpty
-                    ? 'Attach payslip (optional)'
-                    : '${_files.length} file(s) selected',
+                    ? l10n.supportAttachPayslipOptional
+                    : l10n.supportFilesSelected(_files.length),
               ),
             ),
           ],
@@ -697,10 +766,10 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
               onChanged: (v) => setState(() => _declaration = v ?? false),
               title: Text(
                 widget.type == 'leave'
-                    ? 'Declaration: I am entitled to return on time, otherwise the company to apply the list of penalties in case of late return.'
+                    ? l10n.supportDeclarationLeave
                     : widget.type == 'loan'
-                        ? 'Declaration: I am committed to pay the full amount to the company or the company to deduct it as per the installments from my salary.'
-                        : 'Declaration: In the case of lost or damaged item replacement i am entitled for any charges from the company to receive a new one.',
+                        ? l10n.supportDeclarationLoan
+                        : l10n.supportDeclarationAsset,
                 style: const TextStyle(fontSize: 12),
               ),
               controlAffinity: ListTileControlAffinity.leading,
@@ -722,8 +791,8 @@ class _RequestFormScreenState extends ConsumerState<RequestFormScreen> {
                   )
                 : Text(
                     catalogBlocked
-                        ? 'Temporarily unavailable'
-                        : 'Submit request',
+                        ? l10n.supportTemporarilyUnavailable
+                        : l10n.supportSubmitRequest,
                   ),
           ),
         ),
@@ -750,7 +819,7 @@ class _DateRow extends StatelessWidget {
       title: Text(label),
       subtitle: Text(
         value == null
-            ? 'Select date'
+            ? context.l10n.selectDate
             : '${value!.year}-${value!.month.toString().padLeft(2, '0')}-${value!.day.toString().padLeft(2, '0')}',
       ),
       trailing: const Icon(Icons.calendar_today_outlined),
