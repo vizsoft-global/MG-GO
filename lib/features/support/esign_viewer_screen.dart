@@ -21,6 +21,8 @@ class EsignViewerScreen extends ConsumerStatefulWidget {
 class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
   String? _documentUrl;
   bool _loadingDoc = false;
+  bool _docRequested = false;
+  bool _docLoadFailed = false;
   bool _declining = false;
 
   Future<void> _decline() async {
@@ -94,16 +96,33 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
     }
   }
 
-  Future<void> _loadDocument(String? storageKey) async {
+  /// A failed load is terminal: [_docRequested] stays true so build() never
+  /// re-arms the fetch. Only the Retry button ([force]) may try again.
+  Future<void> _loadDocument(String? storageKey, {bool force = false}) async {
     if (storageKey == null || storageKey.trim().isEmpty) return;
-    setState(() => _loadingDoc = true);
+    if (_docRequested && !force) return;
+    _docRequested = true;
+    setState(() {
+      _loadingDoc = true;
+      _docLoadFailed = false;
+    });
     try {
       final url = await ref
           .read(supportServiceProvider)
           .signedEsignDocumentUrl(storageKey);
-      if (mounted) setState(() => _documentUrl = url);
+      if (mounted) {
+        setState(() {
+          _documentUrl = url;
+          _docLoadFailed = url == null;
+        });
+      }
     } catch (_) {
-      if (mounted) setState(() => _documentUrl = null);
+      if (mounted) {
+        setState(() {
+          _documentUrl = null;
+          _docLoadFailed = true;
+        });
+      }
     } finally {
       if (mounted) setState(() => _loadingDoc = false);
     }
@@ -139,7 +158,7 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
         body: Center(child: Text('$e')),
       ),
       data: (detail) {
-        if (_documentUrl == null && !_loadingDoc) {
+        if (!_docRequested && !_loadingDoc) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _loadDocument(detail.documentStorageKey);
           });
@@ -196,8 +215,22 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                           const Center(child: CircularProgressIndicator())
                         else if (detail.documentStorageKey == null)
                           Text(l10n.esignNoDocumentAttached)
-                        else if (_documentUrl == null)
-                          Text(l10n.esignPreviewLoadFailed)
+                        else if (_docLoadFailed || _documentUrl == null)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(l10n.esignPreviewLoadFailed),
+                              const SizedBox(height: 8),
+                              OutlinedButton.icon(
+                                onPressed: () => _loadDocument(
+                                  detail.documentStorageKey,
+                                  force: true,
+                                ),
+                                icon: const Icon(Icons.refresh),
+                                label: Text(l10n.tryAgain),
+                              ),
+                            ],
+                          )
                         else ...[
                           if (_isImageKey(detail.documentStorageKey!))
                             ClipRRect(
