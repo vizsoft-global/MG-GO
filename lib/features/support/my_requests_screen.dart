@@ -6,6 +6,7 @@ import '../../core/l10n/l10n.dart';
 import '../../core/l10n/locale_formatters.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
+import 'request_type_definition.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
 
@@ -179,14 +180,16 @@ class _AttentionBanner extends StatelessWidget {
   }
 }
 
-class _RequestCard extends StatelessWidget {
+class _RequestCard extends ConsumerWidget {
   const _RequestCard({required this.row});
 
   final SupportRequestSummary row;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final defs = ref.watch(requestTypesProvider).asData?.value;
+    final locale = Localizations.localeOf(context);
     final view = RequestStatusView.of(
       l10n: l10n,
       status: row.status,
@@ -203,10 +206,11 @@ class _RequestCard extends StatelessWidget {
         onTap: () => context.push('/profile/support/requests/${row.id}'),
         leading: CircleAvatar(
           backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
-          child: Icon(_typeIcon(row.requestType), color: AppColors.primaryBlue, size: 18),
+          child: Icon(_typeIcon(row.requestType, defs),
+              color: AppColors.primaryBlue, size: 18),
         ),
         title: Text(
-          _typeLabel(row.requestType, l10n),
+          _typeLabel(row.requestType, l10n, defs, locale),
           style: const TextStyle(fontWeight: FontWeight.w700),
         ),
         subtitle: Text(
@@ -217,7 +221,8 @@ class _RequestCard extends StatelessWidget {
     );
   }
 
-  static IconData _typeIcon(String type) {
+  static IconData _typeIcon(
+      String type, List<RequestTypeDefinition>? defs) {
     return switch (type) {
       'leave' => Icons.event_available_outlined,
       'sick_leave' => Icons.medical_services_outlined,
@@ -227,11 +232,16 @@ class _RequestCard extends StatelessWidget {
       'complaint' => Icons.report_problem_outlined,
       'salary_justification' => Icons.payments_outlined,
       'loan' => Icons.account_balance_wallet_outlined,
-      _ => Icons.description_outlined,
+      _ => serverRequestTypeIcon(defs, type),
     };
   }
 
-  static String _typeLabel(String type, AppLocalizations l10n) {
+  static String _typeLabel(
+    String type,
+    AppLocalizations l10n,
+    List<RequestTypeDefinition>? defs,
+    Locale locale,
+  ) {
     return switch (type) {
       'leave' => l10n.supportRequestTypeLeave,
       'sick_leave' => l10n.supportRequestTypeSickLeave,
@@ -241,7 +251,7 @@ class _RequestCard extends StatelessWidget {
       'complaint' => l10n.supportRequestTypeComplaint,
       'salary_justification' => l10n.supportRequestTypeSalaryJustification,
       'loan' => l10n.supportRequestTypeLoanAdvance,
-      _ => type,
+      _ => serverRequestTypeLabel(defs, locale, type),
     };
   }
 

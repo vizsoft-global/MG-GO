@@ -2055,6 +2055,26 @@ class AppLocalizationsAr extends AppLocalizations {
   String get supportFieldJustificationRequired => 'المبرر *';
 
   @override
+  String supportFieldRequiredNamed(String field) {
+    return '$field مطلوب';
+  }
+
+  @override
+  String supportErrorAttachmentsMin(int count) {
+    return 'أرفق $count ملف على الأقل';
+  }
+
+  @override
+  String get supportAttachmentRequired => 'مرفق *';
+
+  @override
+  String get supportRequestTypeUnknown => 'نوع الطلب هذا غير متاح.';
+
+  @override
+  String get supportRequestTypeNoFields =>
+      'لا يوجد نموذج لهذا النوع بعد. يرجى المحاولة لاحقًا.';
+
+  @override
   String get supportAttachmentOptional => 'مرفق (اختياري)';
 
   @override

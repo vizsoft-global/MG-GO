@@ -3770,6 +3770,36 @@ abstract class AppLocalizations {
   /// **'Justification *'**
   String get supportFieldJustificationRequired;
 
+  /// No description provided for @supportFieldRequiredNamed.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} is required'**
+  String supportFieldRequiredNamed(String field);
+
+  /// No description provided for @supportErrorAttachmentsMin.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach at least {count} file(s)'**
+  String supportErrorAttachmentsMin(int count);
+
+  /// No description provided for @supportAttachmentRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachment *'**
+  String get supportAttachmentRequired;
+
+  /// No description provided for @supportRequestTypeUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'This request type is not available.'**
+  String get supportRequestTypeUnknown;
+
+  /// No description provided for @supportRequestTypeNoFields.
+  ///
+  /// In en, this message translates to:
+  /// **'This request type has no form yet. Please try again later.'**
+  String get supportRequestTypeNoFields;
+
   /// No description provided for @supportAttachmentOptional.
   ///
   /// In en, this message translates to:

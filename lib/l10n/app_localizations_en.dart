@@ -2066,6 +2066,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get supportFieldJustificationRequired => 'Justification *';
 
   @override
+  String supportFieldRequiredNamed(String field) {
+    return '$field is required';
+  }
+
+  @override
+  String supportErrorAttachmentsMin(int count) {
+    return 'Attach at least $count file(s)';
+  }
+
+  @override
+  String get supportAttachmentRequired => 'Attachment *';
+
+  @override
+  String get supportRequestTypeUnknown => 'This request type is not available.';
+
+  @override
+  String get supportRequestTypeNoFields =>
+      'This request type has no form yet. Please try again later.';
+
+  @override
   String get supportAttachmentOptional => 'Attachment (optional)';
 
   @override

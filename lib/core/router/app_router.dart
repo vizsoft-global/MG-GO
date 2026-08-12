@@ -33,6 +33,7 @@ import '../../features/support/appointment_confirmed_screen.dart';
 import '../../features/support/appointment_detail_screen.dart';
 import '../../features/support/appointments_inbox_screen.dart';
 import '../../features/support/esign_capture_screen.dart';
+import '../../features/support/dynamic_request_form_screen.dart';
 import '../../features/support/esign_confirmed_screen.dart';
 import '../../features/support/esign_documents_screen.dart';
 import '../../features/support/esign_viewer_screen.dart';
@@ -41,6 +42,7 @@ import '../../features/support/my_visits_screen.dart';
 import '../../features/support/request_acknowledged_screen.dart';
 import '../../features/support/request_detail_screen.dart';
 import '../../features/support/request_form_screen.dart';
+import '../../features/support/request_type_definition.dart';
 import '../../features/support/request_submitted_screen.dart';
 import '../../features/support/support_hub_screen.dart';
 import '../../features/support/visit_booking_flow_screen.dart';
@@ -251,7 +253,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) {
           final type = state.uri.queryParameters['type'] ?? 'leave';
-          return RequestFormScreen(type: type);
+          // Types this build has a handwritten form for keep it; anything the
+          // admin added later is rendered from its field definitions.
+          return kBuiltInRequestTypes.contains(type)
+              ? RequestFormScreen(type: type)
+              : DynamicRequestFormScreen(type: type);
         },
       ),
       GoRoute(

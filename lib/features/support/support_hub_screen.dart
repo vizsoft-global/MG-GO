@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 import 'support_providers.dart';
 
 /// RSup/01 — Help & Support hub. YOUR ACTIVITY leads with **My requests** +
@@ -40,56 +41,7 @@ class SupportHubScreen extends ConsumerWidget {
         children: [
           _SectionLabel(theme, l10n.supportSectionRaiseRequest),
           const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _Tile(
-                icon: Icons.event_available_outlined,
-                label: l10n.supportRequestTypeLeave,
-                onTap: () => context.push('/profile/support/requests/new?type=leave'),
-              ),
-              _Tile(
-                icon: Icons.medical_services_outlined,
-                label: l10n.supportTileSickAccidentLeave,
-                onTap: () =>
-                    context.push('/profile/support/requests/new?type=sick_leave'),
-              ),
-              _Tile(
-                icon: Icons.inventory_2_outlined,
-                label: l10n.supportRequestTypeAsset,
-                onTap: () => context.push('/profile/support/requests/new?type=asset'),
-              ),
-              _Tile(
-                icon: Icons.local_gas_station_outlined,
-                label: l10n.supportRequestTypeFuel,
-                onTap: () => context.push('/profile/support/requests/new?type=fuel'),
-              ),
-              _Tile(
-                icon: Icons.description_outlined,
-                label: l10n.supportRequestTypeDocument,
-                onTap: () =>
-                    context.push('/profile/support/requests/new?type=document'),
-              ),
-              _Tile(
-                icon: Icons.report_problem_outlined,
-                label: l10n.supportRequestTypeComplaint,
-                onTap: () =>
-                    context.push('/profile/support/requests/new?type=complaint'),
-              ),
-              _Tile(
-                icon: Icons.payments_outlined,
-                label: l10n.supportTileSalaryJustification,
-                onTap: () => context
-                    .push('/profile/support/requests/new?type=salary_justification'),
-              ),
-              _Tile(
-                icon: Icons.account_balance_wallet_outlined,
-                label: l10n.supportTileLoanRequest,
-                onTap: () => context.push('/profile/support/requests/new?type=loan'),
-              ),
-            ],
-          ),
+          const _RaiseRequestTiles(),
           const SizedBox(height: 20),
           _SectionLabel(theme, l10n.supportSectionVisitUs),
           const SizedBox(height: 8),
@@ -154,6 +106,84 @@ class SupportHubScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// The eight built-ins the app can render offline. Also the label and icon
+/// source for those keys when the server list does arrive, so the reviewed
+/// Arabic and the Figma wording ("Sick / Accident leave") survive.
+const _builtInTiles = <({String key, IconData icon})>[
+  (key: 'leave', icon: Icons.event_available_outlined),
+  (key: 'sick_leave', icon: Icons.medical_services_outlined),
+  (key: 'asset', icon: Icons.inventory_2_outlined),
+  (key: 'fuel', icon: Icons.local_gas_station_outlined),
+  (key: 'document', icon: Icons.description_outlined),
+  (key: 'complaint', icon: Icons.report_problem_outlined),
+  (key: 'salary_justification', icon: Icons.payments_outlined),
+  (key: 'loan', icon: Icons.account_balance_wallet_outlined),
+];
+
+String? _builtInLabel(AppLocalizations l10n, String key) {
+  return switch (key) {
+    'leave' => l10n.supportRequestTypeLeave,
+    'sick_leave' => l10n.supportTileSickAccidentLeave,
+    'asset' => l10n.supportRequestTypeAsset,
+    'fuel' => l10n.supportRequestTypeFuel,
+    'document' => l10n.supportRequestTypeDocument,
+    'complaint' => l10n.supportRequestTypeComplaint,
+    'salary_justification' => l10n.supportTileSalaryJustification,
+    'loan' => l10n.supportTileLoanRequest,
+    _ => null,
+  };
+}
+
+/// Tiles come from `request_type_definitions` so a type an admin publishes is
+/// reachable without an app release. A failed or pending fetch falls back to
+/// the built-ins rather than leaving the hub empty offline.
+class _RaiseRequestTiles extends ConsumerWidget {
+  const _RaiseRequestTiles();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final locale = Localizations.localeOf(context);
+    final rows = ref.watch(requestTypesProvider).asData?.value;
+
+    final tiles = rows == null || rows.isEmpty
+        ? _builtInTiles
+            .map((t) => (
+                  key: t.key,
+                  icon: t.icon,
+                  label: _builtInLabel(l10n, t.key) ?? t.key,
+                ))
+            .toList()
+        : rows
+            .map((r) => (
+                  key: r.key,
+                  icon: _builtInTiles
+                          .where((t) => t.key == r.key)
+                          .map((t) => t.icon)
+                          .firstOrNull ??
+                      r.icon,
+                  label: _builtInLabel(l10n, r.key) ?? r.label(locale),
+                ))
+            .toList();
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: tiles
+          .map(
+            (t) => _Tile(
+              icon: t.icon,
+              label: t.label,
+              onTap: () => context.push(
+                '/profile/support/requests/new?type=${Uri.encodeComponent(t.key)}',
+              ),
+            ),
+          )
+          .toList(),
     );
   }
 }

@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
+import 'request_type_definition.dart';
 import 'support_providers.dart';
 
 enum _ActionKind { clarify, ack, reschedule, esign, appointment }
@@ -40,6 +41,8 @@ class ActionRequiredScreen extends ConsumerWidget {
     final requests = ref.watch(myRequestsProvider);
     final esign = ref.watch(esignRequestsProvider);
     final appointments = ref.watch(driverAppointmentsProvider);
+    final typeDefs = ref.watch(requestTypesProvider).asData?.value;
+    final locale = Localizations.localeOf(context);
 
     final loading = requests.isLoading || esign.isLoading || appointments.isLoading;
     final anyError = requests.hasError ? requests.error : (esign.hasError ? esign.error : appointments.error);
@@ -51,7 +54,7 @@ class ActionRequiredScreen extends ConsumerWidget {
           kind: _ActionKind.clarify,
           code: row.requestCode,
           title: l10n.supportReasonClarificationNeeded,
-          subtitle: _requestTypeLabel(row.requestType, l10n),
+          subtitle: _requestTypeLabel(row.requestType, l10n, typeDefs, locale),
           route: '/profile/support/requests/${row.id}',
           at: row.createdAt,
         ));
@@ -60,7 +63,7 @@ class ActionRequiredScreen extends ConsumerWidget {
           kind: _ActionKind.reschedule,
           code: row.requestCode,
           title: l10n.supportActionRescheduleProposed,
-          subtitle: _requestTypeLabel(row.requestType, l10n),
+          subtitle: _requestTypeLabel(row.requestType, l10n, typeDefs, locale),
           route: '/profile/support/requests/${row.id}',
           at: row.createdAt,
         ));
@@ -69,7 +72,7 @@ class ActionRequiredScreen extends ConsumerWidget {
           kind: _ActionKind.ack,
           code: row.requestCode,
           title: l10n.supportActionAcknowledgeUpdate,
-          subtitle: _requestTypeLabel(row.requestType, l10n),
+          subtitle: _requestTypeLabel(row.requestType, l10n, typeDefs, locale),
           route: '/profile/support/requests/${row.id}',
           at: row.createdAt,
         ));
@@ -174,7 +177,12 @@ class ActionRequiredScreen extends ConsumerWidget {
     };
   }
 
-  static String _requestTypeLabel(String type, AppLocalizations l10n) {
+  static String _requestTypeLabel(
+    String type,
+    AppLocalizations l10n,
+    List<RequestTypeDefinition>? defs,
+    Locale locale,
+  ) {
     return switch (type) {
       'leave' => l10n.supportRequestTypeLeave,
       'sick_leave' => l10n.supportRequestTypeSickLeave,
@@ -184,7 +192,7 @@ class ActionRequiredScreen extends ConsumerWidget {
       'complaint' => l10n.supportRequestTypeComplaint,
       'salary_justification' => l10n.supportRequestTypeSalaryJustification,
       'loan' => l10n.supportRequestTypeLoanAdvance,
-      _ => type,
+      _ => serverRequestTypeLabel(defs, locale, type),
     };
   }
 }

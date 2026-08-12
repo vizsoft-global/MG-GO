@@ -1090,6 +1090,25 @@
   "supportFieldComment": "Comment",
   "supportHintMentionHere": "Mention here",
   "supportFieldJustificationRequired": "Justification *",
+  "supportFieldRequiredNamed": "{field} is required",
+  "@supportFieldRequiredNamed": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "supportErrorAttachmentsMin": "Attach at least {count} file(s)",
+  "@supportErrorAttachmentsMin": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "supportAttachmentRequired": "Attachment *",
+  "supportRequestTypeUnknown": "This request type is not available.",
+  "supportRequestTypeNoFields": "This request type has no form yet. Please try again later.",
   "supportAttachmentOptional": "Attachment (optional)",
   "supportFilesSelected": "{count} file(s) selected",
   "@supportFilesSelected": {

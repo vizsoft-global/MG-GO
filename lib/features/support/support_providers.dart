@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'request_type_definition.dart';
 import 'support_models.dart';
 import 'support_service.dart';
 
@@ -35,6 +36,16 @@ final visitDepartmentsProvider =
   final branch = await ref.watch(centralTowerBranchProvider.future);
   final branchId = (branch?.id.isEmpty ?? true) ? null : branch!.id;
   return ref.read(supportServiceProvider).listVisitDepartments(branchId: branchId);
+});
+
+final requestTypesProvider =
+    FutureProvider.autoDispose<List<RequestTypeDefinition>>((ref) {
+  return ref.read(supportServiceProvider).listRequestTypes();
+});
+
+final requestFieldsProvider = FutureProvider.autoDispose
+    .family<List<RequestFieldDefinition>, String>((ref, typeKey) {
+  return ref.read(supportServiceProvider).listRequestFields(typeKey);
 });
 
 final loanTenureOptionsProvider =

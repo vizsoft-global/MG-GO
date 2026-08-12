@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'request_type_definition.dart';
 import 'support_models.dart';
 
 class SupportService {
@@ -148,6 +149,39 @@ class SupportService {
     if (map['ok'] == false) {
       throw Exception(map['error']?.toString() ?? 'reschedule_reply_failed');
     }
+  }
+
+  /// Request types the admin has published. Drives the hub tiles, so a type
+  /// added in the panel appears without an app release.
+  Future<List<RequestTypeDefinition>> listRequestTypes() async {
+    final rows = await _client
+        .from('request_type_definitions')
+        .select(
+          'key, label_en, label_ar, icon_key, is_system, sort_order, '
+          'date_range_required, min_attachments, attachments_error_code',
+        )
+        .eq('is_active', true)
+        .order('sort_order');
+    return (rows as List)
+        .map((e) =>
+            RequestTypeDefinition.fromJson(Map<String, dynamic>.from(e as Map)))
+        .toList();
+  }
+
+  Future<List<RequestFieldDefinition>> listRequestFields(String typeKey) async {
+    final rows = await _client
+        .from('request_field_definitions')
+        .select(
+          'field_key, label_en, label_ar, kind, target, is_required, '
+          'sort_order, options_source, options, min_value, max_value, '
+          'help_en, help_ar',
+        )
+        .eq('type_key', typeKey)
+        .order('sort_order');
+    return (rows as List)
+        .map((e) =>
+            RequestFieldDefinition.fromJson(Map<String, dynamic>.from(e as Map)))
+        .toList();
   }
 
   Future<List<LoanTenureOption>> listTenureOptions() async {
