@@ -4285,6 +4285,330 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Capture'**
   String get supportCapture;
+
+  /// No description provided for @supportSubmittedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted'**
+  String get supportSubmittedTitle;
+
+  /// No description provided for @supportRequestSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Request submitted'**
+  String get supportRequestSubmitted;
+
+  /// No description provided for @supportRequestSubmittedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We have received your request and will review it shortly. You can track its status anytime.'**
+  String get supportRequestSubmittedBody;
+
+  /// No description provided for @supportFieldRequestId.
+  ///
+  /// In en, this message translates to:
+  /// **'Request ID'**
+  String get supportFieldRequestId;
+
+  /// No description provided for @supportFieldType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get supportFieldType;
+
+  /// No description provided for @supportTrackRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Track request'**
+  String get supportTrackRequest;
+
+  /// No description provided for @supportBackToSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to support'**
+  String get supportBackToSupport;
+
+  /// No description provided for @supportAcknowledgedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Acknowledged'**
+  String get supportAcknowledgedTitle;
+
+  /// No description provided for @supportResponseAcknowledged.
+  ///
+  /// In en, this message translates to:
+  /// **'Response acknowledged'**
+  String get supportResponseAcknowledged;
+
+  /// No description provided for @supportResponseAcknowledgedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks. We\'ve let the admin know you\'ve seen and accepted their response.'**
+  String get supportResponseAcknowledgedBody;
+
+  /// No description provided for @supportCodeWithType.
+  ///
+  /// In en, this message translates to:
+  /// **'{code} · {type}'**
+  String supportCodeWithType(String code, String type);
+
+  /// No description provided for @supportBackToMyRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to my requests'**
+  String get supportBackToMyRequests;
+
+  /// No description provided for @weekdayInitialSun.
+  ///
+  /// In en, this message translates to:
+  /// **'S'**
+  String get weekdayInitialSun;
+
+  /// No description provided for @weekdayInitialMon.
+  ///
+  /// In en, this message translates to:
+  /// **'M'**
+  String get weekdayInitialMon;
+
+  /// No description provided for @weekdayInitialTue.
+  ///
+  /// In en, this message translates to:
+  /// **'T'**
+  String get weekdayInitialTue;
+
+  /// No description provided for @weekdayInitialWed.
+  ///
+  /// In en, this message translates to:
+  /// **'W'**
+  String get weekdayInitialWed;
+
+  /// No description provided for @weekdayInitialThu.
+  ///
+  /// In en, this message translates to:
+  /// **'T'**
+  String get weekdayInitialThu;
+
+  /// No description provided for @weekdayInitialFri.
+  ///
+  /// In en, this message translates to:
+  /// **'F'**
+  String get weekdayInitialFri;
+
+  /// No description provided for @weekdayInitialSat.
+  ///
+  /// In en, this message translates to:
+  /// **'S'**
+  String get weekdayInitialSat;
+
+  /// No description provided for @visitCentralTower.
+  ///
+  /// In en, this message translates to:
+  /// **'Central Tower'**
+  String get visitCentralTower;
+
+  /// No description provided for @visitStepReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit reason'**
+  String get visitStepReason;
+
+  /// No description provided for @visitStepSelectDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select date'**
+  String get visitStepSelectDate;
+
+  /// No description provided for @visitStepReviewConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Review & confirm'**
+  String get visitStepReviewConfirm;
+
+  /// No description provided for @visitBooking.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking…'**
+  String get visitBooking;
+
+  /// No description provided for @visitConfirmBooking.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm booking'**
+  String get visitConfirmBooking;
+
+  /// No description provided for @visitDefaultBranchName.
+  ///
+  /// In en, this message translates to:
+  /// **'Musallam Central Tower'**
+  String get visitDefaultBranchName;
+
+  /// No description provided for @visitHeadOfficeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Head office - rider services'**
+  String get visitHeadOfficeSubtitle;
+
+  /// No description provided for @visitFieldLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get visitFieldLocation;
+
+  /// No description provided for @visitFieldWorkingHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Working hours'**
+  String get visitFieldWorkingHours;
+
+  /// No description provided for @visitFieldContact.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact'**
+  String get visitFieldContact;
+
+  /// No description provided for @visitBookASlot.
+  ///
+  /// In en, this message translates to:
+  /// **'Book a slot'**
+  String get visitBookASlot;
+
+  /// No description provided for @visitSkipQueueHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking a slot helps you skip the queue and get seen faster.'**
+  String get visitSkipQueueHint;
+
+  /// No description provided for @visitSelectDepartment.
+  ///
+  /// In en, this message translates to:
+  /// **'SELECT A DEPARTMENT'**
+  String get visitSelectDepartment;
+
+  /// No description provided for @visitAddNoteOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a note (optional)'**
+  String get visitAddNoteOptional;
+
+  /// No description provided for @visitNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Briefly describe your issue'**
+  String get visitNoteHint;
+
+  /// No description provided for @visitChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get visitChange;
+
+  /// No description provided for @visitNoSlotsForDate.
+  ///
+  /// In en, this message translates to:
+  /// **'No slots available for this date.'**
+  String get visitNoSlotsForDate;
+
+  /// No description provided for @visitSectionMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'MORNING'**
+  String get visitSectionMorning;
+
+  /// No description provided for @visitSectionAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'AFTERNOON'**
+  String get visitSectionAfternoon;
+
+  /// No description provided for @visitLunchBreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch break'**
+  String get visitLunchBreak;
+
+  /// No description provided for @visitSlotFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full'**
+  String get visitSlotFull;
+
+  /// No description provided for @visitSlotRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} left'**
+  String visitSlotRemaining(int count);
+
+  /// No description provided for @visitSlotRange.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} - {end}'**
+  String visitSlotRange(String start, String end);
+
+  /// No description provided for @visitFieldDepartment.
+  ///
+  /// In en, this message translates to:
+  /// **'Department'**
+  String get visitFieldDepartment;
+
+  /// No description provided for @visitFieldDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get visitFieldDate;
+
+  /// No description provided for @visitFieldTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get visitFieldTime;
+
+  /// No description provided for @visitFieldNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get visitFieldNote;
+
+  /// No description provided for @visitArriveEarlyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Please arrive 10 minutes early and carry your rider ID.'**
+  String get visitArriveEarlyHint;
+
+  /// No description provided for @visitBookedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit Booked'**
+  String get visitBookedTitle;
+
+  /// No description provided for @visitBookedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your visit is confirmed. Show this ticket at the Central Tower reception.'**
+  String get visitBookedBody;
+
+  /// No description provided for @visitTicketHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'CENTRAL TOWER VISIT'**
+  String get visitTicketHeader;
+
+  /// No description provided for @visitScanAtReception.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan at reception'**
+  String get visitScanAtReception;
+
+  /// No description provided for @visitBookingTokenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking token {code}. Keep this ready on arrival.'**
+  String visitBookingTokenHint(String code);
+
+  /// No description provided for @visitViewMyVisits.
+  ///
+  /// In en, this message translates to:
+  /// **'View my visits'**
+  String get visitViewMyVisits;
 }
 
 class _AppLocalizationsDelegate

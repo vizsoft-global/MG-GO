@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 
 /// RSup/10e — dedicated full-screen ack confirmation (not a snackbar).
 class RequestAcknowledgedScreen extends StatelessWidget {
@@ -14,25 +16,26 @@ class RequestAcknowledgedScreen extends StatelessWidget {
   final String requestCode;
   final String requestType;
 
-  static String _typeLabel(String type) {
+  static String _typeLabel(String type, AppLocalizations l10n) {
     return switch (type) {
-      'leave' => 'Leave request',
-      'sick_leave' => 'Sick & accident leave',
-      'asset' => 'Asset request',
-      'fuel' => 'Fuel reimbursement',
-      'document' => 'Document request',
-      'complaint' => 'Complaint',
-      'salary_justification' => 'Salary justification',
-      'loan' => 'Loan request',
-      _ => 'Request',
+      'leave' => l10n.supportRequestTypeLeaveRequest,
+      'sick_leave' => l10n.supportRequestTypeSickLeave,
+      'asset' => l10n.supportRequestTypeAsset,
+      'fuel' => l10n.supportRequestTypeFuel,
+      'document' => l10n.supportRequestTypeDocument,
+      'complaint' => l10n.supportRequestTypeComplaint,
+      'salary_justification' => l10n.supportRequestTypeSalaryJustification,
+      'loan' => l10n.supportRequestTypeLoanRequest,
+      _ => l10n.supportRequestTypeGeneric,
     };
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Acknowledged'),
+        title: Text(l10n.supportAcknowledgedTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.go('/profile/support/requests'),
@@ -54,15 +57,15 @@ class RequestAcknowledgedScreen extends StatelessWidget {
                 child: const Icon(Icons.check_rounded, size: 48, color: AppColors.progressGreen),
               ),
               const SizedBox(height: 20),
-              const Text(
-                'Response acknowledged',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+              Text(
+                l10n.supportResponseAcknowledged,
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 8),
-              const Text(
-                "Thanks. We've let the admin know you've seen and accepted their response.",
+              Text(
+                l10n.supportResponseAcknowledgedBody,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.textSecondary),
+                style: const TextStyle(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 16),
               Container(
@@ -72,7 +75,8 @@ class RequestAcknowledgedScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  '$requestCode · ${_typeLabel(requestType)}',
+                  l10n.supportCodeWithType(
+                      requestCode, _typeLabel(requestType, l10n)),
                   style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                 ),
               ),
@@ -82,7 +86,7 @@ class RequestAcknowledgedScreen extends StatelessWidget {
                 child: FilledButton(
                   style: FilledButton.styleFrom(backgroundColor: AppColors.blueberry),
                   onPressed: () => context.go('/profile/support/requests'),
-                  child: const Text('Back to my requests'),
+                  child: Text(l10n.supportBackToMyRequests),
                 ),
               ),
             ],

@@ -1233,5 +1233,93 @@
     }
   },
   "supportUpload": "Upload",
-  "supportCapture": "Capture"
+  "supportCapture": "Capture",
+  "supportSubmittedTitle": "Submitted",
+  "supportRequestSubmitted": "Request submitted",
+  "supportRequestSubmittedBody": "We have received your request and will review it shortly. You can track its status anytime.",
+  "supportFieldRequestId": "Request ID",
+  "supportFieldType": "Type",
+  "supportTrackRequest": "Track request",
+  "supportBackToSupport": "Back to support",
+  "supportAcknowledgedTitle": "Acknowledged",
+  "supportResponseAcknowledged": "Response acknowledged",
+  "supportResponseAcknowledgedBody": "Thanks. We've let the admin know you've seen and accepted their response.",
+  "supportCodeWithType": "{code} · {type}",
+  "@supportCodeWithType": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "supportBackToMyRequests": "Back to my requests",
+  "weekdayInitialSun": "S",
+  "weekdayInitialMon": "M",
+  "weekdayInitialTue": "T",
+  "weekdayInitialWed": "W",
+  "weekdayInitialThu": "T",
+  "weekdayInitialFri": "F",
+  "weekdayInitialSat": "S",
+  "visitCentralTower": "Central Tower",
+  "visitStepReason": "Visit reason",
+  "visitStepSelectDate": "Select date",
+  "visitStepReviewConfirm": "Review & confirm",
+  "visitBooking": "Booking…",
+  "visitConfirmBooking": "Confirm booking",
+  "visitDefaultBranchName": "Musallam Central Tower",
+  "visitHeadOfficeSubtitle": "Head office - rider services",
+  "visitFieldLocation": "Location",
+  "visitFieldWorkingHours": "Working hours",
+  "visitFieldContact": "Contact",
+  "visitBookASlot": "Book a slot",
+  "visitSkipQueueHint": "Booking a slot helps you skip the queue and get seen faster.",
+  "visitSelectDepartment": "SELECT A DEPARTMENT",
+  "visitAddNoteOptional": "Add a note (optional)",
+  "visitNoteHint": "Briefly describe your issue",
+  "visitChange": "Change",
+  "visitNoSlotsForDate": "No slots available for this date.",
+  "visitSectionMorning": "MORNING",
+  "visitSectionAfternoon": "AFTERNOON",
+  "visitLunchBreak": "Lunch break",
+  "visitSlotFull": "Full",
+  "visitSlotRemaining": "{count} left",
+  "@visitSlotRemaining": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "visitSlotRange": "{start} - {end}",
+  "@visitSlotRange": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "visitFieldDepartment": "Department",
+  "visitFieldDate": "Date",
+  "visitFieldTime": "Time",
+  "visitFieldNote": "Note",
+  "visitArriveEarlyHint": "Please arrive 10 minutes early and carry your rider ID.",
+  "visitBookedTitle": "Visit Booked",
+  "visitBookedBody": "Your visit is confirmed. Show this ticket at the Central Tower reception.",
+  "visitTicketHeader": "CENTRAL TOWER VISIT",
+  "visitScanAtReception": "Scan at reception",
+  "visitBookingTokenHint": "Booking token {code}. Keep this ready on arrival.",
+  "@visitBookingTokenHint": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "visitViewMyVisits": "View my visits"
 }

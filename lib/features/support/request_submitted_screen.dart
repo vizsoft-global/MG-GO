@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 
 class RequestSubmittedScreen extends StatelessWidget {
   const RequestSubmittedScreen({
@@ -15,24 +17,25 @@ class RequestSubmittedScreen extends StatelessWidget {
   final String? requestId;
   final String? requestType;
 
-  static String _typeLabel(String? type) {
+  static String _typeLabel(String? type, AppLocalizations l10n) {
     return switch (type) {
-      'leave' => 'Leave',
-      'sick_leave' => 'Sick & accident leave',
-      'asset' => 'Asset request',
-      'fuel' => 'Fuel reimbursement',
-      'document' => 'Document request',
-      'complaint' => 'Complaint',
-      'salary_justification' => 'Salary justification',
-      'loan' => 'Loan request',
-      _ => 'Request',
+      'leave' => l10n.supportRequestTypeLeave,
+      'sick_leave' => l10n.supportRequestTypeSickLeave,
+      'asset' => l10n.supportRequestTypeAsset,
+      'fuel' => l10n.supportRequestTypeFuel,
+      'document' => l10n.supportRequestTypeDocument,
+      'complaint' => l10n.supportRequestTypeComplaint,
+      'salary_justification' => l10n.supportRequestTypeSalaryJustification,
+      'loan' => l10n.supportRequestTypeLoanRequest,
+      _ => l10n.supportRequestTypeGeneric,
     };
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: const Text('Submitted')),
+      appBar: AppBar(title: Text(l10n.supportSubmittedTitle)),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -47,15 +50,15 @@ class RequestSubmittedScreen extends StatelessWidget {
               child: const Icon(Icons.check_rounded, size: 48, color: AppColors.progressGreen),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Request submitted',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+            Text(
+              l10n.supportRequestSubmitted,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'We have received your request and will review it shortly. You can track its status anytime.',
+            Text(
+              l10n.supportRequestSubmittedBody,
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary),
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 20),
             Container(
@@ -68,13 +71,15 @@ class RequestSubmittedScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  _row('Request ID', requestCode),
+                  _row(l10n.supportFieldRequestId, requestCode),
                   const Divider(height: 20),
-                  _row('Type', _typeLabel(requestType)),
+                  _row(l10n.supportFieldType, _typeLabel(requestType, l10n)),
                   const Divider(height: 20),
                   Row(
                     children: [
-                      const Text('Status', style: TextStyle(color: AppColors.textSecondary)),
+                      Text(l10n.status,
+                          style: const TextStyle(
+                              color: AppColors.textSecondary)),
                       const Spacer(),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -82,9 +87,9 @@ class RequestSubmittedScreen extends StatelessWidget {
                           color: AppColors.underReviewAmber.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(999),
                         ),
-                        child: const Text(
-                          'Pending',
-                          style: TextStyle(
+                        child: Text(
+                          l10n.pending,
+                          style: const TextStyle(
                             color: AppColors.underReviewAmber,
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
@@ -108,13 +113,13 @@ class RequestSubmittedScreen extends StatelessWidget {
                     context.go('/profile/support/requests');
                   }
                 },
-                child: const Text('Track request'),
+                child: Text(l10n.supportTrackRequest),
               ),
             ),
             const SizedBox(height: 4),
             TextButton(
               onPressed: () => context.go('/profile/support'),
-              child: const Text('Back to support'),
+              child: Text(l10n.supportBackToSupport),
             ),
           ],
         ),

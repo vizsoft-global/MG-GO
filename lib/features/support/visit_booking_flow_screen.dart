@@ -2,16 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
+import '../../core/l10n/locale_formatters.dart';
 import '../../core/theme/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
 import 'widgets/booking_qr.dart';
 
-const _months = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+/// Calendar column headers, Sunday-first to match `_weeksOf`.
+List<String> _weekdayInitials(AppLocalizations l10n) => [
+  l10n.weekdayInitialSun,
+  l10n.weekdayInitialMon,
+  l10n.weekdayInitialTue,
+  l10n.weekdayInitialWed,
+  l10n.weekdayInitialThu,
+  l10n.weekdayInitialFri,
+  l10n.weekdayInitialSat,
 ];
-const _weekdays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 /// RSup/11–15 — Tower intro → visit reason → date & slot → review → ticket.
 /// The intro card's Location/Working hours/Contact are all DB-backed via
@@ -103,15 +111,16 @@ class _VisitBookingFlowScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       appBar: _step == 4
           ? null
           : AppBar(
               title: Text(switch (_step) {
-                0 => 'Central Tower',
-                1 => 'Visit reason',
-                2 => 'Select date',
-                _ => 'Review & confirm',
+                0 => l10n.visitCentralTower,
+                1 => l10n.visitStepReason,
+                2 => l10n.visitStepSelectDate,
+                _ => l10n.visitStepReviewConfirm,
               }),
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back_rounded),
@@ -174,8 +183,10 @@ class _VisitBookingFlowScreenState
                         },
                   child: Text(
                     _step == 3
-                        ? (_submitting ? 'Booking…' : 'Confirm booking')
-                        : 'Continue',
+                        ? (_submitting
+                            ? l10n.visitBooking
+                            : l10n.visitConfirmBooking)
+                        : l10n.continueButton,
                   ),
                 ),
               ),
@@ -195,6 +206,7 @@ class _TowerIntroStep extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final branchAsync = ref.watch(centralTowerBranchProvider);
     final branch = branchAsync.asData?.value;
     return ListView(
@@ -226,11 +238,12 @@ class _TowerIntroStep extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          branch?.name ?? 'Musallam Central Tower',
+                          branch?.name ?? l10n.visitDefaultBranchName,
                           style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
                         ),
-                        const Text('Head office - rider services',
-                            style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                        Text(l10n.visitHeadOfficeSubtitle,
+                            style: const TextStyle(
+                                color: AppColors.textSecondary, fontSize: 12)),
                       ],
                     ),
                   ),
@@ -239,19 +252,19 @@ class _TowerIntroStep extends ConsumerWidget {
               const Divider(height: 24),
               _InfoRow(
                 icon: Icons.location_on_outlined,
-                label: 'Location',
+                label: l10n.visitFieldLocation,
                 value: branch?.address ?? 'Sheikh Zayed Rd, Kuwait',
               ),
               const SizedBox(height: 10),
               _InfoRow(
                 icon: Icons.access_time_rounded,
-                label: 'Working hours',
+                label: l10n.visitFieldWorkingHours,
                 value: branch?.workingHours ?? 'Sun - Thu, 9:00 AM - 5:00 PM',
               ),
               const SizedBox(height: 10),
               _InfoRow(
                 icon: Icons.call_outlined,
-                label: 'Contact',
+                label: l10n.visitFieldContact,
                 value: branch?.contactPhone ?? '+971 4 XXX XXXX',
               ),
               const SizedBox(height: 16),
@@ -260,7 +273,7 @@ class _TowerIntroStep extends ConsumerWidget {
                 child: FilledButton(
                   style: FilledButton.styleFrom(backgroundColor: AppColors.accentOrange),
                   onPressed: onBook,
-                  child: const Text('Book a slot'),
+                  child: Text(l10n.visitBookASlot),
                 ),
               ),
             ],
@@ -273,9 +286,10 @@ class _TowerIntroStep extends ConsumerWidget {
             color: AppColors.cardBlue,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Text(
-            'Booking a slot helps you skip the queue and get seen faster.',
-            style: TextStyle(color: AppColors.primaryBlue, fontSize: 12.5),
+          child: Text(
+            l10n.visitSkipQueueHint,
+            style: const TextStyle(
+                color: AppColors.primaryBlue, fontSize: 12.5),
           ),
         ),
       ],
@@ -333,7 +347,7 @@ class _ReasonStep extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         children: [
           Text(
-            'SELECT A DEPARTMENT',
+            context.l10n.visitSelectDepartment,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: AppColors.textSecondary,
                   letterSpacing: 0.6,
@@ -368,14 +382,15 @@ class _ReasonStep extends ConsumerWidget {
             );
           }),
           const SizedBox(height: 8),
-          const Text('Add a note (optional)', style: TextStyle(fontWeight: FontWeight.w600)),
+          Text(context.l10n.visitAddNoteOptional,
+              style: const TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           TextField(
             controller: noteCtrl,
             maxLines: 3,
-            decoration: const InputDecoration(
-              hintText: 'Briefly describe your issue',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              hintText: context.l10n.visitNoteHint,
+              border: const OutlineInputBorder(),
             ),
           ),
         ],
@@ -412,6 +427,7 @@ class _DateSlotStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final morning = slots.where((s) => _hour(s.startTime) < 12).toList();
     final afternoon = slots.where((s) => _hour(s.startTime) >= 12).toList();
     final now = DateTime.now();
@@ -432,7 +448,7 @@ class _DateSlotStep extends StatelessWidget {
               Icon(visitDepartmentIcon(dept.key), size: 18, color: AppColors.textSecondary),
               const SizedBox(width: 8),
               Expanded(child: Text(dept.labelEn, style: const TextStyle(fontWeight: FontWeight.w600))),
-              TextButton(onPressed: onChangeDept, child: const Text('Change')),
+              TextButton(onPressed: onChangeDept, child: Text(l10n.visitChange)),
             ],
           ),
         ),
@@ -449,7 +465,7 @@ class _DateSlotStep extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: Text('${_months[month.month - 1]} ${month.year}',
+                    child: Text(formatMonthYear(month, l10n),
                         style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
                   ),
                   IconButton(
@@ -463,7 +479,7 @@ class _DateSlotStep extends StatelessWidget {
                 ],
               ),
               Row(
-                children: _weekdays
+                children: _weekdayInitials(l10n)
                     .map((w) => Expanded(
                           child: Center(
                             child: Text(w,
@@ -518,23 +534,25 @@ class _DateSlotStep extends StatelessWidget {
         const SizedBox(height: 12),
         if (loadingSlots) const LinearProgressIndicator(),
         if (selectedDate != null && !loadingSlots && slots.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8),
-            child: Text('No slots available for this date.'),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Text(l10n.visitNoSlotsForDate),
           ),
         if (morning.isNotEmpty) ...[
-          const _SlotSectionLabel('MORNING'),
+          _SlotSectionLabel(l10n.visitSectionMorning),
           _SlotGrid(slots: morning, selected: selectedSlot, onSelect: onSlotSelected),
         ],
         if (morning.isNotEmpty && afternoon.isNotEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
             child: Center(
-              child: Text('Lunch break', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              child: Text(l10n.visitLunchBreak,
+                  style: const TextStyle(
+                      fontSize: 12, color: AppColors.textSecondary)),
             ),
           ),
         if (afternoon.isNotEmpty) ...[
-          const _SlotSectionLabel('AFTERNOON'),
+          _SlotSectionLabel(l10n.visitSectionAfternoon),
           _SlotGrid(slots: afternoon, selected: selectedSlot, onSelect: onSlotSelected),
         ],
       ],
@@ -621,10 +639,12 @@ class _SlotGrid extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  Text('${s.startTime} - ${s.endTime}',
+                  Text(context.l10n.visitSlotRange(s.startTime, s.endTime),
                       style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: color)),
                   Text(
-                    s.full ? 'Full' : '${s.remaining} left',
+                    s.full
+                        ? context.l10n.visitSlotFull
+                        : context.l10n.visitSlotRemaining(s.remaining),
                     style: TextStyle(fontSize: 10.5, color: color),
                   ),
                 ],
@@ -653,6 +673,7 @@ class _ReviewStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -665,11 +686,12 @@ class _ReviewStep extends StatelessWidget {
           ),
           child: Column(
             children: [
-              _ReviewRow('Department', dept.labelEn),
-              _ReviewRow('Date', _fmtDate(date)),
-              _ReviewRow('Time', slot.startTime),
-              const _ReviewRow('Location', 'Central Tower'),
-              if (note.isNotEmpty) _ReviewRow('Note', note, isLast: true),
+              _ReviewRow(l10n.visitFieldDepartment, dept.labelEn),
+              _ReviewRow(l10n.visitFieldDate, _fmtDate(date, l10n)),
+              _ReviewRow(l10n.visitFieldTime, slot.startTime),
+              _ReviewRow(l10n.visitFieldLocation, l10n.visitCentralTower),
+              if (note.isNotEmpty)
+                _ReviewRow(l10n.visitFieldNote, note, isLast: true),
             ],
           ),
         ),
@@ -680,22 +702,19 @@ class _ReviewStep extends StatelessWidget {
             color: AppColors.cardBlue,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Text(
-            'Please arrive 10 minutes early and carry your rider ID.',
-            style: TextStyle(color: AppColors.primaryBlue, fontSize: 12.5),
+          child: Text(
+            l10n.visitArriveEarlyHint,
+            style: const TextStyle(
+                color: AppColors.primaryBlue, fontSize: 12.5),
           ),
         ),
       ],
     );
   }
 
-  static String _fmtDate(DateTime d) {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
-    return '${days[d.weekday - 1]}, ${d.day} ${months[d.month - 1]} ${d.year}';
+  static String _fmtDate(DateTime d, AppLocalizations l10n) {
+    return '${formatWeekdayShort(d, l10n)}, ${d.day} '
+        '${monthShortNames(l10n)[d.month - 1]} ${d.year}';
   }
 }
 
@@ -748,6 +767,7 @@ class _TicketStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -763,12 +783,13 @@ class _TicketStep extends StatelessWidget {
               child: const Icon(Icons.check_rounded, size: 48, color: AppColors.progressGreen),
             ),
             const SizedBox(height: 16),
-            const Text('Visit Booked', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+            Text(l10n.visitBookedTitle,
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
             const SizedBox(height: 6),
-            const Text(
-              'Your visit is confirmed. Show this ticket at the Central Tower reception.',
+            Text(
+              l10n.visitBookedBody,
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary),
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 20),
             Container(
@@ -788,8 +809,8 @@ class _TicketStep extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('CENTRAL TOWER VISIT',
-                                style: TextStyle(
+                            Text(l10n.visitTicketHeader,
+                                style: const TextStyle(
                                     fontSize: 10.5,
                                     color: AppColors.textSecondary,
                                     letterSpacing: 0.5)),
@@ -802,9 +823,14 @@ class _TicketStep extends StatelessWidget {
                     ],
                   ),
                   const Divider(height: 20),
-                  if (date != null) _ReviewRow('Date', _ReviewStep._fmtDate(date!)),
-                  if (slot != null) _ReviewRow('Time', slot!.startTime),
-                  if (dept != null) _ReviewRow('Department', dept!.labelEn, isLast: true),
+                  if (date != null)
+                    _ReviewRow(l10n.visitFieldDate,
+                        _ReviewStep._fmtDate(date!, l10n)),
+                  if (slot != null)
+                    _ReviewRow(l10n.visitFieldTime, slot!.startTime),
+                  if (dept != null)
+                    _ReviewRow(l10n.visitFieldDepartment, dept!.labelEn,
+                        isLast: true),
                   if (bookingCode.isNotEmpty) ...[
                     const Divider(height: 20),
                     Row(
@@ -816,10 +842,11 @@ class _TicketStep extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Scan at reception',
-                                  style: TextStyle(fontWeight: FontWeight.w700)),
+                              Text(l10n.visitScanAtReception,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w700)),
                               Text(
-                                'Booking token $bookingCode. Keep this ready on arrival.',
+                                l10n.visitBookingTokenHint(bookingCode),
                                 style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                               ),
                             ],
@@ -837,13 +864,13 @@ class _TicketStep extends StatelessWidget {
               child: FilledButton(
                 style: FilledButton.styleFrom(backgroundColor: AppColors.accentOrange),
                 onPressed: () => context.go('/profile/support/visits'),
-                child: const Text('View my visits'),
+                child: Text(l10n.visitViewMyVisits),
               ),
             ),
             const SizedBox(height: 4),
             TextButton(
               onPressed: () => context.go('/profile/support'),
-              child: const Text('Back to support'),
+              child: Text(l10n.supportBackToSupport),
             ),
           ],
         ),

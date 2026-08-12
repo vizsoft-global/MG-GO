@@ -2351,4 +2351,179 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get supportCapture => 'Capture';
+
+  @override
+  String get supportSubmittedTitle => 'Submitted';
+
+  @override
+  String get supportRequestSubmitted => 'Request submitted';
+
+  @override
+  String get supportRequestSubmittedBody =>
+      'We have received your request and will review it shortly. You can track its status anytime.';
+
+  @override
+  String get supportFieldRequestId => 'Request ID';
+
+  @override
+  String get supportFieldType => 'Type';
+
+  @override
+  String get supportTrackRequest => 'Track request';
+
+  @override
+  String get supportBackToSupport => 'Back to support';
+
+  @override
+  String get supportAcknowledgedTitle => 'Acknowledged';
+
+  @override
+  String get supportResponseAcknowledged => 'Response acknowledged';
+
+  @override
+  String get supportResponseAcknowledgedBody =>
+      'Thanks. We\'ve let the admin know you\'ve seen and accepted their response.';
+
+  @override
+  String supportCodeWithType(String code, String type) {
+    return '$code · $type';
+  }
+
+  @override
+  String get supportBackToMyRequests => 'Back to my requests';
+
+  @override
+  String get weekdayInitialSun => 'S';
+
+  @override
+  String get weekdayInitialMon => 'M';
+
+  @override
+  String get weekdayInitialTue => 'T';
+
+  @override
+  String get weekdayInitialWed => 'W';
+
+  @override
+  String get weekdayInitialThu => 'T';
+
+  @override
+  String get weekdayInitialFri => 'F';
+
+  @override
+  String get weekdayInitialSat => 'S';
+
+  @override
+  String get visitCentralTower => 'Central Tower';
+
+  @override
+  String get visitStepReason => 'Visit reason';
+
+  @override
+  String get visitStepSelectDate => 'Select date';
+
+  @override
+  String get visitStepReviewConfirm => 'Review & confirm';
+
+  @override
+  String get visitBooking => 'Booking…';
+
+  @override
+  String get visitConfirmBooking => 'Confirm booking';
+
+  @override
+  String get visitDefaultBranchName => 'Musallam Central Tower';
+
+  @override
+  String get visitHeadOfficeSubtitle => 'Head office - rider services';
+
+  @override
+  String get visitFieldLocation => 'Location';
+
+  @override
+  String get visitFieldWorkingHours => 'Working hours';
+
+  @override
+  String get visitFieldContact => 'Contact';
+
+  @override
+  String get visitBookASlot => 'Book a slot';
+
+  @override
+  String get visitSkipQueueHint =>
+      'Booking a slot helps you skip the queue and get seen faster.';
+
+  @override
+  String get visitSelectDepartment => 'SELECT A DEPARTMENT';
+
+  @override
+  String get visitAddNoteOptional => 'Add a note (optional)';
+
+  @override
+  String get visitNoteHint => 'Briefly describe your issue';
+
+  @override
+  String get visitChange => 'Change';
+
+  @override
+  String get visitNoSlotsForDate => 'No slots available for this date.';
+
+  @override
+  String get visitSectionMorning => 'MORNING';
+
+  @override
+  String get visitSectionAfternoon => 'AFTERNOON';
+
+  @override
+  String get visitLunchBreak => 'Lunch break';
+
+  @override
+  String get visitSlotFull => 'Full';
+
+  @override
+  String visitSlotRemaining(int count) {
+    return '$count left';
+  }
+
+  @override
+  String visitSlotRange(String start, String end) {
+    return '$start - $end';
+  }
+
+  @override
+  String get visitFieldDepartment => 'Department';
+
+  @override
+  String get visitFieldDate => 'Date';
+
+  @override
+  String get visitFieldTime => 'Time';
+
+  @override
+  String get visitFieldNote => 'Note';
+
+  @override
+  String get visitArriveEarlyHint =>
+      'Please arrive 10 minutes early and carry your rider ID.';
+
+  @override
+  String get visitBookedTitle => 'Visit Booked';
+
+  @override
+  String get visitBookedBody =>
+      'Your visit is confirmed. Show this ticket at the Central Tower reception.';
+
+  @override
+  String get visitTicketHeader => 'CENTRAL TOWER VISIT';
+
+  @override
+  String get visitScanAtReception => 'Scan at reception';
+
+  @override
+  String visitBookingTokenHint(String code) {
+    return 'Booking token $code. Keep this ready on arrival.';
+  }
+
+  @override
+  String get visitViewMyVisits => 'View my visits';
 }

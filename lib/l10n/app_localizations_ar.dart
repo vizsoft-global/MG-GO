@@ -2341,4 +2341,179 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get supportCapture => 'التقاط';
+
+  @override
+  String get supportSubmittedTitle => 'تم الإرسال';
+
+  @override
+  String get supportRequestSubmitted => 'تم إرسال الطلب';
+
+  @override
+  String get supportRequestSubmittedBody =>
+      'استلمنا طلبك وسنراجعه قريباً. يمكنك متابعة حالته في أي وقت.';
+
+  @override
+  String get supportFieldRequestId => 'رقم الطلب';
+
+  @override
+  String get supportFieldType => 'النوع';
+
+  @override
+  String get supportTrackRequest => 'متابعة الطلب';
+
+  @override
+  String get supportBackToSupport => 'العودة إلى الدعم';
+
+  @override
+  String get supportAcknowledgedTitle => 'تم الإقرار';
+
+  @override
+  String get supportResponseAcknowledged => 'تم الإقرار بالرد';
+
+  @override
+  String get supportResponseAcknowledgedBody =>
+      'شكراً لك. أبلغنا الإدارة بأنك اطلعت على ردهم ووافقت عليه.';
+
+  @override
+  String supportCodeWithType(String code, String type) {
+    return '$code · $type';
+  }
+
+  @override
+  String get supportBackToMyRequests => 'العودة إلى طلباتي';
+
+  @override
+  String get weekdayInitialSun => 'ح';
+
+  @override
+  String get weekdayInitialMon => 'ن';
+
+  @override
+  String get weekdayInitialTue => 'ث';
+
+  @override
+  String get weekdayInitialWed => 'ر';
+
+  @override
+  String get weekdayInitialThu => 'خ';
+
+  @override
+  String get weekdayInitialFri => 'ج';
+
+  @override
+  String get weekdayInitialSat => 'س';
+
+  @override
+  String get visitCentralTower => 'البرج المركزي';
+
+  @override
+  String get visitStepReason => 'سبب الزيارة';
+
+  @override
+  String get visitStepSelectDate => 'اختيار التاريخ';
+
+  @override
+  String get visitStepReviewConfirm => 'المراجعة والتأكيد';
+
+  @override
+  String get visitBooking => 'جارٍ الحجز…';
+
+  @override
+  String get visitConfirmBooking => 'تأكيد الحجز';
+
+  @override
+  String get visitDefaultBranchName => 'برج مسلم المركزي';
+
+  @override
+  String get visitHeadOfficeSubtitle => 'المكتب الرئيسي - خدمات السائقين';
+
+  @override
+  String get visitFieldLocation => 'الموقع';
+
+  @override
+  String get visitFieldWorkingHours => 'ساعات العمل';
+
+  @override
+  String get visitFieldContact => 'التواصل';
+
+  @override
+  String get visitBookASlot => 'احجز موعداً';
+
+  @override
+  String get visitSkipQueueHint =>
+      'حجز موعد يساعدك على تجنب الانتظار وإنجاز معاملتك أسرع.';
+
+  @override
+  String get visitSelectDepartment => 'اختر القسم';
+
+  @override
+  String get visitAddNoteOptional => 'أضف ملاحظة (اختياري)';
+
+  @override
+  String get visitNoteHint => 'صف مشكلتك باختصار';
+
+  @override
+  String get visitChange => 'تغيير';
+
+  @override
+  String get visitNoSlotsForDate => 'لا توجد مواعيد متاحة في هذا التاريخ.';
+
+  @override
+  String get visitSectionMorning => 'الفترة الصباحية';
+
+  @override
+  String get visitSectionAfternoon => 'الفترة المسائية';
+
+  @override
+  String get visitLunchBreak => 'استراحة الغداء';
+
+  @override
+  String get visitSlotFull => 'مكتمل';
+
+  @override
+  String visitSlotRemaining(int count) {
+    return 'متبقٍ $count';
+  }
+
+  @override
+  String visitSlotRange(String start, String end) {
+    return '$start - $end';
+  }
+
+  @override
+  String get visitFieldDepartment => 'القسم';
+
+  @override
+  String get visitFieldDate => 'التاريخ';
+
+  @override
+  String get visitFieldTime => 'الوقت';
+
+  @override
+  String get visitFieldNote => 'ملاحظة';
+
+  @override
+  String get visitArriveEarlyHint =>
+      'يرجى الحضور قبل الموعد بعشر دقائق مع إحضار بطاقة السائق.';
+
+  @override
+  String get visitBookedTitle => 'تم حجز الزيارة';
+
+  @override
+  String get visitBookedBody =>
+      'تم تأكيد زيارتك. اعرض هذه البطاقة في استقبال البرج المركزي.';
+
+  @override
+  String get visitTicketHeader => 'زيارة البرج المركزي';
+
+  @override
+  String get visitScanAtReception => 'امسح الرمز في الاستقبال';
+
+  @override
+  String visitBookingTokenHint(String code) {
+    return 'رمز الحجز $code. احتفظ به جاهزاً عند الوصول.';
+  }
+
+  @override
+  String get visitViewMyVisits => 'عرض زياراتي';
 }
