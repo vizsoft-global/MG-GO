@@ -3313,6 +3313,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No action required right now'**
   String get supportNoActionRequired;
+
+  /// No description provided for @supportHubTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & support'**
+  String get supportHubTitle;
+
+  /// No description provided for @supportSectionRaiseRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'RAISE A REQUEST'**
+  String get supportSectionRaiseRequest;
+
+  /// No description provided for @supportTileSickAccidentLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Sick / Accident Leave'**
+  String get supportTileSickAccidentLeave;
+
+  /// No description provided for @supportTileSalaryJustification.
+  ///
+  /// In en, this message translates to:
+  /// **'Salary Justification'**
+  String get supportTileSalaryJustification;
+
+  /// No description provided for @supportTileLoanRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan Request'**
+  String get supportTileLoanRequest;
+
+  /// No description provided for @supportSectionVisitUs.
+  ///
+  /// In en, this message translates to:
+  /// **'VISIT US'**
+  String get supportSectionVisitUs;
+
+  /// No description provided for @supportScheduleVisitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule a visit to Central Tower'**
+  String get supportScheduleVisitTitle;
+
+  /// No description provided for @supportScheduleVisitSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Book a time slot for in-person help'**
+  String get supportScheduleVisitSubtitle;
+
+  /// No description provided for @supportSectionYourActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR ACTIVITY'**
+  String get supportSectionYourActivity;
+
+  /// No description provided for @supportMyRequestsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Track your requests'**
+  String get supportMyRequestsSubtitle;
+
+  /// No description provided for @supportMyVisitsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My visits'**
+  String get supportMyVisitsTitle;
+
+  /// No description provided for @supportMyVisitsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Booked tower visits'**
+  String get supportMyVisitsSubtitle;
+
+  /// No description provided for @supportDocumentsToSign.
+  ///
+  /// In en, this message translates to:
+  /// **'Documents to sign'**
+  String get supportDocumentsToSign;
+
+  /// No description provided for @supportAppointments.
+  ///
+  /// In en, this message translates to:
+  /// **'Appointments'**
+  String get supportAppointments;
+
+  /// No description provided for @supportBadgeNewCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} new'**
+  String supportBadgeNewCount(int count);
 }
 
 class _AppLocalizationsDelegate

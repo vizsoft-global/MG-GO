@@ -1006,5 +1006,27 @@
       }
     }
   },
-  "supportNoActionRequired": "No action required right now"
+  "supportNoActionRequired": "No action required right now",
+  "supportHubTitle": "Help & support",
+  "supportSectionRaiseRequest": "RAISE A REQUEST",
+  "supportTileSickAccidentLeave": "Sick / Accident Leave",
+  "supportTileSalaryJustification": "Salary Justification",
+  "supportTileLoanRequest": "Loan Request",
+  "supportSectionVisitUs": "VISIT US",
+  "supportScheduleVisitTitle": "Schedule a visit to Central Tower",
+  "supportScheduleVisitSubtitle": "Book a time slot for in-person help",
+  "supportSectionYourActivity": "YOUR ACTIVITY",
+  "supportMyRequestsSubtitle": "Track your requests",
+  "supportMyVisitsTitle": "My visits",
+  "supportMyVisitsSubtitle": "Booked tower visits",
+  "supportDocumentsToSign": "Documents to sign",
+  "supportAppointments": "Appointments",
+  "supportBadgeNewCount": "{count} new",
+  "@supportBadgeNewCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

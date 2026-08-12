@@ -1825,4 +1825,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get supportNoActionRequired => 'No action required right now';
+
+  @override
+  String get supportHubTitle => 'Help & support';
+
+  @override
+  String get supportSectionRaiseRequest => 'RAISE A REQUEST';
+
+  @override
+  String get supportTileSickAccidentLeave => 'Sick / Accident Leave';
+
+  @override
+  String get supportTileSalaryJustification => 'Salary Justification';
+
+  @override
+  String get supportTileLoanRequest => 'Loan Request';
+
+  @override
+  String get supportSectionVisitUs => 'VISIT US';
+
+  @override
+  String get supportScheduleVisitTitle => 'Schedule a visit to Central Tower';
+
+  @override
+  String get supportScheduleVisitSubtitle =>
+      'Book a time slot for in-person help';
+
+  @override
+  String get supportSectionYourActivity => 'YOUR ACTIVITY';
+
+  @override
+  String get supportMyRequestsSubtitle => 'Track your requests';
+
+  @override
+  String get supportMyVisitsTitle => 'My visits';
+
+  @override
+  String get supportMyVisitsSubtitle => 'Booked tower visits';
+
+  @override
+  String get supportDocumentsToSign => 'Documents to sign';
+
+  @override
+  String get supportAppointments => 'Appointments';
+
+  @override
+  String supportBadgeNewCount(int count) {
+    return '$count new';
+  }
 }

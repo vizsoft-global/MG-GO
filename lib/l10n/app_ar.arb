@@ -553,5 +553,20 @@
   "supportActionAcknowledgeUpdate": "الإقرار بالتحديث",
   "supportActionDocumentToSign": "مستند بحاجة إلى توقيع",
   "supportCouldNotLoad": "تعذّر التحميل.\n{error}",
-  "supportNoActionRequired": "لا يوجد إجراء مطلوب حالياً"
+  "supportNoActionRequired": "لا يوجد إجراء مطلوب حالياً",
+  "supportHubTitle": "المساعدة والدعم",
+  "supportSectionRaiseRequest": "تقديم طلب",
+  "supportTileSickAccidentLeave": "إجازة مرضية / حادث",
+  "supportTileSalaryJustification": "توضيح الراتب",
+  "supportTileLoanRequest": "طلب قرض",
+  "supportSectionVisitUs": "زيارتنا",
+  "supportScheduleVisitTitle": "حجز زيارة إلى البرج المركزي",
+  "supportScheduleVisitSubtitle": "احجز موعداً للحصول على مساعدة مباشرة",
+  "supportSectionYourActivity": "نشاطك",
+  "supportMyRequestsSubtitle": "تابع حالة طلباتك",
+  "supportMyVisitsTitle": "زياراتي",
+  "supportMyVisitsSubtitle": "زيارات البرج المحجوزة",
+  "supportDocumentsToSign": "مستندات للتوقيع",
+  "supportAppointments": "المواعيد",
+  "supportBadgeNewCount": "{count} جديد"
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
 import 'support_providers.dart';
 
@@ -16,6 +17,7 @@ class SupportHubScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l10n = context.l10n;
     final requestsAsync = ref.watch(myRequestsProvider);
     final actionCount = requestsAsync.asData?.value
             .where((r) => r.status == 'needs_clarification' || r.awaitingDriverAck)
@@ -24,7 +26,7 @@ class SupportHubScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Help & support'),
+        title: Text(l10n.supportHubTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.canPop() ? context.pop() : context.go('/profile'),
@@ -33,7 +35,7 @@ class SupportHubScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: [
-          _SectionLabel(theme, 'RAISE A REQUEST'),
+          _SectionLabel(theme, l10n.supportSectionRaiseRequest),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -41,61 +43,61 @@ class SupportHubScreen extends ConsumerWidget {
             children: [
               _Tile(
                 icon: Icons.event_available_outlined,
-                label: 'Leave',
+                label: l10n.supportRequestTypeLeave,
                 onTap: () => context.push('/profile/support/requests/new?type=leave'),
               ),
               _Tile(
                 icon: Icons.medical_services_outlined,
-                label: 'Sick / Accident Leave',
+                label: l10n.supportTileSickAccidentLeave,
                 onTap: () =>
                     context.push('/profile/support/requests/new?type=sick_leave'),
               ),
               _Tile(
                 icon: Icons.inventory_2_outlined,
-                label: 'Asset request',
+                label: l10n.supportRequestTypeAsset,
                 onTap: () => context.push('/profile/support/requests/new?type=asset'),
               ),
               _Tile(
                 icon: Icons.local_gas_station_outlined,
-                label: 'Fuel reimbursement',
+                label: l10n.supportRequestTypeFuel,
                 onTap: () => context.push('/profile/support/requests/new?type=fuel'),
               ),
               _Tile(
                 icon: Icons.description_outlined,
-                label: 'Document request',
+                label: l10n.supportRequestTypeDocument,
                 onTap: () =>
                     context.push('/profile/support/requests/new?type=document'),
               ),
               _Tile(
                 icon: Icons.report_problem_outlined,
-                label: 'Complaint',
+                label: l10n.supportRequestTypeComplaint,
                 onTap: () =>
                     context.push('/profile/support/requests/new?type=complaint'),
               ),
               _Tile(
                 icon: Icons.payments_outlined,
-                label: 'Salary Justification',
+                label: l10n.supportTileSalaryJustification,
                 onTap: () => context
                     .push('/profile/support/requests/new?type=salary_justification'),
               ),
               _Tile(
                 icon: Icons.account_balance_wallet_outlined,
-                label: 'Loan Request',
+                label: l10n.supportTileLoanRequest,
                 onTap: () => context.push('/profile/support/requests/new?type=loan'),
               ),
             ],
           ),
           const SizedBox(height: 20),
-          _SectionLabel(theme, 'VISIT US'),
+          _SectionLabel(theme, l10n.supportSectionVisitUs),
           const SizedBox(height: 8),
           _WideTile(
             icon: Icons.apartment_outlined,
-            title: 'Schedule a visit to Central Tower',
-            subtitle: 'Book a time slot for in-person help',
+            title: l10n.supportScheduleVisitTitle,
+            subtitle: l10n.supportScheduleVisitSubtitle,
             onTap: () => context.push('/profile/support/visits/book'),
           ),
           const SizedBox(height: 20),
-          _SectionLabel(theme, 'YOUR ACTIVITY'),
+          _SectionLabel(theme, l10n.supportSectionYourActivity),
           const SizedBox(height: 8),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,8 +105,8 @@ class SupportHubScreen extends ConsumerWidget {
               Expanded(
                 child: _ActivityTile(
                   icon: Icons.list_alt_rounded,
-                  title: 'My requests',
-                  subtitle: 'Track your requests',
+                  title: l10n.supportMyRequestsTitle,
+                  subtitle: l10n.supportMyRequestsSubtitle,
                   badgeCount: actionCount,
                   onTap: () => context.push('/profile/support/requests'),
                 ),
@@ -113,8 +115,8 @@ class SupportHubScreen extends ConsumerWidget {
               Expanded(
                 child: _ActivityTile(
                   icon: Icons.confirmation_num_outlined,
-                  title: 'My visits',
-                  subtitle: 'Booked tower visits',
+                  title: l10n.supportMyVisitsTitle,
+                  subtitle: l10n.supportMyVisitsSubtitle,
                   onTap: () => context.push('/profile/support/visits'),
                 ),
               ),
@@ -128,20 +130,20 @@ class SupportHubScreen extends ConsumerWidget {
               children: [
                 _MoreRow(
                   icon: Icons.priority_high_rounded,
-                  label: 'Action required',
+                  label: l10n.supportActionRequired,
                   badgeCount: actionCount,
                   onTap: () => context.push('/profile/support/action-required'),
                 ),
                 const Divider(height: 1, indent: 52),
                 _MoreRow(
                   icon: Icons.draw_outlined,
-                  label: 'Documents to sign',
+                  label: l10n.supportDocumentsToSign,
                   onTap: () => context.push('/profile/support/sign'),
                 ),
                 const Divider(height: 1, indent: 52),
                 _MoreRow(
                   icon: Icons.event_note_outlined,
-                  label: 'Appointments',
+                  label: l10n.supportAppointments,
                   onTap: () => context.push('/profile/support/appointments'),
                 ),
               ],
@@ -359,7 +361,7 @@ class _MoreRow extends StatelessWidget {
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
-                '$badgeCount new',
+                context.l10n.supportBadgeNewCount(badgeCount),
                 style: const TextStyle(
                   color: AppColors.underReviewAmber,
                   fontSize: 11,

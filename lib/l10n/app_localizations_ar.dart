@@ -1818,4 +1818,52 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get supportNoActionRequired => 'لا يوجد إجراء مطلوب حالياً';
+
+  @override
+  String get supportHubTitle => 'المساعدة والدعم';
+
+  @override
+  String get supportSectionRaiseRequest => 'تقديم طلب';
+
+  @override
+  String get supportTileSickAccidentLeave => 'إجازة مرضية / حادث';
+
+  @override
+  String get supportTileSalaryJustification => 'توضيح الراتب';
+
+  @override
+  String get supportTileLoanRequest => 'طلب قرض';
+
+  @override
+  String get supportSectionVisitUs => 'زيارتنا';
+
+  @override
+  String get supportScheduleVisitTitle => 'حجز زيارة إلى البرج المركزي';
+
+  @override
+  String get supportScheduleVisitSubtitle =>
+      'احجز موعداً للحصول على مساعدة مباشرة';
+
+  @override
+  String get supportSectionYourActivity => 'نشاطك';
+
+  @override
+  String get supportMyRequestsSubtitle => 'تابع حالة طلباتك';
+
+  @override
+  String get supportMyVisitsTitle => 'زياراتي';
+
+  @override
+  String get supportMyVisitsSubtitle => 'زيارات البرج المحجوزة';
+
+  @override
+  String get supportDocumentsToSign => 'مستندات للتوقيع';
+
+  @override
+  String get supportAppointments => 'المواعيد';
+
+  @override
+  String supportBadgeNewCount(int count) {
+    return '$count جديد';
+  }
 }
