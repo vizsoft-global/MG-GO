@@ -10,6 +10,7 @@ import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/rider_auth_service.dart';
 import 'support_providers.dart';
+import 'widgets/esign_sensitive_scope.dart';
 import 'widgets/signature_pad.dart';
 
 /// RSup/26 — "Add your signature". Figma shows a dashed drop-zone, a legal
@@ -112,7 +113,15 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final profile = ref.watch(riderProfileProvider).asData?.value;
-    return Scaffold(
+    // Fail closed: until the detail resolves we do not know whether the
+    // document is restricted, and an unprotected frame is unrecoverable.
+    final restricted = ref
+            .watch(esignRequestDetailProvider(widget.requestId))
+            .asData
+            ?.value
+            .screenshotRestricted ??
+        true;
+    final scaffold = Scaffold(
       appBar: AppBar(
         title: Text(l10n.esignAddYourSignature),
         leading: IconButton(
@@ -213,6 +222,7 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
         ),
       ),
     );
+    return EsignSensitiveScope(restricted: restricted, child: scaffold);
   }
 }
 
