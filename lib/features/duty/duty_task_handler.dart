@@ -14,6 +14,7 @@ import '../../core/security/security_event_repository.dart';
 import '../../core/security/security_event_types.dart';
 import '../../l10n/app_localizations.dart';
 import 'adaptive_location_scheduler.dart';
+import 'live_map_heartbeat.dart';
 import 'location_tracking_service.dart';
 
 @pragma('vm:entry-point')
@@ -30,6 +31,7 @@ class DutyTaskHandler extends TaskHandler {
   bool _autoCheckedOut = false;
   AppLocalizations? _l10n;
   String _lastNotificationText = '';
+  Position? _lastGoodPosition;
 
   Future<AppLocalizations> _localizations() async {
     return _l10n ??= await loadSavedLocalizations();
@@ -45,6 +47,7 @@ class DutyTaskHandler extends TaskHandler {
     _lastNotificationText = l10n.onDutyTapToOpen;
     _scheduler.reset();
     _autoCheckedOut = false;
+    _lastGoodPosition = null;
   }
 
   @override
@@ -114,17 +117,24 @@ class DutyTaskHandler extends TaskHandler {
         return;
       }
 
-      // Discard extremely coarse fixes so a bad multipath reading doesn't
-      // yank the driver hundreds of meters on the live map. Always keep the
-      // first on-duty sample and forced delivery samples.
-      if (!force &&
-          !_scheduler.needsInitialReport &&
-          position.accuracy > 100) {
+      // Coarse indoor fixes would yank the live-map pin. Heartbeat the last
+      // accurate position instead of skipping the report (which dropped the
+      // driver off the admin map after ~8 minutes).
+      final reportPosition = heartbeatPosition(
+        current: position,
+        lastGood: _lastGoodPosition,
+        force: force,
+        needsInitialReport: _scheduler.needsInitialReport,
+      );
+      if (reportPosition == null) {
         await _updateNotification(l10n.onDutyStationaryGpsPaused);
         return;
       }
+      if (reportPosition.accuracy <= 100) {
+        _lastGoodPosition = reportPosition;
+      }
 
-      _scheduler.updateFromPosition(position, now);
+      _scheduler.updateFromPosition(reportPosition, now);
 
       if (!force && !_scheduler.shouldReportToServer(now)) {
         await _updateNotification(l10n.onDutyStationaryGpsPaused);
@@ -136,17 +146,17 @@ class DutyTaskHandler extends TaskHandler {
         batteryPct = await _battery.batteryLevel;
       } catch (_) {}
 
-      final extras = await _collectReportExtras(position);
+      final extras = await _collectReportExtras(reportPosition);
 
-      final speed = position.speed >= 0 ? position.speed : null;
+      final speed = reportPosition.speed >= 0 ? reportPosition.speed : null;
       LocationReportResult report;
       try {
         report = await reportLocationViaHttp(
           accessToken: token,
-          latitude: position.latitude,
-          longitude: position.longitude,
+          latitude: reportPosition.latitude,
+          longitude: reportPosition.longitude,
           speedMps: speed,
-          accuracyMeters: position.accuracy,
+          accuracyMeters: reportPosition.accuracy,
           batteryPct: batteryPct,
           trackingStatus: _scheduler.status,
           forceHistory: _scheduler.status == TrackingStatus.deliverySubmit,
@@ -156,10 +166,10 @@ class DutyTaskHandler extends TaskHandler {
         FlutterForegroundTask.sendDataToMain(
           jsonEncode({
             'event': 'queue_location',
-            'lat': position.latitude,
-            'lng': position.longitude,
+            'lat': reportPosition.latitude,
+            'lng': reportPosition.longitude,
             'speed_mps': speed,
-            'accuracy_meters': position.accuracy,
+            'accuracy_meters': reportPosition.accuracy,
             'battery_pct': batteryPct,
             'tracking_status': _scheduler.status.apiValue,
             'force_history': _scheduler.status == TrackingStatus.deliverySubmit,

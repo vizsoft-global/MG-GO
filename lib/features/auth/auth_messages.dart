@@ -8,6 +8,7 @@ String messageForAuthFailure(Object error, AppLocalizations l10n) {
       RiderAuthFailure.invalidCredentials => l10n.authInvalidCredentials,
       RiderAuthFailure.driverNotActive => l10n.authDriverNotActive,
       RiderAuthFailure.driverSuspended => l10n.authDriverSuspended,
+      RiderAuthFailure.driverArchived => l10n.authDriverArchived,
       RiderAuthFailure.staffNotAllowed => l10n.authStaffNotAllowed,
       RiderAuthFailure.profileSyncFailed => l10n.authProfileSyncFailed,
       RiderAuthFailure.unknown => l10n.somethingWentWrong,

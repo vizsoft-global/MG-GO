@@ -1,5 +1,21 @@
 import '../../l10n/app_localizations.dart';
 
+/// Elapsed seconds for an open online session that started in [periodStart]..now.
+///
+/// Sessions left `is_online` from a previous day/week must not inflate
+/// today's or this week's Time in with wall-clock hours.
+int liveOpenSessionSeconds({
+  required bool isOnline,
+  DateTime? wentOnlineAt,
+  required DateTime now,
+  required DateTime periodStart,
+}) {
+  if (!isOnline || wentOnlineAt == null) return 0;
+  if (wentOnlineAt.isBefore(periodStart)) return 0;
+  final live = now.difference(wentOnlineAt).inSeconds;
+  return live > 0 ? live : 0;
+}
+
 class ShiftAdherence {
   const ShiftAdherence({
     this.scheduledStartAt,
@@ -95,11 +111,15 @@ class HomeDashboard {
 
   /// Total time clocked in today, including the current session when online.
   int get todayOnlineSeconds {
-    final accumulated = todayAccumulatedOnlineSeconds;
-    if (!isOnline || session.wentOnlineAt == null) return accumulated;
-    final live =
-        DateTime.now().difference(session.wentOnlineAt!).inSeconds;
-    return accumulated + (live > 0 ? live : 0);
+    final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+    return todayAccumulatedOnlineSeconds +
+        liveOpenSessionSeconds(
+          isOnline: isOnline,
+          wentOnlineAt: session.wentOnlineAt,
+          now: now,
+          periodStart: todayStart,
+        );
   }
 
   factory HomeDashboard.fromJson(Map<String, dynamic> json) {

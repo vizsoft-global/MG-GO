@@ -60,6 +60,7 @@ class DriverDelivery {
     this.cancelLng,
     this.cancelReason,
     this.cancelProofUrl,
+    this.rejectionReason,
     this.partnerName,
     this.partnerLogoUrl,
   });
@@ -80,6 +81,7 @@ class DriverDelivery {
   final double? cancelLng;
   final String? cancelReason;
   final String? cancelProofUrl;
+  final String? rejectionReason;
   final String? partnerName;
   final String? partnerLogoUrl;
 
@@ -169,6 +171,7 @@ class DriverDelivery {
       cancelLng: parseDouble(json['cancel_lng']),
       cancelReason: json['cancel_reason'] as String?,
       cancelProofUrl: json['cancel_proof_url'] as String?,
+      rejectionReason: json['rejection_reason'] as String?,
       partnerName: partnerMap?['name'] as String?,
       partnerLogoUrl: partnerMap?['logo_url'] as String?,
     );

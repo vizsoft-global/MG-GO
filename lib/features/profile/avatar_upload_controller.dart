@@ -1,13 +1,14 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/painting.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/storage/driver_upload_provider.dart';
 import '../auth/rider_auth_service.dart';
+import 'avatar_picker_errors.dart';
 
 final avatarUploadControllerProvider =
     AsyncNotifierProvider<AvatarUploadController, AvatarUploadOutcome?>(
@@ -42,6 +43,7 @@ class ProfileAvatarDisplayOverrideNotifier extends Notifier<String?> {
 
 enum AvatarUploadOutcome {
   cancelled,
+  cameraDenied,
   uploadedAndVisible,
   uploadedButPreviewFailed,
 }
@@ -51,14 +53,31 @@ class AvatarUploadController extends AsyncNotifier<AvatarUploadOutcome?> {
   Future<AvatarUploadOutcome?> build() async => null;
 
   Future<void> pickAndUpload(ImageSource source) async {
+    if (source == ImageSource.camera) {
+      final allowed = await ensureCameraPermission();
+      if (!allowed) {
+        state = const AsyncLoading();
+        state = const AsyncData(AvatarUploadOutcome.cameraDenied);
+        return;
+      }
+    }
+
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final picker = ImagePicker();
-      final picked = await picker.pickImage(
-        source: source,
-        maxWidth: 1024,
-        imageQuality: 85,
-      );
+      final XFile? picked;
+      try {
+        picked = await picker.pickImage(
+          source: source,
+          maxWidth: 1024,
+          imageQuality: 85,
+        );
+      } on PlatformException catch (e) {
+        if (isCameraPermissionException(e)) {
+          return AvatarUploadOutcome.cameraDenied;
+        }
+        rethrow;
+      }
       if (picked == null) {
         ref.read(avatarLocalPreviewProvider.notifier).set(null);
         return AvatarUploadOutcome.cancelled;

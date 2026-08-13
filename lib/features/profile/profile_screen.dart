@@ -11,6 +11,7 @@ import '../../core/storage/driver_upload_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/coming_soon_dialog.dart';
 import '../auth/rider_auth_service.dart';
+import 'avatar_picker_errors.dart';
 import 'avatar_upload_controller.dart';
 import 'widgets/avatar_source_sheet.dart';
 import 'widgets/language_picker_sheet.dart';
@@ -75,10 +76,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       (previous, next) {
         if (!mounted) return;
         if (next.hasError) {
-          final error = next.error;
+          final error = next.error!;
+          if (isCameraPermissionException(error)) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.profileCameraPermissionDenied)),
+            );
+            return;
+          }
           final message = error is DriverUploadException
               ? messageForDriverUploadException(error, l10n)
-              : error.toString();
+              : l10n.somethingWentWrong;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.profileImageUploadFailed(message)),
@@ -89,6 +96,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         if (previous?.isLoading != true || !next.hasValue) return;
         final outcome = next.value;
         switch (outcome) {
+          case AvatarUploadOutcome.cameraDenied:
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.profileCameraPermissionDenied)),
+            );
           case AvatarUploadOutcome.uploadedAndVisible:
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(l10n.profilePictureUpdated)),
@@ -363,7 +374,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
     );
     if (confirmed != true || !context.mounted) return;
-    await ref.read(riderAuthServiceProvider).signOut();
+    await ref.read(riderAuthServiceProvider).signOut(clockOut: true);
     if (context.mounted) context.go('/login');
   }
 }

@@ -15,6 +15,20 @@ extension TrackingStatusApi on TrackingStatus {
   };
 }
 
+/// GPS rest jitter is typically 0–5 km/h. Home Current Speed treats anything
+/// below [AdaptiveLocationScheduler.movingSpeedThresholdMps] as stationary.
+double? displaySpeedMps(double? speedMps) {
+  if (speedMps == null || speedMps < 0) return null;
+  if (speedMps < AdaptiveLocationScheduler.movingSpeedThresholdMps) return 0;
+  return speedMps;
+}
+
+String displaySpeedKmhLabel(double? speedMps) {
+  final mps = displaySpeedMps(speedMps);
+  if (mps == null) return '--';
+  return (mps * 3.6).toStringAsFixed(1);
+}
+
 /// Adaptive GPS sampling + server push cadence for fleet live tracking.
 ///
 /// Targets ops responsiveness (admin live map) without saturating the DB:

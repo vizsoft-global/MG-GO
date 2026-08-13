@@ -74,6 +74,22 @@ class NotificationInboxNotifier
     await repo.markRead(dispatchItemIds: [dispatchItemId]);
   }
 
+  Future<void> dismiss(String dispatchItemId) async {
+    final repo = ref.read(notificationInboxRepositoryProvider);
+    final current = state.value;
+    if (current == null) return;
+    state = AsyncData(current.withoutIds([dispatchItemId]));
+    await repo.dismiss(dispatchItemIds: [dispatchItemId]);
+  }
+
+  Future<void> dismissAll() async {
+    final repo = ref.read(notificationInboxRepositoryProvider);
+    final current = state.value;
+    if (current == null || current.items.isEmpty) return;
+    state = const AsyncData(NotificationInboxSnapshot.empty);
+    await repo.dismiss();
+  }
+
   Future<NotificationInboxSnapshot> _fetch() async {
     final repo = ref.read(notificationInboxRepositoryProvider);
     final snapshot = await repo.list(limit: 50);

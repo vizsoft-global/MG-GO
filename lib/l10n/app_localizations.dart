@@ -620,6 +620,12 @@ abstract class AppLocalizations {
   /// **'Your driver account has been suspended. Contact your administrator.'**
   String get authDriverSuspended;
 
+  /// No description provided for @authDriverArchived.
+  ///
+  /// In en, this message translates to:
+  /// **'Your driver account has been archived. Contact your administrator.'**
+  String get authDriverArchived;
+
   /// No description provided for @authStaffNotAllowed.
   ///
   /// In en, this message translates to:
@@ -1123,6 +1129,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Mark all read'**
   String get markAllRead;
+
+  /// No description provided for @clearAllNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get clearAllNotifications;
+
+  /// No description provided for @clearAllNotificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all notifications?'**
+  String get clearAllNotificationsTitle;
+
+  /// No description provided for @clearAllNotificationsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'They will be removed from your list. This cannot be undone.'**
+  String get clearAllNotificationsBody;
+
+  /// No description provided for @removeNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get removeNotification;
 
   /// No description provided for @viewMore.
   ///
@@ -2360,6 +2390,12 @@ abstract class AppLocalizations {
   /// **'Profile image upload failed: {error}'**
   String profileImageUploadFailed(String error);
 
+  /// No description provided for @profileCameraPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera access is needed to take a photo. Allow it when asked, or enable Camera in Settings.'**
+  String get profileCameraPermissionDenied;
+
   /// No description provided for @profilePictureUpdated.
   ///
   /// In en, this message translates to:
@@ -2804,6 +2840,12 @@ abstract class AppLocalizations {
   /// **'Cancel reason'**
   String get cancelReasonLabel;
 
+  /// No description provided for @rejectionReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejection reason'**
+  String get rejectionReason;
+
   /// No description provided for @cancelReasonRequired.
   ///
   /// In en, this message translates to:
@@ -2909,7 +2951,7 @@ abstract class AppLocalizations {
   /// No description provided for @duplicateOrderId.
   ///
   /// In en, this message translates to:
-  /// **'This order ID is already logged'**
+  /// **'This Order ID already exists.'**
   String get duplicateOrderId;
 
   /// No description provided for @proofPhotoRequired.

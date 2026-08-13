@@ -160,6 +160,16 @@ class _DeliveryDetailSheetState extends ConsumerState<DeliveryDetailSheet> {
                     label: l10n.status,
                     value: DeliveryStatusChip(status: delivery.status),
                   ),
+                  if (delivery.rejectionReason?.trim().isNotEmpty == true)
+                    _DetailRow(
+                      label: l10n.rejectionReason,
+                      value: Text(
+                        delivery.rejectionReason!.trim(),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ),
                   _DetailRow(
                     label: l10n.submitted,
                     value: Text(

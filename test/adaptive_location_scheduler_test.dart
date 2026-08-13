@@ -89,4 +89,24 @@ void main() {
       expect(scheduler.shouldReportToServer(next), isTrue);
     });
   });
+
+  group('displaySpeedMps', () {
+    test('treats GPS rest jitter as stationary', () {
+      // Ticket: Home showed 3.8 then 1.0 km/h while distance stayed 0 km.
+      expect(displaySpeedMps(3.8 / 3.6), 0);
+      expect(displaySpeedMps(1.0 / 3.6), 0);
+      expect(displaySpeedKmhLabel(3.8 / 3.6), '0.0');
+    });
+
+    test('keeps real riding speed', () {
+      expect(displaySpeedMps(20 / 3.6), closeTo(20 / 3.6, 0.0001));
+      expect(displaySpeedKmhLabel(20 / 3.6), '20.0');
+    });
+
+    test('unknown GPS stays unknown', () {
+      expect(displaySpeedMps(null), isNull);
+      expect(displaySpeedMps(-1), isNull);
+      expect(displaySpeedKmhLabel(null), '--');
+    });
+  });
 }

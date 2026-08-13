@@ -7,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../deliveries/active_delivery_provider.dart';
 import '../deliveries/add_delivery_flow.dart';
+import '../duty/adaptive_location_scheduler.dart';
 import '../duty/duty_lifecycle_controller.dart';
 import '../duty/duty_location_provider.dart';
 import '../shift/on_duty_gate.dart';
@@ -310,9 +311,8 @@ class _LiveGpsStatsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final speedKmh = speedMps != null ? speedMps! * 3.6 : null;
     final distanceKm = distanceTodayMeters / 1000;
-    final speedLabel = speedKmh == null ? '--' : speedKmh.toStringAsFixed(1);
+    final speedLabel = displaySpeedKmhLabel(speedMps);
     final distanceLabel = distanceKm <= 0
         ? '0.00'
         : distanceKm.toStringAsFixed(2);

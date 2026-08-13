@@ -57,13 +57,15 @@ class _TodayTimeInBannerState extends State<TodayTimeInBanner> {
   }
 
   int _totalOnlineSeconds() {
-    var total = widget.accumulatedOnlineSeconds;
-    if (widget.isOnline && widget.wentOnlineAt != null) {
-      final live =
-          DateTime.now().difference(widget.wentOnlineAt!).inSeconds;
-      if (live > 0) total += live;
-    }
-    return total;
+    final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+    return widget.accumulatedOnlineSeconds +
+        liveOpenSessionSeconds(
+          isOnline: widget.isOnline,
+          wentOnlineAt: widget.wentOnlineAt,
+          now: now,
+          periodStart: todayStart,
+        );
   }
 
   @override
