@@ -13,6 +13,8 @@ import '../../features/shift/shift_service.dart';
 import '../device/device_identity_service.dart';
 import '../security/security_event_repository.dart';
 import '../security/security_event_types.dart';
+import '../telemetry/telemetry_event_types.dart';
+import '../telemetry/telemetry_service.dart';
 import '../../features/auth/login_verification_store.dart';
 import '../storage/driver_upload_service.dart';
 import 'offline_db.dart';
@@ -68,6 +70,7 @@ class SyncController extends Notifier<SyncState> {
     if (userId == null) return;
 
     _busy = true;
+    final startedAt = DateTime.now();
     try {
       final db = OfflineDb.instance;
 
@@ -155,6 +158,18 @@ class SyncController extends Notifier<SyncState> {
         syncedCount: synced,
         pendingCount: remainingPending,
         lastRunAt: DateTime.now(),
+      );
+
+      // The business queue, not the telemetry queue: telemetry never reports on
+      // its own flush, which is what would make a feedback loop.
+      TelemetryService.instance.log(
+        TelemetryEvents.queueFlushed,
+        context: {
+          'queue': 'offline_sync',
+          'depth': remainingPending,
+          'batch_count': synced,
+          'flush_ms': DateTime.now().difference(startedAt).inMilliseconds,
+        },
       );
     } catch (e) {
       state = state.copyWith(

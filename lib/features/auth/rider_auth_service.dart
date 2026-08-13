@@ -11,19 +11,32 @@ import '../../core/delivery/delivery_proximity_cache.dart';
 import '../../core/device/device_identity_service.dart';
 import '../../core/geo/device_location_resolver.dart';
 import '../../core/utils/ascii_digits.dart';
+import '../profile/avatar_disk_cache.dart';
 import 'device_session_models.dart';
 import 'driver_access.dart';
 import 'login_preferences_store.dart';
 import 'login_verification_store.dart';
+import 'sign_out_cleanup.dart';
 
 enum RiderAuthFailure {
   notConfigured,
   invalidCredentials,
   driverNotActive,
   driverSuspended,
+  driverArchived,
   staffNotAllowed,
   profileSyncFailed,
   unknown,
+}
+
+RiderAuthFailure mapPasscodeLoginError(String error) {
+  return switch (error) {
+    'driver_not_active' => RiderAuthFailure.driverNotActive,
+    'driver_suspended' => RiderAuthFailure.driverSuspended,
+    'driver_archived' => RiderAuthFailure.driverArchived,
+    'invalid_credentials' => RiderAuthFailure.invalidCredentials,
+    _ => RiderAuthFailure.invalidCredentials,
+  };
 }
 
 class RiderBlockedException implements Exception {
@@ -63,6 +76,21 @@ class RiderProfile {
 
   bool get isRider => role == 'rider';
 }
+
+/// Bust Flutter's [NetworkImage] cache without mutating a signed query string.
+/// Extra `?v=` / `&v=` params invalidate R2/S3 signatures, so Home/Profile
+/// fall back to initials after the in-memory preview is gone.
+String? appendAvatarCacheBuster(String? url, DateTime? updatedAt) {
+  if (url == null || url.isEmpty) return url;
+  if (updatedAt == null) return url;
+  final stamp = updatedAt.millisecondsSinceEpoch.toString();
+  final withoutFragment = url.split('#').first;
+  return '$withoutFragment#v=$stamp';
+}
+
+/// [Image.network] / `http.get` must not send a fragment. Cache-busting lives
+/// in `#v=` so it never mutates the signed query string.
+String unsignedAvatarUrl(String url) => url.split('#').first;
 
 class RiderAuthService {
   RiderAuthService(this._client, this._deviceIdentity);
@@ -247,14 +275,8 @@ class RiderAuthService {
     return null;
   }
 
-  RiderAuthFailure _mapPasscodeError(String error) {
-    return switch (error) {
-      'driver_not_active' => RiderAuthFailure.driverNotActive,
-      'driver_suspended' => RiderAuthFailure.driverSuspended,
-      'invalid_credentials' => RiderAuthFailure.invalidCredentials,
-      _ => RiderAuthFailure.invalidCredentials,
-    };
-  }
+  RiderAuthFailure _mapPasscodeError(String error) =>
+      mapPasscodeLoginError(error);
 
   String? _parseBlockedReason(dynamic details) {
     if (details is Map && details['error'] == 'driver_blocked') {
@@ -294,17 +316,32 @@ class RiderAuthService {
     return RiderAuthFailure.unknown;
   }
 
-  Future<void> signOut({bool keepRememberMe = false}) async {
+  Future<void> signOut({
+    bool keepRememberMe = false,
+    bool clockOut = false,
+  }) async {
     final userId = currentUser?.id;
-    try {
-      final deviceId = await _deviceIdentity.deviceIdOnly();
-      await _client.rpc(
-        'driver_release_device_session',
-        params: {'p_device_id': deviceId},
-      );
-    } catch (_) {}
+    await runSignOutSessionCleanup(
+      clockOut: clockOut,
+      clockOutFn: () async {
+        await _client.rpc(
+          'driver_set_duty_state',
+          params: {'p_is_on_duty': false, 'p_is_online': false},
+        );
+      },
+      releaseDeviceFn: () async {
+        final deviceId = await _deviceIdentity.deviceIdOnly();
+        await _client.rpc(
+          'driver_release_device_session',
+          params: {'p_device_id': deviceId},
+        );
+      },
+    );
     await DeliveryProximityCache.clearCurrentUser(userId);
     DeviceLocationResolver.instance.clear();
+    try {
+      await AvatarDiskCache().clear();
+    } catch (_) {}
     if (!keepRememberMe) {
       await LoginPreferencesStore.clearRememberMe();
     }
@@ -420,7 +457,7 @@ class RiderAuthService {
     if (trimmedKey != null &&
         (trimmedKey.startsWith('http://') ||
             trimmedKey.startsWith('https://'))) {
-      immediateAvatarUrl = _appendCacheBuster(trimmedKey, avatarUpdatedAt);
+      immediateAvatarUrl = appendAvatarCacheBuster(trimmedKey, avatarUpdatedAt);
     } else {
       immediateAvatarUrl = null;
     }
@@ -446,7 +483,7 @@ class RiderAuthService {
     final trimmed = objectKey?.trim();
     if (trimmed == null || trimmed.isEmpty) return null;
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-      return _appendCacheBuster(trimmed, cacheBuster);
+      return appendAvatarCacheBuster(trimmed, cacheBuster);
     }
 
     final session = _client.auth.currentSession;
@@ -466,7 +503,7 @@ class RiderAuthService {
       ).replace(queryParameters: {'objectKey': trimmed});
       final response = await http
           .get(uri, headers: {'Authorization': 'Bearer ${session.accessToken}'})
-          .timeout(const Duration(seconds: 6));
+          .timeout(const Duration(seconds: 12));
       if (response.statusCode != 200) {
         debugPrint(
           '[avatar] read endpoint returned ${response.statusCode} for '
@@ -482,22 +519,11 @@ class RiderAuthService {
         );
         return null;
       }
-      return _appendCacheBuster(readUrl, cacheBuster);
+      return appendAvatarCacheBuster(readUrl, cacheBuster);
     } catch (e) {
       debugPrint('[avatar] read endpoint threw for $trimmed: $e');
       return null;
     }
-  }
-
-  /// Tacks `?v={epochMs}` (or `&v=`) onto the URL so that if the admin
-  /// uploads a new image with the same object key, Flutter's network image
-  /// cache won't keep serving the stale bytes.
-  String? _appendCacheBuster(String? url, DateTime? updatedAt) {
-    if (url == null || url.isEmpty) return url;
-    if (updatedAt == null) return url;
-    final stamp = updatedAt.millisecondsSinceEpoch.toString();
-    final sep = url.contains('?') ? '&' : '?';
-    return '$url${sep}v=$stamp';
   }
 
   Future<void> _syncRiderProfileRpc({String? fullName}) async {

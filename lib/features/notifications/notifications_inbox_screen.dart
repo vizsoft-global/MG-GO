@@ -17,7 +17,7 @@ class NotificationsInboxScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final inboxAsync = ref.watch(notificationInboxProvider);
+    final inboxAsync = ref.watch(visibleNotificationInboxProvider);
 
     return Scaffold(
       backgroundColor: AppColors.pageBackground,
@@ -30,6 +30,14 @@ class NotificationsInboxScreen extends ConsumerWidget {
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         actions: [
+          if ((inboxAsync.value?.items.isNotEmpty ?? false))
+            TextButton(
+              onPressed: () => _confirmClearAll(context, ref),
+              child: Text(
+                l10n.clearAllNotifications,
+                style: const TextStyle(color: AppColors.rejectedRed),
+              ),
+            ),
           if ((inboxAsync.value?.effectiveUnreadCount ?? 0) > 0)
             TextButton(
               onPressed: () =>
@@ -102,9 +110,31 @@ class NotificationsInboxScreen extends ConsumerWidget {
                     const SizedBox(height: 8),
                 itemBuilder: (context, index) {
                   final item = snapshot.items[index];
-                  return _NotificationCard(
-                    item: item,
-                    onTap: () => _handleTap(context, ref, item),
+                  return Dismissible(
+                    key: ValueKey(item.dispatchItemId),
+                    direction: DismissDirection.endToStart,
+                    background: Container(
+                      alignment: AlignmentDirectional.centerEnd,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      decoration: BoxDecoration(
+                        color: AppColors.rejectedRed,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.delete_outline,
+                        color: Colors.white,
+                      ),
+                    ),
+                    onDismissed: (_) => ref
+                        .read(notificationInboxProvider.notifier)
+                        .dismiss(item.dispatchItemId),
+                    child: _NotificationCard(
+                      item: item,
+                      onTap: () => _handleTap(context, ref, item),
+                      onRemove: () => ref
+                          .read(notificationInboxProvider.notifier)
+                          .dismiss(item.dispatchItemId),
+                    ),
                   );
                 },
               );
@@ -113,6 +143,32 @@ class NotificationsInboxScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmClearAll(BuildContext context, WidgetRef ref) async {
+    final l10n = context.l10n;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.clearAllNotificationsTitle),
+        content: Text(l10n.clearAllNotificationsBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.rejectedRed,
+            ),
+            child: Text(l10n.clearAllNotifications),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    await ref.read(notificationInboxProvider.notifier).dismissAll();
   }
 
   Future<void> _handleTap(
@@ -159,10 +215,15 @@ class NotificationsInboxScreen extends ConsumerWidget {
 }
 
 class _NotificationCard extends StatelessWidget {
-  const _NotificationCard({required this.item, required this.onTap});
+  const _NotificationCard({
+    required this.item,
+    required this.onTap,
+    required this.onRemove,
+  });
 
   final NotificationInboxItem item;
   final VoidCallback onTap;
+  final VoidCallback onRemove;
 
   @override
   Widget build(BuildContext context) {
@@ -225,6 +286,21 @@ class _NotificationCard extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 11,
                             color: AppColors.dayLabelGrey,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: onRemove,
+                          tooltip: l10n.removeNotification,
+                          visualDensity: VisualDensity.compact,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(
+                            minWidth: 32,
+                            minHeight: 32,
+                          ),
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            size: 18,
+                            color: AppColors.rejectedRed,
                           ),
                         ),
                       ],

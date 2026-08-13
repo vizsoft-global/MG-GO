@@ -308,6 +308,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your driver account has been suspended. Contact your administrator.';
 
   @override
+  String get authDriverArchived =>
+      'Your driver account has been archived. Contact your administrator.';
+
+  @override
   String get authStaffNotAllowed => 'This account is for the admin panel only.';
 
   @override
@@ -602,6 +606,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get markAllRead => 'Mark all read';
+
+  @override
+  String get clearAllNotifications => 'Clear all';
+
+  @override
+  String get clearAllNotificationsTitle => 'Clear all notifications?';
+
+  @override
+  String get clearAllNotificationsBody =>
+      'They will be removed from your list. This cannot be undone.';
+
+  @override
+  String get removeNotification => 'Remove';
 
   @override
   String get viewMore => 'View More';
@@ -1297,6 +1314,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get profileCameraPermissionDenied =>
+      'Camera access is needed to take a photo. Allow it when asked, or enable Camera in Settings.';
+
+  @override
   String get profilePictureUpdated => 'Profile picture updated';
 
   @override
@@ -1304,8 +1325,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Uploaded, but preview could not load. Pull down to refresh — contact support if it persists.';
 
   @override
-  String get notificationsSettingsComingSoon =>
-      'Notifications settings are coming soon';
+  String get notificationsTurnedOff => 'Notifications turned off';
+
+  @override
+  String get notificationsTurnedOn => 'Notifications turned on';
 
   @override
   String get signOutConfirmBody =>
@@ -1539,6 +1562,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancelReasonLabel => 'Cancel reason';
 
   @override
+  String get cancelNoteOptional => 'Note (optional)';
+
+  @override
+  String get rejectionReason => 'Rejection reason';
+
+  @override
   String get cancelReasonRequired => 'Cancel reason is required';
 
   @override
@@ -1591,7 +1620,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activePickupExists => 'You already have an order in progress';
 
   @override
-  String get duplicateOrderId => 'This order ID is already logged';
+  String get duplicateOrderId => 'This Order ID already exists.';
+
+  @override
+  String get invalidOrderId => 'Order ID must be 1–32 digits.';
 
   @override
   String get proofPhotoRequired => 'A proof photo is required';

@@ -194,22 +194,22 @@ class EarningsService {
   // Lifetime performance summary (top card on Earnings screen)
   // ---------------------------------------------------------------------
 
-  /// Counts verified deliveries directly from the `deliveries` table (RLS
-  /// scoped to the signed-in driver). We intentionally do **not** sum
-  /// `driver_earnings_daily.deliveries` here — that column only reflects
-  /// rule-eligible verified rows after recalc, while attendance-only daily
-  /// rows can exist with `deliveries = 0` and would under-count totals.
+  /// "Total Deliveries" is lifetime submitted count from
+  /// `driver_get_earnings_summary` (pending + in_transit + verified +
+  /// rejected; excludes cancelled). Do **not** sum
+  /// `driver_earnings_daily.deliveries` — that is verified-only payroll.
   ///
-  /// Working days = distinct Kuwait-local dates with at least one verified
-  /// delivery. Attendance % comes from `driver_get_attendance` for the
-  /// current month.
+  /// Working days = distinct Kuwait-local dates with at least one
+  /// non-cancelled delivery. Attendance % comes from
+  /// `driver_get_attendance` for the current month.
   Future<PerformanceSummary> fetchPerformance() async {
     try {
-      final stats = await _fetchVerifiedDeliveryStats();
+      final totalDeliveries = await _fetchTotalDeliveries();
+      final workingDays = await _fetchWorkingDays();
       final attendancePct = await _fetchAttendancePctSafe();
       return PerformanceSummary(
-        totalDeliveries: stats.totalDeliveries,
-        workingDays: stats.workingDays,
+        totalDeliveries: totalDeliveries,
+        workingDays: workingDays,
         attendancePct: attendancePct,
       );
     } on PostgrestException catch (e) {
@@ -218,18 +218,20 @@ class EarningsService {
     }
   }
 
-  Future<({int totalDeliveries, int workingDays})>
-  _fetchVerifiedDeliveryStats() async {
-    final totalDeliveries = await _client
-        .from('deliveries')
-        .count(CountOption.exact)
-        .eq('status', 'verified');
+  Future<int> _fetchTotalDeliveries() async {
+    final result = await _client.rpc('driver_get_earnings_summary');
     _networkStatus.recordRpcSuccess();
+    final map = result is Map<String, dynamic>
+        ? result
+        : Map<String, dynamic>.from(result as Map);
+    return (map['total_deliveries'] as num?)?.toInt() ?? 0;
+  }
 
+  Future<int> _fetchWorkingDays() async {
     final raw = await _client
         .from('deliveries')
         .select('delivered_at')
-        .eq('status', 'verified');
+        .neq('status', 'cancelled');
     _networkStatus.recordRpcSuccess();
 
     final workingDayKeys = <String>{};
@@ -237,11 +239,7 @@ class EarningsService {
       final key = _kuwaitDateKey(row['delivered_at']?.toString());
       if (key != null) workingDayKeys.add(key);
     }
-
-    return (
-      totalDeliveries: totalDeliveries,
-      workingDays: workingDayKeys.length,
-    );
+    return workingDayKeys.length;
   }
 
   String? _kuwaitDateKey(String? raw) {

@@ -1,4 +1,5 @@
 import '../../l10n/app_localizations.dart';
+import 'order_id.dart';
 
 /// Known cancel reason codes stored in `deliveries.cancel_reason`.
 enum CancelReason {
@@ -60,6 +61,7 @@ class DriverDelivery {
     this.cancelLng,
     this.cancelReason,
     this.cancelProofUrl,
+    this.rejectionReason,
     this.partnerName,
     this.partnerLogoUrl,
   });
@@ -80,6 +82,7 @@ class DriverDelivery {
   final double? cancelLng;
   final String? cancelReason;
   final String? cancelProofUrl;
+  final String? rejectionReason;
   final String? partnerName;
   final String? partnerLogoUrl;
 
@@ -119,8 +122,9 @@ class DriverDelivery {
     return value.isNotEmpty && value != '—';
   }
 
-  String displayOrderId(AppLocalizations l10n) =>
-      hasOrderId ? externalOrderId : l10n.notProvided;
+  String displayOrderId(AppLocalizations l10n) => hasOrderId
+      ? OrderId.displayStored(externalOrderId)
+      : l10n.notProvided;
 
   String? cancelReasonLabel(AppLocalizations l10n) {
     final parsed = CancelReason.tryParse(cancelReason);
@@ -169,6 +173,7 @@ class DriverDelivery {
       cancelLng: parseDouble(json['cancel_lng']),
       cancelReason: json['cancel_reason'] as String?,
       cancelProofUrl: json['cancel_proof_url'] as String?,
+      rejectionReason: json['rejection_reason'] as String?,
       partnerName: partnerMap?['name'] as String?,
       partnerLogoUrl: partnerMap?['logo_url'] as String?,
     );

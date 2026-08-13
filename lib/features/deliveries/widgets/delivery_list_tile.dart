@@ -52,6 +52,8 @@ class DeliveryListTile extends StatelessWidget {
                           delivery.hasOrderId
                               ? '#${delivery.displayOrderId(l10n)}'
                               : delivery.displayOrderId(l10n),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style:
                               Theme.of(context).textTheme.labelSmall?.copyWith(
                                     color: delivery.hasOrderId

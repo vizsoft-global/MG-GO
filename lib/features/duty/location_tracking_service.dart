@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:battery_plus/battery_plus.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -17,6 +18,14 @@ class LocationTrackingException implements Exception {
 
   @override
   String toString() => message;
+}
+
+Future<int?> readBatteryPct() async {
+  try {
+    return await Battery().batteryLevel;
+  } catch (_) {
+    return null;
+  }
 }
 
 class LocationReportExtras {

@@ -543,9 +543,9 @@ class MonthlyEarningsAggregate {
   }
 }
 
-/// Lifetime performance numbers shown in the top card. Verified delivery
-/// totals come from the `deliveries` table; attendance % from
-/// `driver_get_attendance` for the current month.
+/// Lifetime performance numbers shown in the top card.
+/// `totalDeliveries` is submitted count from `driver_get_earnings_summary`
+/// (excludes cancelled). Attendance % from `driver_get_attendance`.
 class PerformanceSummary {
   const PerformanceSummary({
     required this.totalDeliveries,

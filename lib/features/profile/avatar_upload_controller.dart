@@ -2,12 +2,16 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/painting.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/storage/driver_upload_provider.dart';
 import '../auth/rider_auth_service.dart';
+import 'avatar_disk_cache.dart';
+import 'avatar_picker_errors.dart';
 
 final avatarUploadControllerProvider =
     AsyncNotifierProvider<AvatarUploadController, AvatarUploadOutcome?>(
@@ -40,8 +44,35 @@ class ProfileAvatarDisplayOverrideNotifier extends Notifier<String?> {
   void set(String? url) => state = url;
 }
 
+/// Survives process death: disk hit, else download signed bytes (no Image.network).
+final persistedAvatarBytesProvider = FutureProvider<Uint8List?>((ref) async {
+  final profile = await ref.watch(riderProfileProvider.future);
+  final key = profile?.avatarObjectKey?.trim();
+  if (key == null || key.isEmpty) return null;
+  final cache = ref.read(avatarDiskCacheProvider);
+  final hit = await cache.loadIfMatches(key);
+  if (hit != null) return hit;
+
+  final url = await ref.read(riderAuthServiceProvider).resolveAvatarUrl(key);
+  if (url == null || url.isEmpty) return null;
+  try {
+    final response = await http
+        .get(Uri.parse(unsignedAvatarUrl(url)))
+        .timeout(const Duration(seconds: 12));
+    if (response.statusCode != 200 || response.bodyBytes.isEmpty) {
+      return null;
+    }
+    final bytes = Uint8List.fromList(response.bodyBytes);
+    await cache.save(objectKey: key, bytes: bytes);
+    return bytes;
+  } catch (_) {
+    return null;
+  }
+});
+
 enum AvatarUploadOutcome {
   cancelled,
+  cameraDenied,
   uploadedAndVisible,
   uploadedButPreviewFailed,
 }
@@ -51,14 +82,31 @@ class AvatarUploadController extends AsyncNotifier<AvatarUploadOutcome?> {
   Future<AvatarUploadOutcome?> build() async => null;
 
   Future<void> pickAndUpload(ImageSource source) async {
+    if (source == ImageSource.camera) {
+      final allowed = await ensureCameraPermission();
+      if (!allowed) {
+        state = const AsyncLoading();
+        state = const AsyncData(AvatarUploadOutcome.cameraDenied);
+        return;
+      }
+    }
+
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final picker = ImagePicker();
-      final picked = await picker.pickImage(
-        source: source,
-        maxWidth: 1024,
-        imageQuality: 85,
-      );
+      final XFile? picked;
+      try {
+        picked = await picker.pickImage(
+          source: source,
+          maxWidth: 1024,
+          imageQuality: 85,
+        );
+      } on PlatformException catch (e) {
+        if (isCameraPermissionException(e)) {
+          return AvatarUploadOutcome.cameraDenied;
+        }
+        rethrow;
+      }
       if (picked == null) {
         ref.read(avatarLocalPreviewProvider.notifier).set(null);
         return AvatarUploadOutcome.cancelled;
@@ -80,6 +128,12 @@ class AvatarUploadController extends AsyncNotifier<AvatarUploadOutcome?> {
         'driver_update_avatar',
         params: {'p_object_key': upload.objectKey},
       );
+
+      await ref.read(avatarDiskCacheProvider).save(
+            objectKey: upload.objectKey,
+            bytes: bytes,
+          );
+      ref.invalidate(persistedAvatarBytesProvider);
 
       final auth = ref.read(riderAuthServiceProvider);
       final previousUrl = ref.read(profileAvatarDisplayOverrideProvider) ??

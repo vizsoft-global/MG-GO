@@ -22,7 +22,7 @@ class HomeNotificationsCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final inbox = ref.watch(notificationInboxProvider);
+    final inbox = ref.watch(visibleNotificationInboxProvider);
     final unreadCount = inbox.value?.effectiveUnreadCount ?? 0;
 
     return Container(

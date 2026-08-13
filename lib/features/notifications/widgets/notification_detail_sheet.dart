@@ -9,6 +9,7 @@ import '../../../core/notifications/notification_event_repository.dart';
 import '../../../core/notifications/notification_inbox_models.dart';
 import '../../../core/notifications/notification_media_repository.dart';
 import '../../../core/notifications/notification_payload.dart';
+import 'notification_hero_banner.dart';
 import '../../../core/notifications/screenshot_restriction_store.dart';
 import '../../../core/security/screen_protector_service.dart';
 import '../../../core/security/security_event_types.dart';
@@ -270,40 +271,8 @@ class _NotificationDetailSheetState
                             if (item.bannerObjectKey != null ||
                                 item.thumbnailObjectKey != null) ...[
                               const SizedBox(height: 16),
-                              FutureBuilder<NotificationMediaReadUrl?>(
-                                future: _resolveHeroImage(),
-                                builder: (context, snapshot) {
-                                  final url = snapshot.data?.readUrl;
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return const SizedBox(
-                                      height: 120,
-                                      child: Center(
-                                        child: SizedBox(
-                                          width: 22,
-                                          height: 22,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                  if (url == null || url.isEmpty) {
-                                    return const SizedBox.shrink();
-                                  }
-                                  return ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Image.network(
-                                      url,
-                                      fit: BoxFit.cover,
-                                      width: double.infinity,
-                                      errorBuilder:
-                                          (context, error, stackTrace) =>
-                                              const SizedBox.shrink(),
-                                    ),
-                                  );
-                                },
+                              NotificationHeroBanner(
+                                resolve: _resolveHeroImage,
                               ),
                             ],
                             if (item.body.isNotEmpty) ...[

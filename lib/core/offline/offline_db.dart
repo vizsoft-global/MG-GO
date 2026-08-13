@@ -7,6 +7,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
+import 'telemetry_schema.dart';
+
 class OfflineDb {
   OfflineDb._();
 
@@ -19,7 +21,8 @@ class OfflineDb {
   // v7: device_id on pickup/completion queues for single-device flush grace.
   // v8: pending_login_verifications for daily login selfie upload queue.
   // v9: liveness_passed + liveness_method on pending_login_verifications.
-  static const _dbVersion = 9;
+  // v10: pending_telemetry for the client telemetry queue.
+  static const _dbVersion = 10;
   static const _proofQueueDir = 'proof_queue';
   static const _loginVerificationQueueDir = 'login_verification_queue';
   static const _maxLocationQueueRows = 1000;
@@ -749,6 +752,9 @@ class OfflineDb {
         if (oldVersion < 9) {
           await _migrateLoginVerificationLiveness(db);
         }
+        if (oldVersion < 10) {
+          await applyTelemetrySchema(db);
+        }
       },
     );
   }
@@ -983,6 +989,7 @@ class OfflineDb {
       );
     ''');
     await _createLoginVerificationTable(db);
+    await applyTelemetrySchema(db);
   }
 
   Future<void> _trimLocationQueue(Database db) async {

@@ -13,8 +13,11 @@ import '../../core/storage/driver_upload_provider.dart';
 import '../../core/storage/driver_upload_service.dart';
 import '../../core/storage/order_proof_constraints.dart';
 import '../../core/l10n/l10n.dart';
+import '../../core/telemetry/telemetry_event_types.dart';
+import '../../core/telemetry/telemetry_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/offline_banner.dart';
+import '../profile/avatar_picker_errors.dart';
 import 'active_delivery_provider.dart';
 import 'add_delivery_flow.dart';
 import 'delivery_messages.dart';
@@ -26,6 +29,7 @@ import 'widgets/delivery_proof_widgets.dart';
 import '../duty/adaptive_location_scheduler.dart';
 import '../duty/duty_background_service.dart';
 import '../duty/duty_location_provider.dart';
+import '../duty/location_tracking_service.dart';
 
 class PickupScreen extends ConsumerStatefulWidget {
   const PickupScreen({super.key});
@@ -104,74 +108,28 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
   }
 
   Future<void> _showProofSourcePicker() async {
-    final l10n = context.l10n;
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      backgroundColor: AppColors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: 16),
-                    decoration: BoxDecoration(
-                      color: AppColors.border,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                  ),
-                ),
-                Text(
-                  l10n.chooseImageSource,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  l10n.imageFormatsMax10Mb,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ListTile(
-                  leading: const Icon(Icons.photo_camera_outlined),
-                  title: Text(l10n.takePhoto),
-                  onTap: () => Navigator.pop(context, ImageSource.camera),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.photo_library_outlined),
-                  title: Text(l10n.chooseFromGallery),
-                  onTap: () => Navigator.pop(context, ImageSource.gallery),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-
+    final source = await showProofSourceSheet(context);
     if (source == null || !mounted) return;
     await _pickProof(source);
   }
 
   Future<void> _pickProof(ImageSource source) async {
-    final picker = ImagePicker();
-    final file = await picker.pickImage(
-      source: source,
-      maxWidth: 2048,
-      imageQuality: 85,
-    );
+    final XFile? file;
+    try {
+      file = await pickImageRespectingCameraPermission(
+        source: source,
+        maxWidth: 2048,
+        imageQuality: 85,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      final message = userMessageIfCameraPermissionDenied(e, context.l10n);
+      if (message != null) {
+        setState(() => _error = message);
+        return;
+      }
+      rethrow;
+    }
     if (file == null) return;
 
     final size = await file.length();
@@ -217,6 +175,10 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
     );
     if (orderId.isEmpty) {
       setState(() => _error = context.l10n.orderIdRequired);
+      return;
+    }
+    if (!DeliveryService.isValidOrderId(orderId)) {
+      setState(() => _error = context.l10n.invalidOrderId);
       return;
     }
 
@@ -277,6 +239,7 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
               longitude: position.longitude,
               speedMps: position.speed >= 0 ? position.speed : null,
               accuracyMeters: position.accuracy,
+              batteryPct: await readBatteryPct(),
               trackingStatus: TrackingStatus.deliverySubmit,
               deliveryId: created.id,
               forceHistory: true,
@@ -293,6 +256,14 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
 
       if (!mounted) return;
       final queued = created.status == 'queued';
+      TelemetryService.instance.log(
+        TelemetryEvents.actionTap,
+        context: {
+          'action': 'pickup_submit',
+          'screen': 'add_delivery',
+          'result': queued ? 'queued' : 'ok',
+        },
+      );
       if (queued) {
         context.go('/deliveries/success?queued=1&stage=pickup');
       } else {
@@ -303,6 +274,7 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
         context.go('/deliveries/active');
       }
     } on DeliveryServiceException catch (e) {
+      _logSubmitError(e.code ?? 'delivery_error');
       if (await handleDeliveryServiceExceptionActions(e, ref)) return;
       if (mounted) {
         setState(
@@ -310,18 +282,33 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
         );
       }
     } on DriverUploadException catch (e) {
+      _logSubmitError(e.code ?? 'upload_failed');
       if (mounted) {
         setState(
           () => _error = messageForDriverUploadException(e, context.l10n),
         );
       }
     } catch (e) {
+      _logSubmitError('unexpected');
       if (mounted) {
         setState(() => _error = context.l10n.somethingWentWrong);
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
+  }
+
+  /// Only the code — a raw error string is exactly what the telemetry contract
+  /// forbids, and Sentry already has the full exception.
+  void _logSubmitError(String code) {
+    TelemetryService.instance.log(
+      TelemetryEvents.clientError,
+      context: {
+        'code': code,
+        'screen': 'add_delivery',
+        'retryable': code == 'network' || code == 'timeout',
+      },
+    );
   }
 
   @override
@@ -403,7 +390,18 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
                           textInputAction: TextInputAction.next,
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(
+                              DeliveryService.orderIdMaxLen,
+                            ),
                           ],
+                          maxLength: DeliveryService.orderIdMaxLen,
+                          buildCounter: (
+                            context, {
+                            required currentLength,
+                            required isFocused,
+                            required maxLength,
+                          }) =>
+                              null,
                           decoration: InputDecoration(
                             hintText: l10n.orderIdHint,
                           ),

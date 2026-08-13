@@ -1,4 +1,21 @@
 import '../../l10n/app_localizations.dart';
+import 'shift_adherence_minutes.dart';
+
+/// Elapsed seconds for an open online session that started in [periodStart]..now.
+///
+/// Sessions left `is_online` from a previous day/week must not inflate
+/// today's or this week's Time in with wall-clock hours.
+int liveOpenSessionSeconds({
+  required bool isOnline,
+  DateTime? wentOnlineAt,
+  required DateTime now,
+  required DateTime periodStart,
+}) {
+  if (!isOnline || wentOnlineAt == null) return 0;
+  if (wentOnlineAt.isBefore(periodStart)) return 0;
+  final live = now.difference(wentOnlineAt).inSeconds;
+  return live > 0 ? live : 0;
+}
 
 class ShiftAdherence {
   const ShiftAdherence({
@@ -55,13 +72,23 @@ class ShiftAdherence {
     DateTime? parse(String? raw) =>
         raw == null || raw.isEmpty ? null : DateTime.tryParse(raw);
 
+    final scheduledStartAt = parse(json['scheduled_start_at'] as String?);
+    final scheduledEndAt = parse(json['scheduled_end_at'] as String?);
+    final actualOutAt = parse(json['actual_out_at'] as String?);
+
     return ShiftAdherence(
-      scheduledStartAt: parse(json['scheduled_start_at'] as String?),
-      scheduledEndAt: parse(json['scheduled_end_at'] as String?),
+      scheduledStartAt: scheduledStartAt,
+      scheduledEndAt: scheduledEndAt,
       actualInAt: parse(json['actual_in_at'] as String?),
-      actualOutAt: parse(json['actual_out_at'] as String?),
+      actualOutAt: actualOutAt,
       minutesLate: (json['minutes_late'] as num?)?.toInt() ?? 0,
-      minutesEarlyOut: (json['minutes_early_out'] as num?)?.toInt() ?? 0,
+      minutesEarlyOut: scheduledStartAt != null && scheduledEndAt != null
+          ? shiftMinutesEarlyOut(
+              scheduledStart: scheduledStartAt,
+              scheduledEnd: scheduledEndAt,
+              actualOut: actualOutAt,
+            )
+          : (json['minutes_early_out'] as num?)?.toInt() ?? 0,
       onlineSeconds: (json['online_seconds'] as num?)?.toInt() ?? 0,
       scheduledSeconds: (json['scheduled_seconds'] as num?)?.toInt() ?? 0,
     );
@@ -95,11 +122,15 @@ class HomeDashboard {
 
   /// Total time clocked in today, including the current session when online.
   int get todayOnlineSeconds {
-    final accumulated = todayAccumulatedOnlineSeconds;
-    if (!isOnline || session.wentOnlineAt == null) return accumulated;
-    final live =
-        DateTime.now().difference(session.wentOnlineAt!).inSeconds;
-    return accumulated + (live > 0 ? live : 0);
+    final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+    return todayAccumulatedOnlineSeconds +
+        liveOpenSessionSeconds(
+          isOnline: isOnline,
+          wentOnlineAt: session.wentOnlineAt,
+          now: now,
+          periodStart: todayStart,
+        );
   }
 
   factory HomeDashboard.fromJson(Map<String, dynamic> json) {

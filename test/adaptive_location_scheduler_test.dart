@@ -88,5 +88,47 @@ void main() {
       expect(scheduler.movementJustStarted, isTrue);
       expect(scheduler.shouldReportToServer(next), isTrue);
     });
+
+    test('after a delivery_submit sample, the next tick reports idle/moving immediately', () {
+      final scheduler = AdaptiveLocationScheduler(random: _ZeroRandom());
+      final now = DateTime(2026, 1, 1, 12);
+
+      scheduler.forceDeliverySample();
+      expect(scheduler.shouldReportToServer(now), isTrue);
+      scheduler.markSampled(now);
+
+      expect(scheduler.status, TrackingStatus.idle);
+      expect(scheduler.shouldReportToServer(now), isTrue);
+    });
+
+    test('holdDeliveryStatus keeps On Delivery until the sample is sent', () {
+      final scheduler = AdaptiveLocationScheduler(random: _ZeroRandom());
+      final now = DateTime(2026, 1, 1, 12);
+
+      scheduler.updateFromPosition(_pos(speed: 5), now);
+      expect(scheduler.status, TrackingStatus.moving);
+      scheduler.holdDeliveryStatus();
+      expect(scheduler.status, TrackingStatus.deliverySubmit);
+    });
+  });
+
+  group('displaySpeedMps', () {
+    test('treats GPS rest jitter as stationary', () {
+      // Ticket: Home showed 3.8 then 1.0 km/h while distance stayed 0 km.
+      expect(displaySpeedMps(3.8 / 3.6), 0);
+      expect(displaySpeedMps(1.0 / 3.6), 0);
+      expect(displaySpeedKmhLabel(3.8 / 3.6), '0.0');
+    });
+
+    test('keeps real riding speed', () {
+      expect(displaySpeedMps(20 / 3.6), closeTo(20 / 3.6, 0.0001));
+      expect(displaySpeedKmhLabel(20 / 3.6), '20.0');
+    });
+
+    test('unknown GPS stays unknown', () {
+      expect(displaySpeedMps(null), isNull);
+      expect(displaySpeedMps(-1), isNull);
+      expect(displaySpeedKmhLabel(null), '--');
+    });
   });
 }

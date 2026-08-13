@@ -8,6 +8,19 @@ import '../../../core/branding/remote_image.dart';
 import '../../../core/notifications/notification_inbox_provider.dart';
 import '../../../core/theme/app_colors.dart';
 
+const homePartnerBadgeKey = Key('home-partner-badge');
+
+bool shouldShowHomePartnerBadge({
+  String? partnerName,
+  String? partnerLogoUrl,
+}) {
+  final name = partnerName?.trim();
+  if (name != null && name.isNotEmpty) return true;
+  final url = partnerLogoUrl?.trim();
+  if (url == null || url.isEmpty) return false;
+  return url.startsWith('http://') || url.startsWith('https://');
+}
+
 class HomeHeader extends ConsumerWidget {
   const HomeHeader({
     required this.isOnline,
@@ -27,12 +40,6 @@ class HomeHeader extends ConsumerWidget {
   final ValueChanged<bool> onOnlineChanged;
   final VoidCallback? onBellTap;
   final VoidCallback? onSosTap;
-
-  bool get _hasDisplayableLogo {
-    final url = partnerLogoUrl?.trim();
-    if (url == null || url.isEmpty) return false;
-    return url.startsWith('http://') || url.startsWith('https://');
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -81,11 +88,14 @@ class HomeHeader extends ConsumerWidget {
                 ),
               ),
             ),
-            _PartnerBadge(
+            if (shouldShowHomePartnerBadge(
               partnerName: partnerName,
               partnerLogoUrl: partnerLogoUrl,
-              hasDisplayableLogo: _hasDisplayableLogo,
-            ),
+            ))
+              _PartnerBadge(
+                partnerName: partnerName,
+                partnerLogoUrl: partnerLogoUrl,
+              ),
           ],
         ),
       ],
@@ -288,16 +298,21 @@ class _PartnerBadge extends StatelessWidget {
   const _PartnerBadge({
     this.partnerName,
     this.partnerLogoUrl,
-    required this.hasDisplayableLogo,
   });
 
   final String? partnerName;
   final String? partnerLogoUrl;
-  final bool hasDisplayableLogo;
+
+  bool get _hasDisplayableLogo {
+    final url = partnerLogoUrl?.trim();
+    if (url == null || url.isEmpty) return false;
+    return url.startsWith('http://') || url.startsWith('https://');
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      key: homePartnerBadgeKey,
       width: 93,
       height: 46,
       decoration: BoxDecoration(
@@ -305,7 +320,7 @@ class _PartnerBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      child: hasDisplayableLogo
+      child: _hasDisplayableLogo
           ? RemoteRasterImage(
               url: partnerLogoUrl!,
               fit: BoxFit.contain,

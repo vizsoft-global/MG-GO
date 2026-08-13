@@ -165,6 +165,17 @@ class NotificationInboxSnapshot {
   int get effectiveUnreadCount =>
       unreadCount > 0 ? unreadCount : items.where((item) => item.isUnread).length;
 
+  NotificationInboxSnapshot withoutIds(Iterable<String> ids) {
+    final drop = ids.toSet();
+    final kept = items
+        .where((item) => !drop.contains(item.dispatchItemId))
+        .toList(growable: false);
+    return NotificationInboxSnapshot(
+      items: kept,
+      unreadCount: kept.where((item) => item.isUnread).length,
+    );
+  }
+
   static const empty = NotificationInboxSnapshot(items: [], unreadCount: 0);
 
   factory NotificationInboxSnapshot.fromJson(Map<String, dynamic> json) {

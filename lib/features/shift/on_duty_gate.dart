@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/offline/offline_repo.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/permissions/duty_permissions_service.dart';
+import '../duty/on_duty_permission_gate.dart';
 import '../duty/widgets/duty_readiness_sheet.dart';
 import '../home/home_models.dart';
 import '../home/home_providers.dart';
@@ -33,14 +34,10 @@ Future<bool?> ensureOnDutyForAction(
     return true;
   }
 
-  if (current?.isOnlineOnDuty == true) {
-    return true;
-  }
-
-  // Add-delivery requires being on duty. If the online session bit is stale,
-  // let the server enforce the final rule when the pickup RPC runs.
-  if (action == OnDutyAction.addDelivery && current?.isOnDuty == true) {
-    return true;
+  if (current?.isOnlineOnDuty == true ||
+      (action == OnDutyAction.addDelivery && current?.isOnDuty == true)) {
+    if (!context.mounted) return false;
+    return ensureDutyPermissionsForOnDutySession(context);
   }
 
   var shift = await _loadActiveShift(ref);

@@ -3,6 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'notification_inbox_models.dart';
 import 'notification_inbox_repository.dart';
+import 'notifications_preference.dart';
+import 'notifications_preference_provider.dart';
 import 'screenshot_restriction_store.dart';
 
 /// Pull-to-refresh / pagination-friendly inbox snapshot.
@@ -74,6 +76,22 @@ class NotificationInboxNotifier
     await repo.markRead(dispatchItemIds: [dispatchItemId]);
   }
 
+  Future<void> dismiss(String dispatchItemId) async {
+    final repo = ref.read(notificationInboxRepositoryProvider);
+    final current = state.value;
+    if (current == null) return;
+    state = AsyncData(current.withoutIds([dispatchItemId]));
+    await repo.dismiss(dispatchItemIds: [dispatchItemId]);
+  }
+
+  Future<void> dismissAll() async {
+    final repo = ref.read(notificationInboxRepositoryProvider);
+    final current = state.value;
+    if (current == null || current.items.isEmpty) return;
+    state = const AsyncData(NotificationInboxSnapshot.empty);
+    await repo.dismiss();
+  }
+
   Future<NotificationInboxSnapshot> _fetch() async {
     final repo = ref.read(notificationInboxRepositoryProvider);
     final snapshot = await repo.list(limit: 50);
@@ -92,8 +110,24 @@ class NotificationInboxNotifier
   }
 }
 
+/// Inbox as the rider should see it (empty while Profile Notifications is off).
+final visibleNotificationInboxProvider =
+    Provider<AsyncValue<NotificationInboxSnapshot>>((ref) {
+      final enabled = ref.watch(notificationsEnabledProvider);
+      final inbox = ref.watch(notificationInboxProvider);
+      if (!enabled) {
+        return AsyncData(
+          inboxVisibleToUser(
+            notificationsEnabled: false,
+            snapshot: inbox.value ?? NotificationInboxSnapshot.empty,
+          ),
+        );
+      }
+      return inbox;
+    });
+
 /// Lightweight unread badge count for the home bell icon.
 final notificationsUnreadCountProvider = Provider<int>((ref) {
-  final snapshot = ref.watch(notificationInboxProvider).value;
+  final snapshot = ref.watch(visibleNotificationInboxProvider).value;
   return snapshot?.unreadCount ?? 0;
 });

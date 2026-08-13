@@ -8,6 +8,7 @@ import '../../core/theme/app_colors.dart';
 import 'active_delivery_provider.dart';
 import 'add_delivery_flow.dart';
 import 'delivery_models.dart';
+import 'order_id.dart';
 
 class ActiveDeliveryScreen extends ConsumerWidget {
   const ActiveDeliveryScreen({super.key});
@@ -66,8 +67,10 @@ class ActiveDeliveryScreen extends ConsumerWidget {
                         const SizedBox(height: 4),
                         Text(
                           active.externalOrderId.isNotEmpty
-                              ? '#${active.externalOrderId}'
+                              ? '#${OrderId.displayStored(active.externalOrderId)}'
                               : l10n.notProvided,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.titleLarge
                               ?.copyWith(
                                 fontWeight: FontWeight.w700,

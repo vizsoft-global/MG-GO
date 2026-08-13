@@ -148,6 +148,8 @@ class _DeliveryDetailSheetState extends ConsumerState<DeliveryDetailSheet> {
                       delivery.hasOrderId
                           ? '#${delivery.displayOrderId(l10n)}'
                           : delivery.displayOrderId(l10n),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                             color: delivery.hasOrderId
@@ -160,6 +162,16 @@ class _DeliveryDetailSheetState extends ConsumerState<DeliveryDetailSheet> {
                     label: l10n.status,
                     value: DeliveryStatusChip(status: delivery.status),
                   ),
+                  if (delivery.rejectionReason?.trim().isNotEmpty == true)
+                    _DetailRow(
+                      label: l10n.rejectionReason,
+                      value: Text(
+                        delivery.rejectionReason!.trim(),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ),
                   _DetailRow(
                     label: l10n.submitted,
                     value: Text(

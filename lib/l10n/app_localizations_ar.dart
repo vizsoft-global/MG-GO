@@ -310,6 +310,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get authDriverSuspended => 'تم تعليق حساب السائق. تواصل مع المسؤول.';
 
   @override
+  String get authDriverArchived => 'تم أرشفة حساب السائق. تواصل مع المسؤول.';
+
+  @override
   String get authStaffNotAllowed => 'هذا الحساب مخصص للوحة الإدارة فقط.';
 
   @override
@@ -601,6 +604,19 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get markAllRead => 'تعليم الكل كمقروء';
+
+  @override
+  String get clearAllNotifications => 'مسح الكل';
+
+  @override
+  String get clearAllNotificationsTitle => 'مسح كل الإشعارات؟';
+
+  @override
+  String get clearAllNotificationsBody =>
+      'ستُزال من قائمتك. لا يمكن التراجع عن ذلك.';
+
+  @override
+  String get removeNotification => 'إزالة';
 
   @override
   String get viewMore => 'عرض المزيد';
@@ -1290,6 +1306,10 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get profileCameraPermissionDenied =>
+      'يلزم السماح للكاميرا لالتقاط صورة. اسمح بذلك عند الطلب، أو فعّل الكاميرا من الإعدادات.';
+
+  @override
   String get profilePictureUpdated => 'تم تحديث صورة الملف';
 
   @override
@@ -1297,7 +1317,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'تم الرفع لكن تعذّر عرض المعاينة. اسحب للتحديث — تواصل مع الدعم إن استمر.';
 
   @override
-  String get notificationsSettingsComingSoon => 'إعدادات الإشعارات قريباً';
+  String get notificationsTurnedOff => 'تم إيقاف الإشعارات';
+
+  @override
+  String get notificationsTurnedOn => 'تم تفعيل الإشعارات';
 
   @override
   String get signOutConfirmBody =>
@@ -1530,6 +1553,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get cancelReasonLabel => 'سبب الإلغاء';
 
   @override
+  String get cancelNoteOptional => 'ملاحظة (اختياري)';
+
+  @override
+  String get rejectionReason => 'سبب الرفض';
+
+  @override
   String get cancelReasonRequired => 'سبب الإلغاء مطلوب';
 
   @override
@@ -1582,7 +1611,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get activePickupExists => 'لديك طلب قيد التنفيذ بالفعل';
 
   @override
-  String get duplicateOrderId => 'رقم الطلب مسجّل مسبقاً';
+  String get duplicateOrderId => 'رقم الطلب موجود مسبقاً.';
+
+  @override
+  String get invalidOrderId => 'رقم الطلب يجب أن يكون من 1 إلى 32 رقماً.';
 
   @override
   String get proofPhotoRequired => 'صورة الإثبات مطلوبة';

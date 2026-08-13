@@ -10,11 +10,15 @@ import '../../core/storage/driver_upload_messages.dart';
 import '../../core/storage/driver_upload_provider.dart';
 import '../../core/storage/driver_upload_service.dart';
 import '../../core/storage/order_proof_constraints.dart';
+import '../../core/telemetry/telemetry_event_types.dart';
+import '../../core/telemetry/telemetry_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/offline_banner.dart';
+import '../profile/avatar_picker_errors.dart';
 import '../duty/adaptive_location_scheduler.dart';
 import '../duty/duty_background_service.dart';
 import '../duty/duty_location_provider.dart';
+import '../duty/location_tracking_service.dart';
 import '../home/home_providers.dart';
 import 'active_delivery_provider.dart';
 import 'delivery_messages.dart';
@@ -78,48 +82,28 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
   }
 
   Future<void> _showProofSourcePicker() async {
-    final l10n = context.l10n;
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      backgroundColor: AppColors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.photo_camera_outlined),
-                  title: Text(l10n.takePhoto),
-                  onTap: () => Navigator.pop(context, ImageSource.camera),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.photo_library_outlined),
-                  title: Text(l10n.chooseFromGallery),
-                  onTap: () => Navigator.pop(context, ImageSource.gallery),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+    final source = await showProofSourceSheet(context);
     if (source == null || !mounted) return;
     await _pickProof(source);
   }
 
   Future<void> _pickProof(ImageSource source) async {
-    final picker = ImagePicker();
-    final file = await picker.pickImage(
-      source: source,
-      maxWidth: 2048,
-      imageQuality: 85,
-    );
+    final XFile? file;
+    try {
+      file = await pickImageRespectingCameraPermission(
+        source: source,
+        maxWidth: 2048,
+        imageQuality: 85,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      final message = userMessageIfCameraPermissionDenied(e, context.l10n);
+      if (message != null) {
+        setState(() => _error = message);
+        return;
+      }
+      rethrow;
+    }
     if (file == null) return;
 
     final size = await file.length();
@@ -235,6 +219,7 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
               longitude: position.longitude,
               speedMps: position.speed >= 0 ? position.speed : null,
               accuracyMeters: position.accuracy,
+              batteryPct: await readBatteryPct(),
               trackingStatus: TrackingStatus.deliverySubmit,
               deliveryId: widget.deliveryId,
               forceHistory: true,
@@ -247,6 +232,16 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
       if (!mounted) return;
       final queued = created.status == 'queued';
       final stage = _outcome == FinishOutcome.delivered ? 'delivered' : 'cancelled';
+      TelemetryService.instance.log(
+        TelemetryEvents.actionTap,
+        context: {
+          'action': _outcome == FinishOutcome.delivered
+              ? 'delivery_complete'
+              : 'delivery_cancel',
+          'screen': 'finish_delivery',
+          'result': queued ? 'queued' : 'ok',
+        },
+      );
       // Navigate to success before invalidating active delivery. Invalidating
       // first lets ActiveDeliveryScreen (still under the stack) race to /home.
       context.go(
@@ -258,6 +253,7 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
       ref.invalidate(myDeliveriesProvider);
       ref.invalidate(pendingDeliveriesProvider);
     } on DeliveryServiceException catch (e) {
+      _logSubmitError(e.code ?? 'delivery_error');
       if (await handleDeliveryServiceExceptionActions(e, ref)) return;
       if (mounted) {
         setState(
@@ -265,18 +261,33 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
         );
       }
     } on DriverUploadException catch (e) {
+      _logSubmitError(e.code ?? 'upload_failed');
       if (mounted) {
         setState(
           () => _error = messageForDriverUploadException(e, context.l10n),
         );
       }
     } catch (_) {
+      _logSubmitError('unexpected');
       if (mounted) {
         setState(() => _error = context.l10n.somethingWentWrong);
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
+  }
+
+  /// Only the code — a raw error string is exactly what the telemetry contract
+  /// forbids, and Sentry already has the full exception.
+  void _logSubmitError(String code) {
+    TelemetryService.instance.log(
+      TelemetryEvents.clientError,
+      context: {
+        'code': code,
+        'screen': 'finish_delivery',
+        'retryable': code == 'network' || code == 'timeout',
+      },
+    );
   }
 
   @override
@@ -327,12 +338,7 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
                   ),
                   const SizedBox(height: 12),
                   if (_requiresCancelReason) ...[
-                    Text(
-                      l10n.cancelReasonLabel,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
+                    _FieldLabel(label: l10n.cancelReasonLabel, requiredField: true),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<CancelReason>(
                       initialValue: _cancelReason,
@@ -350,6 +356,8 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
                           : (value) => setState(() => _cancelReason = value),
                     ),
                     const SizedBox(height: 12),
+                    _FieldLabel(label: l10n.cancelNoteOptional),
+                    const SizedBox(height: 8),
                     TextField(
                       controller: _cancelNoteController,
                       enabled: !_submitting,
@@ -360,13 +368,11 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
                     ),
                     const SizedBox(height: 16),
                   ],
-                  Text(
-                    isDelivered
+                  _FieldLabel(
+                    label: isDelivered
                         ? l10n.deliveryProofOptional
                         : l10n.cancelProof,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                    requiredField: !isDelivered,
                   ),
                   const SizedBox(height: 10),
                   DeliveryProofUploadArea(
@@ -421,6 +427,32 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FieldLabel extends StatelessWidget {
+  const _FieldLabel({required this.label, this.requiredField = false});
+
+  final String label;
+  final bool requiredField;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text.rich(
+      TextSpan(
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+        children: [
+          TextSpan(text: label),
+          if (requiredField)
+            const TextSpan(
+              text: ' *',
+              style: TextStyle(color: AppColors.rejectedRed),
+            ),
         ],
       ),
     );

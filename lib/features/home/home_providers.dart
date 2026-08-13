@@ -5,6 +5,7 @@ import '../../core/offline/network_status_provider.dart';
 import '../../core/offline/offline_repo.dart';
 import '../auth/driver_access_monitor.dart';
 import '../auth/rider_auth_service.dart';
+import 'home_duty_errors.dart';
 import 'home_models.dart';
 import 'remote_duty_monitor.dart';
 
@@ -93,17 +94,7 @@ class HomeService {
   }
 
   String _friendlyError(PostgrestException e) {
-    final msg = e.message.trim();
-    if (msg.contains('not_authenticated')) {
-      return 'Session expired. Please sign in again.';
-    }
-    if (msg.contains('Could not find the function')) {
-      return 'Server update required. Contact support.';
-    }
-    if (msg.contains('shift_required')) {
-      return 'Submit today\'s shift before going on duty.';
-    }
-    return msg.isEmpty ? 'Could not load home dashboard' : msg;
+    return friendlyHomeDutyError(e.message);
   }
 }
 

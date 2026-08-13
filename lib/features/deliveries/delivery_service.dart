@@ -7,6 +7,7 @@ import '../../core/offline/network_status_provider.dart';
 import '../../core/offline/offline_repo.dart';
 import '../auth/driver_access.dart';
 import 'delivery_models.dart';
+import 'order_id.dart';
 
 class DeliveryServiceException implements Exception {
   DeliveryServiceException(this.message, {this.code});
@@ -16,6 +17,21 @@ class DeliveryServiceException implements Exception {
 
   @override
   String toString() => message;
+}
+
+/// Postgres unique index `deliveries_external_order_id_unique_idx` can fire
+/// when `driver_create_pickup` skipped its own `duplicate_order_id` check
+/// (no resolved restaurant). Map that raw 23505 onto the same code.
+bool isDuplicateOrderIdError({
+  required String message,
+  String? code,
+  String? details,
+}) {
+  if (code == '23505') return true;
+  final blob = '$message ${details ?? ''}'.toLowerCase();
+  return blob.contains('duplicate_order_id') ||
+      blob.contains('deliveries_external_order_id_unique') ||
+      blob.contains('duplicate key value violates unique constraint');
 }
 
 class DeliveryService {
@@ -41,17 +57,19 @@ class DeliveryService {
     pickup_at, pickup_lat, pickup_lng, pickup_proof_url,
     delivered_at, delivered_lat, delivered_lng, order_proof_url,
     cancelled_at, cancel_lat, cancel_lng, cancel_reason, cancel_proof_url,
+    rejection_reason,
     partners ( name, logo_url )
   ''';
 
   /// Trim and strip leading `#` before sending to the server.
-  static String normalizeOrderIdInput(String raw) {
-    var v = raw.trim();
-    while (v.startsWith('#')) {
-      v = v.substring(1).trim();
-    }
-    return v;
-  }
+  static String normalizeOrderIdInput(String raw) => OrderId.normalize(raw);
+
+  static const orderIdMaxLen = OrderId.maxLen;
+
+  static bool isValidOrderId(String raw) => OrderId.isValid(raw);
+
+  static String displayStoredOrderId(String raw, {int invalidMax = 16}) =>
+      OrderId.displayStored(raw, invalidMax: invalidMax);
 
   Future<ActiveDelivery?> getActivePickup() async {
     try {
@@ -89,6 +107,12 @@ class DeliveryService {
     String? deviceIdOverride,
   }) async {
     final normalized = normalizeOrderIdInput(orderId);
+    if (normalized.isEmpty) {
+      throw DeliveryServiceException('', code: 'order_id_required');
+    }
+    if (!isValidOrderId(normalized)) {
+      throw DeliveryServiceException('', code: 'invalid_order_id');
+    }
     final userId = _client.auth.currentUser?.id;
     final deviceId = await _resolveDeviceId(override: deviceIdOverride);
     try {
@@ -375,6 +399,13 @@ class DeliveryService {
   }
 
   DeliveryServiceException _mapPostgrest(PostgrestException e) {
+    if (isDuplicateOrderIdError(
+      message: e.message,
+      code: e.code,
+      details: e.details?.toString(),
+    )) {
+      return DeliveryServiceException('', code: 'duplicate_order_id');
+    }
     final msg = e.message.toLowerCase();
     if (msg.contains('not_authenticated')) {
       return DeliveryServiceException('', code: 'auth');
@@ -406,13 +437,13 @@ class DeliveryService {
     if (msg.contains('cancel_reason_required')) {
       return DeliveryServiceException('', code: 'cancel_reason_required');
     }
-    if (msg.contains('duplicate_order_id')) {
-      return DeliveryServiceException('', code: 'duplicate_order_id');
-    }
     if (msg.contains('device_revoked') || msg.contains('device_id_required')) {
       return DeliveryServiceException('', code: 'device_revoked');
     }
-    if (msg.contains('invalid_order_id') || msg.contains('order_id_required')) {
+    if (msg.contains('invalid_order_id')) {
+      return DeliveryServiceException('', code: 'invalid_order_id');
+    }
+    if (msg.contains('order_id_required')) {
       return DeliveryServiceException('', code: 'order_id_required');
     }
     return DeliveryServiceException(e.message);

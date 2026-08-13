@@ -3,14 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/l10n.dart';
+import '../../core/telemetry/telemetry_event_types.dart';
+import '../../core/telemetry/telemetry_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../deliveries/active_delivery_provider.dart';
 import '../deliveries/add_delivery_flow.dart';
+import '../duty/adaptive_location_scheduler.dart';
 import '../duty/duty_lifecycle_controller.dart';
 import '../duty/duty_location_provider.dart';
+import '../duty/on_duty_permission_gate.dart';
 import '../shift/on_duty_gate.dart';
 import '../shift/shift_providers.dart';
+import 'home_dashboard_ui_state.dart';
 import 'home_models.dart';
 import 'home_providers.dart';
 import 'widgets/bonus_action_card.dart';
@@ -39,13 +44,15 @@ class HomeScreen extends ConsumerWidget {
     final hasActiveDelivery =
         ref.watch(activeDeliveryProvider).value != null;
 
-    return dashboardAsync.when(
-      skipLoadingOnRefresh: true,
-      loading: () => const Scaffold(
-        backgroundColor: AppColors.pageBackground,
-        body: SafeArea(child: Center(child: CircularProgressIndicator())),
-      ),
-      error: (error, _) {
+    Widget loadingScaffold() => const Scaffold(
+      backgroundColor: AppColors.pageBackground,
+      body: SafeArea(child: Center(child: CircularProgressIndicator())),
+    );
+
+    switch (homeDashboardUiState(dashboardAsync)) {
+      case HomeDashboardUiState.loading:
+        return loadingScaffold();
+      case HomeDashboardUiState.error:
         final l10n = context.l10n;
         return Scaffold(
           backgroundColor: AppColors.pageBackground,
@@ -75,8 +82,8 @@ class HomeScreen extends ConsumerWidget {
             ),
           ),
         );
-      },
-      data: (dashboard) {
+      case HomeDashboardUiState.data:
+        final dashboard = dashboardAsync.requireValue;
         final isOnline = dashboard.isOnline;
         final isOnDuty = dashboard.isOnDuty;
         final activeShift = ref.watch(todayShiftProvider).value;
@@ -117,6 +124,7 @@ class HomeScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          OnDutyPermissionGate(isOnDuty: isOnDuty),
                           HomeHeader(
                             isOnline: isOnline,
                             driverName: dashboard.driver.fullName,
@@ -232,8 +240,7 @@ class HomeScreen extends ConsumerWidget {
             ),
           ),
         );
-      },
-    );
+    }
   }
 
   Future<void> _handleDutyToggle(
@@ -248,6 +255,14 @@ class HomeScreen extends ConsumerWidget {
       ref,
       action: action,
       dashboard: dashboard,
+    );
+    TelemetryService.instance.log(
+      TelemetryEvents.actionTap,
+      context: {
+        'action': turnOn ? 'duty_on' : 'duty_off',
+        'screen': 'home',
+        'result': ok == true ? 'ok' : (ok == false ? 'failed' : 'blocked'),
+      },
     );
     if (ok == false && context.mounted && turnOn) {
       _snack(context, context.l10n.couldNotUpdateDutyStatus);
@@ -310,9 +325,8 @@ class _LiveGpsStatsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final speedKmh = speedMps != null ? speedMps! * 3.6 : null;
     final distanceKm = distanceTodayMeters / 1000;
-    final speedLabel = speedKmh == null ? '--' : speedKmh.toStringAsFixed(1);
+    final speedLabel = displaySpeedKmhLabel(speedMps);
     final distanceLabel = distanceKm <= 0
         ? '0.00'
         : distanceKm.toStringAsFixed(2);

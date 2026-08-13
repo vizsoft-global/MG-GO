@@ -2,19 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/l10n/locale_provider.dart';
+import '../../core/notifications/notifications_preference_provider.dart';
 import '../../core/storage/driver_upload_messages.dart';
 import '../../core/storage/driver_upload_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/coming_soon_dialog.dart';
 import '../auth/rider_auth_service.dart';
+import 'avatar_picker_errors.dart';
 import 'avatar_upload_controller.dart';
 import 'widgets/avatar_source_sheet.dart';
 import 'widgets/language_picker_sheet.dart';
 import 'widgets/profile_header_card.dart';
+import 'notifications_toggle_message.dart';
+import 'profile_screen_ui_state.dart';
 import 'widgets/profile_menu_card.dart';
 import 'widgets/profile_menu_row.dart';
 
@@ -26,26 +29,12 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  static const _notificationsPrefKey = 'profile.notifications.enabled';
-  static const _notificationsHintShownPrefKey =
-      'profile.notifications.coming_soon_shown';
-
-  bool _notificationsEnabled = true;
   String? _appVersionLabel;
 
   @override
   void initState() {
     super.initState();
-    _loadPrefs();
     _loadAppVersion();
-  }
-
-  Future<void> _loadPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
-    setState(() {
-      _notificationsEnabled = prefs.getBool(_notificationsPrefKey) ?? true;
-    });
   }
 
   Future<void> _loadAppVersion() async {
@@ -66,6 +55,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final session = ref.watch(currentSessionProvider);
     final profileAsync = ref.watch(riderProfileProvider);
     final avatarUpload = ref.watch(avatarUploadControllerProvider);
+    final notificationsEnabled = ref.watch(notificationsEnabledProvider);
     final currentLanguageLabel = ref.watch(localeProvider).languageCode == 'ar'
         ? l10n.arabic
         : l10n.english;
@@ -75,10 +65,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       (previous, next) {
         if (!mounted) return;
         if (next.hasError) {
-          final error = next.error;
+          final error = next.error!;
+          if (isCameraPermissionException(error)) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.profileCameraPermissionDenied)),
+            );
+            return;
+          }
           final message = error is DriverUploadException
               ? messageForDriverUploadException(error, l10n)
-              : error.toString();
+              : l10n.somethingWentWrong;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.profileImageUploadFailed(message)),
@@ -89,6 +85,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         if (previous?.isLoading != true || !next.hasValue) return;
         final outcome = next.value;
         switch (outcome) {
+          case AvatarUploadOutcome.cameraDenied:
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.profileCameraPermissionDenied)),
+            );
           case AvatarUploadOutcome.uploadedAndVisible:
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(l10n.profilePictureUpdated)),
@@ -107,33 +107,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       },
     );
 
-    if (profileAsync.hasError && !profileAsync.hasValue) {
-      return SafeArea(
-        child: _ProfileError(
-          onRetry: () {
-            ref.invalidate(riderProfileProvider);
-            ref.invalidate(profileAvatarUrlProvider);
-          },
-          onSignOut: () => _confirmSignOut(context),
-        ),
-      );
-    }
-
     final profile = profileAsync.value;
-    if (profileAsync.isLoading ||
-        (session != null && profile == null && !profileAsync.hasError)) {
-      return const SafeArea(child: Center(child: CircularProgressIndicator()));
+    switch (profileScreenUi(
+      hasSession: session != null,
+      isLoading: profileAsync.isLoading,
+      hasErrorWithoutValue: profileAsync.hasError && !profileAsync.hasValue,
+      hasProfile: profile != null,
+    )) {
+      case ProfileScreenUi.leaving:
+      case ProfileScreenUi.loading:
+        return const SafeArea(
+          child: Center(child: CircularProgressIndicator()),
+        );
+      case ProfileScreenUi.error:
+        return SafeArea(
+          child: _ProfileError(
+            onRetry: () {
+              ref.invalidate(riderProfileProvider);
+              ref.invalidate(profileAvatarUrlProvider);
+            },
+            onSignOut: () => _confirmSignOut(context),
+          ),
+        );
+      case ProfileScreenUi.data:
+        break;
     }
 
     if (profile == null) {
-      return SafeArea(
-        child: _ProfileError(
-          onRetry: () {
-            ref.invalidate(riderProfileProvider);
-            ref.invalidate(profileAvatarUrlProvider);
-          },
-          onSignOut: () => _confirmSignOut(context),
-        ),
+      return const SafeArea(
+        child: Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -215,7 +217,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         label: l10n.notifications,
                         onTap: _toggleNotifications,
                         trailing: Switch(
-                          value: _notificationsEnabled,
+                          value: notificationsEnabled,
                           onChanged: (_) => _toggleNotifications(),
                           activeThumbColor: AppColors.white,
                           activeTrackColor: AppColors.tomatoOrange,
@@ -323,21 +325,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Future<void> _toggleNotifications() async {
-    final next = !_notificationsEnabled;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_notificationsPrefKey, next);
-    if (mounted) {
-      setState(() => _notificationsEnabled = next);
-      final hintShown = prefs.getBool(_notificationsHintShownPrefKey) ?? false;
-      if (!hintShown) {
-        await prefs.setBool(_notificationsHintShownPrefKey, true);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(context.l10n.notificationsSettingsComingSoon)),
-          );
-        }
-      }
-    }
+    final next = !ref.read(notificationsEnabledProvider);
+    await ref.read(notificationsEnabledProvider.notifier).setEnabled(next);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          notificationsToggleSnackBar(enabled: next, l10n: context.l10n),
+        ),
+      ),
+    );
   }
 
   Future<void> _confirmSignOut(BuildContext context) async {
@@ -363,7 +360,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
     );
     if (confirmed != true || !context.mounted) return;
-    await ref.read(riderAuthServiceProvider).signOut();
+    await ref.read(riderAuthServiceProvider).signOut(clockOut: true);
     if (context.mounted) context.go('/login');
   }
 }

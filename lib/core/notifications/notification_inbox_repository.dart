@@ -69,6 +69,22 @@ class NotificationInboxRepository {
     }
   }
 
+  Future<int> dismiss({List<String>? dispatchItemIds}) async {
+    if (_client.auth.currentSession == null) return 0;
+    try {
+      final result = await _client.rpc(
+        'driver_dismiss_notifications',
+        params: {
+          'p_dispatch_item_ids': dispatchItemIds,
+        },
+      );
+      if (result is num) return result.toInt();
+      return int.tryParse(result?.toString() ?? '0') ?? 0;
+    } catch (_) {
+      return _dismissViaAdminApi(dispatchItemIds);
+    }
+  }
+
   Future<NotificationInboxSnapshot> _listViaAdminApi({
     required int limit,
     DateTime? before,
@@ -106,6 +122,30 @@ class NotificationInboxRepository {
     if (session == null) return 0;
 
     final response = await http.post(
+      Uri.parse('${Env.adminApiBaseUrl}/api/driver-app/notifications'),
+      headers: {
+        'Authorization': 'Bearer ${session.accessToken}',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'dispatch_item_ids': ?dispatchItemIds,
+      }),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) return 0;
+    try {
+      final decoded = jsonDecode(response.body);
+      if (decoded is Map && decoded['updated'] is num) {
+        return (decoded['updated'] as num).toInt();
+      }
+    } catch (_) {}
+    return 0;
+  }
+
+  Future<int> _dismissViaAdminApi(List<String>? dispatchItemIds) async {
+    final session = _client.auth.currentSession;
+    if (session == null) return 0;
+
+    final response = await http.delete(
       Uri.parse('${Env.adminApiBaseUrl}/api/driver-app/notifications'),
       headers: {
         'Authorization': 'Bearer ${session.accessToken}',
