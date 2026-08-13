@@ -10,6 +10,8 @@ import '../../core/storage/driver_upload_messages.dart';
 import '../../core/storage/driver_upload_provider.dart';
 import '../../core/storage/driver_upload_service.dart';
 import '../../core/storage/order_proof_constraints.dart';
+import '../../core/telemetry/telemetry_event_types.dart';
+import '../../core/telemetry/telemetry_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/offline_banner.dart';
 import '../profile/avatar_picker_errors.dart';
@@ -230,6 +232,16 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
       if (!mounted) return;
       final queued = created.status == 'queued';
       final stage = _outcome == FinishOutcome.delivered ? 'delivered' : 'cancelled';
+      TelemetryService.instance.log(
+        TelemetryEvents.actionTap,
+        context: {
+          'action': _outcome == FinishOutcome.delivered
+              ? 'delivery_complete'
+              : 'delivery_cancel',
+          'screen': 'finish_delivery',
+          'result': queued ? 'queued' : 'ok',
+        },
+      );
       // Navigate to success before invalidating active delivery. Invalidating
       // first lets ActiveDeliveryScreen (still under the stack) race to /home.
       context.go(
@@ -241,6 +253,7 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
       ref.invalidate(myDeliveriesProvider);
       ref.invalidate(pendingDeliveriesProvider);
     } on DeliveryServiceException catch (e) {
+      _logSubmitError(e.code ?? 'delivery_error');
       if (await handleDeliveryServiceExceptionActions(e, ref)) return;
       if (mounted) {
         setState(
@@ -248,18 +261,33 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
         );
       }
     } on DriverUploadException catch (e) {
+      _logSubmitError(e.code ?? 'upload_failed');
       if (mounted) {
         setState(
           () => _error = messageForDriverUploadException(e, context.l10n),
         );
       }
     } catch (_) {
+      _logSubmitError('unexpected');
       if (mounted) {
         setState(() => _error = context.l10n.somethingWentWrong);
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
+  }
+
+  /// Only the code — a raw error string is exactly what the telemetry contract
+  /// forbids, and Sentry already has the full exception.
+  void _logSubmitError(String code) {
+    TelemetryService.instance.log(
+      TelemetryEvents.clientError,
+      context: {
+        'code': code,
+        'screen': 'finish_delivery',
+        'retryable': code == 'network' || code == 'timeout',
+      },
+    );
   }
 
   @override

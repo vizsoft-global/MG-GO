@@ -13,6 +13,8 @@ import '../../core/storage/driver_upload_provider.dart';
 import '../../core/storage/driver_upload_service.dart';
 import '../../core/storage/order_proof_constraints.dart';
 import '../../core/l10n/l10n.dart';
+import '../../core/telemetry/telemetry_event_types.dart';
+import '../../core/telemetry/telemetry_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/offline_banner.dart';
 import '../profile/avatar_picker_errors.dart';
@@ -254,6 +256,14 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
 
       if (!mounted) return;
       final queued = created.status == 'queued';
+      TelemetryService.instance.log(
+        TelemetryEvents.actionTap,
+        context: {
+          'action': 'pickup_submit',
+          'screen': 'add_delivery',
+          'result': queued ? 'queued' : 'ok',
+        },
+      );
       if (queued) {
         context.go('/deliveries/success?queued=1&stage=pickup');
       } else {
@@ -264,6 +274,7 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
         context.go('/deliveries/active');
       }
     } on DeliveryServiceException catch (e) {
+      _logSubmitError(e.code ?? 'delivery_error');
       if (await handleDeliveryServiceExceptionActions(e, ref)) return;
       if (mounted) {
         setState(
@@ -271,18 +282,33 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
         );
       }
     } on DriverUploadException catch (e) {
+      _logSubmitError(e.code ?? 'upload_failed');
       if (mounted) {
         setState(
           () => _error = messageForDriverUploadException(e, context.l10n),
         );
       }
     } catch (e) {
+      _logSubmitError('unexpected');
       if (mounted) {
         setState(() => _error = context.l10n.somethingWentWrong);
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
+  }
+
+  /// Only the code — a raw error string is exactly what the telemetry contract
+  /// forbids, and Sentry already has the full exception.
+  void _logSubmitError(String code) {
+    TelemetryService.instance.log(
+      TelemetryEvents.clientError,
+      context: {
+        'code': code,
+        'screen': 'add_delivery',
+        'retryable': code == 'network' || code == 'timeout',
+      },
+    );
   }
 
   @override

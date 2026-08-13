@@ -24,10 +24,12 @@ import 'core/offline/offline_db.dart';
 import 'core/router/app_router.dart';
 import 'core/security/developer_mode_gate.dart';
 import 'core/security/security_bypass_store.dart';
+import 'core/telemetry/telemetry_controller.dart';
 import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 
 Future<void> main() async {
+  telemetryProcessStartedAt = DateTime.now();
   WidgetsFlutterBinding.ensureInitialized();
   final ImagePickerPlatform imagePickerImplementation =
       ImagePickerPlatform.instance;

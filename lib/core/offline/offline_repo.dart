@@ -5,6 +5,8 @@ import 'package:uuid/uuid.dart';
 
 import '../../features/deliveries/delivery_models.dart';
 import '../../features/duty/duty_session_storage.dart';
+import '../telemetry/telemetry_event_types.dart';
+import '../telemetry/telemetry_service.dart';
 import 'offline_db.dart';
 
 final offlineRepoProvider = Provider<OfflineRepo>((ref) => OfflineRepo());
@@ -242,6 +244,10 @@ class OfflineRepo {
         deviceId: deviceId,
       ),
     );
+    TelemetryService.instance.log(
+      TelemetryEvents.queueCreated,
+      context: {'queue': 'offline_sync', 'reason': 'pickup_offline'},
+    );
     return CreatedDelivery(
       id: id,
       externalOrderId: orderId,
@@ -279,6 +285,15 @@ class OfflineRepo {
         proofObjectKey: proofObjectKey,
         deviceId: deviceId,
       ),
+    );
+    TelemetryService.instance.log(
+      TelemetryEvents.queueCreated,
+      context: {
+        'queue': 'offline_sync',
+        'reason': outcome == FinishOutcome.cancelled
+            ? 'cancel_offline'
+            : 'complete_offline',
+      },
     );
     return CreatedDelivery(
       id: deliveryId,

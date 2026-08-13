@@ -18,6 +18,8 @@ import 'core/router/app_router.dart';
 import 'core/security/developer_mode_gate.dart';
 import 'core/security/security_guard_controller.dart';
 import 'core/settings/live_db_refresh.dart';
+import 'core/telemetry/telemetry_controller.dart';
+import 'core/telemetry/telemetry_navigation_tracker.dart';
 import 'core/theme/app_theme.dart';
 import 'l10n/app_localizations.dart';
 
@@ -39,6 +41,8 @@ class DpdApp extends ConsumerWidget {
     ref.watch(driverAccessMonitorProvider);
     ref.watch(remoteDutyMonitorProvider);
     ref.watch(localZoneMonitorControllerProvider);
+    ref.watch(telemetryControllerProvider);
+    ref.watch(telemetryNavigationTrackerProvider);
     ref.listen(networkStatusProvider, (previous, next) {
       if (previous?.isOffline == true && !next.isOffline) {
         ref.read(syncControllerProvider.notifier).drain();

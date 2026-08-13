@@ -8,6 +8,8 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../../core/duty_lock/duty_lock_channel.dart';
 import '../../l10n/app_localizations.dart';
+import '../telemetry/telemetry_event_types.dart';
+import '../telemetry/telemetry_service.dart';
 import 'duty_permission_status.dart';
 import 'permission_request_gate.dart';
 
@@ -204,15 +206,61 @@ class DutyPermissionsService {
   Future<bool> _requestPermission(Permission permission) async {
     try {
       final result = await permission.request();
+      _logPermissionOutcome(
+        permission,
+        granted: result.isGranted,
+        isPermanent: result.isPermanentlyDenied,
+      );
       if (result.isGranted) {
         await Future<void>.delayed(const Duration(milliseconds: 200));
       }
       return result.isGranted;
     } on PlatformException catch (e) {
       // Dialog dismissed or another request is still in flight — treat as denied.
-      if (e.code == 'PermissionHandler.PermissionManager') return false;
+      if (e.code == 'PermissionHandler.PermissionManager') {
+        _logPermissionOutcome(permission, granted: false, isPermanent: false);
+        return false;
+      }
       rethrow;
     }
+  }
+
+  final Map<String, int> _permissionAttempts = {};
+
+  void _logPermissionOutcome(
+    Permission permission,
+    {required bool granted,
+    required bool isPermanent}) {
+    final key = permission.toString();
+    final attempt = (_permissionAttempts[key] ?? 0) + 1;
+    _permissionAttempts[key] = attempt;
+
+    final String? event;
+    if (permission == Permission.location ||
+        permission == Permission.locationAlways) {
+      event = granted
+          ? TelemetryEvents.permissionLocationGranted
+          : TelemetryEvents.permissionLocationDenied;
+    } else if (permission == Permission.notification) {
+      event = granted
+          ? TelemetryEvents.permissionNotificationGranted
+          : TelemetryEvents.permissionNotificationDenied;
+    } else if (permission == Permission.camera && !granted) {
+      event = TelemetryEvents.permissionCameraDenied;
+    } else {
+      event = null;
+    }
+    if (event == null) return;
+
+    TelemetryService.instance.log(
+      event,
+      context: {
+        'status': granted ? 'granted' : (isPermanent ? 'permanent' : 'denied'),
+        'is_permanent': isPermanent,
+        'attempt': attempt,
+      },
+      severity: granted ? 'info' : 'warn',
+    );
   }
 
   Future<bool> openSettings(DutyPermissionKind kind) async {

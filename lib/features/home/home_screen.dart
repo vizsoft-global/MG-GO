@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/l10n.dart';
+import '../../core/telemetry/telemetry_event_types.dart';
+import '../../core/telemetry/telemetry_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../deliveries/active_delivery_provider.dart';
@@ -253,6 +255,14 @@ class HomeScreen extends ConsumerWidget {
       ref,
       action: action,
       dashboard: dashboard,
+    );
+    TelemetryService.instance.log(
+      TelemetryEvents.actionTap,
+      context: {
+        'action': turnOn ? 'duty_on' : 'duty_off',
+        'screen': 'home',
+        'result': ok == true ? 'ok' : (ok == false ? 'failed' : 'blocked'),
+      },
     );
     if (ok == false && context.mounted && turnOn) {
       _snack(context, context.l10n.couldNotUpdateDutyStatus);
