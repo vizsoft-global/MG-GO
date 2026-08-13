@@ -17,37 +17,18 @@ Position? heartbeatPosition({
   if (force || needsInitialReport || current.accuracy <= maxAccuracyMeters) {
     return current;
   }
+  if (current.speed >= AdaptiveLocationScheduler.movingSpeedThresholdMps) {
+    return current;
+  }
   return lastGood;
 }
 
-/// Classify motion from the live GPS sample. Coarse fixes keep [reportedPin]
-/// coordinates so indoor jumps do not count as travel; speed still comes from
-/// [liveFix] so a moving driver is not stamped idle.
+/// Classify motion from the live GPS sample so indoor last-good pins do not
+/// freeze the driver as idle while they are actually travelling.
 void applyLiveMotion(
   AdaptiveLocationScheduler scheduler, {
   required Position liveFix,
-  required Position? reportedPin,
   required DateTime now,
 }) {
-  final sample =
-      reportedPin != null && liveFix.accuracy > coarseGpsAccuracyMeters
-      ? _pinWithLiveSpeed(reportedPin, liveFix)
-      : liveFix;
-  scheduler.updateFromPosition(sample, now);
-}
-
-Position _pinWithLiveSpeed(Position pin, Position live) {
-  return Position(
-    latitude: pin.latitude,
-    longitude: pin.longitude,
-    timestamp: live.timestamp,
-    accuracy: pin.accuracy,
-    altitude: pin.altitude,
-    altitudeAccuracy: pin.altitudeAccuracy,
-    heading: live.heading,
-    headingAccuracy: live.headingAccuracy,
-    speed: live.speed,
-    speedAccuracy: live.speedAccuracy,
-    isMocked: live.isMocked,
-  );
+  scheduler.updateFromPosition(liveFix, now);
 }

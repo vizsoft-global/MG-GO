@@ -11,6 +11,7 @@ import '../../core/delivery/delivery_proximity_cache.dart';
 import '../../core/device/device_identity_service.dart';
 import '../../core/geo/device_location_resolver.dart';
 import '../../core/utils/ascii_digits.dart';
+import '../profile/avatar_disk_cache.dart';
 import 'device_session_models.dart';
 import 'driver_access.dart';
 import 'login_preferences_store.dart';
@@ -86,6 +87,10 @@ String? appendAvatarCacheBuster(String? url, DateTime? updatedAt) {
   final withoutFragment = url.split('#').first;
   return '$withoutFragment#v=$stamp';
 }
+
+/// [Image.network] / `http.get` must not send a fragment. Cache-busting lives
+/// in `#v=` so it never mutates the signed query string.
+String unsignedAvatarUrl(String url) => url.split('#').first;
 
 class RiderAuthService {
   RiderAuthService(this._client, this._deviceIdentity);
@@ -334,6 +339,9 @@ class RiderAuthService {
     );
     await DeliveryProximityCache.clearCurrentUser(userId);
     DeviceLocationResolver.instance.clear();
+    try {
+      await AvatarDiskCache().clear();
+    } catch (_) {}
     if (!keepRememberMe) {
       await LoginPreferencesStore.clearRememberMe();
     }
@@ -495,7 +503,7 @@ class RiderAuthService {
       ).replace(queryParameters: {'objectKey': trimmed});
       final response = await http
           .get(uri, headers: {'Authorization': 'Bearer ${session.accessToken}'})
-          .timeout(const Duration(seconds: 6));
+          .timeout(const Duration(seconds: 12));
       if (response.statusCode != 200) {
         debugPrint(
           '[avatar] read endpoint returned ${response.statusCode} for '

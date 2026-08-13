@@ -15,6 +15,7 @@ import '../../core/storage/order_proof_constraints.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/offline_banner.dart';
+import '../profile/avatar_picker_errors.dart';
 import 'active_delivery_provider.dart';
 import 'add_delivery_flow.dart';
 import 'delivery_messages.dart';
@@ -26,6 +27,7 @@ import 'widgets/delivery_proof_widgets.dart';
 import '../duty/adaptive_location_scheduler.dart';
 import '../duty/duty_background_service.dart';
 import '../duty/duty_location_provider.dart';
+import '../duty/location_tracking_service.dart';
 
 class PickupScreen extends ConsumerStatefulWidget {
   const PickupScreen({super.key});
@@ -110,12 +112,22 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
   }
 
   Future<void> _pickProof(ImageSource source) async {
-    final picker = ImagePicker();
-    final file = await picker.pickImage(
-      source: source,
-      maxWidth: 2048,
-      imageQuality: 85,
-    );
+    final XFile? file;
+    try {
+      file = await pickImageRespectingCameraPermission(
+        source: source,
+        maxWidth: 2048,
+        imageQuality: 85,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      final message = userMessageIfCameraPermissionDenied(e, context.l10n);
+      if (message != null) {
+        setState(() => _error = message);
+        return;
+      }
+      rethrow;
+    }
     if (file == null) return;
 
     final size = await file.length();
@@ -161,6 +173,10 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
     );
     if (orderId.isEmpty) {
       setState(() => _error = context.l10n.orderIdRequired);
+      return;
+    }
+    if (!DeliveryService.isValidOrderId(orderId)) {
+      setState(() => _error = context.l10n.invalidOrderId);
       return;
     }
 
@@ -221,6 +237,7 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
               longitude: position.longitude,
               speedMps: position.speed >= 0 ? position.speed : null,
               accuracyMeters: position.accuracy,
+              batteryPct: await readBatteryPct(),
               trackingStatus: TrackingStatus.deliverySubmit,
               deliveryId: created.id,
               forceHistory: true,
@@ -347,7 +364,18 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
                           textInputAction: TextInputAction.next,
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(
+                              DeliveryService.orderIdMaxLen,
+                            ),
                           ],
+                          maxLength: DeliveryService.orderIdMaxLen,
+                          buildCounter: (
+                            context, {
+                            required currentLength,
+                            required isFocused,
+                            required maxLength,
+                          }) =>
+                              null,
                           decoration: InputDecoration(
                             hintText: l10n.orderIdHint,
                           ),

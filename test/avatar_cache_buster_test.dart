@@ -31,4 +31,13 @@ void main() {
     expect(appendAvatarCacheBuster('https://x.test/a.jpg', null),
         'https://x.test/a.jpg');
   });
+
+  test('unsignedAvatarUrl strips only the cache-bust fragment', () {
+    const signed =
+        'https://cdn.example/photo.jpg?X-Amz-Signature=deadbeef#v=99';
+    expect(
+      unsignedAvatarUrl(signed),
+      'https://cdn.example/photo.jpg?X-Amz-Signature=deadbeef',
+    );
+  });
 }

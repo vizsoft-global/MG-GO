@@ -1,4 +1,5 @@
 import '../../l10n/app_localizations.dart';
+import 'shift_adherence_minutes.dart';
 
 /// Elapsed seconds for an open online session that started in [periodStart]..now.
 ///
@@ -71,13 +72,23 @@ class ShiftAdherence {
     DateTime? parse(String? raw) =>
         raw == null || raw.isEmpty ? null : DateTime.tryParse(raw);
 
+    final scheduledStartAt = parse(json['scheduled_start_at'] as String?);
+    final scheduledEndAt = parse(json['scheduled_end_at'] as String?);
+    final actualOutAt = parse(json['actual_out_at'] as String?);
+
     return ShiftAdherence(
-      scheduledStartAt: parse(json['scheduled_start_at'] as String?),
-      scheduledEndAt: parse(json['scheduled_end_at'] as String?),
+      scheduledStartAt: scheduledStartAt,
+      scheduledEndAt: scheduledEndAt,
       actualInAt: parse(json['actual_in_at'] as String?),
-      actualOutAt: parse(json['actual_out_at'] as String?),
+      actualOutAt: actualOutAt,
       minutesLate: (json['minutes_late'] as num?)?.toInt() ?? 0,
-      minutesEarlyOut: (json['minutes_early_out'] as num?)?.toInt() ?? 0,
+      minutesEarlyOut: scheduledStartAt != null && scheduledEndAt != null
+          ? shiftMinutesEarlyOut(
+              scheduledStart: scheduledStartAt,
+              scheduledEnd: scheduledEndAt,
+              actualOut: actualOutAt,
+            )
+          : (json['minutes_early_out'] as num?)?.toInt() ?? 0,
       onlineSeconds: (json['online_seconds'] as num?)?.toInt() ?? 0,
       scheduledSeconds: (json['scheduled_seconds'] as num?)?.toInt() ?? 0,
     );

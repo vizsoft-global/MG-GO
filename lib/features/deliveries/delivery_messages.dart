@@ -31,6 +31,7 @@ String messageForDeliveryServiceException(
 ) {
   return switch (error.code) {
     'order_id_required' => l10n.orderIdRequired,
+    'invalid_order_id' => l10n.invalidOrderId,
     'auth' => l10n.pleaseSignInAgain,
     'inactive' => l10n.accountNotActive,
     'driver_blocked' => error.message.isNotEmpty

@@ -2408,11 +2408,17 @@ abstract class AppLocalizations {
   /// **'Uploaded, but preview could not load. Pull down to refresh — contact support if it persists.'**
   String get uploadedPreviewFailed;
 
-  /// No description provided for @notificationsSettingsComingSoon.
+  /// No description provided for @notificationsTurnedOff.
   ///
   /// In en, this message translates to:
-  /// **'Notifications settings are coming soon'**
-  String get notificationsSettingsComingSoon;
+  /// **'Notifications turned off'**
+  String get notificationsTurnedOff;
+
+  /// No description provided for @notificationsTurnedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications turned on'**
+  String get notificationsTurnedOn;
 
   /// No description provided for @signOutConfirmBody.
   ///
@@ -2840,6 +2846,12 @@ abstract class AppLocalizations {
   /// **'Cancel reason'**
   String get cancelReasonLabel;
 
+  /// No description provided for @cancelNoteOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get cancelNoteOptional;
+
   /// No description provided for @rejectionReason.
   ///
   /// In en, this message translates to:
@@ -2953,6 +2965,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This Order ID already exists.'**
   String get duplicateOrderId;
+
+  /// No description provided for @invalidOrderId.
+  ///
+  /// In en, this message translates to:
+  /// **'Order ID must be 1–32 digits.'**
+  String get invalidOrderId;
 
   /// No description provided for @proofPhotoRequired.
   ///

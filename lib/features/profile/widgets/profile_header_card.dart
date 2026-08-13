@@ -25,10 +25,13 @@ class ProfileHeaderCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final localPreview = ref.watch(avatarLocalPreviewProvider);
+    final persistedBytes = ref.watch(persistedAvatarBytesProvider).value;
     final overrideUrl = ref.watch(profileAvatarDisplayOverrideProvider);
     final remoteUrl =
         ref.watch(profileAvatarUrlProvider).value ?? profile.avatarUrl;
-    final avatarUrl = overrideUrl ?? remoteUrl;
+    final rawUrl = overrideUrl ?? remoteUrl;
+    final avatarUrl =
+        rawUrl == null || rawUrl.isEmpty ? null : unsignedAvatarUrl(rawUrl);
     return Container(
       padding: const EdgeInsets.fromLTRB(15, 18, 15, 12),
       decoration: const BoxDecoration(
@@ -77,7 +80,7 @@ class ProfileHeaderCard extends ConsumerWidget {
           ProfileAvatar(
             fullName: profile.fullName,
             photoUrl: avatarUrl,
-            localBytes: localPreview,
+            localBytes: localPreview ?? persistedBytes,
             onTap: onAvatarTap,
           ),
           const SizedBox(height: 10),

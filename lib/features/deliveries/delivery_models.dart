@@ -1,4 +1,5 @@
 import '../../l10n/app_localizations.dart';
+import 'order_id.dart';
 
 /// Known cancel reason codes stored in `deliveries.cancel_reason`.
 enum CancelReason {
@@ -121,8 +122,9 @@ class DriverDelivery {
     return value.isNotEmpty && value != '—';
   }
 
-  String displayOrderId(AppLocalizations l10n) =>
-      hasOrderId ? externalOrderId : l10n.notProvided;
+  String displayOrderId(AppLocalizations l10n) => hasOrderId
+      ? OrderId.displayStored(externalOrderId)
+      : l10n.notProvided;
 
   String? cancelReasonLabel(AppLocalizations l10n) {
     final parsed = CancelReason.tryParse(cancelReason);

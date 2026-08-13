@@ -92,17 +92,24 @@ class AdaptiveLocationScheduler {
   }
 
   void markSampled(DateTime now) {
-    _lastSampleAt = now;
     _needsInitialReport = false;
     _movementJustStarted = false;
     if (_status == TrackingStatus.deliverySubmit) {
       _status = TrackingStatus.idle;
+      _lastSampleAt = null;
+      return;
     }
+    _lastSampleAt = now;
   }
 
   void forceDeliverySample() {
     _status = TrackingStatus.deliverySubmit;
     _lastSampleAt = null;
+  }
+
+  /// Keep the live map on On Delivery while a pickup is still active.
+  void holdDeliveryStatus() {
+    _status = TrackingStatus.deliverySubmit;
   }
 
   void updateFromPosition(Position position, DateTime now) {

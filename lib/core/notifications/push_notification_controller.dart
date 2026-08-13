@@ -18,6 +18,8 @@ import 'notification_event_repository.dart';
 import 'notification_inbox_provider.dart';
 import 'notification_payload.dart';
 import 'notification_router.dart';
+import 'notifications_preference.dart';
+import 'notifications_preference_provider.dart';
 import 'push_token_repository.dart';
 import 'screenshot_restriction_store.dart';
 
@@ -47,6 +49,12 @@ class PushNotificationController extends Notifier<bool> {
       }
     });
 
+    ref.listen<bool>(notificationsEnabledProvider, (previous, next) {
+      if (previous == next) return;
+      if (!_initialized) return;
+      unawaited(_applyDeliveryPreference(next));
+    });
+
     ref.onDispose(() {
       _foregroundSub?.cancel();
       _tokenRefreshSub?.cancel();
@@ -63,7 +71,7 @@ class PushNotificationController extends Notifier<bool> {
 
   Future<void> _ensureReady() async {
     if (_initialized) {
-      await _registerCurrentToken();
+      await _applyDeliveryPreference(ref.read(notificationsEnabledProvider));
       return;
     }
     await _bootstrap();
@@ -119,9 +127,9 @@ class PushNotificationController extends Notifier<bool> {
       }
 
       await _listenDeepLinks();
-      await _registerCurrentToken();
       _initialized = true;
       state = true;
+      await _applyDeliveryPreference(ref.read(notificationsEnabledProvider));
     } catch (e, stack) {
       debugPrint('[notifications] bootstrap failed: $e\n$stack');
     }
@@ -157,6 +165,7 @@ class PushNotificationController extends Notifier<bool> {
 
   Future<void> _registerToken(String token) async {
     if (Supabase.instance.client.auth.currentSession == null) return;
+    if (!ref.read(notificationsEnabledProvider)) return;
     try {
       await ref.read(pushTokenRepositoryProvider).upsertToken(token);
     } catch (e) {
@@ -172,6 +181,27 @@ class PushNotificationController extends Notifier<bool> {
     }
   }
 
+  Future<void> _applyDeliveryPreference(bool enabled) async {
+    try {
+      await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+        alert: enabled,
+        badge: enabled,
+        sound: enabled,
+      );
+    } catch (e) {
+      debugPrint('[notifications] presentation options failed: $e');
+    }
+    if (!enabled) {
+      try {
+        await ref.read(pushTokenRepositoryProvider).deactivateCurrentToken();
+      } catch (e) {
+        debugPrint('[notifications] token deactivate failed: $e');
+      }
+      return;
+    }
+    await _registerCurrentToken();
+  }
+
   Future<void> _onForegroundMessage(RemoteMessage message) async {
     final payload = NotificationPayload.fromFcmData(message.data);
     await _cacheScreenshotRestriction(payload);
@@ -180,6 +210,12 @@ class PushNotificationController extends Notifier<bool> {
 
     if (payload.actionType == NotificationActionType.silentUpdateTrigger) {
       await _router.handlePayload(payload, fromUserTap: false);
+      return;
+    }
+
+    if (!shouldDeliverForegroundBanner(
+      notificationsEnabled: ref.read(notificationsEnabledProvider),
+    )) {
       return;
     }
 

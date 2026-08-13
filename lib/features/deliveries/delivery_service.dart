@@ -7,6 +7,7 @@ import '../../core/offline/network_status_provider.dart';
 import '../../core/offline/offline_repo.dart';
 import '../auth/driver_access.dart';
 import 'delivery_models.dart';
+import 'order_id.dart';
 
 class DeliveryServiceException implements Exception {
   DeliveryServiceException(this.message, {this.code});
@@ -61,13 +62,14 @@ class DeliveryService {
   ''';
 
   /// Trim and strip leading `#` before sending to the server.
-  static String normalizeOrderIdInput(String raw) {
-    var v = raw.trim();
-    while (v.startsWith('#')) {
-      v = v.substring(1).trim();
-    }
-    return v;
-  }
+  static String normalizeOrderIdInput(String raw) => OrderId.normalize(raw);
+
+  static const orderIdMaxLen = OrderId.maxLen;
+
+  static bool isValidOrderId(String raw) => OrderId.isValid(raw);
+
+  static String displayStoredOrderId(String raw, {int invalidMax = 16}) =>
+      OrderId.displayStored(raw, invalidMax: invalidMax);
 
   Future<ActiveDelivery?> getActivePickup() async {
     try {
@@ -105,6 +107,12 @@ class DeliveryService {
     String? deviceIdOverride,
   }) async {
     final normalized = normalizeOrderIdInput(orderId);
+    if (normalized.isEmpty) {
+      throw DeliveryServiceException('', code: 'order_id_required');
+    }
+    if (!isValidOrderId(normalized)) {
+      throw DeliveryServiceException('', code: 'invalid_order_id');
+    }
     final userId = _client.auth.currentUser?.id;
     final deviceId = await _resolveDeviceId(override: deviceIdOverride);
     try {
@@ -432,7 +440,10 @@ class DeliveryService {
     if (msg.contains('device_revoked') || msg.contains('device_id_required')) {
       return DeliveryServiceException('', code: 'device_revoked');
     }
-    if (msg.contains('invalid_order_id') || msg.contains('order_id_required')) {
+    if (msg.contains('invalid_order_id')) {
+      return DeliveryServiceException('', code: 'invalid_order_id');
+    }
+    if (msg.contains('order_id_required')) {
       return DeliveryServiceException('', code: 'order_id_required');
     }
     return DeliveryServiceException(e.message);

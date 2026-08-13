@@ -1317,7 +1317,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'تم الرفع لكن تعذّر عرض المعاينة. اسحب للتحديث — تواصل مع الدعم إن استمر.';
 
   @override
-  String get notificationsSettingsComingSoon => 'إعدادات الإشعارات قريباً';
+  String get notificationsTurnedOff => 'تم إيقاف الإشعارات';
+
+  @override
+  String get notificationsTurnedOn => 'تم تفعيل الإشعارات';
 
   @override
   String get signOutConfirmBody =>
@@ -1550,6 +1553,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get cancelReasonLabel => 'سبب الإلغاء';
 
   @override
+  String get cancelNoteOptional => 'ملاحظة (اختياري)';
+
+  @override
   String get rejectionReason => 'سبب الرفض';
 
   @override
@@ -1606,6 +1612,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get duplicateOrderId => 'رقم الطلب موجود مسبقاً.';
+
+  @override
+  String get invalidOrderId => 'رقم الطلب يجب أن يكون من 1 إلى 32 رقماً.';
 
   @override
   String get proofPhotoRequired => 'صورة الإثبات مطلوبة';

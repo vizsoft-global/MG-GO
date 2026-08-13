@@ -148,6 +148,8 @@ class _DeliveryDetailSheetState extends ConsumerState<DeliveryDetailSheet> {
                       delivery.hasOrderId
                           ? '#${delivery.displayOrderId(l10n)}'
                           : delivery.displayOrderId(l10n),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                             color: delivery.hasOrderId

@@ -88,6 +88,28 @@ void main() {
       expect(scheduler.movementJustStarted, isTrue);
       expect(scheduler.shouldReportToServer(next), isTrue);
     });
+
+    test('after a delivery_submit sample, the next tick reports idle/moving immediately', () {
+      final scheduler = AdaptiveLocationScheduler(random: _ZeroRandom());
+      final now = DateTime(2026, 1, 1, 12);
+
+      scheduler.forceDeliverySample();
+      expect(scheduler.shouldReportToServer(now), isTrue);
+      scheduler.markSampled(now);
+
+      expect(scheduler.status, TrackingStatus.idle);
+      expect(scheduler.shouldReportToServer(now), isTrue);
+    });
+
+    test('holdDeliveryStatus keeps On Delivery until the sample is sent', () {
+      final scheduler = AdaptiveLocationScheduler(random: _ZeroRandom());
+      final now = DateTime(2026, 1, 1, 12);
+
+      scheduler.updateFromPosition(_pos(speed: 5), now);
+      expect(scheduler.status, TrackingStatus.moving);
+      scheduler.holdDeliveryStatus();
+      expect(scheduler.status, TrackingStatus.deliverySubmit);
+    });
   });
 
   group('displaySpeedMps', () {

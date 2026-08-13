@@ -11,6 +11,7 @@ import '../../core/l10n/l10n.dart';
 import '../../core/l10n/locale_formatters.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
+import '../profile/avatar_picker_errors.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
 
@@ -60,11 +61,27 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
   }
 
   Future<void> _captureFile() async {
-    final picked =
-        await ImagePicker().pickImage(source: ImageSource.camera, imageQuality: 85);
+    final XFile? picked;
+    try {
+      picked = await pickImageRespectingCameraPermission(
+        source: ImageSource.camera,
+        imageQuality: 85,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      final message = userMessageIfCameraPermissionDenied(e, context.l10n);
+      if (message != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+        return;
+      }
+      rethrow;
+    }
     if (picked == null) return;
-    final bytes = await picked.readAsBytes();
-    setState(() => _files.add((name: picked.name, bytes: bytes)));
+    final captured = picked;
+    final bytes = await captured.readAsBytes();
+    setState(() => _files.add((name: captured.name, bytes: bytes)));
   }
 
   /// RSup/10d — the frame shows only "Add note" / "Upload documents", so the

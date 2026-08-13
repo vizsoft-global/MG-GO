@@ -58,8 +58,7 @@ void main() {
     );
   });
 
-  test('motion uses live speed even when the pin heartbeats last-good', () {
-    final scheduler = AdaptiveLocationScheduler();
+  test('moving coarse GPS follows the live fix so the admin pin travels', () {
     final lastGood = _pos(accuracy: 12, speed: 0);
     final live = _pos(accuracy: 180, speed: 8, lat: 29.90);
     expect(
@@ -69,13 +68,19 @@ void main() {
         force: false,
         needsInitialReport: false,
       ),
-      lastGood,
+      live,
     );
+  });
+
+  test('motion uses live displacement even when GPS speed is 0', () {
+    final scheduler = AdaptiveLocationScheduler();
+    final lastGood = _pos(accuracy: 12, speed: 0, lat: 29.38);
+    final live = _pos(accuracy: 180, speed: 0, lat: 29.90);
+    scheduler.updateFromPosition(lastGood, DateTime(2026, 8, 13, 9));
     applyLiveMotion(
       scheduler,
       liveFix: live,
-      reportedPin: lastGood,
-      now: DateTime(2026, 8, 13, 9),
+      now: DateTime(2026, 8, 13, 9, 0, 5),
     );
     expect(scheduler.status, TrackingStatus.moving);
   });

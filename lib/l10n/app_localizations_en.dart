@@ -1325,8 +1325,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Uploaded, but preview could not load. Pull down to refresh — contact support if it persists.';
 
   @override
-  String get notificationsSettingsComingSoon =>
-      'Notifications settings are coming soon';
+  String get notificationsTurnedOff => 'Notifications turned off';
+
+  @override
+  String get notificationsTurnedOn => 'Notifications turned on';
 
   @override
   String get signOutConfirmBody =>
@@ -1560,6 +1562,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancelReasonLabel => 'Cancel reason';
 
   @override
+  String get cancelNoteOptional => 'Note (optional)';
+
+  @override
   String get rejectionReason => 'Rejection reason';
 
   @override
@@ -1616,6 +1621,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get duplicateOrderId => 'This Order ID already exists.';
+
+  @override
+  String get invalidOrderId => 'Order ID must be 1–32 digits.';
 
   @override
   String get proofPhotoRequired => 'A proof photo is required';

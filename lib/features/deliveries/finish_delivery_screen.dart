@@ -12,9 +12,11 @@ import '../../core/storage/driver_upload_service.dart';
 import '../../core/storage/order_proof_constraints.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/offline_banner.dart';
+import '../profile/avatar_picker_errors.dart';
 import '../duty/adaptive_location_scheduler.dart';
 import '../duty/duty_background_service.dart';
 import '../duty/duty_location_provider.dart';
+import '../duty/location_tracking_service.dart';
 import '../home/home_providers.dart';
 import 'active_delivery_provider.dart';
 import 'delivery_messages.dart';
@@ -84,12 +86,22 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
   }
 
   Future<void> _pickProof(ImageSource source) async {
-    final picker = ImagePicker();
-    final file = await picker.pickImage(
-      source: source,
-      maxWidth: 2048,
-      imageQuality: 85,
-    );
+    final XFile? file;
+    try {
+      file = await pickImageRespectingCameraPermission(
+        source: source,
+        maxWidth: 2048,
+        imageQuality: 85,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      final message = userMessageIfCameraPermissionDenied(e, context.l10n);
+      if (message != null) {
+        setState(() => _error = message);
+        return;
+      }
+      rethrow;
+    }
     if (file == null) return;
 
     final size = await file.length();
@@ -205,6 +217,7 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
               longitude: position.longitude,
               speedMps: position.speed >= 0 ? position.speed : null,
               accuracyMeters: position.accuracy,
+              batteryPct: await readBatteryPct(),
               trackingStatus: TrackingStatus.deliverySubmit,
               deliveryId: widget.deliveryId,
               forceHistory: true,
@@ -297,12 +310,7 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
                   ),
                   const SizedBox(height: 12),
                   if (_requiresCancelReason) ...[
-                    Text(
-                      l10n.cancelReasonLabel,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
+                    _FieldLabel(label: l10n.cancelReasonLabel, requiredField: true),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<CancelReason>(
                       initialValue: _cancelReason,
@@ -320,6 +328,8 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
                           : (value) => setState(() => _cancelReason = value),
                     ),
                     const SizedBox(height: 12),
+                    _FieldLabel(label: l10n.cancelNoteOptional),
+                    const SizedBox(height: 8),
                     TextField(
                       controller: _cancelNoteController,
                       enabled: !_submitting,
@@ -330,13 +340,11 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
                     ),
                     const SizedBox(height: 16),
                   ],
-                  Text(
-                    isDelivered
+                  _FieldLabel(
+                    label: isDelivered
                         ? l10n.deliveryProofOptional
                         : l10n.cancelProof,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                    requiredField: !isDelivered,
                   ),
                   const SizedBox(height: 10),
                   DeliveryProofUploadArea(
@@ -391,6 +399,32 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FieldLabel extends StatelessWidget {
+  const _FieldLabel({required this.label, this.requiredField = false});
+
+  final String label;
+  final bool requiredField;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text.rich(
+      TextSpan(
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+        children: [
+          TextSpan(text: label),
+          if (requiredField)
+            const TextSpan(
+              text: ' *',
+              style: TextStyle(color: AppColors.rejectedRed),
+            ),
         ],
       ),
     );

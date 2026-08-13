@@ -3,6 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'notification_inbox_models.dart';
 import 'notification_inbox_repository.dart';
+import 'notifications_preference.dart';
+import 'notifications_preference_provider.dart';
 import 'screenshot_restriction_store.dart';
 
 /// Pull-to-refresh / pagination-friendly inbox snapshot.
@@ -108,8 +110,24 @@ class NotificationInboxNotifier
   }
 }
 
+/// Inbox as the rider should see it (empty while Profile Notifications is off).
+final visibleNotificationInboxProvider =
+    Provider<AsyncValue<NotificationInboxSnapshot>>((ref) {
+      final enabled = ref.watch(notificationsEnabledProvider);
+      final inbox = ref.watch(notificationInboxProvider);
+      if (!enabled) {
+        return AsyncData(
+          inboxVisibleToUser(
+            notificationsEnabled: false,
+            snapshot: inbox.value ?? NotificationInboxSnapshot.empty,
+          ),
+        );
+      }
+      return inbox;
+    });
+
 /// Lightweight unread badge count for the home bell icon.
 final notificationsUnreadCountProvider = Provider<int>((ref) {
-  final snapshot = ref.watch(notificationInboxProvider).value;
+  final snapshot = ref.watch(visibleNotificationInboxProvider).value;
   return snapshot?.unreadCount ?? 0;
 });
