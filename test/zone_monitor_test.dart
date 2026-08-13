@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dpd_userapp/features/home/zone_monitor_provider.dart';
 
 void main() {
-  test('idle outside window is 10 minutes', () {
-    expect(zoneIdleTimeoutSeconds, 600);
+  test('idle outside window is 45 minutes', () {
+    expect(zoneIdleTimeoutSeconds, 2700);
   });
 
   test('return grace after delivery is 20 minutes', () {

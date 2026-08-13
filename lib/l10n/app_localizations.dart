@@ -3121,6 +3121,2220 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The downloaded update file is missing. Tap Download to try again.'**
   String get updateApkMissing;
+
+  /// No description provided for @supportRequestTypeLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get supportRequestTypeLeave;
+
+  /// No description provided for @supportRequestTypeLeaveRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave request'**
+  String get supportRequestTypeLeaveRequest;
+
+  /// No description provided for @supportRequestTypeSickLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Sick & accident leave'**
+  String get supportRequestTypeSickLeave;
+
+  /// No description provided for @supportRequestTypeAsset.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset request'**
+  String get supportRequestTypeAsset;
+
+  /// No description provided for @supportRequestTypeFuel.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuel reimbursement'**
+  String get supportRequestTypeFuel;
+
+  /// No description provided for @supportRequestTypeDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Document request'**
+  String get supportRequestTypeDocument;
+
+  /// No description provided for @supportRequestTypeDocumentReupload.
+  ///
+  /// In en, this message translates to:
+  /// **'Document re-upload'**
+  String get supportRequestTypeDocumentReupload;
+
+  /// No description provided for @supportRequestTypeComplaint.
+  ///
+  /// In en, this message translates to:
+  /// **'Complaint'**
+  String get supportRequestTypeComplaint;
+
+  /// No description provided for @supportRequestTypeSalaryJustification.
+  ///
+  /// In en, this message translates to:
+  /// **'Salary justification'**
+  String get supportRequestTypeSalaryJustification;
+
+  /// No description provided for @supportRequestTypeLoanAdvance.
+  ///
+  /// In en, this message translates to:
+  /// **'Advance / Loan'**
+  String get supportRequestTypeLoanAdvance;
+
+  /// No description provided for @supportRequestTypeLoanRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan request'**
+  String get supportRequestTypeLoanRequest;
+
+  /// No description provided for @supportRequestTypeGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Request'**
+  String get supportRequestTypeGeneric;
+
+  /// No description provided for @supportStatusAwaitingAck.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting ack'**
+  String get supportStatusAwaitingAck;
+
+  /// No description provided for @supportStatusAcknowledged.
+  ///
+  /// In en, this message translates to:
+  /// **'Acknowledged'**
+  String get supportStatusAcknowledged;
+
+  /// No description provided for @supportStatusInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get supportStatusInProgress;
+
+  /// No description provided for @supportStatusSolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Solved'**
+  String get supportStatusSolved;
+
+  /// No description provided for @supportStatusOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get supportStatusOverdue;
+
+  /// No description provided for @supportActionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Action required'**
+  String get supportActionRequired;
+
+  /// No description provided for @supportMyRequestsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My requests'**
+  String get supportMyRequestsTitle;
+
+  /// No description provided for @supportTabRequestSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Sent'**
+  String get supportTabRequestSent;
+
+  /// No description provided for @supportTabRequestReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Recieved'**
+  String get supportTabRequestReceived;
+
+  /// No description provided for @supportCouldNotLoadRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load requests.\n{error}'**
+  String supportCouldNotLoadRequests(String error);
+
+  /// No description provided for @supportNoRequestsSent.
+  ///
+  /// In en, this message translates to:
+  /// **'No requests sent yet'**
+  String get supportNoRequestsSent;
+
+  /// No description provided for @supportNoRequestsReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'No requests received'**
+  String get supportNoRequestsReceived;
+
+  /// No description provided for @supportRequestsNeedResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 request need your response} other{{count} requests need your response}}'**
+  String supportRequestsNeedResponse(int count);
+
+  /// No description provided for @supportReasonAwaitingAck.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting your acknowledgement'**
+  String get supportReasonAwaitingAck;
+
+  /// No description provided for @supportReasonLoanDetailsChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan details changed'**
+  String get supportReasonLoanDetailsChanged;
+
+  /// No description provided for @supportReasonClarificationNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Clarification needed'**
+  String get supportReasonClarificationNeeded;
+
+  /// No description provided for @supportActionAcknowledgeUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Acknowledge update'**
+  String get supportActionAcknowledgeUpdate;
+
+  /// No description provided for @supportActionDocumentToSign.
+  ///
+  /// In en, this message translates to:
+  /// **'Document to sign'**
+  String get supportActionDocumentToSign;
+
+  /// No description provided for @supportCouldNotLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load.\n{error}'**
+  String supportCouldNotLoad(String error);
+
+  /// No description provided for @supportNoActionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'No action required right now'**
+  String get supportNoActionRequired;
+
+  /// No description provided for @supportHubTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & support'**
+  String get supportHubTitle;
+
+  /// No description provided for @supportSectionRaiseRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'RAISE A REQUEST'**
+  String get supportSectionRaiseRequest;
+
+  /// No description provided for @supportTileSickAccidentLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Sick / Accident Leave'**
+  String get supportTileSickAccidentLeave;
+
+  /// No description provided for @supportTileSalaryJustification.
+  ///
+  /// In en, this message translates to:
+  /// **'Salary Justification'**
+  String get supportTileSalaryJustification;
+
+  /// No description provided for @supportTileLoanRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan Request'**
+  String get supportTileLoanRequest;
+
+  /// No description provided for @supportSectionVisitUs.
+  ///
+  /// In en, this message translates to:
+  /// **'VISIT US'**
+  String get supportSectionVisitUs;
+
+  /// No description provided for @supportScheduleVisitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule a visit to Central Tower'**
+  String get supportScheduleVisitTitle;
+
+  /// No description provided for @supportScheduleVisitSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Book a time slot for in-person help'**
+  String get supportScheduleVisitSubtitle;
+
+  /// No description provided for @supportSectionYourActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR ACTIVITY'**
+  String get supportSectionYourActivity;
+
+  /// No description provided for @supportMyRequestsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Track your requests'**
+  String get supportMyRequestsSubtitle;
+
+  /// No description provided for @supportMyVisitsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My visits'**
+  String get supportMyVisitsTitle;
+
+  /// No description provided for @supportMyVisitsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Booked tower visits'**
+  String get supportMyVisitsSubtitle;
+
+  /// No description provided for @supportDocumentsToSign.
+  ///
+  /// In en, this message translates to:
+  /// **'Documents to sign'**
+  String get supportDocumentsToSign;
+
+  /// No description provided for @supportAppointments.
+  ///
+  /// In en, this message translates to:
+  /// **'Appointments'**
+  String get supportAppointments;
+
+  /// No description provided for @supportBadgeNewCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} new'**
+  String supportBadgeNewCount(int count);
+
+  /// No description provided for @supportFormTitleSickLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Sick / Accident leave'**
+  String get supportFormTitleSickLeave;
+
+  /// No description provided for @supportFormTitleLoan.
+  ///
+  /// In en, this message translates to:
+  /// **'Loan / Advance'**
+  String get supportFormTitleLoan;
+
+  /// No description provided for @supportFormTitleFuel.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuel claim'**
+  String get supportFormTitleFuel;
+
+  /// No description provided for @supportFormTitleNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New request'**
+  String get supportFormTitleNew;
+
+  /// No description provided for @supportErrorLeaveTypeDatesRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave type and dates are required'**
+  String get supportErrorLeaveTypeDatesRequired;
+
+  /// No description provided for @supportErrorJustificationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Justification is required'**
+  String get supportErrorJustificationRequired;
+
+  /// No description provided for @supportErrorSymptomsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Symptoms / details are required'**
+  String get supportErrorSymptomsRequired;
+
+  /// No description provided for @supportErrorMedicalDocsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Medical documents are required'**
+  String get supportErrorMedicalDocsRequired;
+
+  /// No description provided for @supportErrorAmountTenureRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount and tenure are required'**
+  String get supportErrorAmountTenureRequired;
+
+  /// No description provided for @supportErrorNeededByReasonRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Needed-by date and reason are required'**
+  String get supportErrorNeededByReasonRequired;
+
+  /// No description provided for @supportErrorAssetFieldsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset type, mode and status are required'**
+  String get supportErrorAssetFieldsRequired;
+
+  /// No description provided for @supportErrorAmountPeriodRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount and period are required'**
+  String get supportErrorAmountPeriodRequired;
+
+  /// No description provided for @supportErrorFuelReceiptsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuel receipts are required'**
+  String get supportErrorFuelReceiptsRequired;
+
+  /// No description provided for @supportErrorDocumentFieldsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Document fields are required'**
+  String get supportErrorDocumentFieldsRequired;
+
+  /// No description provided for @supportErrorComplaintFieldsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Category, severity, subject and description required'**
+  String get supportErrorComplaintFieldsRequired;
+
+  /// No description provided for @supportErrorSalaryFieldsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Salary fields are required'**
+  String get supportErrorSalaryFieldsRequired;
+
+  /// No description provided for @supportErrorAcceptDeclaration.
+  ///
+  /// In en, this message translates to:
+  /// **'Please accept the declaration'**
+  String get supportErrorAcceptDeclaration;
+
+  /// No description provided for @supportLeaveTypeAnnual.
+  ///
+  /// In en, this message translates to:
+  /// **'Annual'**
+  String get supportLeaveTypeAnnual;
+
+  /// No description provided for @supportLeaveTypeEmergency.
+  ///
+  /// In en, this message translates to:
+  /// **'Emergency'**
+  String get supportLeaveTypeEmergency;
+
+  /// No description provided for @supportLeaveTypeAccident.
+  ///
+  /// In en, this message translates to:
+  /// **'Accident'**
+  String get supportLeaveTypeAccident;
+
+  /// No description provided for @supportLeaveTypeUnpaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpaid Leave'**
+  String get supportLeaveTypeUnpaid;
+
+  /// No description provided for @supportSickTypeSickLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Sick leave'**
+  String get supportSickTypeSickLeave;
+
+  /// No description provided for @supportSickTypeInjury.
+  ///
+  /// In en, this message translates to:
+  /// **'Injury'**
+  String get supportSickTypeInjury;
+
+  /// No description provided for @supportOptionOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get supportOptionOther;
+
+  /// No description provided for @supportAssetSimCard.
+  ///
+  /// In en, this message translates to:
+  /// **'SIM card'**
+  String get supportAssetSimCard;
+
+  /// No description provided for @supportAssetFuelCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuel card'**
+  String get supportAssetFuelCard;
+
+  /// No description provided for @supportAssetFuelLimitChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuel limit change'**
+  String get supportAssetFuelLimitChange;
+
+  /// No description provided for @supportAssetRaincoat.
+  ///
+  /// In en, this message translates to:
+  /// **'Raincoat'**
+  String get supportAssetRaincoat;
+
+  /// No description provided for @supportAssetDeliveryBag.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery bag'**
+  String get supportAssetDeliveryBag;
+
+  /// No description provided for @supportAssetReflectiveVest.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflective vest'**
+  String get supportAssetReflectiveVest;
+
+  /// No description provided for @supportAssetWinterJacket.
+  ///
+  /// In en, this message translates to:
+  /// **'Winter jacket'**
+  String get supportAssetWinterJacket;
+
+  /// No description provided for @supportAssetDeliveryAttire.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery attire'**
+  String get supportAssetDeliveryAttire;
+
+  /// No description provided for @supportAssetDeliveryPants.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery pants'**
+  String get supportAssetDeliveryPants;
+
+  /// No description provided for @supportAssetNewBike.
+  ///
+  /// In en, this message translates to:
+  /// **'New bike'**
+  String get supportAssetNewBike;
+
+  /// No description provided for @supportAssetHelmet.
+  ///
+  /// In en, this message translates to:
+  /// **'Helmet'**
+  String get supportAssetHelmet;
+
+  /// No description provided for @supportAssetDeliveryBox.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery box'**
+  String get supportAssetDeliveryBox;
+
+  /// No description provided for @supportAssetFuelChip.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuel chip'**
+  String get supportAssetFuelChip;
+
+  /// No description provided for @supportAssetPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get supportAssetPhone;
+
+  /// No description provided for @supportAssetMobileHolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile holder'**
+  String get supportAssetMobileHolder;
+
+  /// No description provided for @supportDocTypeCivilIdCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Civil ID copy'**
+  String get supportDocTypeCivilIdCopy;
+
+  /// No description provided for @supportDocTypeLicenseCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'License Copy'**
+  String get supportDocTypeLicenseCopy;
+
+  /// No description provided for @supportDocTypeWorkPermitCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Work permit copy'**
+  String get supportDocTypeWorkPermitCopy;
+
+  /// No description provided for @supportDocTypeRegistrationCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration copy'**
+  String get supportDocTypeRegistrationCopy;
+
+  /// No description provided for @supportDocTypeVehicleDocumentCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle document copy'**
+  String get supportDocTypeVehicleDocumentCopy;
+
+  /// No description provided for @supportDocTypeSalaryCertification.
+  ///
+  /// In en, this message translates to:
+  /// **'Salary certification'**
+  String get supportDocTypeSalaryCertification;
+
+  /// No description provided for @supportRequestModeRenewal.
+  ///
+  /// In en, this message translates to:
+  /// **'Renewal'**
+  String get supportRequestModeRenewal;
+
+  /// No description provided for @supportRequestModeFirstTime.
+  ///
+  /// In en, this message translates to:
+  /// **'First Time'**
+  String get supportRequestModeFirstTime;
+
+  /// No description provided for @supportAssetStatusLost.
+  ///
+  /// In en, this message translates to:
+  /// **'Lost'**
+  String get supportAssetStatusLost;
+
+  /// No description provided for @supportAssetStatusDamaged.
+  ///
+  /// In en, this message translates to:
+  /// **'Damaged'**
+  String get supportAssetStatusDamaged;
+
+  /// No description provided for @supportDeliveryMethodEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get supportDeliveryMethodEmail;
+
+  /// No description provided for @supportDeliveryMethodPickup.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup'**
+  String get supportDeliveryMethodPickup;
+
+  /// No description provided for @supportSeverityLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get supportSeverityLow;
+
+  /// No description provided for @supportSeverityMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get supportSeverityMedium;
+
+  /// No description provided for @supportSeverityHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get supportSeverityHigh;
+
+  /// No description provided for @supportFieldLeaveType.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave type'**
+  String get supportFieldLeaveType;
+
+  /// No description provided for @supportFieldFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get supportFieldFrom;
+
+  /// No description provided for @supportFieldTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get supportFieldTo;
+
+  /// No description provided for @supportFieldCommentOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment (optional)'**
+  String get supportFieldCommentOptional;
+
+  /// No description provided for @supportFieldComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment'**
+  String get supportFieldComment;
+
+  /// No description provided for @supportHintMentionHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Mention here'**
+  String get supportHintMentionHere;
+
+  /// No description provided for @supportFieldJustificationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Justification *'**
+  String get supportFieldJustificationRequired;
+
+  /// No description provided for @supportFieldRequiredNamed.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} is required'**
+  String supportFieldRequiredNamed(String field);
+
+  /// No description provided for @supportErrorAttachmentsMin.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach at least {count} file(s)'**
+  String supportErrorAttachmentsMin(int count);
+
+  /// No description provided for @supportAttachmentRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachment *'**
+  String get supportAttachmentRequired;
+
+  /// No description provided for @supportRequestTypeUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'This request type is not available.'**
+  String get supportRequestTypeUnknown;
+
+  /// No description provided for @supportRequestTypeNoFields.
+  ///
+  /// In en, this message translates to:
+  /// **'This request type has no form yet. Please try again later.'**
+  String get supportRequestTypeNoFields;
+
+  /// No description provided for @supportAttachmentOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachment (optional)'**
+  String get supportAttachmentOptional;
+
+  /// No description provided for @supportFilesSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} file(s) selected'**
+  String supportFilesSelected(int count);
+
+  /// No description provided for @supportFieldSymptomsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Symptoms / details *'**
+  String get supportFieldSymptomsRequired;
+
+  /// No description provided for @supportUploadMedicalCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload medical certificate *'**
+  String get supportUploadMedicalCertificate;
+
+  /// No description provided for @supportFieldAmountKwdRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount (KWD) *'**
+  String get supportFieldAmountKwdRequired;
+
+  /// No description provided for @supportLoanTenureUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Tenure options are not configured yet. Loan requests are temporarily unavailable.'**
+  String get supportLoanTenureUnavailable;
+
+  /// No description provided for @supportFieldTenureRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Tenure *'**
+  String get supportFieldTenureRequired;
+
+  /// No description provided for @supportFieldNeededBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Needed by'**
+  String get supportFieldNeededBy;
+
+  /// No description provided for @supportFieldReasonRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason *'**
+  String get supportFieldReasonRequired;
+
+  /// No description provided for @supportFieldAssetType.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset type'**
+  String get supportFieldAssetType;
+
+  /// No description provided for @supportFieldQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get supportFieldQuantity;
+
+  /// No description provided for @supportFieldPeriodMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Period (month)'**
+  String get supportFieldPeriodMonth;
+
+  /// No description provided for @supportFieldDistanceKm.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance (km)'**
+  String get supportFieldDistanceKm;
+
+  /// No description provided for @supportUploadFuelReceipts.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload fuel receipts *'**
+  String get supportUploadFuelReceipts;
+
+  /// No description provided for @supportFieldDocumentType.
+  ///
+  /// In en, this message translates to:
+  /// **'Document type'**
+  String get supportFieldDocumentType;
+
+  /// No description provided for @supportComplaintCategoriesUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Complaint categories are not configured yet. Complaints are temporarily unavailable.'**
+  String get supportComplaintCategoriesUnavailable;
+
+  /// No description provided for @supportFieldCategoryRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Category *'**
+  String get supportFieldCategoryRequired;
+
+  /// No description provided for @supportFieldSubjectRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject *'**
+  String get supportFieldSubjectRequired;
+
+  /// No description provided for @supportFieldDescriptionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Description *'**
+  String get supportFieldDescriptionRequired;
+
+  /// No description provided for @supportFieldSalaryMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Salary Month'**
+  String get supportFieldSalaryMonth;
+
+  /// No description provided for @supportFieldExpectedAmountRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expected amount *'**
+  String get supportFieldExpectedAmountRequired;
+
+  /// No description provided for @supportFieldReceivedAmountRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Received amount *'**
+  String get supportFieldReceivedAmountRequired;
+
+  /// No description provided for @supportSupportingDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Supporting document'**
+  String get supportSupportingDocument;
+
+  /// No description provided for @supportPhotoOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo (optional)'**
+  String get supportPhotoOptional;
+
+  /// No description provided for @supportAttachPayslipOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach payslip (optional)'**
+  String get supportAttachPayslipOptional;
+
+  /// No description provided for @supportDeclarationLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Declaration: I am entitled to return on time, otherwise the company to apply the list of penalties in case of late return.'**
+  String get supportDeclarationLeave;
+
+  /// No description provided for @supportDeclarationLoan.
+  ///
+  /// In en, this message translates to:
+  /// **'Declaration: I am committed to pay the full amount to the company or the company to deduct it as per the installments from my salary.'**
+  String get supportDeclarationLoan;
+
+  /// No description provided for @supportDeclarationAsset.
+  ///
+  /// In en, this message translates to:
+  /// **'Declaration: In the case of lost or damaged item replacement i am entitled for any charges from the company to receive a new one.'**
+  String get supportDeclarationAsset;
+
+  /// No description provided for @supportTemporarilyUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Temporarily unavailable'**
+  String get supportTemporarilyUnavailable;
+
+  /// No description provided for @supportSubmitRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit request'**
+  String get supportSubmitRequest;
+
+  /// No description provided for @supportChooseFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from gallery'**
+  String get supportChooseFromGallery;
+
+  /// No description provided for @supportTakeAPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get supportTakeAPhoto;
+
+  /// No description provided for @supportResponseSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Response submitted'**
+  String get supportResponseSubmitted;
+
+  /// No description provided for @supportAskQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask a question'**
+  String get supportAskQuestion;
+
+  /// No description provided for @supportAskQuestionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a note to the ops team about this request. They will reply here.'**
+  String get supportAskQuestionBody;
+
+  /// No description provided for @supportAskQuestionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Which side of the Emirates ID do you need?'**
+  String get supportAskQuestionHint;
+
+  /// No description provided for @supportSendQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Send question'**
+  String get supportSendQuestion;
+
+  /// No description provided for @supportAttachDocumentFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Please attach the requested document first'**
+  String get supportAttachDocumentFirst;
+
+  /// No description provided for @supportRequestDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request details'**
+  String get supportRequestDetailsTitle;
+
+  /// No description provided for @supportFromManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'From management'**
+  String get supportFromManagement;
+
+  /// No description provided for @supportApprovalProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Approval progress'**
+  String get supportApprovalProgress;
+
+  /// No description provided for @supportUploadRequestedDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload requested document'**
+  String get supportUploadRequestedDocument;
+
+  /// No description provided for @supportUploadHintChooseOrCapture.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose image or capture the delivery proof'**
+  String get supportUploadHintChooseOrCapture;
+
+  /// No description provided for @supportYourResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Your response'**
+  String get supportYourResponse;
+
+  /// No description provided for @supportSubmitResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit response'**
+  String get supportSubmitResponse;
+
+  /// No description provided for @supportNoteOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get supportNoteOptional;
+
+  /// No description provided for @supportAddNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Add note'**
+  String get supportAddNote;
+
+  /// No description provided for @supportUploadDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload documents'**
+  String get supportUploadDocuments;
+
+  /// No description provided for @supportAcknowledge.
+  ///
+  /// In en, this message translates to:
+  /// **'Acknowledge'**
+  String get supportAcknowledge;
+
+  /// No description provided for @supportAttachedFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Attached file'**
+  String get supportAttachedFile;
+
+  /// No description provided for @supportNoneAttached.
+  ///
+  /// In en, this message translates to:
+  /// **'None attached'**
+  String get supportNoneAttached;
+
+  /// No description provided for @supportFieldRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Requested'**
+  String get supportFieldRequested;
+
+  /// No description provided for @supportFieldInstallments.
+  ///
+  /// In en, this message translates to:
+  /// **'Installments'**
+  String get supportFieldInstallments;
+
+  /// No description provided for @supportMonthsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} months'**
+  String supportMonthsCount(String count);
+
+  /// No description provided for @supportFieldPurpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Purpose'**
+  String get supportFieldPurpose;
+
+  /// No description provided for @supportFieldAsset.
+  ///
+  /// In en, this message translates to:
+  /// **'Asset'**
+  String get supportFieldAsset;
+
+  /// No description provided for @supportAssetWithSize.
+  ///
+  /// In en, this message translates to:
+  /// **'{asset} ({size})'**
+  String supportAssetWithSize(String asset, String size);
+
+  /// No description provided for @supportFieldCondition.
+  ///
+  /// In en, this message translates to:
+  /// **'Condition'**
+  String get supportFieldCondition;
+
+  /// No description provided for @supportFieldEvidence.
+  ///
+  /// In en, this message translates to:
+  /// **'Evidence'**
+  String get supportFieldEvidence;
+
+  /// No description provided for @supportFieldDates.
+  ///
+  /// In en, this message translates to:
+  /// **'Dates'**
+  String get supportFieldDates;
+
+  /// No description provided for @supportFieldDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get supportFieldDuration;
+
+  /// No description provided for @supportDaysCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day} other{{count} days}}'**
+  String supportDaysCount(int count);
+
+  /// No description provided for @supportFieldAttachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachment'**
+  String get supportFieldAttachment;
+
+  /// No description provided for @supportStepInReview.
+  ///
+  /// In en, this message translates to:
+  /// **'In review'**
+  String get supportStepInReview;
+
+  /// No description provided for @supportStepSince.
+  ///
+  /// In en, this message translates to:
+  /// **'{word} since {date}'**
+  String supportStepSince(String word, String date);
+
+  /// No description provided for @supportStepDecidedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'{word} · {dateTime}'**
+  String supportStepDecidedAt(String word, String dateTime);
+
+  /// No description provided for @supportReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get supportReason;
+
+  /// No description provided for @supportAdminResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin response'**
+  String get supportAdminResponse;
+
+  /// No description provided for @supportCommentFromAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment from admin'**
+  String get supportCommentFromAdmin;
+
+  /// No description provided for @supportFieldRequestedAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Requested amount'**
+  String get supportFieldRequestedAmount;
+
+  /// No description provided for @supportFieldApprovedAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved amount'**
+  String get supportFieldApprovedAmount;
+
+  /// No description provided for @supportFieldDeductionStarts.
+  ///
+  /// In en, this message translates to:
+  /// **'Deduction starts'**
+  String get supportFieldDeductionStarts;
+
+  /// No description provided for @supportFieldApprovedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved by'**
+  String get supportFieldApprovedBy;
+
+  /// No description provided for @supportFieldPenaltyAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Penalty amount'**
+  String get supportFieldPenaltyAmount;
+
+  /// No description provided for @supportFieldRequestedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Requested by'**
+  String get supportFieldRequestedBy;
+
+  /// No description provided for @supportStatusOnHold.
+  ///
+  /// In en, this message translates to:
+  /// **'On hold'**
+  String get supportStatusOnHold;
+
+  /// No description provided for @supportFieldRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get supportFieldRequired;
+
+  /// No description provided for @supportNotSpecified.
+  ///
+  /// In en, this message translates to:
+  /// **'Not specified'**
+  String get supportNotSpecified;
+
+  /// No description provided for @supportBadgeAmountChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount changed'**
+  String get supportBadgeAmountChanged;
+
+  /// No description provided for @supportBadgeUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get supportBadgeUpdate;
+
+  /// No description provided for @supportBadgePenaltyApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Penalty applied'**
+  String get supportBadgePenaltyApplied;
+
+  /// No description provided for @supportBadgeReviewRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Review required'**
+  String get supportBadgeReviewRequired;
+
+  /// No description provided for @supportBadgeDocumentsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Documents required'**
+  String get supportBadgeDocumentsRequired;
+
+  /// No description provided for @supportFilesReady.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} file(s) ready'**
+  String supportFilesReady(int count);
+
+  /// No description provided for @supportUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload'**
+  String get supportUpload;
+
+  /// No description provided for @supportCapture.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture'**
+  String get supportCapture;
+
+  /// No description provided for @supportSubmittedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted'**
+  String get supportSubmittedTitle;
+
+  /// No description provided for @supportRequestSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Request submitted'**
+  String get supportRequestSubmitted;
+
+  /// No description provided for @supportRequestSubmittedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We have received your request and will review it shortly. You can track its status anytime.'**
+  String get supportRequestSubmittedBody;
+
+  /// No description provided for @supportFieldRequestId.
+  ///
+  /// In en, this message translates to:
+  /// **'Request ID'**
+  String get supportFieldRequestId;
+
+  /// No description provided for @supportFieldType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get supportFieldType;
+
+  /// No description provided for @supportTrackRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Track request'**
+  String get supportTrackRequest;
+
+  /// No description provided for @supportBackToSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to support'**
+  String get supportBackToSupport;
+
+  /// No description provided for @supportAcknowledgedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Acknowledged'**
+  String get supportAcknowledgedTitle;
+
+  /// No description provided for @supportResponseAcknowledged.
+  ///
+  /// In en, this message translates to:
+  /// **'Response acknowledged'**
+  String get supportResponseAcknowledged;
+
+  /// No description provided for @supportResponseAcknowledgedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks. We\'ve let the admin know you\'ve seen and accepted their response.'**
+  String get supportResponseAcknowledgedBody;
+
+  /// No description provided for @supportCodeWithType.
+  ///
+  /// In en, this message translates to:
+  /// **'{code} · {type}'**
+  String supportCodeWithType(String code, String type);
+
+  /// No description provided for @supportBackToMyRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to my requests'**
+  String get supportBackToMyRequests;
+
+  /// No description provided for @weekdayInitialSun.
+  ///
+  /// In en, this message translates to:
+  /// **'S'**
+  String get weekdayInitialSun;
+
+  /// No description provided for @weekdayInitialMon.
+  ///
+  /// In en, this message translates to:
+  /// **'M'**
+  String get weekdayInitialMon;
+
+  /// No description provided for @weekdayInitialTue.
+  ///
+  /// In en, this message translates to:
+  /// **'T'**
+  String get weekdayInitialTue;
+
+  /// No description provided for @weekdayInitialWed.
+  ///
+  /// In en, this message translates to:
+  /// **'W'**
+  String get weekdayInitialWed;
+
+  /// No description provided for @weekdayInitialThu.
+  ///
+  /// In en, this message translates to:
+  /// **'T'**
+  String get weekdayInitialThu;
+
+  /// No description provided for @weekdayInitialFri.
+  ///
+  /// In en, this message translates to:
+  /// **'F'**
+  String get weekdayInitialFri;
+
+  /// No description provided for @weekdayInitialSat.
+  ///
+  /// In en, this message translates to:
+  /// **'S'**
+  String get weekdayInitialSat;
+
+  /// No description provided for @visitCentralTower.
+  ///
+  /// In en, this message translates to:
+  /// **'Central Tower'**
+  String get visitCentralTower;
+
+  /// No description provided for @visitStepReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit reason'**
+  String get visitStepReason;
+
+  /// No description provided for @visitStepSelectDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select date'**
+  String get visitStepSelectDate;
+
+  /// No description provided for @visitStepReviewConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Review & confirm'**
+  String get visitStepReviewConfirm;
+
+  /// No description provided for @visitBooking.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking…'**
+  String get visitBooking;
+
+  /// No description provided for @visitConfirmBooking.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm booking'**
+  String get visitConfirmBooking;
+
+  /// No description provided for @visitDefaultBranchName.
+  ///
+  /// In en, this message translates to:
+  /// **'Musallam Central Tower'**
+  String get visitDefaultBranchName;
+
+  /// No description provided for @visitHeadOfficeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Head office - rider services'**
+  String get visitHeadOfficeSubtitle;
+
+  /// No description provided for @visitFieldLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get visitFieldLocation;
+
+  /// No description provided for @visitFieldWorkingHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Working hours'**
+  String get visitFieldWorkingHours;
+
+  /// No description provided for @visitFieldContact.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact'**
+  String get visitFieldContact;
+
+  /// No description provided for @visitBookASlot.
+  ///
+  /// In en, this message translates to:
+  /// **'Book a slot'**
+  String get visitBookASlot;
+
+  /// No description provided for @visitSkipQueueHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking a slot helps you skip the queue and get seen faster.'**
+  String get visitSkipQueueHint;
+
+  /// No description provided for @visitSelectDepartment.
+  ///
+  /// In en, this message translates to:
+  /// **'SELECT A DEPARTMENT'**
+  String get visitSelectDepartment;
+
+  /// No description provided for @visitAddNoteOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a note (optional)'**
+  String get visitAddNoteOptional;
+
+  /// No description provided for @visitNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Briefly describe your issue'**
+  String get visitNoteHint;
+
+  /// No description provided for @visitChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get visitChange;
+
+  /// No description provided for @visitNoSlotsForDate.
+  ///
+  /// In en, this message translates to:
+  /// **'No slots available for this date.'**
+  String get visitNoSlotsForDate;
+
+  /// No description provided for @visitSectionMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'MORNING'**
+  String get visitSectionMorning;
+
+  /// No description provided for @visitSectionAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'AFTERNOON'**
+  String get visitSectionAfternoon;
+
+  /// No description provided for @visitLunchBreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch break'**
+  String get visitLunchBreak;
+
+  /// No description provided for @visitSlotFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full'**
+  String get visitSlotFull;
+
+  /// No description provided for @visitSlotRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} left'**
+  String visitSlotRemaining(int count);
+
+  /// No description provided for @visitSlotRange.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} - {end}'**
+  String visitSlotRange(String start, String end);
+
+  /// No description provided for @visitFieldDepartment.
+  ///
+  /// In en, this message translates to:
+  /// **'Department'**
+  String get visitFieldDepartment;
+
+  /// No description provided for @visitFieldDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get visitFieldDate;
+
+  /// No description provided for @visitFieldTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get visitFieldTime;
+
+  /// No description provided for @visitFieldNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get visitFieldNote;
+
+  /// No description provided for @visitArriveEarlyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Please arrive 10 minutes early and carry your rider ID.'**
+  String get visitArriveEarlyHint;
+
+  /// No description provided for @visitBookedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit Booked'**
+  String get visitBookedTitle;
+
+  /// No description provided for @visitBookedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your visit is confirmed. Show this ticket at the Central Tower reception.'**
+  String get visitBookedBody;
+
+  /// No description provided for @visitTicketHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'CENTRAL TOWER VISIT'**
+  String get visitTicketHeader;
+
+  /// No description provided for @visitScanAtReception.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan at reception'**
+  String get visitScanAtReception;
+
+  /// No description provided for @visitBookingTokenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking token {code}. Keep this ready on arrival.'**
+  String visitBookingTokenHint(String code);
+
+  /// No description provided for @visitViewMyVisits.
+  ///
+  /// In en, this message translates to:
+  /// **'View my visits'**
+  String get visitViewMyVisits;
+
+  /// No description provided for @visitTabUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get visitTabUpcoming;
+
+  /// No description provided for @visitTabPast.
+  ///
+  /// In en, this message translates to:
+  /// **'Past'**
+  String get visitTabPast;
+
+  /// No description provided for @visitNoUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'No upcoming visits'**
+  String get visitNoUpcoming;
+
+  /// No description provided for @visitNoPast.
+  ///
+  /// In en, this message translates to:
+  /// **'No past visits'**
+  String get visitNoPast;
+
+  /// No description provided for @visitRescheduleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reschedule visit?'**
+  String get visitRescheduleTitle;
+
+  /// No description provided for @visitRescheduleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel {code} and book a new slot?'**
+  String visitRescheduleBody(String code);
+
+  /// No description provided for @visitKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep'**
+  String get visitKeep;
+
+  /// No description provided for @visitReschedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Reschedule'**
+  String get visitReschedule;
+
+  /// No description provided for @visitStatusConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed'**
+  String get visitStatusConfirmed;
+
+  /// No description provided for @visitStatusCheckedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked in'**
+  String get visitStatusCheckedIn;
+
+  /// No description provided for @visitMonthJanUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'JAN'**
+  String get visitMonthJanUpper;
+
+  /// No description provided for @visitMonthFebUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'FEB'**
+  String get visitMonthFebUpper;
+
+  /// No description provided for @visitMonthMarUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'MAR'**
+  String get visitMonthMarUpper;
+
+  /// No description provided for @visitMonthAprUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'APR'**
+  String get visitMonthAprUpper;
+
+  /// No description provided for @visitMonthMayUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'MAY'**
+  String get visitMonthMayUpper;
+
+  /// No description provided for @visitMonthJunUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'JUN'**
+  String get visitMonthJunUpper;
+
+  /// No description provided for @visitMonthJulUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'JUL'**
+  String get visitMonthJulUpper;
+
+  /// No description provided for @visitMonthAugUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'AUG'**
+  String get visitMonthAugUpper;
+
+  /// No description provided for @visitMonthSepUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'SEP'**
+  String get visitMonthSepUpper;
+
+  /// No description provided for @visitMonthOctUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'OCT'**
+  String get visitMonthOctUpper;
+
+  /// No description provided for @visitMonthNovUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'NOV'**
+  String get visitMonthNovUpper;
+
+  /// No description provided for @visitMonthDecUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'DEC'**
+  String get visitMonthDecUpper;
+
+  /// No description provided for @esignNoDocumentsToSign.
+  ///
+  /// In en, this message translates to:
+  /// **'No documents to sign'**
+  String get esignNoDocumentsToSign;
+
+  /// No description provided for @esignSectionPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get esignSectionPending;
+
+  /// No description provided for @esignSectionSigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed'**
+  String get esignSectionSigned;
+
+  /// No description provided for @esignSectionDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined'**
+  String get esignSectionDeclined;
+
+  /// No description provided for @esignDueOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {date}'**
+  String esignDueOn(String date);
+
+  /// No description provided for @esignSignedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed {date}'**
+  String esignSignedOn(String date);
+
+  /// No description provided for @esignDeclineDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline document'**
+  String get esignDeclineDocument;
+
+  /// No description provided for @esignDeclineBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Let admin know why you cannot sign this document.'**
+  String get esignDeclineBody;
+
+  /// No description provided for @esignDeclineReasonHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason (optional)'**
+  String get esignDeclineReasonHint;
+
+  /// No description provided for @esignDocumentDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Document declined'**
+  String get esignDocumentDeclined;
+
+  /// No description provided for @esignDocumentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Document'**
+  String get esignDocumentTitle;
+
+  /// No description provided for @esignReviewDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Review document'**
+  String get esignReviewDocument;
+
+  /// No description provided for @esignNoDocumentAttached.
+  ///
+  /// In en, this message translates to:
+  /// **'No document attached.'**
+  String get esignNoDocumentAttached;
+
+  /// No description provided for @esignPreviewLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load document preview.'**
+  String get esignPreviewLoadFailed;
+
+  /// No description provided for @esignPreviewUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview unavailable — open externally.'**
+  String get esignPreviewUnavailable;
+
+  /// No description provided for @esignPdfDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF document'**
+  String get esignPdfDocument;
+
+  /// No description provided for @esignTapToOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to open'**
+  String get esignTapToOpen;
+
+  /// No description provided for @esignOpenFullDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Open full document'**
+  String get esignOpenFullDocument;
+
+  /// No description provided for @esignFromAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'From admin'**
+  String get esignFromAdmin;
+
+  /// No description provided for @esignMetaLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{code}{category} · {source}'**
+  String esignMetaLine(String code, String category, String source);
+
+  /// No description provided for @esignDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get esignDecline;
+
+  /// No description provided for @esignSignDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign document'**
+  String get esignSignDocument;
+
+  /// No description provided for @esignAddYourSignature.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your signature'**
+  String get esignAddYourSignature;
+
+  /// No description provided for @esignDrawSignatureHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw your signature in the box below'**
+  String get esignDrawSignatureHint;
+
+  /// No description provided for @esignClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get esignClear;
+
+  /// No description provided for @esignLegalDeclaration.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree this is my legal electronic signature.'**
+  String get esignLegalDeclaration;
+
+  /// No description provided for @esignPleaseDrawSignature.
+  ///
+  /// In en, this message translates to:
+  /// **'Please draw your signature'**
+  String get esignPleaseDrawSignature;
+
+  /// No description provided for @esignCapturedWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Captured with your signature:'**
+  String get esignCapturedWith;
+
+  /// No description provided for @esignSignerYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get esignSignerYou;
+
+  /// No description provided for @esignSubmitting.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitting…'**
+  String get esignSubmitting;
+
+  /// No description provided for @esignConfirmSignature.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm signature'**
+  String get esignConfirmSignature;
+
+  /// No description provided for @esignSignedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed'**
+  String get esignSignedTitle;
+
+  /// No description provided for @esignDocumentSigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Document signed'**
+  String get esignDocumentSigned;
+
+  /// No description provided for @esignDocumentSignedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your signature has been sent to admin and saved to your records.'**
+  String get esignDocumentSignedBody;
+
+  /// No description provided for @esignSignatureProof.
+  ///
+  /// In en, this message translates to:
+  /// **'Signature proof'**
+  String get esignSignatureProof;
+
+  /// No description provided for @esignFieldSignedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed by'**
+  String get esignFieldSignedBy;
+
+  /// No description provided for @esignFieldDateTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Date & time'**
+  String get esignFieldDateTime;
+
+  /// No description provided for @esignFieldIpAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'IP address'**
+  String get esignFieldIpAddress;
+
+  /// No description provided for @esignNotCaptured.
+  ///
+  /// In en, this message translates to:
+  /// **'Not captured'**
+  String get esignNotCaptured;
+
+  /// No description provided for @esignFieldDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Device'**
+  String get esignFieldDevice;
+
+  /// No description provided for @esignDownloadSignedCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Download signed copy'**
+  String get esignDownloadSignedCopy;
+
+  /// No description provided for @esignDownloadDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Download document'**
+  String get esignDownloadDocument;
+
+  /// No description provided for @esignNoDocumentToDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'No document available to download'**
+  String get esignNoDocumentToDownload;
+
+  /// No description provided for @esignSignedCopyReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Your signature is stamped on the last page of this copy.'**
+  String get esignSignedCopyReady;
+
+  /// No description provided for @esignSignedCopyPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing your signed copy — this is the original document until it is ready. Reopen this screen in a moment.'**
+  String get esignSignedCopyPending;
+
+  /// No description provided for @esignSignedCopyUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed copy unavailable, so this is the original document you were sent. Your signature is stored with the request.'**
+  String get esignSignedCopyUnavailable;
+
+  /// No description provided for @esignBackToDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to documents'**
+  String get esignBackToDocuments;
+
+  /// No description provided for @visitDefaultWorkingHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Sun - Thu, 9:00 AM - 5:00 PM'**
+  String get visitDefaultWorkingHours;
+
+  /// No description provided for @esignScreenshotsRestricted.
+  ///
+  /// In en, this message translates to:
+  /// **'Screenshots disabled for this document'**
+  String get esignScreenshotsRestricted;
+
+  /// No description provided for @esignContentHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Content hidden'**
+  String get esignContentHidden;
+
+  /// No description provided for @apptNoneScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'No appointments scheduled'**
+  String get apptNoneScheduled;
+
+  /// No description provided for @apptRequestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Appointment request'**
+  String get apptRequestTitle;
+
+  /// No description provided for @apptNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Appointment not found'**
+  String get apptNotFound;
+
+  /// No description provided for @apptFromRequester.
+  ///
+  /// In en, this message translates to:
+  /// **'{code} · From {name}'**
+  String apptFromRequester(String code, String name);
+
+  /// No description provided for @apptRequesterAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'admin'**
+  String get apptRequesterAdmin;
+
+  /// No description provided for @apptDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get apptDetails;
+
+  /// No description provided for @apptFieldPurpose.
+  ///
+  /// In en, this message translates to:
+  /// **'Purpose'**
+  String get apptFieldPurpose;
+
+  /// No description provided for @apptFieldProposedDateTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Proposed date/time'**
+  String get apptFieldProposedDateTime;
+
+  /// No description provided for @apptFieldLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get apptFieldLocation;
+
+  /// No description provided for @apptFieldNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get apptFieldNote;
+
+  /// No description provided for @apptFieldYourProposedTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Your proposed time'**
+  String get apptFieldYourProposedTime;
+
+  /// No description provided for @apptFieldYourNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Your note'**
+  String get apptFieldYourNote;
+
+  /// No description provided for @apptNoticeAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'You accepted this appointment. Arrive on time at reception.'**
+  String get apptNoticeAccepted;
+
+  /// No description provided for @apptNoticeRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'You rejected this appointment.'**
+  String get apptNoticeRejected;
+
+  /// No description provided for @apptNoticeRescheduleRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'You proposed a new time. Waiting for admin to confirm.'**
+  String get apptNoticeRescheduleRequested;
+
+  /// No description provided for @apptNoticeScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Your appointment is scheduled. Arrive on time at reception.'**
+  String get apptNoticeScheduled;
+
+  /// No description provided for @apptReject.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get apptReject;
+
+  /// No description provided for @apptProposeTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Propose time'**
+  String get apptProposeTime;
+
+  /// No description provided for @apptAcceptAppointment.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept appointment'**
+  String get apptAcceptAppointment;
+
+  /// No description provided for @apptRejectAppointment.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject appointment'**
+  String get apptRejectAppointment;
+
+  /// No description provided for @apptRejectBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Let admin know why you cannot make it.'**
+  String get apptRejectBody;
+
+  /// No description provided for @supportReasonOptionalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason (optional)'**
+  String get supportReasonOptionalHint;
+
+  /// No description provided for @apptRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Appointment rejected'**
+  String get apptRejected;
+
+  /// No description provided for @apptProposeNewTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Propose a new time'**
+  String get apptProposeNewTime;
+
+  /// No description provided for @apptNoteForAdminHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Note for admin (optional)'**
+  String get apptNoteForAdminHint;
+
+  /// No description provided for @apptSendProposedTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Send proposed time'**
+  String get apptSendProposedTime;
+
+  /// No description provided for @apptProposedTimeSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Proposed time sent to admin'**
+  String get apptProposedTimeSent;
+
+  /// No description provided for @apptConfirmedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Appointment confirmed'**
+  String get apptConfirmedTitle;
+
+  /// No description provided for @apptConfirmedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It\'s been added to your schedule. We\'ll remind you before it starts.'**
+  String get apptConfirmedBody;
+
+  /// No description provided for @apptDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get apptDone;
+
+  /// No description provided for @apptViewInCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'View in calendar'**
+  String get apptViewInCalendar;
+
+  /// No description provided for @apptTitleWithTime.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} · {time}'**
+  String apptTitleWithTime(String title, String time);
+
+  /// No description provided for @supportStatusRescheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Rescheduled'**
+  String get supportStatusRescheduled;
+
+  /// No description provided for @supportStatusResponded.
+  ///
+  /// In en, this message translates to:
+  /// **'Responded'**
+  String get supportStatusResponded;
+
+  /// No description provided for @supportStatusClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get supportStatusClosed;
+
+  /// No description provided for @supportActionRescheduleProposed.
+  ///
+  /// In en, this message translates to:
+  /// **'New dates proposed'**
+  String get supportActionRescheduleProposed;
+
+  /// No description provided for @supportRescheduleProposedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New dates proposed'**
+  String get supportRescheduleProposedTitle;
+
+  /// No description provided for @supportRescheduleNewStart.
+  ///
+  /// In en, this message translates to:
+  /// **'New start date'**
+  String get supportRescheduleNewStart;
+
+  /// No description provided for @supportRescheduleNewEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'New end date'**
+  String get supportRescheduleNewEnd;
+
+  /// No description provided for @supportRescheduleProposedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Proposed by'**
+  String get supportRescheduleProposedBy;
+
+  /// No description provided for @supportRescheduleAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept dates'**
+  String get supportRescheduleAccept;
+
+  /// No description provided for @supportRescheduleDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get supportRescheduleDecline;
+
+  /// No description provided for @supportRescheduleAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Dates accepted. Your request is back under review.'**
+  String get supportRescheduleAccepted;
+
+  /// No description provided for @supportRescheduleDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Dates declined. Your request is back under review.'**
+  String get supportRescheduleDeclined;
 }
 
 class _AppLocalizationsDelegate

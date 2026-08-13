@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker_android/image_picker_android.dart';
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
+import 'package:pdfrx/pdfrx.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -80,6 +81,7 @@ Future<void> main() async {
 }
 
 Future<void> _bootstrapServices() async {
+  await pdfrxFlutterInitialize();
   await Supabase.initialize(url: Env.supabaseUrl, anonKey: Env.supabaseAnonKey);
   // Offline SQLite + path_provider are mobile-only; skip on web (Chrome debug).
   if (!kIsWeb) {

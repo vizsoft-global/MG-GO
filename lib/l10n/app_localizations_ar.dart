@@ -1707,4 +1707,1206 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get updateApkMissing =>
       'ملف التحديث غير موجود. اضغط تنزيل للمحاولة مجددًا.';
+
+  @override
+  String get supportRequestTypeLeave => 'إجازة';
+
+  @override
+  String get supportRequestTypeLeaveRequest => 'طلب إجازة';
+
+  @override
+  String get supportRequestTypeSickLeave => 'إجازة مرضية وحوادث';
+
+  @override
+  String get supportRequestTypeAsset => 'طلب عهدة';
+
+  @override
+  String get supportRequestTypeFuel => 'استرداد قيمة الوقود';
+
+  @override
+  String get supportRequestTypeDocument => 'طلب مستند';
+
+  @override
+  String get supportRequestTypeDocumentReupload => 'إعادة رفع المستند';
+
+  @override
+  String get supportRequestTypeComplaint => 'شكوى';
+
+  @override
+  String get supportRequestTypeSalaryJustification => 'توضيح الراتب';
+
+  @override
+  String get supportRequestTypeLoanAdvance => 'سلفة / قرض';
+
+  @override
+  String get supportRequestTypeLoanRequest => 'طلب قرض';
+
+  @override
+  String get supportRequestTypeGeneric => 'طلب';
+
+  @override
+  String get supportStatusAwaitingAck => 'بانتظار الإقرار';
+
+  @override
+  String get supportStatusAcknowledged => 'تم الإقرار';
+
+  @override
+  String get supportStatusInProgress => 'قيد المعالجة';
+
+  @override
+  String get supportStatusSolved => 'تم الحل';
+
+  @override
+  String get supportStatusOverdue => 'متأخر';
+
+  @override
+  String get supportActionRequired => 'إجراء مطلوب';
+
+  @override
+  String get supportMyRequestsTitle => 'طلباتي';
+
+  @override
+  String get supportTabRequestSent => 'الطلبات المرسلة';
+
+  @override
+  String get supportTabRequestReceived => 'الطلبات الواردة';
+
+  @override
+  String supportCouldNotLoadRequests(String error) {
+    return 'تعذّر تحميل الطلبات.\n$error';
+  }
+
+  @override
+  String get supportNoRequestsSent => 'لم تُرسل أي طلبات بعد';
+
+  @override
+  String get supportNoRequestsReceived => 'لا توجد طلبات واردة';
+
+  @override
+  String supportRequestsNeedResponse(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count طلب بحاجة إلى ردك',
+      many: '$count طلباً بحاجة إلى ردك',
+      few: '$count طلبات بحاجة إلى ردك',
+      two: 'طلبان بحاجة إلى ردك',
+      one: 'طلب واحد بحاجة إلى ردك',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get supportReasonAwaitingAck => 'بانتظار إقرارك';
+
+  @override
+  String get supportReasonLoanDetailsChanged => 'تم تعديل تفاصيل القرض';
+
+  @override
+  String get supportReasonClarificationNeeded => 'مطلوب توضيح';
+
+  @override
+  String get supportActionAcknowledgeUpdate => 'الإقرار بالتحديث';
+
+  @override
+  String get supportActionDocumentToSign => 'مستند بحاجة إلى توقيع';
+
+  @override
+  String supportCouldNotLoad(String error) {
+    return 'تعذّر التحميل.\n$error';
+  }
+
+  @override
+  String get supportNoActionRequired => 'لا يوجد إجراء مطلوب حالياً';
+
+  @override
+  String get supportHubTitle => 'المساعدة والدعم';
+
+  @override
+  String get supportSectionRaiseRequest => 'تقديم طلب';
+
+  @override
+  String get supportTileSickAccidentLeave => 'إجازة مرضية / حادث';
+
+  @override
+  String get supportTileSalaryJustification => 'توضيح الراتب';
+
+  @override
+  String get supportTileLoanRequest => 'طلب قرض';
+
+  @override
+  String get supportSectionVisitUs => 'زيارتنا';
+
+  @override
+  String get supportScheduleVisitTitle => 'حجز زيارة إلى البرج المركزي';
+
+  @override
+  String get supportScheduleVisitSubtitle =>
+      'احجز موعداً للحصول على مساعدة مباشرة';
+
+  @override
+  String get supportSectionYourActivity => 'نشاطك';
+
+  @override
+  String get supportMyRequestsSubtitle => 'تابع حالة طلباتك';
+
+  @override
+  String get supportMyVisitsTitle => 'زياراتي';
+
+  @override
+  String get supportMyVisitsSubtitle => 'زيارات البرج المحجوزة';
+
+  @override
+  String get supportDocumentsToSign => 'مستندات للتوقيع';
+
+  @override
+  String get supportAppointments => 'المواعيد';
+
+  @override
+  String supportBadgeNewCount(int count) {
+    return '$count جديد';
+  }
+
+  @override
+  String get supportFormTitleSickLeave => 'إجازة مرضية / حادث';
+
+  @override
+  String get supportFormTitleLoan => 'قرض / سلفة';
+
+  @override
+  String get supportFormTitleFuel => 'مطالبة وقود';
+
+  @override
+  String get supportFormTitleNew => 'طلب جديد';
+
+  @override
+  String get supportErrorLeaveTypeDatesRequired =>
+      'نوع الإجازة والتواريخ مطلوبة';
+
+  @override
+  String get supportErrorJustificationRequired => 'المبرر مطلوب';
+
+  @override
+  String get supportErrorSymptomsRequired => 'الأعراض / التفاصيل مطلوبة';
+
+  @override
+  String get supportErrorMedicalDocsRequired => 'المستندات الطبية مطلوبة';
+
+  @override
+  String get supportErrorAmountTenureRequired => 'المبلغ ومدة السداد مطلوبان';
+
+  @override
+  String get supportErrorNeededByReasonRequired =>
+      'تاريخ الحاجة والسبب مطلوبان';
+
+  @override
+  String get supportErrorAssetFieldsRequired =>
+      'نوع العهدة ونوع الطلب والحالة مطلوبة';
+
+  @override
+  String get supportErrorAmountPeriodRequired => 'المبلغ والفترة مطلوبان';
+
+  @override
+  String get supportErrorFuelReceiptsRequired => 'إيصالات الوقود مطلوبة';
+
+  @override
+  String get supportErrorDocumentFieldsRequired => 'حقول المستند مطلوبة';
+
+  @override
+  String get supportErrorComplaintFieldsRequired =>
+      'الفئة ودرجة الخطورة والموضوع والوصف مطلوبة';
+
+  @override
+  String get supportErrorSalaryFieldsRequired => 'حقول الراتب مطلوبة';
+
+  @override
+  String get supportErrorAcceptDeclaration => 'يرجى الموافقة على الإقرار';
+
+  @override
+  String get supportLeaveTypeAnnual => 'سنوية';
+
+  @override
+  String get supportLeaveTypeEmergency => 'طارئة';
+
+  @override
+  String get supportLeaveTypeAccident => 'حادث';
+
+  @override
+  String get supportLeaveTypeUnpaid => 'إجازة بدون راتب';
+
+  @override
+  String get supportSickTypeSickLeave => 'إجازة مرضية';
+
+  @override
+  String get supportSickTypeInjury => 'إصابة';
+
+  @override
+  String get supportOptionOther => 'أخرى';
+
+  @override
+  String get supportAssetSimCard => 'شريحة اتصال';
+
+  @override
+  String get supportAssetFuelCard => 'بطاقة وقود';
+
+  @override
+  String get supportAssetFuelLimitChange => 'تعديل حد الوقود';
+
+  @override
+  String get supportAssetRaincoat => 'معطف مطر';
+
+  @override
+  String get supportAssetDeliveryBag => 'حقيبة توصيل';
+
+  @override
+  String get supportAssetReflectiveVest => 'سترة عاكسة';
+
+  @override
+  String get supportAssetWinterJacket => 'جاكيت شتوي';
+
+  @override
+  String get supportAssetDeliveryAttire => 'زي التوصيل';
+
+  @override
+  String get supportAssetDeliveryPants => 'بنطال التوصيل';
+
+  @override
+  String get supportAssetNewBike => 'دراجة جديدة';
+
+  @override
+  String get supportAssetHelmet => 'خوذة';
+
+  @override
+  String get supportAssetDeliveryBox => 'صندوق التوصيل';
+
+  @override
+  String get supportAssetFuelChip => 'شريحة وقود';
+
+  @override
+  String get supportAssetPhone => 'هاتف';
+
+  @override
+  String get supportAssetMobileHolder => 'حامل الهاتف';
+
+  @override
+  String get supportDocTypeCivilIdCopy => 'نسخة البطاقة المدنية';
+
+  @override
+  String get supportDocTypeLicenseCopy => 'نسخة رخصة القيادة';
+
+  @override
+  String get supportDocTypeWorkPermitCopy => 'نسخة إذن العمل';
+
+  @override
+  String get supportDocTypeRegistrationCopy => 'نسخة دفتر المركبة';
+
+  @override
+  String get supportDocTypeVehicleDocumentCopy => 'نسخة مستندات المركبة';
+
+  @override
+  String get supportDocTypeSalaryCertification => 'شهادة راتب';
+
+  @override
+  String get supportRequestModeRenewal => 'تجديد';
+
+  @override
+  String get supportRequestModeFirstTime => 'لأول مرة';
+
+  @override
+  String get supportAssetStatusLost => 'مفقودة';
+
+  @override
+  String get supportAssetStatusDamaged => 'تالفة';
+
+  @override
+  String get supportDeliveryMethodEmail => 'بريد إلكتروني';
+
+  @override
+  String get supportDeliveryMethodPickup => 'استلام شخصي';
+
+  @override
+  String get supportSeverityLow => 'منخفضة';
+
+  @override
+  String get supportSeverityMedium => 'متوسطة';
+
+  @override
+  String get supportSeverityHigh => 'عالية';
+
+  @override
+  String get supportFieldLeaveType => 'نوع الإجازة';
+
+  @override
+  String get supportFieldFrom => 'من';
+
+  @override
+  String get supportFieldTo => 'إلى';
+
+  @override
+  String get supportFieldCommentOptional => 'ملاحظة (اختياري)';
+
+  @override
+  String get supportFieldComment => 'ملاحظة';
+
+  @override
+  String get supportHintMentionHere => 'اكتب هنا';
+
+  @override
+  String get supportFieldJustificationRequired => 'المبرر *';
+
+  @override
+  String supportFieldRequiredNamed(String field) {
+    return '$field مطلوب';
+  }
+
+  @override
+  String supportErrorAttachmentsMin(int count) {
+    return 'أرفق $count ملف على الأقل';
+  }
+
+  @override
+  String get supportAttachmentRequired => 'مرفق *';
+
+  @override
+  String get supportRequestTypeUnknown => 'نوع الطلب هذا غير متاح.';
+
+  @override
+  String get supportRequestTypeNoFields =>
+      'لا يوجد نموذج لهذا النوع بعد. يرجى المحاولة لاحقًا.';
+
+  @override
+  String get supportAttachmentOptional => 'مرفق (اختياري)';
+
+  @override
+  String supportFilesSelected(int count) {
+    return 'تم اختيار $count ملف';
+  }
+
+  @override
+  String get supportFieldSymptomsRequired => 'الأعراض / التفاصيل *';
+
+  @override
+  String get supportUploadMedicalCertificate => 'ارفع التقرير الطبي *';
+
+  @override
+  String get supportFieldAmountKwdRequired => 'المبلغ (د.ك) *';
+
+  @override
+  String get supportLoanTenureUnavailable =>
+      'لم يتم إعداد خيارات السداد بعد. طلبات القروض غير متاحة مؤقتاً.';
+
+  @override
+  String get supportFieldTenureRequired => 'مدة السداد *';
+
+  @override
+  String get supportFieldNeededBy => 'مطلوب بحلول';
+
+  @override
+  String get supportFieldReasonRequired => 'السبب *';
+
+  @override
+  String get supportFieldAssetType => 'نوع العهدة';
+
+  @override
+  String get supportFieldQuantity => 'الكمية';
+
+  @override
+  String get supportFieldPeriodMonth => 'الفترة (الشهر)';
+
+  @override
+  String get supportFieldDistanceKm => 'المسافة (كم)';
+
+  @override
+  String get supportUploadFuelReceipts => 'ارفع إيصالات الوقود *';
+
+  @override
+  String get supportFieldDocumentType => 'نوع المستند';
+
+  @override
+  String get supportComplaintCategoriesUnavailable =>
+      'لم يتم إعداد فئات الشكاوى بعد. الشكاوى غير متاحة مؤقتاً.';
+
+  @override
+  String get supportFieldCategoryRequired => 'الفئة *';
+
+  @override
+  String get supportFieldSubjectRequired => 'الموضوع *';
+
+  @override
+  String get supportFieldDescriptionRequired => 'الوصف *';
+
+  @override
+  String get supportFieldSalaryMonth => 'شهر الراتب';
+
+  @override
+  String get supportFieldExpectedAmountRequired => 'المبلغ المتوقع *';
+
+  @override
+  String get supportFieldReceivedAmountRequired => 'المبلغ المستلم *';
+
+  @override
+  String get supportSupportingDocument => 'مستند داعم';
+
+  @override
+  String get supportPhotoOptional => 'صورة (اختياري)';
+
+  @override
+  String get supportAttachPayslipOptional => 'إرفاق كشف الراتب (اختياري)';
+
+  @override
+  String get supportDeclarationLeave =>
+      'إقرار: ألتزم بالعودة في الموعد المحدد، وإلا يحق للشركة تطبيق قائمة الجزاءات في حال التأخر عن العودة.';
+
+  @override
+  String get supportDeclarationLoan =>
+      'إقرار: ألتزم بسداد كامل المبلغ للشركة أو أن تقوم الشركة بخصمه على أقساط من راتبي.';
+
+  @override
+  String get supportDeclarationAsset =>
+      'إقرار: في حال استبدال عهدة مفقودة أو تالفة، أتحمل أي رسوم تفرضها الشركة للحصول على بديل.';
+
+  @override
+  String get supportTemporarilyUnavailable => 'غير متاح مؤقتاً';
+
+  @override
+  String get supportSubmitRequest => 'إرسال الطلب';
+
+  @override
+  String get supportChooseFromGallery => 'الاختيار من المعرض';
+
+  @override
+  String get supportTakeAPhoto => 'التقاط صورة';
+
+  @override
+  String get supportResponseSubmitted => 'تم إرسال الرد';
+
+  @override
+  String get supportAskQuestion => 'طرح سؤال';
+
+  @override
+  String get supportAskQuestionBody =>
+      'أرسل ملاحظة إلى فريق العمليات بخصوص هذا الطلب، وسيتم الرد عليك هنا.';
+
+  @override
+  String get supportAskQuestionHint =>
+      'مثال: أي وجه من البطاقة المدنية تحتاجون؟';
+
+  @override
+  String get supportSendQuestion => 'إرسال السؤال';
+
+  @override
+  String get supportAttachDocumentFirst => 'يرجى إرفاق المستند المطلوب أولاً';
+
+  @override
+  String get supportRequestDetailsTitle => 'تفاصيل الطلب';
+
+  @override
+  String get supportFromManagement => 'من الإدارة';
+
+  @override
+  String get supportApprovalProgress => 'مسار الموافقة';
+
+  @override
+  String get supportUploadRequestedDocument => 'ارفع المستند المطلوب';
+
+  @override
+  String get supportUploadHintChooseOrCapture =>
+      'اختر صورة أو التقط إثبات التوصيل';
+
+  @override
+  String get supportYourResponse => 'ردك';
+
+  @override
+  String get supportSubmitResponse => 'إرسال الرد';
+
+  @override
+  String get supportNoteOptional => 'ملاحظة (اختياري)';
+
+  @override
+  String get supportAddNote => 'إضافة ملاحظة';
+
+  @override
+  String get supportUploadDocuments => 'رفع المستندات';
+
+  @override
+  String get supportAcknowledge => 'إقرار بالاطلاع';
+
+  @override
+  String get supportAttachedFile => 'ملف مرفق';
+
+  @override
+  String get supportNoneAttached => 'لا يوجد مرفق';
+
+  @override
+  String get supportFieldRequested => 'المبلغ المطلوب';
+
+  @override
+  String get supportFieldInstallments => 'الأقساط';
+
+  @override
+  String supportMonthsCount(String count) {
+    return '$count شهراً';
+  }
+
+  @override
+  String get supportFieldPurpose => 'الغرض';
+
+  @override
+  String get supportFieldAsset => 'العهدة';
+
+  @override
+  String supportAssetWithSize(String asset, String size) {
+    return '$asset ($size)';
+  }
+
+  @override
+  String get supportFieldCondition => 'الحالة';
+
+  @override
+  String get supportFieldEvidence => 'الإثبات';
+
+  @override
+  String get supportFieldDates => 'التواريخ';
+
+  @override
+  String get supportFieldDuration => 'المدة';
+
+  @override
+  String supportDaysCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count يوماً',
+      few: '$count أيام',
+      two: 'يومان',
+      one: 'يوم واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get supportFieldAttachment => 'المرفق';
+
+  @override
+  String get supportStepInReview => 'قيد المراجعة';
+
+  @override
+  String supportStepSince(String word, String date) {
+    return '$word منذ $date';
+  }
+
+  @override
+  String supportStepDecidedAt(String word, String dateTime) {
+    return '$word · $dateTime';
+  }
+
+  @override
+  String get supportReason => 'السبب';
+
+  @override
+  String get supportAdminResponse => 'رد الإدارة';
+
+  @override
+  String get supportCommentFromAdmin => 'تعليق الإدارة';
+
+  @override
+  String get supportFieldRequestedAmount => 'المبلغ المطلوب';
+
+  @override
+  String get supportFieldApprovedAmount => 'المبلغ المعتمد';
+
+  @override
+  String get supportFieldDeductionStarts => 'بداية الخصم';
+
+  @override
+  String get supportFieldApprovedBy => 'تمت الموافقة بواسطة';
+
+  @override
+  String get supportFieldPenaltyAmount => 'مبلغ الغرامة';
+
+  @override
+  String get supportFieldRequestedBy => 'الطلب من';
+
+  @override
+  String get supportStatusOnHold => 'معلّق';
+
+  @override
+  String get supportFieldRequired => 'المطلوب';
+
+  @override
+  String get supportNotSpecified => 'غير محدد';
+
+  @override
+  String get supportBadgeAmountChanged => 'تم تعديل المبلغ';
+
+  @override
+  String get supportBadgeUpdate => 'تحديث';
+
+  @override
+  String get supportBadgePenaltyApplied => 'تم تطبيق غرامة';
+
+  @override
+  String get supportBadgeReviewRequired => 'يتطلب مراجعة';
+
+  @override
+  String get supportBadgeDocumentsRequired => 'مستندات مطلوبة';
+
+  @override
+  String supportFilesReady(int count) {
+    return '$count ملف جاهز';
+  }
+
+  @override
+  String get supportUpload => 'رفع';
+
+  @override
+  String get supportCapture => 'التقاط';
+
+  @override
+  String get supportSubmittedTitle => 'تم الإرسال';
+
+  @override
+  String get supportRequestSubmitted => 'تم إرسال الطلب';
+
+  @override
+  String get supportRequestSubmittedBody =>
+      'استلمنا طلبك وسنراجعه قريباً. يمكنك متابعة حالته في أي وقت.';
+
+  @override
+  String get supportFieldRequestId => 'رقم الطلب';
+
+  @override
+  String get supportFieldType => 'النوع';
+
+  @override
+  String get supportTrackRequest => 'متابعة الطلب';
+
+  @override
+  String get supportBackToSupport => 'العودة إلى الدعم';
+
+  @override
+  String get supportAcknowledgedTitle => 'تم الإقرار';
+
+  @override
+  String get supportResponseAcknowledged => 'تم الإقرار بالرد';
+
+  @override
+  String get supportResponseAcknowledgedBody =>
+      'شكراً لك. أبلغنا الإدارة بأنك اطلعت على ردهم ووافقت عليه.';
+
+  @override
+  String supportCodeWithType(String code, String type) {
+    return '$code · $type';
+  }
+
+  @override
+  String get supportBackToMyRequests => 'العودة إلى طلباتي';
+
+  @override
+  String get weekdayInitialSun => 'ح';
+
+  @override
+  String get weekdayInitialMon => 'ن';
+
+  @override
+  String get weekdayInitialTue => 'ث';
+
+  @override
+  String get weekdayInitialWed => 'ر';
+
+  @override
+  String get weekdayInitialThu => 'خ';
+
+  @override
+  String get weekdayInitialFri => 'ج';
+
+  @override
+  String get weekdayInitialSat => 'س';
+
+  @override
+  String get visitCentralTower => 'البرج المركزي';
+
+  @override
+  String get visitStepReason => 'سبب الزيارة';
+
+  @override
+  String get visitStepSelectDate => 'اختيار التاريخ';
+
+  @override
+  String get visitStepReviewConfirm => 'المراجعة والتأكيد';
+
+  @override
+  String get visitBooking => 'جارٍ الحجز…';
+
+  @override
+  String get visitConfirmBooking => 'تأكيد الحجز';
+
+  @override
+  String get visitDefaultBranchName => 'برج مسلم المركزي';
+
+  @override
+  String get visitHeadOfficeSubtitle => 'المكتب الرئيسي - خدمات السائقين';
+
+  @override
+  String get visitFieldLocation => 'الموقع';
+
+  @override
+  String get visitFieldWorkingHours => 'ساعات العمل';
+
+  @override
+  String get visitFieldContact => 'التواصل';
+
+  @override
+  String get visitBookASlot => 'احجز موعداً';
+
+  @override
+  String get visitSkipQueueHint =>
+      'حجز موعد يساعدك على تجنب الانتظار وإنجاز معاملتك أسرع.';
+
+  @override
+  String get visitSelectDepartment => 'اختر القسم';
+
+  @override
+  String get visitAddNoteOptional => 'أضف ملاحظة (اختياري)';
+
+  @override
+  String get visitNoteHint => 'صف مشكلتك باختصار';
+
+  @override
+  String get visitChange => 'تغيير';
+
+  @override
+  String get visitNoSlotsForDate => 'لا توجد مواعيد متاحة في هذا التاريخ.';
+
+  @override
+  String get visitSectionMorning => 'الفترة الصباحية';
+
+  @override
+  String get visitSectionAfternoon => 'الفترة المسائية';
+
+  @override
+  String get visitLunchBreak => 'استراحة الغداء';
+
+  @override
+  String get visitSlotFull => 'مكتمل';
+
+  @override
+  String visitSlotRemaining(int count) {
+    return 'متبقٍ $count';
+  }
+
+  @override
+  String visitSlotRange(String start, String end) {
+    return '$start - $end';
+  }
+
+  @override
+  String get visitFieldDepartment => 'القسم';
+
+  @override
+  String get visitFieldDate => 'التاريخ';
+
+  @override
+  String get visitFieldTime => 'الوقت';
+
+  @override
+  String get visitFieldNote => 'ملاحظة';
+
+  @override
+  String get visitArriveEarlyHint =>
+      'يرجى الحضور قبل الموعد بعشر دقائق مع إحضار بطاقة السائق.';
+
+  @override
+  String get visitBookedTitle => 'تم حجز الزيارة';
+
+  @override
+  String get visitBookedBody =>
+      'تم تأكيد زيارتك. اعرض هذه البطاقة في استقبال البرج المركزي.';
+
+  @override
+  String get visitTicketHeader => 'زيارة البرج المركزي';
+
+  @override
+  String get visitScanAtReception => 'امسح الرمز في الاستقبال';
+
+  @override
+  String visitBookingTokenHint(String code) {
+    return 'رمز الحجز $code. احتفظ به جاهزاً عند الوصول.';
+  }
+
+  @override
+  String get visitViewMyVisits => 'عرض زياراتي';
+
+  @override
+  String get visitTabUpcoming => 'القادمة';
+
+  @override
+  String get visitTabPast => 'السابقة';
+
+  @override
+  String get visitNoUpcoming => 'لا توجد زيارات قادمة';
+
+  @override
+  String get visitNoPast => 'لا توجد زيارات سابقة';
+
+  @override
+  String get visitRescheduleTitle => 'إعادة جدولة الزيارة؟';
+
+  @override
+  String visitRescheduleBody(String code) {
+    return 'هل تريد إلغاء $code وحجز موعد جديد؟';
+  }
+
+  @override
+  String get visitKeep => 'الإبقاء عليها';
+
+  @override
+  String get visitReschedule => 'إعادة الجدولة';
+
+  @override
+  String get visitStatusConfirmed => 'مؤكدة';
+
+  @override
+  String get visitStatusCheckedIn => 'تم تسجيل الحضور';
+
+  @override
+  String get visitMonthJanUpper => 'يناير';
+
+  @override
+  String get visitMonthFebUpper => 'فبراير';
+
+  @override
+  String get visitMonthMarUpper => 'مارس';
+
+  @override
+  String get visitMonthAprUpper => 'أبريل';
+
+  @override
+  String get visitMonthMayUpper => 'مايو';
+
+  @override
+  String get visitMonthJunUpper => 'يونيو';
+
+  @override
+  String get visitMonthJulUpper => 'يوليو';
+
+  @override
+  String get visitMonthAugUpper => 'أغسطس';
+
+  @override
+  String get visitMonthSepUpper => 'سبتمبر';
+
+  @override
+  String get visitMonthOctUpper => 'أكتوبر';
+
+  @override
+  String get visitMonthNovUpper => 'نوفمبر';
+
+  @override
+  String get visitMonthDecUpper => 'ديسمبر';
+
+  @override
+  String get esignNoDocumentsToSign => 'لا توجد مستندات للتوقيع';
+
+  @override
+  String get esignSectionPending => 'قيد الانتظار';
+
+  @override
+  String get esignSectionSigned => 'موقّعة';
+
+  @override
+  String get esignSectionDeclined => 'مرفوضة';
+
+  @override
+  String esignDueOn(String date) {
+    return 'الاستحقاق $date';
+  }
+
+  @override
+  String esignSignedOn(String date) {
+    return 'تم التوقيع $date';
+  }
+
+  @override
+  String get esignDeclineDocument => 'رفض المستند';
+
+  @override
+  String get esignDeclineBody =>
+      'أبلغ الإدارة بسبب عدم تمكنك من توقيع هذا المستند.';
+
+  @override
+  String get esignDeclineReasonHint => 'السبب (اختياري)';
+
+  @override
+  String get esignDocumentDeclined => 'تم رفض المستند';
+
+  @override
+  String get esignDocumentTitle => 'المستند';
+
+  @override
+  String get esignReviewDocument => 'مراجعة المستند';
+
+  @override
+  String get esignNoDocumentAttached => 'لا يوجد مستند مرفق.';
+
+  @override
+  String get esignPreviewLoadFailed => 'تعذّر تحميل معاينة المستند.';
+
+  @override
+  String get esignPreviewUnavailable =>
+      'المعاينة غير متاحة — افتح المستند خارجياً.';
+
+  @override
+  String get esignPdfDocument => 'مستند PDF';
+
+  @override
+  String get esignTapToOpen => 'اضغط للفتح';
+
+  @override
+  String get esignOpenFullDocument => 'فتح المستند كاملاً';
+
+  @override
+  String get esignFromAdmin => 'من الإدارة';
+
+  @override
+  String esignMetaLine(String code, String category, String source) {
+    return '$code$category · $source';
+  }
+
+  @override
+  String get esignDecline => 'رفض';
+
+  @override
+  String get esignSignDocument => 'توقيع المستند';
+
+  @override
+  String get esignAddYourSignature => 'أضف توقيعك';
+
+  @override
+  String get esignDrawSignatureHint => 'ارسم توقيعك في المربع أدناه';
+
+  @override
+  String get esignClear => 'مسح';
+
+  @override
+  String get esignLegalDeclaration =>
+      'أقر بأن هذا توقيعي الإلكتروني المعتمد قانوناً.';
+
+  @override
+  String get esignPleaseDrawSignature => 'يرجى رسم توقيعك';
+
+  @override
+  String get esignCapturedWith => 'تم تسجيل التوقيع مع البيانات التالية:';
+
+  @override
+  String get esignSignerYou => 'أنت';
+
+  @override
+  String get esignSubmitting => 'جارٍ الإرسال…';
+
+  @override
+  String get esignConfirmSignature => 'تأكيد التوقيع';
+
+  @override
+  String get esignSignedTitle => 'موقّع';
+
+  @override
+  String get esignDocumentSigned => 'تم توقيع المستند';
+
+  @override
+  String get esignDocumentSignedBody =>
+      'تم إرسال توقيعك إلى الإدارة وحفظه في سجلاتك.';
+
+  @override
+  String get esignSignatureProof => 'إثبات التوقيع';
+
+  @override
+  String get esignFieldSignedBy => 'وقّع بواسطة';
+
+  @override
+  String get esignFieldDateTime => 'التاريخ والوقت';
+
+  @override
+  String get esignFieldIpAddress => 'عنوان IP';
+
+  @override
+  String get esignNotCaptured => 'غير مسجّل';
+
+  @override
+  String get esignFieldDevice => 'الجهاز';
+
+  @override
+  String get esignDownloadSignedCopy => 'تنزيل النسخة الموقّعة';
+
+  @override
+  String get esignDownloadDocument => 'تنزيل المستند';
+
+  @override
+  String get esignNoDocumentToDownload => 'لا يوجد مستند متاح للتنزيل';
+
+  @override
+  String get esignSignedCopyReady =>
+      'تم ختم توقيعك في الصفحة الأخيرة من هذه النسخة.';
+
+  @override
+  String get esignSignedCopyPending =>
+      'يجري تجهيز نسختك الموقّعة — هذه هي النسخة الأصلية حتى تصبح جاهزة. أعد فتح هذه الشاشة بعد قليل.';
+
+  @override
+  String get esignSignedCopyUnavailable =>
+      'النسخة الموقّعة غير متاحة، لذا هذه هي النسخة الأصلية المرسلة إليك. توقيعك محفوظ مع الطلب.';
+
+  @override
+  String get esignBackToDocuments => 'العودة إلى المستندات';
+
+  @override
+  String get visitDefaultWorkingHours =>
+      'الأحد - الخميس، 9:00 صباحاً - 5:00 مساءً';
+
+  @override
+  String get esignScreenshotsRestricted => 'لقطات الشاشة معطّلة لهذا المستند';
+
+  @override
+  String get esignContentHidden => 'المحتوى مخفي';
+
+  @override
+  String get apptNoneScheduled => 'لا توجد مواعيد مجدولة';
+
+  @override
+  String get apptRequestTitle => 'طلب موعد';
+
+  @override
+  String get apptNotFound => 'الموعد غير موجود';
+
+  @override
+  String apptFromRequester(String code, String name) {
+    return '$code · من $name';
+  }
+
+  @override
+  String get apptRequesterAdmin => 'الإدارة';
+
+  @override
+  String get apptDetails => 'التفاصيل';
+
+  @override
+  String get apptFieldPurpose => 'الغرض';
+
+  @override
+  String get apptFieldProposedDateTime => 'التاريخ والوقت المقترحان';
+
+  @override
+  String get apptFieldLocation => 'الموقع';
+
+  @override
+  String get apptFieldNote => 'ملاحظة';
+
+  @override
+  String get apptFieldYourProposedTime => 'الوقت الذي اقترحته';
+
+  @override
+  String get apptFieldYourNote => 'ملاحظتك';
+
+  @override
+  String get apptNoticeAccepted =>
+      'لقد قبلت هذا الموعد. يرجى الحضور في الوقت المحدد إلى الاستقبال.';
+
+  @override
+  String get apptNoticeRejected => 'لقد رفضت هذا الموعد.';
+
+  @override
+  String get apptNoticeRescheduleRequested =>
+      'لقد اقترحت وقتاً جديداً. في انتظار تأكيد الإدارة.';
+
+  @override
+  String get apptNoticeScheduled =>
+      'تم جدولة موعدك. يرجى الحضور في الوقت المحدد إلى الاستقبال.';
+
+  @override
+  String get apptReject => 'رفض';
+
+  @override
+  String get apptProposeTime => 'اقتراح وقت';
+
+  @override
+  String get apptAcceptAppointment => 'قبول الموعد';
+
+  @override
+  String get apptRejectAppointment => 'رفض الموعد';
+
+  @override
+  String get apptRejectBody => 'أبلغ الإدارة بسبب عدم تمكنك من الحضور.';
+
+  @override
+  String get supportReasonOptionalHint => 'السبب (اختياري)';
+
+  @override
+  String get apptRejected => 'تم رفض الموعد';
+
+  @override
+  String get apptProposeNewTime => 'اقتراح وقت جديد';
+
+  @override
+  String get apptNoteForAdminHint => 'ملاحظة للإدارة (اختياري)';
+
+  @override
+  String get apptSendProposedTime => 'إرسال الوقت المقترح';
+
+  @override
+  String get apptProposedTimeSent => 'تم إرسال الوقت المقترح إلى الإدارة';
+
+  @override
+  String get apptConfirmedTitle => 'تم تأكيد الموعد';
+
+  @override
+  String get apptConfirmedBody => 'تمت إضافته إلى جدولك. سنذكّرك قبل موعده.';
+
+  @override
+  String get apptDone => 'تم';
+
+  @override
+  String get apptViewInCalendar => 'عرض في التقويم';
+
+  @override
+  String apptTitleWithTime(String title, String time) {
+    return '$title · $time';
+  }
+
+  @override
+  String get supportStatusRescheduled => 'أُعيد تحديد الموعد';
+
+  @override
+  String get supportStatusResponded => 'تم الرد';
+
+  @override
+  String get supportStatusClosed => 'مُغلق';
+
+  @override
+  String get supportActionRescheduleProposed => 'مواعيد جديدة مقترحة';
+
+  @override
+  String get supportRescheduleProposedTitle => 'مواعيد جديدة مقترحة';
+
+  @override
+  String get supportRescheduleNewStart => 'تاريخ البداية الجديد';
+
+  @override
+  String get supportRescheduleNewEnd => 'تاريخ النهاية الجديد';
+
+  @override
+  String get supportRescheduleProposedBy => 'مقترح من';
+
+  @override
+  String get supportRescheduleAccept => 'قبول المواعيد';
+
+  @override
+  String get supportRescheduleDecline => 'رفض';
+
+  @override
+  String get supportRescheduleAccepted =>
+      'تم قبول المواعيد. طلبك قيد المراجعة مرة أخرى.';
+
+  @override
+  String get supportRescheduleDeclined =>
+      'تم رفض المواعيد. طلبك قيد المراجعة مرة أخرى.';
 }

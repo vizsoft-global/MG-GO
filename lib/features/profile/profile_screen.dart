@@ -158,8 +158,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   onAvatarTap: avatarLoading
                       ? () {}
                       : () => _onAvatarTap(context),
-                  onHelpTap: () =>
-                      showComingSoonDialog(context, featureName: l10n.help),
+                  onHelpTap: () => context.push('/profile/support'),
                 ),
                 if (avatarLoading)
                   const Positioned.fill(
@@ -249,7 +248,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ProfileMenuRow(
                         icon: Icons.thumb_up_alt_outlined,
                         label: l10n.helpAndSupport,
-                        onTap: () => _showComingSoon(l10n.helpAndSupport),
+                        onTap: () => context.push('/profile/support'),
                       ),
                       ProfileMenuRow(
                         icon: Icons.description_outlined,

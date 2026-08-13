@@ -1717,4 +1717,1207 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get updateApkMissing =>
       'The downloaded update file is missing. Tap Download to try again.';
+
+  @override
+  String get supportRequestTypeLeave => 'Leave';
+
+  @override
+  String get supportRequestTypeLeaveRequest => 'Leave request';
+
+  @override
+  String get supportRequestTypeSickLeave => 'Sick & accident leave';
+
+  @override
+  String get supportRequestTypeAsset => 'Asset request';
+
+  @override
+  String get supportRequestTypeFuel => 'Fuel reimbursement';
+
+  @override
+  String get supportRequestTypeDocument => 'Document request';
+
+  @override
+  String get supportRequestTypeDocumentReupload => 'Document re-upload';
+
+  @override
+  String get supportRequestTypeComplaint => 'Complaint';
+
+  @override
+  String get supportRequestTypeSalaryJustification => 'Salary justification';
+
+  @override
+  String get supportRequestTypeLoanAdvance => 'Advance / Loan';
+
+  @override
+  String get supportRequestTypeLoanRequest => 'Loan request';
+
+  @override
+  String get supportRequestTypeGeneric => 'Request';
+
+  @override
+  String get supportStatusAwaitingAck => 'Awaiting ack';
+
+  @override
+  String get supportStatusAcknowledged => 'Acknowledged';
+
+  @override
+  String get supportStatusInProgress => 'In progress';
+
+  @override
+  String get supportStatusSolved => 'Solved';
+
+  @override
+  String get supportStatusOverdue => 'Overdue';
+
+  @override
+  String get supportActionRequired => 'Action required';
+
+  @override
+  String get supportMyRequestsTitle => 'My requests';
+
+  @override
+  String get supportTabRequestSent => 'Request Sent';
+
+  @override
+  String get supportTabRequestReceived => 'Request Recieved';
+
+  @override
+  String supportCouldNotLoadRequests(String error) {
+    return 'Could not load requests.\n$error';
+  }
+
+  @override
+  String get supportNoRequestsSent => 'No requests sent yet';
+
+  @override
+  String get supportNoRequestsReceived => 'No requests received';
+
+  @override
+  String supportRequestsNeedResponse(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count requests need your response',
+      one: '1 request need your response',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get supportReasonAwaitingAck => 'Awaiting your acknowledgement';
+
+  @override
+  String get supportReasonLoanDetailsChanged => 'Loan details changed';
+
+  @override
+  String get supportReasonClarificationNeeded => 'Clarification needed';
+
+  @override
+  String get supportActionAcknowledgeUpdate => 'Acknowledge update';
+
+  @override
+  String get supportActionDocumentToSign => 'Document to sign';
+
+  @override
+  String supportCouldNotLoad(String error) {
+    return 'Could not load.\n$error';
+  }
+
+  @override
+  String get supportNoActionRequired => 'No action required right now';
+
+  @override
+  String get supportHubTitle => 'Help & support';
+
+  @override
+  String get supportSectionRaiseRequest => 'RAISE A REQUEST';
+
+  @override
+  String get supportTileSickAccidentLeave => 'Sick / Accident Leave';
+
+  @override
+  String get supportTileSalaryJustification => 'Salary Justification';
+
+  @override
+  String get supportTileLoanRequest => 'Loan Request';
+
+  @override
+  String get supportSectionVisitUs => 'VISIT US';
+
+  @override
+  String get supportScheduleVisitTitle => 'Schedule a visit to Central Tower';
+
+  @override
+  String get supportScheduleVisitSubtitle =>
+      'Book a time slot for in-person help';
+
+  @override
+  String get supportSectionYourActivity => 'YOUR ACTIVITY';
+
+  @override
+  String get supportMyRequestsSubtitle => 'Track your requests';
+
+  @override
+  String get supportMyVisitsTitle => 'My visits';
+
+  @override
+  String get supportMyVisitsSubtitle => 'Booked tower visits';
+
+  @override
+  String get supportDocumentsToSign => 'Documents to sign';
+
+  @override
+  String get supportAppointments => 'Appointments';
+
+  @override
+  String supportBadgeNewCount(int count) {
+    return '$count new';
+  }
+
+  @override
+  String get supportFormTitleSickLeave => 'Sick / Accident leave';
+
+  @override
+  String get supportFormTitleLoan => 'Loan / Advance';
+
+  @override
+  String get supportFormTitleFuel => 'Fuel claim';
+
+  @override
+  String get supportFormTitleNew => 'New request';
+
+  @override
+  String get supportErrorLeaveTypeDatesRequired =>
+      'Leave type and dates are required';
+
+  @override
+  String get supportErrorJustificationRequired => 'Justification is required';
+
+  @override
+  String get supportErrorSymptomsRequired => 'Symptoms / details are required';
+
+  @override
+  String get supportErrorMedicalDocsRequired =>
+      'Medical documents are required';
+
+  @override
+  String get supportErrorAmountTenureRequired =>
+      'Amount and tenure are required';
+
+  @override
+  String get supportErrorNeededByReasonRequired =>
+      'Needed-by date and reason are required';
+
+  @override
+  String get supportErrorAssetFieldsRequired =>
+      'Asset type, mode and status are required';
+
+  @override
+  String get supportErrorAmountPeriodRequired =>
+      'Amount and period are required';
+
+  @override
+  String get supportErrorFuelReceiptsRequired => 'Fuel receipts are required';
+
+  @override
+  String get supportErrorDocumentFieldsRequired =>
+      'Document fields are required';
+
+  @override
+  String get supportErrorComplaintFieldsRequired =>
+      'Category, severity, subject and description required';
+
+  @override
+  String get supportErrorSalaryFieldsRequired => 'Salary fields are required';
+
+  @override
+  String get supportErrorAcceptDeclaration => 'Please accept the declaration';
+
+  @override
+  String get supportLeaveTypeAnnual => 'Annual';
+
+  @override
+  String get supportLeaveTypeEmergency => 'Emergency';
+
+  @override
+  String get supportLeaveTypeAccident => 'Accident';
+
+  @override
+  String get supportLeaveTypeUnpaid => 'Unpaid Leave';
+
+  @override
+  String get supportSickTypeSickLeave => 'Sick leave';
+
+  @override
+  String get supportSickTypeInjury => 'Injury';
+
+  @override
+  String get supportOptionOther => 'Other';
+
+  @override
+  String get supportAssetSimCard => 'SIM card';
+
+  @override
+  String get supportAssetFuelCard => 'Fuel card';
+
+  @override
+  String get supportAssetFuelLimitChange => 'Fuel limit change';
+
+  @override
+  String get supportAssetRaincoat => 'Raincoat';
+
+  @override
+  String get supportAssetDeliveryBag => 'Delivery bag';
+
+  @override
+  String get supportAssetReflectiveVest => 'Reflective vest';
+
+  @override
+  String get supportAssetWinterJacket => 'Winter jacket';
+
+  @override
+  String get supportAssetDeliveryAttire => 'Delivery attire';
+
+  @override
+  String get supportAssetDeliveryPants => 'Delivery pants';
+
+  @override
+  String get supportAssetNewBike => 'New bike';
+
+  @override
+  String get supportAssetHelmet => 'Helmet';
+
+  @override
+  String get supportAssetDeliveryBox => 'Delivery box';
+
+  @override
+  String get supportAssetFuelChip => 'Fuel chip';
+
+  @override
+  String get supportAssetPhone => 'Phone';
+
+  @override
+  String get supportAssetMobileHolder => 'Mobile holder';
+
+  @override
+  String get supportDocTypeCivilIdCopy => 'Civil ID copy';
+
+  @override
+  String get supportDocTypeLicenseCopy => 'License Copy';
+
+  @override
+  String get supportDocTypeWorkPermitCopy => 'Work permit copy';
+
+  @override
+  String get supportDocTypeRegistrationCopy => 'Registration copy';
+
+  @override
+  String get supportDocTypeVehicleDocumentCopy => 'Vehicle document copy';
+
+  @override
+  String get supportDocTypeSalaryCertification => 'Salary certification';
+
+  @override
+  String get supportRequestModeRenewal => 'Renewal';
+
+  @override
+  String get supportRequestModeFirstTime => 'First Time';
+
+  @override
+  String get supportAssetStatusLost => 'Lost';
+
+  @override
+  String get supportAssetStatusDamaged => 'Damaged';
+
+  @override
+  String get supportDeliveryMethodEmail => 'Email';
+
+  @override
+  String get supportDeliveryMethodPickup => 'Pickup';
+
+  @override
+  String get supportSeverityLow => 'Low';
+
+  @override
+  String get supportSeverityMedium => 'Medium';
+
+  @override
+  String get supportSeverityHigh => 'High';
+
+  @override
+  String get supportFieldLeaveType => 'Leave type';
+
+  @override
+  String get supportFieldFrom => 'From';
+
+  @override
+  String get supportFieldTo => 'To';
+
+  @override
+  String get supportFieldCommentOptional => 'Comment (optional)';
+
+  @override
+  String get supportFieldComment => 'Comment';
+
+  @override
+  String get supportHintMentionHere => 'Mention here';
+
+  @override
+  String get supportFieldJustificationRequired => 'Justification *';
+
+  @override
+  String supportFieldRequiredNamed(String field) {
+    return '$field is required';
+  }
+
+  @override
+  String supportErrorAttachmentsMin(int count) {
+    return 'Attach at least $count file(s)';
+  }
+
+  @override
+  String get supportAttachmentRequired => 'Attachment *';
+
+  @override
+  String get supportRequestTypeUnknown => 'This request type is not available.';
+
+  @override
+  String get supportRequestTypeNoFields =>
+      'This request type has no form yet. Please try again later.';
+
+  @override
+  String get supportAttachmentOptional => 'Attachment (optional)';
+
+  @override
+  String supportFilesSelected(int count) {
+    return '$count file(s) selected';
+  }
+
+  @override
+  String get supportFieldSymptomsRequired => 'Symptoms / details *';
+
+  @override
+  String get supportUploadMedicalCertificate => 'Upload medical certificate *';
+
+  @override
+  String get supportFieldAmountKwdRequired => 'Amount (KWD) *';
+
+  @override
+  String get supportLoanTenureUnavailable =>
+      'Tenure options are not configured yet. Loan requests are temporarily unavailable.';
+
+  @override
+  String get supportFieldTenureRequired => 'Tenure *';
+
+  @override
+  String get supportFieldNeededBy => 'Needed by';
+
+  @override
+  String get supportFieldReasonRequired => 'Reason *';
+
+  @override
+  String get supportFieldAssetType => 'Asset type';
+
+  @override
+  String get supportFieldQuantity => 'Quantity';
+
+  @override
+  String get supportFieldPeriodMonth => 'Period (month)';
+
+  @override
+  String get supportFieldDistanceKm => 'Distance (km)';
+
+  @override
+  String get supportUploadFuelReceipts => 'Upload fuel receipts *';
+
+  @override
+  String get supportFieldDocumentType => 'Document type';
+
+  @override
+  String get supportComplaintCategoriesUnavailable =>
+      'Complaint categories are not configured yet. Complaints are temporarily unavailable.';
+
+  @override
+  String get supportFieldCategoryRequired => 'Category *';
+
+  @override
+  String get supportFieldSubjectRequired => 'Subject *';
+
+  @override
+  String get supportFieldDescriptionRequired => 'Description *';
+
+  @override
+  String get supportFieldSalaryMonth => 'Salary Month';
+
+  @override
+  String get supportFieldExpectedAmountRequired => 'Expected amount *';
+
+  @override
+  String get supportFieldReceivedAmountRequired => 'Received amount *';
+
+  @override
+  String get supportSupportingDocument => 'Supporting document';
+
+  @override
+  String get supportPhotoOptional => 'Photo (optional)';
+
+  @override
+  String get supportAttachPayslipOptional => 'Attach payslip (optional)';
+
+  @override
+  String get supportDeclarationLeave =>
+      'Declaration: I am entitled to return on time, otherwise the company to apply the list of penalties in case of late return.';
+
+  @override
+  String get supportDeclarationLoan =>
+      'Declaration: I am committed to pay the full amount to the company or the company to deduct it as per the installments from my salary.';
+
+  @override
+  String get supportDeclarationAsset =>
+      'Declaration: In the case of lost or damaged item replacement i am entitled for any charges from the company to receive a new one.';
+
+  @override
+  String get supportTemporarilyUnavailable => 'Temporarily unavailable';
+
+  @override
+  String get supportSubmitRequest => 'Submit request';
+
+  @override
+  String get supportChooseFromGallery => 'Choose from gallery';
+
+  @override
+  String get supportTakeAPhoto => 'Take a photo';
+
+  @override
+  String get supportResponseSubmitted => 'Response submitted';
+
+  @override
+  String get supportAskQuestion => 'Ask a question';
+
+  @override
+  String get supportAskQuestionBody =>
+      'Send a note to the ops team about this request. They will reply here.';
+
+  @override
+  String get supportAskQuestionHint =>
+      'e.g. Which side of the Emirates ID do you need?';
+
+  @override
+  String get supportSendQuestion => 'Send question';
+
+  @override
+  String get supportAttachDocumentFirst =>
+      'Please attach the requested document first';
+
+  @override
+  String get supportRequestDetailsTitle => 'Request details';
+
+  @override
+  String get supportFromManagement => 'From management';
+
+  @override
+  String get supportApprovalProgress => 'Approval progress';
+
+  @override
+  String get supportUploadRequestedDocument => 'Upload requested document';
+
+  @override
+  String get supportUploadHintChooseOrCapture =>
+      'Choose image or capture the delivery proof';
+
+  @override
+  String get supportYourResponse => 'Your response';
+
+  @override
+  String get supportSubmitResponse => 'Submit response';
+
+  @override
+  String get supportNoteOptional => 'Note (optional)';
+
+  @override
+  String get supportAddNote => 'Add note';
+
+  @override
+  String get supportUploadDocuments => 'Upload documents';
+
+  @override
+  String get supportAcknowledge => 'Acknowledge';
+
+  @override
+  String get supportAttachedFile => 'Attached file';
+
+  @override
+  String get supportNoneAttached => 'None attached';
+
+  @override
+  String get supportFieldRequested => 'Requested';
+
+  @override
+  String get supportFieldInstallments => 'Installments';
+
+  @override
+  String supportMonthsCount(String count) {
+    return '$count months';
+  }
+
+  @override
+  String get supportFieldPurpose => 'Purpose';
+
+  @override
+  String get supportFieldAsset => 'Asset';
+
+  @override
+  String supportAssetWithSize(String asset, String size) {
+    return '$asset ($size)';
+  }
+
+  @override
+  String get supportFieldCondition => 'Condition';
+
+  @override
+  String get supportFieldEvidence => 'Evidence';
+
+  @override
+  String get supportFieldDates => 'Dates';
+
+  @override
+  String get supportFieldDuration => 'Duration';
+
+  @override
+  String supportDaysCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get supportFieldAttachment => 'Attachment';
+
+  @override
+  String get supportStepInReview => 'In review';
+
+  @override
+  String supportStepSince(String word, String date) {
+    return '$word since $date';
+  }
+
+  @override
+  String supportStepDecidedAt(String word, String dateTime) {
+    return '$word · $dateTime';
+  }
+
+  @override
+  String get supportReason => 'Reason';
+
+  @override
+  String get supportAdminResponse => 'Admin response';
+
+  @override
+  String get supportCommentFromAdmin => 'Comment from admin';
+
+  @override
+  String get supportFieldRequestedAmount => 'Requested amount';
+
+  @override
+  String get supportFieldApprovedAmount => 'Approved amount';
+
+  @override
+  String get supportFieldDeductionStarts => 'Deduction starts';
+
+  @override
+  String get supportFieldApprovedBy => 'Approved by';
+
+  @override
+  String get supportFieldPenaltyAmount => 'Penalty amount';
+
+  @override
+  String get supportFieldRequestedBy => 'Requested by';
+
+  @override
+  String get supportStatusOnHold => 'On hold';
+
+  @override
+  String get supportFieldRequired => 'Required';
+
+  @override
+  String get supportNotSpecified => 'Not specified';
+
+  @override
+  String get supportBadgeAmountChanged => 'Amount changed';
+
+  @override
+  String get supportBadgeUpdate => 'Update';
+
+  @override
+  String get supportBadgePenaltyApplied => 'Penalty applied';
+
+  @override
+  String get supportBadgeReviewRequired => 'Review required';
+
+  @override
+  String get supportBadgeDocumentsRequired => 'Documents required';
+
+  @override
+  String supportFilesReady(int count) {
+    return '$count file(s) ready';
+  }
+
+  @override
+  String get supportUpload => 'Upload';
+
+  @override
+  String get supportCapture => 'Capture';
+
+  @override
+  String get supportSubmittedTitle => 'Submitted';
+
+  @override
+  String get supportRequestSubmitted => 'Request submitted';
+
+  @override
+  String get supportRequestSubmittedBody =>
+      'We have received your request and will review it shortly. You can track its status anytime.';
+
+  @override
+  String get supportFieldRequestId => 'Request ID';
+
+  @override
+  String get supportFieldType => 'Type';
+
+  @override
+  String get supportTrackRequest => 'Track request';
+
+  @override
+  String get supportBackToSupport => 'Back to support';
+
+  @override
+  String get supportAcknowledgedTitle => 'Acknowledged';
+
+  @override
+  String get supportResponseAcknowledged => 'Response acknowledged';
+
+  @override
+  String get supportResponseAcknowledgedBody =>
+      'Thanks. We\'ve let the admin know you\'ve seen and accepted their response.';
+
+  @override
+  String supportCodeWithType(String code, String type) {
+    return '$code · $type';
+  }
+
+  @override
+  String get supportBackToMyRequests => 'Back to my requests';
+
+  @override
+  String get weekdayInitialSun => 'S';
+
+  @override
+  String get weekdayInitialMon => 'M';
+
+  @override
+  String get weekdayInitialTue => 'T';
+
+  @override
+  String get weekdayInitialWed => 'W';
+
+  @override
+  String get weekdayInitialThu => 'T';
+
+  @override
+  String get weekdayInitialFri => 'F';
+
+  @override
+  String get weekdayInitialSat => 'S';
+
+  @override
+  String get visitCentralTower => 'Central Tower';
+
+  @override
+  String get visitStepReason => 'Visit reason';
+
+  @override
+  String get visitStepSelectDate => 'Select date';
+
+  @override
+  String get visitStepReviewConfirm => 'Review & confirm';
+
+  @override
+  String get visitBooking => 'Booking…';
+
+  @override
+  String get visitConfirmBooking => 'Confirm booking';
+
+  @override
+  String get visitDefaultBranchName => 'Musallam Central Tower';
+
+  @override
+  String get visitHeadOfficeSubtitle => 'Head office - rider services';
+
+  @override
+  String get visitFieldLocation => 'Location';
+
+  @override
+  String get visitFieldWorkingHours => 'Working hours';
+
+  @override
+  String get visitFieldContact => 'Contact';
+
+  @override
+  String get visitBookASlot => 'Book a slot';
+
+  @override
+  String get visitSkipQueueHint =>
+      'Booking a slot helps you skip the queue and get seen faster.';
+
+  @override
+  String get visitSelectDepartment => 'SELECT A DEPARTMENT';
+
+  @override
+  String get visitAddNoteOptional => 'Add a note (optional)';
+
+  @override
+  String get visitNoteHint => 'Briefly describe your issue';
+
+  @override
+  String get visitChange => 'Change';
+
+  @override
+  String get visitNoSlotsForDate => 'No slots available for this date.';
+
+  @override
+  String get visitSectionMorning => 'MORNING';
+
+  @override
+  String get visitSectionAfternoon => 'AFTERNOON';
+
+  @override
+  String get visitLunchBreak => 'Lunch break';
+
+  @override
+  String get visitSlotFull => 'Full';
+
+  @override
+  String visitSlotRemaining(int count) {
+    return '$count left';
+  }
+
+  @override
+  String visitSlotRange(String start, String end) {
+    return '$start - $end';
+  }
+
+  @override
+  String get visitFieldDepartment => 'Department';
+
+  @override
+  String get visitFieldDate => 'Date';
+
+  @override
+  String get visitFieldTime => 'Time';
+
+  @override
+  String get visitFieldNote => 'Note';
+
+  @override
+  String get visitArriveEarlyHint =>
+      'Please arrive 10 minutes early and carry your rider ID.';
+
+  @override
+  String get visitBookedTitle => 'Visit Booked';
+
+  @override
+  String get visitBookedBody =>
+      'Your visit is confirmed. Show this ticket at the Central Tower reception.';
+
+  @override
+  String get visitTicketHeader => 'CENTRAL TOWER VISIT';
+
+  @override
+  String get visitScanAtReception => 'Scan at reception';
+
+  @override
+  String visitBookingTokenHint(String code) {
+    return 'Booking token $code. Keep this ready on arrival.';
+  }
+
+  @override
+  String get visitViewMyVisits => 'View my visits';
+
+  @override
+  String get visitTabUpcoming => 'Upcoming';
+
+  @override
+  String get visitTabPast => 'Past';
+
+  @override
+  String get visitNoUpcoming => 'No upcoming visits';
+
+  @override
+  String get visitNoPast => 'No past visits';
+
+  @override
+  String get visitRescheduleTitle => 'Reschedule visit?';
+
+  @override
+  String visitRescheduleBody(String code) {
+    return 'Cancel $code and book a new slot?';
+  }
+
+  @override
+  String get visitKeep => 'Keep';
+
+  @override
+  String get visitReschedule => 'Reschedule';
+
+  @override
+  String get visitStatusConfirmed => 'Confirmed';
+
+  @override
+  String get visitStatusCheckedIn => 'Checked in';
+
+  @override
+  String get visitMonthJanUpper => 'JAN';
+
+  @override
+  String get visitMonthFebUpper => 'FEB';
+
+  @override
+  String get visitMonthMarUpper => 'MAR';
+
+  @override
+  String get visitMonthAprUpper => 'APR';
+
+  @override
+  String get visitMonthMayUpper => 'MAY';
+
+  @override
+  String get visitMonthJunUpper => 'JUN';
+
+  @override
+  String get visitMonthJulUpper => 'JUL';
+
+  @override
+  String get visitMonthAugUpper => 'AUG';
+
+  @override
+  String get visitMonthSepUpper => 'SEP';
+
+  @override
+  String get visitMonthOctUpper => 'OCT';
+
+  @override
+  String get visitMonthNovUpper => 'NOV';
+
+  @override
+  String get visitMonthDecUpper => 'DEC';
+
+  @override
+  String get esignNoDocumentsToSign => 'No documents to sign';
+
+  @override
+  String get esignSectionPending => 'Pending';
+
+  @override
+  String get esignSectionSigned => 'Signed';
+
+  @override
+  String get esignSectionDeclined => 'Declined';
+
+  @override
+  String esignDueOn(String date) {
+    return 'Due $date';
+  }
+
+  @override
+  String esignSignedOn(String date) {
+    return 'Signed $date';
+  }
+
+  @override
+  String get esignDeclineDocument => 'Decline document';
+
+  @override
+  String get esignDeclineBody =>
+      'Let admin know why you cannot sign this document.';
+
+  @override
+  String get esignDeclineReasonHint => 'Reason (optional)';
+
+  @override
+  String get esignDocumentDeclined => 'Document declined';
+
+  @override
+  String get esignDocumentTitle => 'Document';
+
+  @override
+  String get esignReviewDocument => 'Review document';
+
+  @override
+  String get esignNoDocumentAttached => 'No document attached.';
+
+  @override
+  String get esignPreviewLoadFailed => 'Could not load document preview.';
+
+  @override
+  String get esignPreviewUnavailable =>
+      'Preview unavailable — open externally.';
+
+  @override
+  String get esignPdfDocument => 'PDF document';
+
+  @override
+  String get esignTapToOpen => 'Tap to open';
+
+  @override
+  String get esignOpenFullDocument => 'Open full document';
+
+  @override
+  String get esignFromAdmin => 'From admin';
+
+  @override
+  String esignMetaLine(String code, String category, String source) {
+    return '$code$category · $source';
+  }
+
+  @override
+  String get esignDecline => 'Decline';
+
+  @override
+  String get esignSignDocument => 'Sign document';
+
+  @override
+  String get esignAddYourSignature => 'Add your signature';
+
+  @override
+  String get esignDrawSignatureHint => 'Draw your signature in the box below';
+
+  @override
+  String get esignClear => 'Clear';
+
+  @override
+  String get esignLegalDeclaration =>
+      'I agree this is my legal electronic signature.';
+
+  @override
+  String get esignPleaseDrawSignature => 'Please draw your signature';
+
+  @override
+  String get esignCapturedWith => 'Captured with your signature:';
+
+  @override
+  String get esignSignerYou => 'You';
+
+  @override
+  String get esignSubmitting => 'Submitting…';
+
+  @override
+  String get esignConfirmSignature => 'Confirm signature';
+
+  @override
+  String get esignSignedTitle => 'Signed';
+
+  @override
+  String get esignDocumentSigned => 'Document signed';
+
+  @override
+  String get esignDocumentSignedBody =>
+      'Your signature has been sent to admin and saved to your records.';
+
+  @override
+  String get esignSignatureProof => 'Signature proof';
+
+  @override
+  String get esignFieldSignedBy => 'Signed by';
+
+  @override
+  String get esignFieldDateTime => 'Date & time';
+
+  @override
+  String get esignFieldIpAddress => 'IP address';
+
+  @override
+  String get esignNotCaptured => 'Not captured';
+
+  @override
+  String get esignFieldDevice => 'Device';
+
+  @override
+  String get esignDownloadSignedCopy => 'Download signed copy';
+
+  @override
+  String get esignDownloadDocument => 'Download document';
+
+  @override
+  String get esignNoDocumentToDownload => 'No document available to download';
+
+  @override
+  String get esignSignedCopyReady =>
+      'Your signature is stamped on the last page of this copy.';
+
+  @override
+  String get esignSignedCopyPending =>
+      'Preparing your signed copy — this is the original document until it is ready. Reopen this screen in a moment.';
+
+  @override
+  String get esignSignedCopyUnavailable =>
+      'Signed copy unavailable, so this is the original document you were sent. Your signature is stored with the request.';
+
+  @override
+  String get esignBackToDocuments => 'Back to documents';
+
+  @override
+  String get visitDefaultWorkingHours => 'Sun - Thu, 9:00 AM - 5:00 PM';
+
+  @override
+  String get esignScreenshotsRestricted =>
+      'Screenshots disabled for this document';
+
+  @override
+  String get esignContentHidden => 'Content hidden';
+
+  @override
+  String get apptNoneScheduled => 'No appointments scheduled';
+
+  @override
+  String get apptRequestTitle => 'Appointment request';
+
+  @override
+  String get apptNotFound => 'Appointment not found';
+
+  @override
+  String apptFromRequester(String code, String name) {
+    return '$code · From $name';
+  }
+
+  @override
+  String get apptRequesterAdmin => 'admin';
+
+  @override
+  String get apptDetails => 'Details';
+
+  @override
+  String get apptFieldPurpose => 'Purpose';
+
+  @override
+  String get apptFieldProposedDateTime => 'Proposed date/time';
+
+  @override
+  String get apptFieldLocation => 'Location';
+
+  @override
+  String get apptFieldNote => 'Note';
+
+  @override
+  String get apptFieldYourProposedTime => 'Your proposed time';
+
+  @override
+  String get apptFieldYourNote => 'Your note';
+
+  @override
+  String get apptNoticeAccepted =>
+      'You accepted this appointment. Arrive on time at reception.';
+
+  @override
+  String get apptNoticeRejected => 'You rejected this appointment.';
+
+  @override
+  String get apptNoticeRescheduleRequested =>
+      'You proposed a new time. Waiting for admin to confirm.';
+
+  @override
+  String get apptNoticeScheduled =>
+      'Your appointment is scheduled. Arrive on time at reception.';
+
+  @override
+  String get apptReject => 'Reject';
+
+  @override
+  String get apptProposeTime => 'Propose time';
+
+  @override
+  String get apptAcceptAppointment => 'Accept appointment';
+
+  @override
+  String get apptRejectAppointment => 'Reject appointment';
+
+  @override
+  String get apptRejectBody => 'Let admin know why you cannot make it.';
+
+  @override
+  String get supportReasonOptionalHint => 'Reason (optional)';
+
+  @override
+  String get apptRejected => 'Appointment rejected';
+
+  @override
+  String get apptProposeNewTime => 'Propose a new time';
+
+  @override
+  String get apptNoteForAdminHint => 'Note for admin (optional)';
+
+  @override
+  String get apptSendProposedTime => 'Send proposed time';
+
+  @override
+  String get apptProposedTimeSent => 'Proposed time sent to admin';
+
+  @override
+  String get apptConfirmedTitle => 'Appointment confirmed';
+
+  @override
+  String get apptConfirmedBody =>
+      'It\'s been added to your schedule. We\'ll remind you before it starts.';
+
+  @override
+  String get apptDone => 'Done';
+
+  @override
+  String get apptViewInCalendar => 'View in calendar';
+
+  @override
+  String apptTitleWithTime(String title, String time) {
+    return '$title · $time';
+  }
+
+  @override
+  String get supportStatusRescheduled => 'Rescheduled';
+
+  @override
+  String get supportStatusResponded => 'Responded';
+
+  @override
+  String get supportStatusClosed => 'Closed';
+
+  @override
+  String get supportActionRescheduleProposed => 'New dates proposed';
+
+  @override
+  String get supportRescheduleProposedTitle => 'New dates proposed';
+
+  @override
+  String get supportRescheduleNewStart => 'New start date';
+
+  @override
+  String get supportRescheduleNewEnd => 'New end date';
+
+  @override
+  String get supportRescheduleProposedBy => 'Proposed by';
+
+  @override
+  String get supportRescheduleAccept => 'Accept dates';
+
+  @override
+  String get supportRescheduleDecline => 'Decline';
+
+  @override
+  String get supportRescheduleAccepted =>
+      'Dates accepted. Your request is back under review.';
+
+  @override
+  String get supportRescheduleDeclined =>
+      'Dates declined. Your request is back under review.';
 }

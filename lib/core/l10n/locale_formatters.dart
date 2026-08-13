@@ -69,6 +69,11 @@ String formatTime12h(DateTime date, AppLocalizations l10n) {
 String formatDayMonth(DateTime date, AppLocalizations l10n) =>
     '${date.day.toString().padLeft(2, '0')} ${monthShortNames(l10n)[date.month - 1]}';
 
+/// Numeric ISO dates reorder under RTL (`2026-08-18` → `18-08-2026`). Month
+/// names do not, which is why the request detail already uses this shape.
+String formatEsignDue(DateTime date, AppLocalizations l10n) =>
+    '${date.day} ${monthShortNames(l10n)[date.month - 1]} ${date.year}';
+
 String formatDayMonthTime(DateTime date, AppLocalizations l10n) =>
     '${formatDayMonth(date, l10n)}, ${formatTime12h(date, l10n)}';
 

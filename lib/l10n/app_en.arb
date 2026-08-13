@@ -953,5 +953,562 @@
   },
   "updateChecksumFailed": "Download verification failed. Please try again.",
   "updateNoInstallerAvailable": "Couldn't open the Android installer. Please tap the downloaded APK from your Files app, or contact support.",
-  "updateApkMissing": "The downloaded update file is missing. Tap Download to try again."
+  "updateApkMissing": "The downloaded update file is missing. Tap Download to try again.",
+  "supportRequestTypeLeave": "Leave",
+  "supportRequestTypeLeaveRequest": "Leave request",
+  "supportRequestTypeSickLeave": "Sick & accident leave",
+  "supportRequestTypeAsset": "Asset request",
+  "supportRequestTypeFuel": "Fuel reimbursement",
+  "supportRequestTypeDocument": "Document request",
+  "supportRequestTypeDocumentReupload": "Document re-upload",
+  "supportRequestTypeComplaint": "Complaint",
+  "supportRequestTypeSalaryJustification": "Salary justification",
+  "supportRequestTypeLoanAdvance": "Advance / Loan",
+  "supportRequestTypeLoanRequest": "Loan request",
+  "supportRequestTypeGeneric": "Request",
+  "supportStatusAwaitingAck": "Awaiting ack",
+  "supportStatusAcknowledged": "Acknowledged",
+  "supportStatusInProgress": "In progress",
+  "supportStatusSolved": "Solved",
+  "supportStatusOverdue": "Overdue",
+  "supportActionRequired": "Action required",
+  "supportMyRequestsTitle": "My requests",
+  "supportTabRequestSent": "Request Sent",
+  "supportTabRequestReceived": "Request Recieved",
+  "supportCouldNotLoadRequests": "Could not load requests.\n{error}",
+  "@supportCouldNotLoadRequests": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "supportNoRequestsSent": "No requests sent yet",
+  "supportNoRequestsReceived": "No requests received",
+  "supportRequestsNeedResponse": "{count, plural, =1{1 request need your response} other{{count} requests need your response}}",
+  "@supportRequestsNeedResponse": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "supportReasonAwaitingAck": "Awaiting your acknowledgement",
+  "supportReasonLoanDetailsChanged": "Loan details changed",
+  "supportReasonClarificationNeeded": "Clarification needed",
+  "supportActionAcknowledgeUpdate": "Acknowledge update",
+  "supportActionDocumentToSign": "Document to sign",
+  "supportCouldNotLoad": "Could not load.\n{error}",
+  "@supportCouldNotLoad": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "supportNoActionRequired": "No action required right now",
+  "supportHubTitle": "Help & support",
+  "supportSectionRaiseRequest": "RAISE A REQUEST",
+  "supportTileSickAccidentLeave": "Sick / Accident Leave",
+  "supportTileSalaryJustification": "Salary Justification",
+  "supportTileLoanRequest": "Loan Request",
+  "supportSectionVisitUs": "VISIT US",
+  "supportScheduleVisitTitle": "Schedule a visit to Central Tower",
+  "supportScheduleVisitSubtitle": "Book a time slot for in-person help",
+  "supportSectionYourActivity": "YOUR ACTIVITY",
+  "supportMyRequestsSubtitle": "Track your requests",
+  "supportMyVisitsTitle": "My visits",
+  "supportMyVisitsSubtitle": "Booked tower visits",
+  "supportDocumentsToSign": "Documents to sign",
+  "supportAppointments": "Appointments",
+  "supportBadgeNewCount": "{count} new",
+  "@supportBadgeNewCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "supportFormTitleSickLeave": "Sick / Accident leave",
+  "supportFormTitleLoan": "Loan / Advance",
+  "supportFormTitleFuel": "Fuel claim",
+  "supportFormTitleNew": "New request",
+  "supportErrorLeaveTypeDatesRequired": "Leave type and dates are required",
+  "supportErrorJustificationRequired": "Justification is required",
+  "supportErrorSymptomsRequired": "Symptoms / details are required",
+  "supportErrorMedicalDocsRequired": "Medical documents are required",
+  "supportErrorAmountTenureRequired": "Amount and tenure are required",
+  "supportErrorNeededByReasonRequired": "Needed-by date and reason are required",
+  "supportErrorAssetFieldsRequired": "Asset type, mode and status are required",
+  "supportErrorAmountPeriodRequired": "Amount and period are required",
+  "supportErrorFuelReceiptsRequired": "Fuel receipts are required",
+  "supportErrorDocumentFieldsRequired": "Document fields are required",
+  "supportErrorComplaintFieldsRequired": "Category, severity, subject and description required",
+  "supportErrorSalaryFieldsRequired": "Salary fields are required",
+  "supportErrorAcceptDeclaration": "Please accept the declaration",
+  "supportLeaveTypeAnnual": "Annual",
+  "supportLeaveTypeEmergency": "Emergency",
+  "supportLeaveTypeAccident": "Accident",
+  "supportLeaveTypeUnpaid": "Unpaid Leave",
+  "supportSickTypeSickLeave": "Sick leave",
+  "supportSickTypeInjury": "Injury",
+  "supportOptionOther": "Other",
+  "supportAssetSimCard": "SIM card",
+  "supportAssetFuelCard": "Fuel card",
+  "supportAssetFuelLimitChange": "Fuel limit change",
+  "supportAssetRaincoat": "Raincoat",
+  "supportAssetDeliveryBag": "Delivery bag",
+  "supportAssetReflectiveVest": "Reflective vest",
+  "supportAssetWinterJacket": "Winter jacket",
+  "supportAssetDeliveryAttire": "Delivery attire",
+  "supportAssetDeliveryPants": "Delivery pants",
+  "supportAssetNewBike": "New bike",
+  "supportAssetHelmet": "Helmet",
+  "supportAssetDeliveryBox": "Delivery box",
+  "supportAssetFuelChip": "Fuel chip",
+  "supportAssetPhone": "Phone",
+  "supportAssetMobileHolder": "Mobile holder",
+  "supportDocTypeCivilIdCopy": "Civil ID copy",
+  "supportDocTypeLicenseCopy": "License Copy",
+  "supportDocTypeWorkPermitCopy": "Work permit copy",
+  "supportDocTypeRegistrationCopy": "Registration copy",
+  "supportDocTypeVehicleDocumentCopy": "Vehicle document copy",
+  "supportDocTypeSalaryCertification": "Salary certification",
+  "supportRequestModeRenewal": "Renewal",
+  "supportRequestModeFirstTime": "First Time",
+  "supportAssetStatusLost": "Lost",
+  "supportAssetStatusDamaged": "Damaged",
+  "supportDeliveryMethodEmail": "Email",
+  "supportDeliveryMethodPickup": "Pickup",
+  "supportSeverityLow": "Low",
+  "supportSeverityMedium": "Medium",
+  "supportSeverityHigh": "High",
+  "supportFieldLeaveType": "Leave type",
+  "supportFieldFrom": "From",
+  "supportFieldTo": "To",
+  "supportFieldCommentOptional": "Comment (optional)",
+  "supportFieldComment": "Comment",
+  "supportHintMentionHere": "Mention here",
+  "supportFieldJustificationRequired": "Justification *",
+  "supportFieldRequiredNamed": "{field} is required",
+  "@supportFieldRequiredNamed": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "supportErrorAttachmentsMin": "Attach at least {count} file(s)",
+  "@supportErrorAttachmentsMin": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "supportAttachmentRequired": "Attachment *",
+  "supportRequestTypeUnknown": "This request type is not available.",
+  "supportRequestTypeNoFields": "This request type has no form yet. Please try again later.",
+  "supportAttachmentOptional": "Attachment (optional)",
+  "supportFilesSelected": "{count} file(s) selected",
+  "@supportFilesSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "supportFieldSymptomsRequired": "Symptoms / details *",
+  "supportUploadMedicalCertificate": "Upload medical certificate *",
+  "supportFieldAmountKwdRequired": "Amount (KWD) *",
+  "supportLoanTenureUnavailable": "Tenure options are not configured yet. Loan requests are temporarily unavailable.",
+  "supportFieldTenureRequired": "Tenure *",
+  "supportFieldNeededBy": "Needed by",
+  "supportFieldReasonRequired": "Reason *",
+  "supportFieldAssetType": "Asset type",
+  "supportFieldQuantity": "Quantity",
+  "supportFieldPeriodMonth": "Period (month)",
+  "supportFieldDistanceKm": "Distance (km)",
+  "supportUploadFuelReceipts": "Upload fuel receipts *",
+  "supportFieldDocumentType": "Document type",
+  "supportComplaintCategoriesUnavailable": "Complaint categories are not configured yet. Complaints are temporarily unavailable.",
+  "supportFieldCategoryRequired": "Category *",
+  "supportFieldSubjectRequired": "Subject *",
+  "supportFieldDescriptionRequired": "Description *",
+  "supportFieldSalaryMonth": "Salary Month",
+  "supportFieldExpectedAmountRequired": "Expected amount *",
+  "supportFieldReceivedAmountRequired": "Received amount *",
+  "supportSupportingDocument": "Supporting document",
+  "supportPhotoOptional": "Photo (optional)",
+  "supportAttachPayslipOptional": "Attach payslip (optional)",
+  "supportDeclarationLeave": "Declaration: I am entitled to return on time, otherwise the company to apply the list of penalties in case of late return.",
+  "supportDeclarationLoan": "Declaration: I am committed to pay the full amount to the company or the company to deduct it as per the installments from my salary.",
+  "supportDeclarationAsset": "Declaration: In the case of lost or damaged item replacement i am entitled for any charges from the company to receive a new one.",
+  "supportTemporarilyUnavailable": "Temporarily unavailable",
+  "supportSubmitRequest": "Submit request",
+  "supportChooseFromGallery": "Choose from gallery",
+  "supportTakeAPhoto": "Take a photo",
+  "supportResponseSubmitted": "Response submitted",
+  "supportAskQuestion": "Ask a question",
+  "supportAskQuestionBody": "Send a note to the ops team about this request. They will reply here.",
+  "supportAskQuestionHint": "e.g. Which side of the Emirates ID do you need?",
+  "supportSendQuestion": "Send question",
+  "supportAttachDocumentFirst": "Please attach the requested document first",
+  "supportRequestDetailsTitle": "Request details",
+  "supportFromManagement": "From management",
+  "supportApprovalProgress": "Approval progress",
+  "supportUploadRequestedDocument": "Upload requested document",
+  "supportUploadHintChooseOrCapture": "Choose image or capture the delivery proof",
+  "supportYourResponse": "Your response",
+  "supportSubmitResponse": "Submit response",
+  "supportNoteOptional": "Note (optional)",
+  "supportAddNote": "Add note",
+  "supportUploadDocuments": "Upload documents",
+  "supportAcknowledge": "Acknowledge",
+  "supportAttachedFile": "Attached file",
+  "supportNoneAttached": "None attached",
+  "supportFieldRequested": "Requested",
+  "supportFieldInstallments": "Installments",
+  "supportMonthsCount": "{count} months",
+  "@supportMonthsCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "supportFieldPurpose": "Purpose",
+  "supportFieldAsset": "Asset",
+  "supportAssetWithSize": "{asset} ({size})",
+  "@supportAssetWithSize": {
+    "placeholders": {
+      "asset": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "supportFieldCondition": "Condition",
+  "supportFieldEvidence": "Evidence",
+  "supportFieldDates": "Dates",
+  "supportFieldDuration": "Duration",
+  "supportDaysCount": "{count, plural, =1{1 day} other{{count} days}}",
+  "@supportDaysCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "supportFieldAttachment": "Attachment",
+  "supportStepInReview": "In review",
+  "supportStepSince": "{word} since {date}",
+  "@supportStepSince": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "supportStepDecidedAt": "{word} · {dateTime}",
+  "@supportStepDecidedAt": {
+    "placeholders": {
+      "word": {
+        "type": "String"
+      },
+      "dateTime": {
+        "type": "String"
+      }
+    }
+  },
+  "supportReason": "Reason",
+  "supportAdminResponse": "Admin response",
+  "supportCommentFromAdmin": "Comment from admin",
+  "supportFieldRequestedAmount": "Requested amount",
+  "supportFieldApprovedAmount": "Approved amount",
+  "supportFieldDeductionStarts": "Deduction starts",
+  "supportFieldApprovedBy": "Approved by",
+  "supportFieldPenaltyAmount": "Penalty amount",
+  "supportFieldRequestedBy": "Requested by",
+  "supportStatusOnHold": "On hold",
+  "supportFieldRequired": "Required",
+  "supportNotSpecified": "Not specified",
+  "supportBadgeAmountChanged": "Amount changed",
+  "supportBadgeUpdate": "Update",
+  "supportBadgePenaltyApplied": "Penalty applied",
+  "supportBadgeReviewRequired": "Review required",
+  "supportBadgeDocumentsRequired": "Documents required",
+  "supportFilesReady": "{count} file(s) ready",
+  "@supportFilesReady": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "supportUpload": "Upload",
+  "supportCapture": "Capture",
+  "supportSubmittedTitle": "Submitted",
+  "supportRequestSubmitted": "Request submitted",
+  "supportRequestSubmittedBody": "We have received your request and will review it shortly. You can track its status anytime.",
+  "supportFieldRequestId": "Request ID",
+  "supportFieldType": "Type",
+  "supportTrackRequest": "Track request",
+  "supportBackToSupport": "Back to support",
+  "supportAcknowledgedTitle": "Acknowledged",
+  "supportResponseAcknowledged": "Response acknowledged",
+  "supportResponseAcknowledgedBody": "Thanks. We've let the admin know you've seen and accepted their response.",
+  "supportCodeWithType": "{code} · {type}",
+  "@supportCodeWithType": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "supportBackToMyRequests": "Back to my requests",
+  "weekdayInitialSun": "S",
+  "weekdayInitialMon": "M",
+  "weekdayInitialTue": "T",
+  "weekdayInitialWed": "W",
+  "weekdayInitialThu": "T",
+  "weekdayInitialFri": "F",
+  "weekdayInitialSat": "S",
+  "visitCentralTower": "Central Tower",
+  "visitStepReason": "Visit reason",
+  "visitStepSelectDate": "Select date",
+  "visitStepReviewConfirm": "Review & confirm",
+  "visitBooking": "Booking…",
+  "visitConfirmBooking": "Confirm booking",
+  "visitDefaultBranchName": "Musallam Central Tower",
+  "visitHeadOfficeSubtitle": "Head office - rider services",
+  "visitFieldLocation": "Location",
+  "visitFieldWorkingHours": "Working hours",
+  "visitFieldContact": "Contact",
+  "visitBookASlot": "Book a slot",
+  "visitSkipQueueHint": "Booking a slot helps you skip the queue and get seen faster.",
+  "visitSelectDepartment": "SELECT A DEPARTMENT",
+  "visitAddNoteOptional": "Add a note (optional)",
+  "visitNoteHint": "Briefly describe your issue",
+  "visitChange": "Change",
+  "visitNoSlotsForDate": "No slots available for this date.",
+  "visitSectionMorning": "MORNING",
+  "visitSectionAfternoon": "AFTERNOON",
+  "visitLunchBreak": "Lunch break",
+  "visitSlotFull": "Full",
+  "visitSlotRemaining": "{count} left",
+  "@visitSlotRemaining": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "visitSlotRange": "{start} - {end}",
+  "@visitSlotRange": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "visitFieldDepartment": "Department",
+  "visitFieldDate": "Date",
+  "visitFieldTime": "Time",
+  "visitFieldNote": "Note",
+  "visitArriveEarlyHint": "Please arrive 10 minutes early and carry your rider ID.",
+  "visitBookedTitle": "Visit Booked",
+  "visitBookedBody": "Your visit is confirmed. Show this ticket at the Central Tower reception.",
+  "visitTicketHeader": "CENTRAL TOWER VISIT",
+  "visitScanAtReception": "Scan at reception",
+  "visitBookingTokenHint": "Booking token {code}. Keep this ready on arrival.",
+  "@visitBookingTokenHint": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "visitViewMyVisits": "View my visits",
+  "visitTabUpcoming": "Upcoming",
+  "visitTabPast": "Past",
+  "visitNoUpcoming": "No upcoming visits",
+  "visitNoPast": "No past visits",
+  "visitRescheduleTitle": "Reschedule visit?",
+  "visitRescheduleBody": "Cancel {code} and book a new slot?",
+  "@visitRescheduleBody": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "visitKeep": "Keep",
+  "visitReschedule": "Reschedule",
+  "visitStatusConfirmed": "Confirmed",
+  "visitStatusCheckedIn": "Checked in",
+  "visitMonthJanUpper": "JAN",
+  "visitMonthFebUpper": "FEB",
+  "visitMonthMarUpper": "MAR",
+  "visitMonthAprUpper": "APR",
+  "visitMonthMayUpper": "MAY",
+  "visitMonthJunUpper": "JUN",
+  "visitMonthJulUpper": "JUL",
+  "visitMonthAugUpper": "AUG",
+  "visitMonthSepUpper": "SEP",
+  "visitMonthOctUpper": "OCT",
+  "visitMonthNovUpper": "NOV",
+  "visitMonthDecUpper": "DEC",
+  "esignNoDocumentsToSign": "No documents to sign",
+  "esignSectionPending": "Pending",
+  "esignSectionSigned": "Signed",
+  "esignSectionDeclined": "Declined",
+  "esignDueOn": "Due {date}",
+  "@esignDueOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "esignSignedOn": "Signed {date}",
+  "@esignSignedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "esignDeclineDocument": "Decline document",
+  "esignDeclineBody": "Let admin know why you cannot sign this document.",
+  "esignDeclineReasonHint": "Reason (optional)",
+  "esignDocumentDeclined": "Document declined",
+  "esignDocumentTitle": "Document",
+  "esignReviewDocument": "Review document",
+  "esignNoDocumentAttached": "No document attached.",
+  "esignPreviewLoadFailed": "Could not load document preview.",
+  "esignPreviewUnavailable": "Preview unavailable — open externally.",
+  "esignPdfDocument": "PDF document",
+  "esignTapToOpen": "Tap to open",
+  "esignOpenFullDocument": "Open full document",
+  "esignFromAdmin": "From admin",
+  "esignMetaLine": "{code}{category} · {source}",
+  "@esignMetaLine": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "category": {
+        "type": "String"
+      },
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "esignDecline": "Decline",
+  "esignSignDocument": "Sign document",
+  "esignAddYourSignature": "Add your signature",
+  "esignDrawSignatureHint": "Draw your signature in the box below",
+  "esignClear": "Clear",
+  "esignLegalDeclaration": "I agree this is my legal electronic signature.",
+  "esignPleaseDrawSignature": "Please draw your signature",
+  "esignCapturedWith": "Captured with your signature:",
+  "esignSignerYou": "You",
+  "esignSubmitting": "Submitting…",
+  "esignConfirmSignature": "Confirm signature",
+  "esignSignedTitle": "Signed",
+  "esignDocumentSigned": "Document signed",
+  "esignDocumentSignedBody": "Your signature has been sent to admin and saved to your records.",
+  "esignSignatureProof": "Signature proof",
+  "esignFieldSignedBy": "Signed by",
+  "esignFieldDateTime": "Date & time",
+  "esignFieldIpAddress": "IP address",
+  "esignNotCaptured": "Not captured",
+  "esignFieldDevice": "Device",
+  "esignDownloadSignedCopy": "Download signed copy",
+  "esignDownloadDocument": "Download document",
+  "esignNoDocumentToDownload": "No document available to download",
+  "esignSignedCopyReady": "Your signature is stamped on the last page of this copy.",
+  "esignSignedCopyPending": "Preparing your signed copy — this is the original document until it is ready. Reopen this screen in a moment.",
+  "esignSignedCopyUnavailable": "Signed copy unavailable, so this is the original document you were sent. Your signature is stored with the request.",
+  "esignBackToDocuments": "Back to documents",
+  "visitDefaultWorkingHours": "Sun - Thu, 9:00 AM - 5:00 PM",
+  "esignScreenshotsRestricted": "Screenshots disabled for this document",
+  "esignContentHidden": "Content hidden",
+  "apptNoneScheduled": "No appointments scheduled",
+  "apptRequestTitle": "Appointment request",
+  "apptNotFound": "Appointment not found",
+  "apptFromRequester": "{code} · From {name}",
+  "@apptFromRequester": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "apptRequesterAdmin": "admin",
+  "apptDetails": "Details",
+  "apptFieldPurpose": "Purpose",
+  "apptFieldProposedDateTime": "Proposed date/time",
+  "apptFieldLocation": "Location",
+  "apptFieldNote": "Note",
+  "apptFieldYourProposedTime": "Your proposed time",
+  "apptFieldYourNote": "Your note",
+  "apptNoticeAccepted": "You accepted this appointment. Arrive on time at reception.",
+  "apptNoticeRejected": "You rejected this appointment.",
+  "apptNoticeRescheduleRequested": "You proposed a new time. Waiting for admin to confirm.",
+  "apptNoticeScheduled": "Your appointment is scheduled. Arrive on time at reception.",
+  "apptReject": "Reject",
+  "apptProposeTime": "Propose time",
+  "apptAcceptAppointment": "Accept appointment",
+  "apptRejectAppointment": "Reject appointment",
+  "apptRejectBody": "Let admin know why you cannot make it.",
+  "supportReasonOptionalHint": "Reason (optional)",
+  "apptRejected": "Appointment rejected",
+  "apptProposeNewTime": "Propose a new time",
+  "apptNoteForAdminHint": "Note for admin (optional)",
+  "apptSendProposedTime": "Send proposed time",
+  "apptProposedTimeSent": "Proposed time sent to admin",
+  "apptConfirmedTitle": "Appointment confirmed",
+  "apptConfirmedBody": "It's been added to your schedule. We'll remind you before it starts.",
+  "apptDone": "Done",
+  "apptViewInCalendar": "View in calendar",
+  "apptTitleWithTime": "{title} · {time}",
+  "@apptTitleWithTime": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "supportStatusRescheduled": "Rescheduled",
+  "supportStatusResponded": "Responded",
+  "supportStatusClosed": "Closed",
+  "supportActionRescheduleProposed": "New dates proposed",
+  "supportRescheduleProposedTitle": "New dates proposed",
+  "supportRescheduleNewStart": "New start date",
+  "supportRescheduleNewEnd": "New end date",
+  "supportRescheduleProposedBy": "Proposed by",
+  "supportRescheduleAccept": "Accept dates",
+  "supportRescheduleDecline": "Decline",
+  "supportRescheduleAccepted": "Dates accepted. Your request is back under review.",
+  "supportRescheduleDeclined": "Dates declined. Your request is back under review."
 }
