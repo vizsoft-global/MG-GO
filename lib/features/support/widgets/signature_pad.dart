@@ -112,7 +112,10 @@ class SignaturePad extends StatelessWidget {
               onPanUpdate: (d) => controller.extendStroke(d.localPosition),
               onPanEnd: (_) => controller.endStroke(),
               child: CustomPaint(
-                painter: _SignaturePainter(strokes: controller.visibleStrokes),
+                painter: _SignaturePainter(
+                  strokes: controller.visibleStrokes,
+                  textDirection: Directionality.of(context),
+                ),
                 size: Size(constraints.maxWidth, constraints.maxHeight),
               ),
             );
@@ -136,9 +139,13 @@ const _guideBaselineRatio = 145 / 190;
 const _guideMarkerSize = 8.0;
 
 class _SignaturePainter extends CustomPainter {
-  _SignaturePainter({required this.strokes});
+  _SignaturePainter({
+    required this.strokes,
+    required this.textDirection,
+  });
 
   final List<List<Offset>> strokes;
+  final TextDirection textDirection;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -172,7 +179,15 @@ class _SignaturePainter extends CustomPainter {
     final inset = size.width * _guideInsetRatio;
     final baselineY = size.height * _guideBaselineRatio;
     const half = _guideMarkerSize / 2;
-    final centerX = inset + half;
+    // LTR: ✕ sits on the left start of the line (Figma). RTL: both the ✕ and
+    // the line's start sit on the right, so Arabic signing begins where the
+    // rest of the screen already did.
+    final startX = textDirection == TextDirection.rtl
+        ? size.width - inset
+        : inset;
+    final centerX = textDirection == TextDirection.rtl
+        ? startX - half
+        : startX + half;
     final centerY = baselineY - half - 2;
     canvas.drawLine(
       Offset(centerX - half, centerY - half),
@@ -193,5 +208,6 @@ class _SignaturePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _SignaturePainter oldDelegate) =>
-      oldDelegate.strokes != strokes;
+      oldDelegate.strokes != strokes ||
+      oldDelegate.textDirection != textDirection;
 }

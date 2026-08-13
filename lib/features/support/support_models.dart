@@ -84,15 +84,26 @@ class VisitDepartment {
   const VisitDepartment({
     required this.key,
     required this.labelEn,
+    this.labelAr,
   });
 
   final String key;
   final String labelEn;
+  final String? labelAr;
+
+  String label(Locale locale) {
+    final ar = labelAr;
+    if (locale.languageCode == 'ar' && ar != null && ar.trim().isNotEmpty) {
+      return ar;
+    }
+    return labelEn;
+  }
 
   factory VisitDepartment.fromJson(Map<String, dynamic> json) {
     return VisitDepartment(
       key: json['key'] as String,
       labelEn: json['label_en'] as String? ?? json['key'] as String,
+      labelAr: json['label_ar'] as String?,
     );
   }
 }
@@ -229,15 +240,29 @@ class LoanTenureOption {
 }
 
 class ComplaintCategory {
-  const ComplaintCategory({required this.key, required this.labelEn});
+  const ComplaintCategory({
+    required this.key,
+    required this.labelEn,
+    this.labelAr,
+  });
 
   final String key;
   final String labelEn;
+  final String? labelAr;
+
+  String label(Locale locale) {
+    final ar = labelAr;
+    if (locale.languageCode == 'ar' && ar != null && ar.trim().isNotEmpty) {
+      return ar;
+    }
+    return labelEn;
+  }
 
   factory ComplaintCategory.fromJson(Map<String, dynamic> json) {
     return ComplaintCategory(
       key: json['key'] as String,
       labelEn: json['label_en'] as String? ?? json['key'] as String,
+      labelAr: json['label_ar'] as String?,
     );
   }
 }

@@ -3,19 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/l10n.dart';
+import '../../core/l10n/locale_formatters.dart';
 import '../../core/theme/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
 
 class EsignDocumentsScreen extends ConsumerWidget {
   const EsignDocumentsScreen({super.key});
 
-  String _formatDate(DateTime? value) {
+  String _formatDate(DateTime? value, AppLocalizations l10n) {
     if (value == null) return '—';
-    final y = value.year.toString().padLeft(4, '0');
-    final m = value.month.toString().padLeft(2, '0');
-    final d = value.day.toString().padLeft(2, '0');
-    return '$y-$m-$d';
+    return formatEsignDue(value, l10n);
   }
 
   @override
@@ -65,7 +64,7 @@ class EsignDocumentsScreen extends ConsumerWidget {
                   _SectionLabel(title: l10n.esignSectionPending),
                   ...pending.map((row) => _EsignCard(
                         row: row,
-                        dueLabel: _formatDate(row.dueAt),
+                        dueLabel: _formatDate(row.dueAt, l10n),
                         onTap: () => context.push('/profile/support/sign/${row.id}'),
                       )),
                 ],
@@ -74,7 +73,7 @@ class EsignDocumentsScreen extends ConsumerWidget {
                   _SectionLabel(title: l10n.esignSectionSigned),
                   ...signed.map((row) => _EsignCard(
                         row: row,
-                        dueLabel: _formatDate(row.signedAt ?? row.dueAt),
+                        dueLabel: _formatDate(row.signedAt ?? row.dueAt, l10n),
                         onTap: () => context.push('/profile/support/sign/${row.id}'),
                       )),
                 ],
@@ -83,7 +82,7 @@ class EsignDocumentsScreen extends ConsumerWidget {
                   _SectionLabel(title: l10n.esignSectionDeclined),
                   ...declined.map((row) => _EsignCard(
                         row: row,
-                        dueLabel: _formatDate(row.dueAt),
+                        dueLabel: _formatDate(row.dueAt, l10n),
                         onTap: () => context.push('/profile/support/sign/${row.id}'),
                       )),
                 ],

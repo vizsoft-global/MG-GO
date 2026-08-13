@@ -198,7 +198,7 @@ class SupportService {
   Future<List<ComplaintCategory>> listComplaintCategories() async {
     final rows = await _client
         .from('complaint_categories')
-        .select('key, label_en')
+        .select('key, label_en, label_ar')
         .eq('is_active', true)
         .order('sort_order');
     return (rows as List)
@@ -224,7 +224,7 @@ class SupportService {
   Future<List<VisitDepartment>> listVisitDepartments({String? branchId}) async {
     var query = _client
         .from('visit_departments')
-        .select('key, label_en, branch_id')
+        .select('key, label_en, label_ar, branch_id')
         .eq('is_active', true);
     if (branchId != null) {
       query = query.or('branch_id.is.null,branch_id.eq.$branchId');

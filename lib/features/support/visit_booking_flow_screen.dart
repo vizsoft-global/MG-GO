@@ -224,13 +224,12 @@ class _TowerIntroStep extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  Container(
-                    width: 44, height: 44,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
+                  const SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: Center(
+                      child: Text('🏢', style: TextStyle(fontSize: 26, height: 1)),
                     ),
-                    child: const Icon(Icons.apartment_outlined, color: AppColors.primaryBlue),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -372,7 +371,7 @@ class _ReasonStep extends ConsumerWidget {
                 onChanged: (_) => onSelect(d),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 activeColor: AppColors.accentOrange,
-                title: Text(d.labelEn, style: const TextStyle(fontWeight: FontWeight.w600)),
+                title: Text(d.label(Localizations.localeOf(context)), style: const TextStyle(fontWeight: FontWeight.w600)),
                 secondary: CircleAvatar(
                   radius: 18,
                   backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
@@ -447,7 +446,7 @@ class _DateSlotStep extends StatelessWidget {
             children: [
               Icon(visitDepartmentIcon(dept.key), size: 18, color: AppColors.textSecondary),
               const SizedBox(width: 8),
-              Expanded(child: Text(dept.labelEn, style: const TextStyle(fontWeight: FontWeight.w600))),
+              Expanded(child: Text(dept.label(Localizations.localeOf(context)), style: const TextStyle(fontWeight: FontWeight.w600))),
               TextButton(onPressed: onChangeDept, child: Text(l10n.visitChange)),
             ],
           ),
@@ -686,7 +685,7 @@ class _ReviewStep extends StatelessWidget {
           ),
           child: Column(
             children: [
-              _ReviewRow(l10n.visitFieldDepartment, dept.labelEn),
+              _ReviewRow(l10n.visitFieldDepartment, dept.label(Localizations.localeOf(context))),
               _ReviewRow(l10n.visitFieldDate, _fmtDate(date, l10n)),
               _ReviewRow(l10n.visitFieldTime, slot.startTime),
               _ReviewRow(l10n.visitFieldLocation, l10n.visitCentralTower),
@@ -829,7 +828,7 @@ class _TicketStep extends StatelessWidget {
                   if (slot != null)
                     _ReviewRow(l10n.visitFieldTime, slot!.startTime),
                   if (dept != null)
-                    _ReviewRow(l10n.visitFieldDepartment, dept!.labelEn,
+                    _ReviewRow(l10n.visitFieldDepartment, dept!.label(Localizations.localeOf(context)),
                         isLast: true),
                   if (bookingCode.isNotEmpty) ...[
                     const Divider(height: 20),

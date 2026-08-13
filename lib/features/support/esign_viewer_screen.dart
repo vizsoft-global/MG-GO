@@ -4,8 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/l10n/l10n.dart';
+import '../../core/l10n/locale_formatters.dart';
 import '../../core/theme/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 import 'support_providers.dart';
+import 'widgets/esign_pdf_preview.dart';
 import 'widgets/esign_sensitive_scope.dart';
 import 'widgets/screenshot_restriction_banner.dart';
 
@@ -148,12 +151,9 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
-  String _formatDate(DateTime? value) {
+  String _formatDate(DateTime? value, AppLocalizations l10n) {
     if (value == null) return '—';
-    final y = value.year.toString().padLeft(4, '0');
-    final m = value.month.toString().padLeft(2, '0');
-    final d = value.day.toString().padLeft(2, '0');
-    return '$y-$m-$d';
+    return formatEsignDue(value, l10n);
   }
 
   @override
@@ -269,12 +269,9 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                               ),
                             )
                           else
-                            ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: const Icon(Icons.picture_as_pdf_outlined),
-                              title: Text(l10n.esignPdfDocument),
-                              subtitle: Text(l10n.esignTapToOpen),
-                              onTap: _openDocument,
+                            EsignPdfPreview(
+                              url: _documentUrl!,
+                              onOpenExternal: _openDocument,
                             ),
                           if (_isImageKey(detail.documentStorageKey!)) ...[
                             const SizedBox(height: 8),
@@ -302,7 +299,7 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  l10n.esignDueOn(_formatDate(detail.dueAt)),
+                  l10n.esignDueOn(_formatDate(detail.dueAt, l10n)),
                   style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                 ),
               ],

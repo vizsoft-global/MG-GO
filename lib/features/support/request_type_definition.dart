@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
+
 /// A request type as the admin panel defines it (`request_type_definitions`).
 ///
-/// The eight built-ins are still rendered by the hardcoded forms in
-/// [RequestFormScreen] — their `is_system` flag is exactly why the admin cannot
-/// edit their field set. These rows drive the hub tiles for every type and the
-/// generic renderer for the custom ones.
+/// Every type — the eight built-ins included — is rendered by
+/// [DynamicRequestFormScreen] from its field definitions. `is_system` still
+/// means the type cannot be deleted or have its key renamed; the field set
+/// itself is editable.
 class RequestTypeDefinition {
   const RequestTypeDefinition({
     required this.key,
@@ -188,8 +190,8 @@ IconData requestTypeIcon(String? key) {
   }
 }
 
-/// The types whose forms are compiled into this build. Anything else the server
-/// sends is rendered by the generic field renderer.
+/// The types this build still has ARB copy for. Their hub tiles and form
+/// titles keep the Figma wording; everything else uses the server label.
 const kBuiltInRequestTypes = <String>{
   'leave',
   'sick_leave',
@@ -200,3 +202,66 @@ const kBuiltInRequestTypes = <String>{
   'complaint',
   'salary_justification',
 };
+
+/// Form-screen title for a built-in type. Falls back to null so the caller
+/// can use the server-authored label for a type this build has never heard of.
+String? builtInRequestFormTitle(AppLocalizations l10n, String key) {
+  return switch (key) {
+    'leave' => l10n.supportRequestTypeLeaveRequest,
+    'sick_leave' => l10n.supportFormTitleSickLeave,
+    'loan' => l10n.supportFormTitleLoan,
+    'asset' => l10n.supportRequestTypeAsset,
+    'fuel' => l10n.supportFormTitleFuel,
+    'document' => l10n.supportRequestTypeDocument,
+    'complaint' => l10n.supportRequestTypeComplaint,
+    'salary_justification' => l10n.supportRequestTypeSalaryJustification,
+    _ => null,
+  };
+}
+
+/// Chip/select values travel to the server verbatim. Only the visible label
+/// is translated, and only for values the handwritten forms already knew.
+String builtInOptionLabel(AppLocalizations l10n, String value) {
+  return switch (value) {
+    'Annual' => l10n.supportLeaveTypeAnnual,
+    'Emergency' => l10n.supportLeaveTypeEmergency,
+    'Accident' => l10n.supportLeaveTypeAccident,
+    'Unpaid Leave' => l10n.supportLeaveTypeUnpaid,
+    'Sick leave' => l10n.supportSickTypeSickLeave,
+    'Injury' => l10n.supportSickTypeInjury,
+    'Other' => l10n.supportOptionOther,
+    'SIM card' => l10n.supportAssetSimCard,
+    'Fuel card' => l10n.supportAssetFuelCard,
+    'Fuel limit change' => l10n.supportAssetFuelLimitChange,
+    'Raincoat' => l10n.supportAssetRaincoat,
+    'Delivery bag' => l10n.supportAssetDeliveryBag,
+    'Reflective vest' => l10n.supportAssetReflectiveVest,
+    'Winter jacket' => l10n.supportAssetWinterJacket,
+    'Delivery attire' => l10n.supportAssetDeliveryAttire,
+    'Delivery pants' => l10n.supportAssetDeliveryPants,
+    'New bike' => l10n.supportAssetNewBike,
+    'Helmet' => l10n.supportAssetHelmet,
+    'Delivery box' => l10n.supportAssetDeliveryBox,
+    'Fuel chip' => l10n.supportAssetFuelChip,
+    'Phone' => l10n.supportAssetPhone,
+    'Mobile holder' => l10n.supportAssetMobileHolder,
+    'Civil ID copy' => l10n.supportDocTypeCivilIdCopy,
+    'License Copy' => l10n.supportDocTypeLicenseCopy,
+    'Work permit copy' => l10n.supportDocTypeWorkPermitCopy,
+    'Registration copy' => l10n.supportDocTypeRegistrationCopy,
+    'Vehicle document copy' => l10n.supportDocTypeVehicleDocumentCopy,
+    'Salary certification' => l10n.supportDocTypeSalaryCertification,
+    'Renewal' => l10n.supportRequestModeRenewal,
+    'First Time' => l10n.supportRequestModeFirstTime,
+    'Lost' => l10n.supportAssetStatusLost,
+    'Damaged' => l10n.supportAssetStatusDamaged,
+    'English' => l10n.english,
+    'Arabic' => l10n.arabic,
+    'Email' => l10n.supportDeliveryMethodEmail,
+    'Pickup' => l10n.supportDeliveryMethodPickup,
+    'Low' || 'low' => l10n.supportSeverityLow,
+    'Medium' || 'medium' => l10n.supportSeverityMedium,
+    'High' || 'high' => l10n.supportSeverityHigh,
+    _ => value,
+  };
+}

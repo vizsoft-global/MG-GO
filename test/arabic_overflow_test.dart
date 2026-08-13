@@ -207,13 +207,14 @@ final _requestDetail = SupportRequestDetail(
   attachments: const [],
 );
 
-/// `label_en` is what the screen renders whatever the locale, so this pairs a
-/// department an admin named in Arabic with one left in English — the mix a
-/// Kuwait tenant actually produces today.
+/// Departments are locale-aware: `label_ar` wins under Arabic, `label_en`
+/// otherwise. The fixtures mix an Arabic-named department with an English one
+/// so a Kuwait tenant's real mix still shows.
 final _visitDepartments = [
   VisitDepartment.fromJson(const {
     'key': 'call_center',
-    'label_en': 'إدارة مركز الاتصال وخدمة العملاء',
+    'label_en': 'Call Center',
+    'label_ar': 'إدارة مركز الاتصال وخدمة العملاء',
   }),
   VisitDepartment.fromJson(const {
     'key': 'human_resources',
@@ -467,10 +468,14 @@ void main() {
     expect(qr.size, const Size(50, 50));
     // RTL puts the QR on the right edge of the card, not the left.
     expect(qr.center.dx, greaterThan(_pixel9.width / 2));
+    expect(find.text('إدارة مركز الاتصال وخدمة العملاء'), findsOneWidget);
+    await tester.tap(find.text('السابقة'));
+    await tester.pumpAndSettle();
+    expect(find.text('Human Resources'), findsOneWidget);
   });
 
   // Only the resolved preview needs a network: an image goes through
-  // Image.network and a PDF through url_launcher. Everything around it — the
+  // Image.network and a PDF through pdfrx. Everything around it — the
   // restriction banner, the meta lines, the two footer buttons — is plain
   // layout, and those are where Arabic can overflow.
   testWidgets('e-sign viewer chrome in Arabic, no document attached',
@@ -482,6 +487,10 @@ void main() {
     );
 
     expect(find.text('لا يوجد مستند مرفق.'), findsOneWidget);
+    // Numeric ISO dates reorder under RTL (`2026-08-25` → `25-08-2026`).
+    // Month names do not.
+    expect(find.textContaining('25 أغس 2026'), findsOneWidget);
+    expect(find.textContaining('2026-08-25'), findsNothing);
     // The restriction banner is a full-width strip whose Arabic runs longer
     // than the English.
     expect(find.textContaining('لقطات'), findsOneWidget);

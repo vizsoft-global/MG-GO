@@ -53,9 +53,10 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen>
     final l10n = context.l10n;
     final async = ref.watch(myVisitsProvider);
     final deptsAsync = ref.watch(visitDepartmentsProvider);
+    final locale = Localizations.localeOf(context);
     final deptLabels = <String, String>{
       for (final d in deptsAsync.asData?.value ?? const <VisitDepartment>[])
-        d.key: d.labelEn,
+        d.key: d.label(locale),
     };
     return Scaffold(
       appBar: AppBar(

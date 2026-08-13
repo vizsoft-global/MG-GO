@@ -11,12 +11,10 @@ import '../../core/theme/app_colors.dart';
 import 'request_type_definition.dart';
 import 'support_providers.dart';
 
-/// Renders a request form from `request_field_definitions` for a type this
-/// build does not have a hardcoded form for.
+/// Renders a request form from `request_field_definitions`.
 ///
-/// The eight built-ins keep their handwritten forms — their field sets are
-/// locked in the admin panel for exactly that reason — so this screen is only
-/// ever reached for a type an admin created after the build shipped.
+/// Built-in types keep their ARB titles and option labels so the Figma wording
+/// survives; everything else uses the server-authored copy.
 class DynamicRequestFormScreen extends ConsumerStatefulWidget {
   const DynamicRequestFormScreen({required this.type, super.key});
 
@@ -227,9 +225,10 @@ class _DynamicRequestFormScreenState
         .where((t) => t.key == widget.type)
         .firstOrNull;
 
-    final title = def == null
-        ? l10n.supportFormTitleNew
-        : def.label(Localizations.localeOf(context));
+    final title = builtInRequestFormTitle(l10n, widget.type) ??
+        (def == null
+            ? l10n.supportFormTitleNew
+            : def.label(Localizations.localeOf(context)));
 
     return Scaffold(
       appBar: AppBar(
@@ -348,9 +347,17 @@ class _DynamicRequestFormScreenState
       case 'complaint_categories':
         final data = ref.watch(complaintCategoriesProvider).asData?.value;
         if (data == null) return null;
-        return data.map((c) => (value: c.key, label: c.labelEn)).toList();
+        final locale = Localizations.localeOf(context);
+        return data
+            .map((c) => (value: c.key, label: c.label(locale)))
+            .toList();
       default:
-        return field.options.map((o) => (value: o, label: o)).toList();
+        return field.options
+            .map((o) => (
+                  value: o,
+                  label: builtInOptionLabel(context.l10n, o),
+                ))
+            .toList();
     }
   }
 
