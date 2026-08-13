@@ -134,7 +134,12 @@ class DutyTaskHandler extends TaskHandler {
         _lastGoodPosition = reportPosition;
       }
 
-      _scheduler.updateFromPosition(reportPosition, now);
+      applyLiveMotion(
+        _scheduler,
+        liveFix: position,
+        reportedPin: reportPosition,
+        now: now,
+      );
 
       if (!force && !_scheduler.shouldReportToServer(now)) {
         await _updateNotification(l10n.onDutyStationaryGpsPaused);
@@ -148,7 +153,7 @@ class DutyTaskHandler extends TaskHandler {
 
       final extras = await _collectReportExtras(reportPosition);
 
-      final speed = reportPosition.speed >= 0 ? reportPosition.speed : null;
+      final speed = position.speed >= 0 ? position.speed : null;
       LocationReportResult report;
       try {
         report = await reportLocationViaHttp(

@@ -1,8 +1,9 @@
+import 'package:dpd_userapp/features/duty/adaptive_location_scheduler.dart';
 import 'package:dpd_userapp/features/duty/live_map_heartbeat.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 
-Position _pos({required double accuracy, double lat = 29.37}) {
+Position _pos({required double accuracy, double lat = 29.37, double speed = 0}) {
   return Position(
     latitude: lat,
     longitude: 47.97,
@@ -12,7 +13,7 @@ Position _pos({required double accuracy, double lat = 29.37}) {
     altitudeAccuracy: 0,
     heading: 0,
     headingAccuracy: 0,
-    speed: 0,
+    speed: speed,
     speedAccuracy: 0,
   );
 }
@@ -55,5 +56,27 @@ void main() {
       ),
       isNull,
     );
+  });
+
+  test('motion uses live speed even when the pin heartbeats last-good', () {
+    final scheduler = AdaptiveLocationScheduler();
+    final lastGood = _pos(accuracy: 12, speed: 0);
+    final live = _pos(accuracy: 180, speed: 8, lat: 29.90);
+    expect(
+      heartbeatPosition(
+        current: live,
+        lastGood: lastGood,
+        force: false,
+        needsInitialReport: false,
+      ),
+      lastGood,
+    );
+    applyLiveMotion(
+      scheduler,
+      liveFix: live,
+      reportedPin: lastGood,
+      now: DateTime(2026, 8, 13, 9),
+    );
+    expect(scheduler.status, TrackingStatus.moving);
   });
 }
