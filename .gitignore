@@ -23,6 +23,8 @@ migrate_working_dir/
 **/ios/Flutter/.last_build_id
 .dart_tool/
 .flutter-plugins-dependencies
+.flutter-plugins-dependencies 2
+android/.kotlin/
 .pub-cache/
 .pub/
 /build/
