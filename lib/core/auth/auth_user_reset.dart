@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/painting.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -14,6 +15,8 @@ import '../../features/duty/duty_session_gate_provider.dart';
 import '../../features/earnings/earnings_providers.dart';
 import '../../features/home/home_providers.dart';
 import '../../features/home/zone_monitor_provider.dart';
+import '../../features/profile/avatar_disk_cache.dart';
+import '../../features/profile/avatar_upload_controller.dart';
 import '../../features/shift/shift_providers.dart';
 import '../offline/offline_repo.dart';
 
@@ -44,7 +47,16 @@ final authUserResetControllerProvider = Provider<void>((ref) {
 /// currently authenticated rider. Safe to call when no provider is currently
 /// initialised — `ref.invalidate` is a no-op in that case.
 void _resetUserScopedProviders(Ref ref, {String? previousUserId}) {
+  ref.read(avatarLocalPreviewProvider.notifier).set(null);
+  ref.read(profileAvatarDisplayOverrideProvider.notifier).set(null);
   ref.invalidate(riderProfileProvider);
+  ref.invalidate(profileAvatarUrlProvider);
+  ref.invalidate(persistedAvatarBytesProvider);
+  unawaited(ref.read(avatarDiskCacheProvider).clear());
+  try {
+    imageCache.clear();
+    imageCache.clearLiveImages();
+  } catch (_) {}
 
   ref.invalidate(homeDashboardProvider);
   ref.invalidate(todayShiftProvider);
