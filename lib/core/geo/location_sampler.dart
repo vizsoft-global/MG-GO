@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:geolocator/geolocator.dart';
 
 /// Single entry point for reading GPS from the device (Geolocator).
@@ -60,12 +62,39 @@ class LocationSampler {
   Stream<Position> positionStream({
     LocationAccuracy accuracy = LocationAccuracy.high,
     int distanceFilter = 5,
+    Duration? intervalDuration,
   }) {
     return Geolocator.getPositionStream(
-      locationSettings: LocationSettings(
+      locationSettings: _streamSettings(
         accuracy: accuracy,
         distanceFilter: distanceFilter,
+        intervalDuration: intervalDuration,
       ),
     );
+  }
+
+  /// Plain [LocationSettings] has no way to ask for a *rate* — it only filters by
+  /// distance, so a rider stopped at a light emits nothing and a fast one emits
+  /// as often as the provider feels like. [AndroidSettings.intervalDuration] is
+  /// the only knob that pins the cadence the admin interpolator is built around.
+  LocationSettings _streamSettings({
+    required LocationAccuracy accuracy,
+    required int distanceFilter,
+    Duration? intervalDuration,
+  }) {
+    if (intervalDuration == null) {
+      return LocationSettings(accuracy: accuracy, distanceFilter: distanceFilter);
+    }
+    if (Platform.isAndroid) {
+      return AndroidSettings(
+        accuracy: accuracy,
+        distanceFilter: distanceFilter,
+        intervalDuration: intervalDuration,
+      );
+    }
+    if (Platform.isIOS || Platform.isMacOS) {
+      return AppleSettings(accuracy: accuracy, distanceFilter: distanceFilter);
+    }
+    return LocationSettings(accuracy: accuracy, distanceFilter: distanceFilter);
   }
 }

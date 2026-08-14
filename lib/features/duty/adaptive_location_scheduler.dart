@@ -31,9 +31,10 @@ String displaySpeedKmhLabel(double? speedMps) {
 
 /// GPS sampling + server push cadence for fleet live tracking.
 ///
-/// - moving: **fixed 5s**. The admin interpolator predicts where a driver will
-///   be between fixes, and prediction needs predictable spacing — the old
-///   10–15s jittered window is what made pins teleport.
+/// - moving: **fixed 1s**. The admin interpolator draws behind the newest fix so
+///   it can interpolate between two known points instead of predicting past the
+///   last one; that only works if fixes arrive faster than the buffer it holds.
+///   Spacing is fixed rather than jittered for the same reason.
 /// - idle: heartbeat every 30s (keeps pin fresh; no dead-zone on the map)
 /// - delivery submit / first on-duty sample / idle→moving: immediate
 class AdaptiveLocationScheduler {
@@ -84,7 +85,10 @@ class AdaptiveLocationScheduler {
     return now.difference(_lastSampleAt!) >= _intervalForStatus(_status);
   }
 
-  static const movingReportInterval = Duration(seconds: 5);
+  static const movingReportInterval = Duration(seconds: 1);
+
+  /// Deliberately *not* raised with [movingReportInterval]: a parked phone at 1Hz
+  /// is the same coordinate 30 times over, and the watchdog owns this heartbeat.
   static const idleReportInterval = Duration(seconds: 30);
 
   Duration _intervalForStatus(TrackingStatus status) {

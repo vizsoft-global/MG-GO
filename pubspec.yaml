@@ -51,6 +51,10 @@ dependencies:
   google_mlkit_face_detection: ^0.13.1
   google_mlkit_commons: ^0.11.0
   geolocator: ^14.0.2
+  # Tilt-compensated compass off TYPE_ROTATION_VECTOR. Raw sensors_plus would
+  # mean hand-rolling the accelerometer/magnetometer fusion for a heading that
+  # is only a fallback for a standstill.
+  flutter_device_compass: ^2.0.1
   permission_handler: ^12.0.1
   flutter_foreground_task: ^9.1.0
   disable_battery_optimization: ^1.1.2

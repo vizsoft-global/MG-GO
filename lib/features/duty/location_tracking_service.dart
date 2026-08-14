@@ -31,6 +31,8 @@ Future<int?> readBatteryPct() async {
 class LocationReportExtras {
   const LocationReportExtras({
     this.headingDeg,
+    this.headingSource,
+    this.compassDeg,
     this.altitudeM,
     this.networkType,
     this.chargingState,
@@ -39,7 +41,17 @@ class LocationReportExtras {
     this.activeDeliveryId,
   });
 
+  /// The fused bearing — GPS course while moving, compass at a standstill. Keeps
+  /// its original meaning so `driver_report_location` needs no new parameter.
   final double? headingDeg;
+
+  /// Which sensor [headingDeg] came from. Edge-only: the durable RPC has a fixed
+  /// signature, and a bearing's provenance is a live-map concern, not history.
+  final String? headingSource;
+
+  /// Raw smoothed compass bearing, sent alongside the fused value so the edge
+  /// can tell a phone that has been rotated in its mount from a bike that turned.
+  final double? compassDeg;
   final double? altitudeM;
   final String? networkType;
   final String? chargingState;

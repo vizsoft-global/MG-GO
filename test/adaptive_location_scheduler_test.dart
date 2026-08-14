@@ -54,7 +54,7 @@ void main() {
       );
     });
 
-    test('moving reports on a fixed 5s cadence, without jitter', () {
+    test('moving reports on a fixed 1s cadence, without jitter', () {
       final scheduler = AdaptiveLocationScheduler(random: _ZeroRandom());
       final now = DateTime(2026, 1, 1, 12);
 
@@ -64,23 +64,36 @@ void main() {
       scheduler.markSampled(now);
 
       expect(
-        scheduler.shouldReportToServer(now.add(const Duration(seconds: 4))),
+        scheduler.shouldReportToServer(now.add(const Duration(milliseconds: 900))),
         isFalse,
       );
       expect(
-        scheduler.shouldReportToServer(now.add(const Duration(seconds: 5))),
+        scheduler.shouldReportToServer(now.add(const Duration(seconds: 1))),
         isTrue,
       );
 
-      // Interpolation on the admin map predicts the next position from the last
-      // two. A randomised interval makes that prediction wrong by design, so the
-      // spacing must not depend on the RNG at all.
+      // The admin map draws one buffer behind the newest fix so it can interpolate
+      // between two known points. A randomised interval makes that buffer either
+      // too short or needlessly long, so spacing must not depend on the RNG.
       final jittered = AdaptiveLocationScheduler(random: Random(7));
       jittered.updateFromPosition(_pos(speed: 5), now);
       jittered.markSampled(now);
       expect(
-        jittered.shouldReportToServer(now.add(const Duration(seconds: 5))),
+        jittered.shouldReportToServer(now.add(const Duration(seconds: 1))),
         isTrue,
+      );
+    });
+
+    test('idle keeps its 30s interval while moving went to 1Hz', () {
+      // Raising both would have been the easy edit and the wrong one: a parked
+      // phone reporting at 1Hz sends 30 identical coordinates per half-minute.
+      expect(
+        AdaptiveLocationScheduler.movingReportInterval,
+        const Duration(seconds: 1),
+      );
+      expect(
+        AdaptiveLocationScheduler.idleReportInterval,
+        const Duration(seconds: 30),
       );
     });
 
