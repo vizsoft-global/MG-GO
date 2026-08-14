@@ -279,3 +279,7 @@ Future<void> clearDutyAccessToken() => DutySessionStorage.clearAccessToken();
 
 Future<String?> readActiveDeliveryId() =>
     DutySessionStorage.readActiveDeliveryId();
+
+Future<int> readDutyStateVersion() => DutySessionStorage.readDutyStateVersion();
+
+Future<int> bumpDutyStateVersion() => DutySessionStorage.bumpDutyStateVersion();

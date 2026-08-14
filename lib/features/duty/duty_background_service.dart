@@ -17,8 +17,12 @@ class DutyBackgroundService {
   );
 
   static final _foregroundTaskOptions = ForegroundTaskOptions(
-    // Aligns with adaptive moving report cadence (~10–15s) so ticks aren't
-    // coarser than the desired fleet-map update rate.
+    // Watchdog cadence, not the sampling cadence. Positions arrive continuously
+    // from the Geolocator stream started in `DutyTaskHandler.onStart`; this tick
+    // exists to catch what a stream cannot report (GPS off, permission revoked,
+    // battery restriction, a dead edge rail) and to keep `driver_locations`
+    // fresh when the edge is unreachable. Do not shorten it to chase map
+    // freshness — that is the stream's job.
     eventAction: ForegroundTaskEventAction.repeat(15000),
     autoRunOnBoot: false,
     autoRunOnMyPackageReplaced: false,

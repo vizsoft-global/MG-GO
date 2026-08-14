@@ -39,7 +39,16 @@ class DutyLifecycleController with WidgetsBindingObserver {
       final wasOnDuty = previous?.asData?.value.isOnDuty ?? false;
       final isOnDuty = curr.isOnDuty;
       if (isOnDuty && !wasOnDuty) {
-        unawaited(_onDutyStarted());
+        // Bump before the service starts: the task handler reads the version in
+        // onStart and stamps it on every edge publish, which is how the hub
+        // tells this session apart from a foreground service that outlived a
+        // previous clock-out. _ensureServiceRunning must never bump — the
+        // running handler would keep sending the older value.
+        unawaited(
+          DutySessionStorage.bumpDutyStateVersion().then(
+            (_) => _onDutyStarted(),
+          ),
+        );
       } else if (!isOnDuty && wasOnDuty) {
         unawaited(_onDutyStopped());
       } else if (isOnDuty) {
@@ -175,6 +184,10 @@ class DutyLifecycleController with WidgetsBindingObserver {
   Future<void> _onDutyStopped() async {
     await DutyBackgroundService.stop();
     await DutySessionStorage.clearAccessToken();
+    // Retires the version the (now stopped) handler was stamping, so a stray
+    // late publish from it is rejected by the edge instead of resurrecting the
+    // driver on the live map.
+    await DutySessionStorage.bumpDutyStateVersion();
     _ref.read(dutyLocationProvider.notifier).reset();
   }
 

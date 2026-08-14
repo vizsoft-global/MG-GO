@@ -37,7 +37,7 @@ class _ZeroRandom implements Random {
 
 void main() {
   group('AdaptiveLocationScheduler', () {
-    test('idle heartbeats after ~45s (not multi-minute silence)', () {
+    test('idle heartbeats after 30s (not multi-minute silence)', () {
       final scheduler = AdaptiveLocationScheduler(random: _ZeroRandom());
       final now = DateTime(2026, 1, 1, 12);
 
@@ -45,16 +45,16 @@ void main() {
       scheduler.markSampled(now);
 
       expect(
-        scheduler.shouldReportToServer(now.add(const Duration(seconds: 30))),
+        scheduler.shouldReportToServer(now.add(const Duration(seconds: 20))),
         isFalse,
       );
       expect(
-        scheduler.shouldReportToServer(now.add(const Duration(seconds: 45))),
+        scheduler.shouldReportToServer(now.add(const Duration(seconds: 30))),
         isTrue,
       );
     });
 
-    test('moving reports about every 10s', () {
+    test('moving reports on a fixed 5s cadence, without jitter', () {
       final scheduler = AdaptiveLocationScheduler(random: _ZeroRandom());
       final now = DateTime(2026, 1, 1, 12);
 
@@ -64,11 +64,22 @@ void main() {
       scheduler.markSampled(now);
 
       expect(
-        scheduler.shouldReportToServer(now.add(const Duration(seconds: 5))),
+        scheduler.shouldReportToServer(now.add(const Duration(seconds: 4))),
         isFalse,
       );
       expect(
-        scheduler.shouldReportToServer(now.add(const Duration(seconds: 10))),
+        scheduler.shouldReportToServer(now.add(const Duration(seconds: 5))),
+        isTrue,
+      );
+
+      // Interpolation on the admin map predicts the next position from the last
+      // two. A randomised interval makes that prediction wrong by design, so the
+      // spacing must not depend on the RNG at all.
+      final jittered = AdaptiveLocationScheduler(random: Random(7));
+      jittered.updateFromPosition(_pos(speed: 5), now);
+      jittered.markSampled(now);
+      expect(
+        jittered.shouldReportToServer(now.add(const Duration(seconds: 5))),
         isTrue,
       );
     });
