@@ -8,6 +8,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/offline/offline_repo.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/permissions/duty_permissions_service.dart';
+import '../../core/permissions/duty_session_gate.dart';
+import '../duty/duty_session_gate_provider.dart';
 import '../duty/on_duty_permission_gate.dart';
 import '../duty/widgets/duty_readiness_sheet.dart';
 import '../home/home_models.dart';
@@ -34,14 +36,26 @@ Future<bool?> ensureOnDutyForAction(
     return true;
   }
 
-  if (current?.isOnlineOnDuty == true ||
-      (action == OnDutyAction.addDelivery && current?.isOnDuty == true)) {
+  final sessionGate = ref.read(dutySessionGateProvider);
+
+  if (action == OnDutyAction.addDelivery && current?.isOnDuty == true) {
+    if (!context.mounted) return false;
+    return ensureDutyPermissionsForOnDutySession(context);
+  }
+
+  if (shouldSkipShiftForGoOnDuty(
+    isOnlineOnDuty: current?.isOnlineOnDuty == true,
+    needsFreshClockIn: sessionGate.needsFreshClockIn,
+  )) {
     if (!context.mounted) return false;
     return ensureDutyPermissionsForOnDutySession(context);
   }
 
   var shift = await _loadActiveShift(ref);
-  if (!_hasActiveShift(shift)) {
+  if (shouldPromptShiftOnClockIn(
+    hasActiveShift: _hasActiveShift(shift),
+    needsFreshClockIn: sessionGate.needsFreshClockIn,
+  )) {
     if (!context.mounted) return null;
     shift = await _promptMandatoryShift(context, ref, shiftExpired: shift != null);
     if (!_hasActiveShift(shift) || !context.mounted) return null;
@@ -49,7 +63,10 @@ Future<bool?> ensureOnDutyForAction(
 
   if (!context.mounted) return null;
   final wentIn = await _goInWithReadiness(context, ref);
-  if (wentIn == true) return true;
+  if (wentIn == true) {
+    ref.read(dutySessionGateProvider.notifier).markClockInCompleted();
+    return true;
+  }
   if (wentIn == null) return null;
 
   if (_lastDutyErrorIsShiftRequired(ref)) {
@@ -60,7 +77,10 @@ Future<bool?> ensureOnDutyForAction(
     if (!_hasActiveShift(shift)) return null;
     if (!context.mounted) return null;
     final retry = await _goInWithReadiness(context, ref);
-    if (retry == true) return true;
+    if (retry == true) {
+      ref.read(dutySessionGateProvider.notifier).markClockInCompleted();
+      return true;
+    }
     if (retry == null) return null;
   }
 
@@ -91,6 +111,9 @@ Future<DailyShift?> _promptMandatoryShift(
 
 Future<bool?> _goInWithReadiness(BuildContext context, WidgetRef ref) async {
   if (Platform.isAndroid && context.mounted) {
+    if (ref.read(dutySessionGateProvider).permissionsReady) {
+      return _applyOnDuty(ref, context);
+    }
     return showDutyReadinessSheet(
       context,
       flow: DutyReadinessFlow.startDuty,

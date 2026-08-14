@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/l10n.dart';
+import '../../core/permissions/duty_session_gate.dart';
 import '../../core/telemetry/telemetry_event_types.dart';
 import '../../core/telemetry/telemetry_service.dart';
 import '../../core/theme/app_colors.dart';
@@ -12,6 +13,7 @@ import '../deliveries/add_delivery_flow.dart';
 import '../duty/adaptive_location_scheduler.dart';
 import '../duty/duty_lifecycle_controller.dart';
 import '../duty/duty_location_provider.dart';
+import '../duty/duty_session_gate_provider.dart';
 import '../duty/on_duty_permission_gate.dart';
 import '../shift/on_duty_gate.dart';
 import '../shift/shift_providers.dart';
@@ -84,12 +86,21 @@ class HomeScreen extends ConsumerWidget {
         );
       case HomeDashboardUiState.data:
         final dashboard = dashboardAsync.requireValue;
-        final isOnline = dashboard.isOnline;
+        final sessionGate = ref.watch(dutySessionGateProvider);
         final isOnDuty = dashboard.isOnDuty;
+        final isOnline = dutyToggleShowsIn(
+          isOnline: dashboard.isOnline,
+          isOnDuty: isOnDuty,
+          permissionsReady: sessionGate.permissionsReady,
+          needsFreshClockIn: sessionGate.needsFreshClockIn,
+          auditComplete: sessionGate.auditComplete,
+        );
         final activeShift = ref.watch(todayShiftProvider).value;
         final needsShift =
-            !dashboard.isOnlineOnDuty &&
-            (activeShift == null || activeShift.isExpired);
+            !isOnline &&
+            (sessionGate.needsFreshClockIn ||
+                activeShift == null ||
+                activeShift.isExpired);
         final speedMps = dutyLocation.speedMps ?? dashboard.session.speedMps;
         final distanceTodayMeters = dutyLocation.distanceTodayMeters > 0
             ? dutyLocation.distanceTodayMeters
@@ -101,7 +112,7 @@ class HomeScreen extends ConsumerWidget {
         final outsideFromMonitor =
             zoneState.isOutsideZone && !zoneState.locationDenied;
         final showZoneBanner =
-            isOnDuty &&
+            isOnline &&
             !hasActiveDelivery &&
             !zoneState.suppressedForActiveDelivery &&
             (outsideFromService || outsideFromMonitor);
@@ -124,7 +135,18 @@ class HomeScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          OnDutyPermissionGate(isOnDuty: isOnDuty),
+                          OnDutyPermissionGate(
+                            isOnDuty: isOnDuty,
+                            onCompleteFreshClockIn: () async {
+                              final ok = await ensureOnDutyForAction(
+                                context,
+                                ref,
+                                action: OnDutyAction.goOnDuty,
+                                dashboard: dashboard,
+                              );
+                              return ok == true;
+                            },
+                          ),
                           HomeHeader(
                             isOnline: isOnline,
                             driverName: dashboard.driver.fullName,
@@ -153,7 +175,7 @@ class HomeScreen extends ConsumerWidget {
                                   ZoneTimeoutMode.returnGrace,
                             ),
                           ],
-                          if (isOnDuty) ...[
+                          if (isOnline) ...[
                             const SizedBox(height: 12),
                             TodayTimeInBanner(
                               accumulatedOnlineSeconds:
@@ -196,7 +218,7 @@ class HomeScreen extends ConsumerWidget {
                       delegate: SliverChildListDelegate([
                         BonusActionCard(
                           incentive: dashboard.primaryWeeklyIncentive,
-                          isOnlineOnDuty: dashboard.isOnlineOnDuty,
+                          isOnlineOnDuty: isOnline,
                           hasActiveDelivery: hasActiveDelivery,
                           onStartDuty: () => _handleDutyToggle(
                             context,
@@ -219,7 +241,7 @@ class HomeScreen extends ConsumerWidget {
                           week: dashboard.week,
                           onDeliveriesTap: () => context.go('/deliveries'),
                         ),
-                        if (isOnline && isOnDuty) ...[
+                        if (isOnline) ...[
                           const SizedBox(height: 10),
                           _LiveGpsStatsRow(
                             speedMps: speedMps,
