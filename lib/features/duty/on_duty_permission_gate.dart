@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/l10n/l10n.dart';
+import '../../core/permissions/duty_battery_exemption.dart';
 import '../../core/permissions/duty_permission_prompt.dart';
 import '../../core/permissions/duty_permissions_service.dart';
 import 'duty_session_gate_provider.dart';
@@ -80,6 +81,9 @@ class _OnDutyPermissionGateState extends ConsumerState<OnDutyPermissionGate>
           isOnDuty: widget.isOnDuty,
           permissionsReady: report.canStartDuty,
         );
+    if (report.canStartDuty && report.hasBatteryWarning) {
+      unawaited(batteryExemptionRequester.ensureStockBatteryExemption());
+    }
     if (!shouldPromptDutyPermissions(
       isOnDuty: widget.isOnDuty,
       permissionsReady: report.canStartDuty,
@@ -127,7 +131,12 @@ Future<bool?> ensureDutyPermissionsForOnDutySession(
   if (!context.mounted) return false;
 
   final report = await DutyPermissionsService().audit(context.l10n);
-  if (report.canStartDuty) return true;
+  if (report.canStartDuty) {
+    if (report.hasBatteryWarning) {
+      unawaited(batteryExemptionRequester.ensureStockBatteryExemption());
+    }
+    return true;
+  }
   if (!context.mounted) return false;
 
   return showDutyReadinessSheet(

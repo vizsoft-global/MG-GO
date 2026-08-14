@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/offline/offline_repo.dart';
 import '../../core/l10n/l10n.dart';
+import '../../core/permissions/duty_battery_exemption.dart';
 import '../../core/permissions/duty_permissions_service.dart';
 import '../../core/permissions/duty_session_gate.dart';
 import '../duty/duty_session_gate_provider.dart';
@@ -127,6 +128,9 @@ Future<bool> _applyOnDuty(WidgetRef ref, BuildContext context) async {
   if (Platform.isAndroid) {
     final report = await DutyPermissionsService().audit(context.l10n);
     if (!report.canStartDuty) return false;
+    if (report.hasBatteryWarning) {
+      unawaited(batteryExemptionRequester.ensureStockBatteryExemption());
+    }
   }
   await ref
       .read(homeDashboardProvider.notifier)

@@ -4,11 +4,13 @@ import 'dart:async';
 
 import 'package:battery_plus/battery_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:disable_battery_optimization/disable_battery_optimization.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../../core/geo/location_sampler.dart';
 import '../../core/l10n/localizations_loader.dart';
+import '../../core/permissions/duty_battery_exemption.dart';
 import '../../core/security/security_bypass_store.dart';
 import '../../core/security/security_event_repository.dart';
 import '../../core/security/security_event_types.dart';
@@ -28,6 +30,7 @@ class DutyTaskHandler extends TaskHandler {
   final _battery = Battery();
   static const _mockLogCooldown = Duration(minutes: 2);
   DateTime? _lastMockLoggedAt;
+  DateTime? _lastBatteryWarnAt;
   bool _autoCheckedOut = false;
   AppLocalizations? _l10n;
   String _lastNotificationText = '';
@@ -86,6 +89,7 @@ class DutyTaskHandler extends TaskHandler {
 
     try {
       final l10n = await _localizations();
+      await _maybeWarnBatteryRestriction(now, l10n);
       final token = await readDutyAccessToken();
       if (token == null || token.isEmpty) {
         await _updateNotification(l10n.onDutySignInAgain);
@@ -227,6 +231,37 @@ class DutyTaskHandler extends TaskHandler {
       final l10n = await _localizations();
       await _updateNotification(l10n.onDutyLocationUpdateFailed);
     }
+  }
+
+  Future<void> _maybeWarnBatteryRestriction(
+    DateTime now,
+    AppLocalizations l10n,
+  ) async {
+    if (_lastBatteryWarnAt != null &&
+        now.difference(_lastBatteryWarnAt!) < batteryExemptionRequestCooldown) {
+      return;
+    }
+
+    bool? stockDisabled;
+    try {
+      stockDisabled =
+          await DisableBatteryOptimization.isBatteryOptimizationDisabled;
+    } catch (_) {
+      stockDisabled = null;
+    }
+
+    final snap = interpretBatteryExemption(
+      stockDisabled: stockDisabled,
+      oemDisabled: null,
+      oemCheckAvailable: false,
+    );
+    if (!snap.stockRestricted) return;
+
+    _lastBatteryWarnAt = now;
+    await _updateNotification(l10n.onDutyBatteryRestricted);
+    FlutterForegroundTask.sendDataToMain(
+      jsonEncode({'event': 'battery_optimization_on'}),
+    );
   }
 
   Future<void> _ensureNotificationVisible() async {

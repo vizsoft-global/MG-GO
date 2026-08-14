@@ -9,6 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/offline/offline_repo.dart';
 import '../../core/offline/sync_controller.dart';
+import '../../core/permissions/duty_battery_exemption.dart';
 import '../home/home_providers.dart';
 import 'adaptive_location_scheduler.dart';
 import 'duty_background_service.dart';
@@ -96,6 +97,10 @@ class DutyLifecycleController with WidgetsBindingObserver {
             );
         unawaited(_onDutyStopped());
         unawaited(_ref.read(homeDashboardProvider.notifier).refresh());
+        return;
+      }
+      if (event == 'battery_optimization_on') {
+        unawaited(batteryExemptionRequester.ensureStockBatteryExemption());
         return;
       }
       if (event == 'queue_location') {

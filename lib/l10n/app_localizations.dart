@@ -1271,8 +1271,26 @@ abstract class AppLocalizations {
   /// No description provided for @permissionBatteryOptimizationDesc.
   ///
   /// In en, this message translates to:
-  /// **'Exclude the app from battery restrictions while In.'**
+  /// **'Recommended so tracking stays reliable while In. Skipping this does not block Go In.'**
   String get permissionBatteryOptimizationDesc;
+
+  /// No description provided for @permissionOemBatteryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Autostart / battery saver'**
+  String get permissionOemBatteryTitle;
+
+  /// No description provided for @permissionOemBatteryDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow this app to run in the background on this device. This does not block Go In.'**
+  String get permissionOemBatteryDesc;
+
+  /// No description provided for @openOemBatterySettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open manufacturer settings'**
+  String get openOemBatterySettings;
 
   /// No description provided for @permissionCameraTitle.
   ///
@@ -1339,6 +1357,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'In — location permission needed'**
   String get onDutyLocationPermissionNeeded;
+
+  /// No description provided for @onDutyBatteryRestricted.
+  ///
+  /// In en, this message translates to:
+  /// **'In — battery restriction is on. Allow to keep tracking reliable'**
+  String get onDutyBatteryRestricted;
 
   /// No description provided for @onDutyStationaryGpsPaused.
   ///

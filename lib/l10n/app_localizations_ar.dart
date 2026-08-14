@@ -686,7 +686,17 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get permissionBatteryOptimizationDesc =>
-      'استثنِ التطبيق من قيود البطارية أثناء الداخل.';
+      'موصى به ليبقى التتبع موثوقاً أثناء الداخل. تخطيه لا يمنع تسجيل الدخول.';
+
+  @override
+  String get permissionOemBatteryTitle => 'التشغيل التلقائي / موفر البطارية';
+
+  @override
+  String get permissionOemBatteryDesc =>
+      'اسمح للتطبيق بالعمل في الخلفية على هذا الجهاز. هذا لا يمنع تسجيل الدخول.';
+
+  @override
+  String get openOemBatterySettings => 'فتح إعدادات الشركة المصنعة';
 
   @override
   String get permissionCameraTitle => 'الكاميرا';
@@ -720,6 +730,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get onDutyLocationPermissionNeeded => 'داخل — صلاحية الموقع مطلوبة';
+
+  @override
+  String get onDutyBatteryRestricted =>
+      'داخل — قيود البطارية مفعّلة. اضغط Allow لتتبع أدق';
 
   @override
   String get onDutyStationaryGpsPaused => 'داخل — ثابت (GPS متوقف)';
