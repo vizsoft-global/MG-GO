@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dpd_userapp/core/permissions/duty_battery_exemption.dart';
 import 'package:dpd_userapp/core/permissions/duty_permission_status.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -201,6 +203,14 @@ void main() {
       final report = _report(stockBatteryOk: false);
       expect(report.canStartDuty, isTrue);
       expect(report.hasBatteryWarning, isTrue);
+      expect(
+        report.displayItems.any(
+          (item) =>
+              item.kind == DutyPermissionKind.batteryOptimization ||
+              item.kind == DutyPermissionKind.oemBatteryOptimization,
+        ),
+        isFalse,
+      );
     });
 
     test('OEM restricted or omitted never blocks Go In', () {
@@ -230,6 +240,20 @@ void main() {
   });
 
   group('BatteryExemptionRequester', () {
+    test('snapshot does not hang when stock or OEM never returns', () async {
+      final requester = BatteryExemptionRequester(
+        readStockDisabled: () => Completer<bool?>().future,
+        readOemDisabled: () => Completer<bool?>().future,
+        showStockDialog: () async => true,
+        clock: () => DateTime.utc(2026, 8, 14, 10),
+      );
+
+      final snap = await requester.snapshot().timeout(
+        batteryExemptionReadTimeout + const Duration(seconds: 2),
+      );
+      expect(snap.shouldClockOut, isFalse);
+    });
+
     test('does not fire the dialog again inside the cooldown', () async {
       var dialogs = 0;
       var stockDisabled = false;

@@ -128,13 +128,11 @@ Future<bool> _applyOnDuty(WidgetRef ref, BuildContext context) async {
   if (Platform.isAndroid) {
     final report = await DutyPermissionsService().audit(context.l10n);
     if (!report.canStartDuty) return false;
-    if (report.hasBatteryWarning) {
-      unawaited(batteryExemptionRequester.ensureStockBatteryExemption());
-    }
   }
   await ref
       .read(homeDashboardProvider.notifier)
       .setDutyState(isOnDuty: true, isOnline: true);
+  unawaited(batteryExemptionRequester.ensureStockBatteryExemption());
   return ref.read(homeDashboardProvider).value?.isOnlineOnDuty ?? false;
 }
 

@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// and ignores wake locks. Request the system dialog only on the duty
 /// path when stock exemption is missing. Do not add wake locks.
 const batteryExemptionRequestCooldown = Duration(minutes: 3);
+const batteryExemptionReadTimeout = Duration(seconds: 2);
 
 const _lastRequestPrefsKey = 'duty_battery_exemption_last_request_at';
 
@@ -110,28 +111,25 @@ class BatteryExemptionRequester {
     await write(at);
   }
 
+  Future<T?> _readWithTimeout<T>(Future<T?> Function() read) async {
+    try {
+      return await read().timeout(batteryExemptionReadTimeout);
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<BatteryExemptionSnapshot> snapshot() async {
-    bool? stockDisabled;
-    try {
-      stockDisabled = await _readStockDisabled();
-    } catch (_) {
-      stockDisabled = null;
-    }
-
-    bool oemCheckAvailable = false;
-    bool? oemDisabled;
-    try {
-      oemDisabled = await _readOemDisabled();
-      oemCheckAvailable = oemDisabled != null;
-    } catch (_) {
-      oemCheckAvailable = false;
-      oemDisabled = null;
-    }
-
+    final reads = await Future.wait<bool?>([
+      _readWithTimeout(_readStockDisabled),
+      _readWithTimeout(_readOemDisabled),
+    ]);
+    final stockDisabled = reads[0];
+    final oemDisabled = reads[1];
     return interpretBatteryExemption(
       stockDisabled: stockDisabled,
       oemDisabled: oemDisabled,
-      oemCheckAvailable: oemCheckAvailable,
+      oemCheckAvailable: oemDisabled != null,
     );
   }
 

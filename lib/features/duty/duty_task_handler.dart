@@ -244,8 +244,9 @@ class DutyTaskHandler extends TaskHandler {
 
     bool? stockDisabled;
     try {
-      stockDisabled =
-          await DisableBatteryOptimization.isBatteryOptimizationDisabled;
+      stockDisabled = await DisableBatteryOptimization
+          .isBatteryOptimizationDisabled
+          .timeout(batteryExemptionReadTimeout);
     } catch (_) {
       stockDisabled = null;
     }

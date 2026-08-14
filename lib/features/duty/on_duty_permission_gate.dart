@@ -81,7 +81,7 @@ class _OnDutyPermissionGateState extends ConsumerState<OnDutyPermissionGate>
           isOnDuty: widget.isOnDuty,
           permissionsReady: report.canStartDuty,
         );
-    if (report.canStartDuty && report.hasBatteryWarning) {
+    if (report.canStartDuty) {
       unawaited(batteryExemptionRequester.ensureStockBatteryExemption());
     }
     if (!shouldPromptDutyPermissions(
@@ -132,9 +132,7 @@ Future<bool?> ensureDutyPermissionsForOnDutySession(
 
   final report = await DutyPermissionsService().audit(context.l10n);
   if (report.canStartDuty) {
-    if (report.hasBatteryWarning) {
-      unawaited(batteryExemptionRequester.ensureStockBatteryExemption());
-    }
+    unawaited(batteryExemptionRequester.ensureStockBatteryExemption());
     return true;
   }
   if (!context.mounted) return false;
