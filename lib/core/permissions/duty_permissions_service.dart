@@ -10,7 +10,6 @@ import '../../core/duty_lock/duty_lock_channel.dart';
 import '../../l10n/app_localizations.dart';
 import '../telemetry/telemetry_event_types.dart';
 import '../telemetry/telemetry_service.dart';
-import 'duty_battery_exemption.dart';
 import 'duty_permission_status.dart';
 import 'permission_request_gate.dart';
 
@@ -30,7 +29,6 @@ class DutyPermissionsService {
     final notifications = await Permission.notification.status;
     final camera = await Permission.camera.status;
 
-    final battery = await batteryExemptionRequester.snapshot();
     final overlayOk = await DutyLockChannel.hasOverlayPermission();
 
     final fineState = _mergeLocationState(
@@ -74,23 +72,6 @@ class DutyPermissionsService {
           title: l10n.permissionNotificationsTitle,
           description: l10n.permissionNotificationsDesc,
         ),
-        DutyPermissionItem(
-          kind: DutyPermissionKind.batteryOptimization,
-          state: battery.stockRestricted
-              ? DutyPermissionState.denied
-              : DutyPermissionState.granted,
-          requiredForDuty: false,
-          title: l10n.permissionBatteryOptimizationTitle,
-          description: l10n.permissionBatteryOptimizationDesc,
-        ),
-        if (battery.oemWarning)
-          DutyPermissionItem(
-            kind: DutyPermissionKind.oemBatteryOptimization,
-            state: DutyPermissionState.denied,
-            requiredForDuty: false,
-            title: l10n.permissionOemBatteryTitle,
-            description: l10n.permissionOemBatteryDesc,
-          ),
         DutyPermissionItem(
           kind: DutyPermissionKind.overlay,
           state: overlayOk

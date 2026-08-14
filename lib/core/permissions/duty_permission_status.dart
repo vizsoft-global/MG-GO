@@ -89,7 +89,7 @@ class DutyReadinessReport {
             i.kind == DutyPermissionKind.oemBatteryOptimization,
       );
 
-  /// Required checks with failures first, then warning-only rows.
+  /// Required checks only. Battery / OEM warnings stay off the clock-in sheet.
   List<DutyPermissionItem> get displayItems {
     final sorted = requiredItems.toList(growable: true);
     sorted.sort((a, b) {
@@ -98,6 +98,6 @@ class DutyReadinessReport {
       }
       return 0;
     });
-    return [...sorted, ...warningItems];
+    return sorted;
   }
 }
