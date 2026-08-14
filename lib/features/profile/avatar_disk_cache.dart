@@ -16,6 +16,7 @@ class AvatarDiskCache {
 
   static const _bytesName = 'profile_avatar.bin';
   static const _keyName = 'profile_avatar.key';
+  static const _updatedAtName = 'profile_avatar.updated_at';
 
   Future<Directory> _dir() async {
     final directory = _directory;
@@ -31,15 +32,23 @@ class AvatarDiskCache {
   Future<void> save({
     required String objectKey,
     required Uint8List bytes,
+    DateTime? updatedAt,
   }) async {
     final trimmed = objectKey.trim();
     if (trimmed.isEmpty || bytes.isEmpty) return;
     final dir = await _dir();
     await File('${dir.path}/$_bytesName').writeAsBytes(bytes, flush: true);
     await File('${dir.path}/$_keyName').writeAsString(trimmed, flush: true);
+    final stamp = (updatedAt ?? DateTime.now()).toUtc().millisecondsSinceEpoch;
+    await File(
+      '${dir.path}/$_updatedAtName',
+    ).writeAsString('$stamp', flush: true);
   }
 
-  Future<Uint8List?> loadIfMatches(String objectKey) async {
+  Future<Uint8List?> loadIfMatches(
+    String objectKey, {
+    DateTime? updatedAt,
+  }) async {
     final trimmed = objectKey.trim();
     if (trimmed.isEmpty) return null;
     final dir = await _dir();
@@ -48,6 +57,14 @@ class AvatarDiskCache {
     if (!await keyFile.exists() || !await bytesFile.exists()) return null;
     final stored = (await keyFile.readAsString()).trim();
     if (stored != trimmed) return null;
+    if (updatedAt != null) {
+      final stampFile = File('${dir.path}/$_updatedAtName');
+      if (!await stampFile.exists()) return null;
+      final storedStamp = (await stampFile.readAsString()).trim();
+      if (storedStamp != '${updatedAt.toUtc().millisecondsSinceEpoch}') {
+        return null;
+      }
+    }
     final bytes = await bytesFile.readAsBytes();
     return bytes.isEmpty ? null : Uint8List.fromList(bytes);
   }
@@ -56,8 +73,10 @@ class AvatarDiskCache {
     final dir = await _dir();
     final keyFile = File('${dir.path}/$_keyName');
     final bytesFile = File('${dir.path}/$_bytesName');
+    final stampFile = File('${dir.path}/$_updatedAtName');
     if (await keyFile.exists()) await keyFile.delete();
     if (await bytesFile.exists()) await bytesFile.delete();
+    if (await stampFile.exists()) await stampFile.delete();
   }
 }
 

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -12,6 +13,12 @@ import '../../core/storage/driver_upload_provider.dart';
 import '../auth/rider_auth_service.dart';
 import 'avatar_disk_cache.dart';
 import 'avatar_picker_errors.dart';
+
+void refreshRiderAvatar(WidgetRef ref) {
+  unawaited(ref.refresh(riderProfileProvider.future));
+  ref.invalidate(profileAvatarUrlProvider);
+  ref.invalidate(persistedAvatarBytesProvider);
+}
 
 final avatarUploadControllerProvider =
     AsyncNotifierProvider<AvatarUploadController, AvatarUploadOutcome?>(
@@ -50,10 +57,15 @@ final persistedAvatarBytesProvider = FutureProvider<Uint8List?>((ref) async {
   final key = profile?.avatarObjectKey?.trim();
   if (key == null || key.isEmpty) return null;
   final cache = ref.read(avatarDiskCacheProvider);
-  final hit = await cache.loadIfMatches(key);
+  final hit = await cache.loadIfMatches(
+    key,
+    updatedAt: profile?.avatarUpdatedAt,
+  );
   if (hit != null) return hit;
 
-  final url = await ref.read(riderAuthServiceProvider).resolveAvatarUrl(key);
+  final url = await ref
+      .read(riderAuthServiceProvider)
+      .resolveAvatarUrl(key, cacheBuster: profile?.avatarUpdatedAt);
   if (url == null || url.isEmpty) return null;
   try {
     final response = await http
@@ -63,7 +75,11 @@ final persistedAvatarBytesProvider = FutureProvider<Uint8List?>((ref) async {
       return null;
     }
     final bytes = Uint8List.fromList(response.bodyBytes);
-    await cache.save(objectKey: key, bytes: bytes);
+    await cache.save(
+      objectKey: key,
+      bytes: bytes,
+      updatedAt: profile?.avatarUpdatedAt,
+    );
     return bytes;
   } catch (_) {
     return null;
@@ -129,14 +145,18 @@ class AvatarUploadController extends AsyncNotifier<AvatarUploadOutcome?> {
         params: {'p_object_key': upload.objectKey},
       );
 
-      await ref.read(avatarDiskCacheProvider).save(
+      await ref
+          .read(avatarDiskCacheProvider)
+          .save(
             objectKey: upload.objectKey,
             bytes: bytes,
+            updatedAt: DateTime.now().toUtc(),
           );
       ref.invalidate(persistedAvatarBytesProvider);
 
       final auth = ref.read(riderAuthServiceProvider);
-      final previousUrl = ref.read(profileAvatarDisplayOverrideProvider) ??
+      final previousUrl =
+          ref.read(profileAvatarDisplayOverrideProvider) ??
           ref.read(profileAvatarUrlProvider).value;
 
       // Force a unique read URL so Flutter's image cache cannot serve the

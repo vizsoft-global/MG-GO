@@ -28,13 +28,32 @@ class ProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen>
+    with WidgetsBindingObserver {
   String? _appVersionLabel;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadAppVersion();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      refreshRiderAvatar(ref);
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) {
+      refreshRiderAvatar(ref);
+    }
   }
 
   Future<void> _loadAppVersion() async {
@@ -76,9 +95,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ? messageForDriverUploadException(error, l10n)
               : l10n.somethingWentWrong;
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.profileImageUploadFailed(message)),
-            ),
+            SnackBar(content: Text(l10n.profileImageUploadFailed(message))),
           );
           return;
         }
@@ -90,9 +107,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               SnackBar(content: Text(l10n.profileCameraPermissionDenied)),
             );
           case AvatarUploadOutcome.uploadedAndVisible:
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(l10n.profilePictureUpdated)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(l10n.profilePictureUpdated)));
           case AvatarUploadOutcome.uploadedButPreviewFailed:
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -123,8 +140,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         return SafeArea(
           child: _ProfileError(
             onRetry: () {
-              ref.invalidate(riderProfileProvider);
-              ref.invalidate(profileAvatarUrlProvider);
+              refreshRiderAvatar(ref);
             },
             onSignOut: () => _confirmSignOut(context),
           ),
@@ -134,9 +150,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
 
     if (profile == null) {
-      return const SafeArea(
-        child: Center(child: CircularProgressIndicator()),
-      );
+      return const SafeArea(child: Center(child: CircularProgressIndicator()));
     }
 
     final phone = _phoneFromDriverEmail(profile.email);
@@ -144,8 +158,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return SafeArea(
       child: RefreshIndicator(
         onRefresh: () async {
-          ref.invalidate(riderProfileProvider);
-          ref.invalidate(profileAvatarUrlProvider);
+          refreshRiderAvatar(ref);
           await ref.read(riderProfileProvider.future);
         },
         child: ListView(
@@ -300,9 +313,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 child: Text(
                   _appVersionLabel!,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.mutedLabel,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
+                    color: AppColors.mutedLabel,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
                 ),
               ),
             ],

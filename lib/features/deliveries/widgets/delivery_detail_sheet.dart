@@ -59,7 +59,6 @@ class _DeliveryDetailSheetState extends ConsumerState<DeliveryDetailSheet> {
   }
 
   Future<void> _loadProofUrl(String key) async {
-
     setState(() {
       _loadingProof = true;
       _proofError = null;
@@ -128,9 +127,9 @@ class _DeliveryDetailSheetState extends ConsumerState<DeliveryDetailSheet> {
                     child: Text(
                       l10n.deliveryDetails,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF141414),
-                          ),
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF141414),
+                      ),
                     ),
                   ),
                   IconButton(
@@ -151,11 +150,11 @@ class _DeliveryDetailSheetState extends ConsumerState<DeliveryDetailSheet> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: delivery.hasOrderId
-                                ? AppColors.tomatoOrange
-                                : AppColors.textSecondary,
-                          ),
+                        fontWeight: FontWeight.w600,
+                        color: delivery.hasOrderId
+                            ? AppColors.tomatoOrange
+                            : AppColors.textSecondary,
+                      ),
                     ),
                   ),
                   _DetailRow(
@@ -167,9 +166,11 @@ class _DeliveryDetailSheetState extends ConsumerState<DeliveryDetailSheet> {
                       label: l10n.rejectionReason,
                       value: Text(
                         delivery.rejectionReason!.trim(),
+                        textAlign: TextAlign.end,
+                        softWrap: true,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   _DetailRow(
@@ -182,8 +183,8 @@ class _DeliveryDetailSheetState extends ConsumerState<DeliveryDetailSheet> {
                               l10n,
                             ),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   if (delivery.pickupAt != null)
@@ -192,8 +193,8 @@ class _DeliveryDetailSheetState extends ConsumerState<DeliveryDetailSheet> {
                       value: Text(
                         formatDeliveryDateTime(delivery.pickupAt!, l10n),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   if (delivery.deliveredAt != null)
@@ -202,8 +203,8 @@ class _DeliveryDetailSheetState extends ConsumerState<DeliveryDetailSheet> {
                       value: Text(
                         formatDeliveryDateTime(delivery.deliveredAt!, l10n),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   if (delivery.cancelledAt != null)
@@ -212,8 +213,8 @@ class _DeliveryDetailSheetState extends ConsumerState<DeliveryDetailSheet> {
                       value: Text(
                         formatDeliveryDateTime(delivery.cancelledAt!, l10n),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   if (delivery.cancelReasonLabel(l10n) != null)
@@ -222,8 +223,8 @@ class _DeliveryDetailSheetState extends ConsumerState<DeliveryDetailSheet> {
                       value: Text(
                         delivery.cancelReasonLabel(l10n)!,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   if (delivery.deliveryDuration != null)
@@ -232,8 +233,8 @@ class _DeliveryDetailSheetState extends ConsumerState<DeliveryDetailSheet> {
                       value: Text(
                         _formatDuration(delivery.deliveryDuration!),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   if (delivery.partnerName != null &&
@@ -243,8 +244,8 @@ class _DeliveryDetailSheetState extends ConsumerState<DeliveryDetailSheet> {
                       value: Text(
                         delivery.partnerName!,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                 ],
@@ -252,9 +253,9 @@ class _DeliveryDetailSheetState extends ConsumerState<DeliveryDetailSheet> {
               const SizedBox(height: 16),
               Text(
                 proofLabel,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 10),
               _ProofPreview(
@@ -303,10 +304,7 @@ class _DetailCard extends StatelessWidget {
 }
 
 class _DetailRow extends StatelessWidget {
-  const _DetailRow({
-    required this.label,
-    required this.value,
-  });
+  const _DetailRow({required this.label, required this.value});
 
   final String label;
   final Widget value;
@@ -318,21 +316,27 @@ class _DetailRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
+          ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 96, maxWidth: 132),
             child: Text(
               label,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
             ),
           ),
           const SizedBox(width: 12),
-          DefaultTextStyle(
-            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF141414),
-                ),
-            child: Align(alignment: Alignment.centerRight, child: value),
+          Expanded(
+            child: DefaultTextStyle(
+              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF141414),
+              ),
+              child: Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: value,
+              ),
+            ),
           ),
         ],
       ),
@@ -370,9 +374,9 @@ class _ProofPreview extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               l10n.noProofImageUploaded,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -407,9 +411,9 @@ class _ProofPreview extends StatelessWidget {
               child: Text(
                 error!,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.red.shade700,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: Colors.red.shade700),
               ),
             ),
           ],
@@ -437,9 +441,9 @@ class _ProofPreview extends StatelessWidget {
             fallback: _ProofFrame(
               child: Text(
                 l10n.couldNotDisplayImage,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
               ),
             ),
           ),
