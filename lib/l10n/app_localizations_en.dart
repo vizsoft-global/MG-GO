@@ -689,7 +689,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get permissionBatteryOptimizationDesc =>
-      'Exclude the app from battery restrictions while In.';
+      'Recommended so tracking stays reliable while In. Skipping this does not block Go In.';
+
+  @override
+  String get permissionOemBatteryTitle => 'Autostart / battery saver';
+
+  @override
+  String get permissionOemBatteryDesc =>
+      'Allow this app to run in the background on this device. This does not block Go In.';
+
+  @override
+  String get openOemBatterySettings => 'Open manufacturer settings';
 
   @override
   String get permissionCameraTitle => 'Camera';
@@ -724,6 +734,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get onDutyLocationPermissionNeeded =>
       'In — location permission needed';
+
+  @override
+  String get onDutyBatteryRestricted =>
+      'In — battery restriction is on. Allow to keep tracking reliable';
 
   @override
   String get onDutyStationaryGpsPaused => 'In — stationary (GPS paused)';

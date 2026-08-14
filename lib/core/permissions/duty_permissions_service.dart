@@ -10,6 +10,7 @@ import '../../core/duty_lock/duty_lock_channel.dart';
 import '../../l10n/app_localizations.dart';
 import '../telemetry/telemetry_event_types.dart';
 import '../telemetry/telemetry_service.dart';
+import 'duty_battery_exemption.dart';
 import 'duty_permission_status.dart';
 import 'permission_request_gate.dart';
 
@@ -29,7 +30,7 @@ class DutyPermissionsService {
     final notifications = await Permission.notification.status;
     final camera = await Permission.camera.status;
 
-    final batteryOk = await _isBatteryOptimizationDisabled();
+    final battery = await batteryExemptionRequester.snapshot();
     final overlayOk = await DutyLockChannel.hasOverlayPermission();
 
     final fineState = _mergeLocationState(
@@ -75,13 +76,21 @@ class DutyPermissionsService {
         ),
         DutyPermissionItem(
           kind: DutyPermissionKind.batteryOptimization,
-          state: batteryOk
-              ? DutyPermissionState.granted
-              : DutyPermissionState.denied,
-          requiredForDuty: true,
+          state: battery.stockRestricted
+              ? DutyPermissionState.denied
+              : DutyPermissionState.granted,
+          requiredForDuty: false,
           title: l10n.permissionBatteryOptimizationTitle,
           description: l10n.permissionBatteryOptimizationDesc,
         ),
+        if (battery.oemWarning)
+          DutyPermissionItem(
+            kind: DutyPermissionKind.oemBatteryOptimization,
+            state: DutyPermissionState.denied,
+            requiredForDuty: false,
+            title: l10n.permissionOemBatteryTitle,
+            description: l10n.permissionOemBatteryDesc,
+          ),
         DutyPermissionItem(
           kind: DutyPermissionKind.overlay,
           state: overlayOk
@@ -113,6 +122,13 @@ class DutyPermissionsService {
       case DutyPermissionKind.batteryOptimization:
         await DisableBatteryOptimization
             .showDisableBatteryOptimizationSettings();
+        return;
+      case DutyPermissionKind.oemBatteryOptimization:
+        await DisableBatteryOptimization
+            .showDisableManufacturerBatteryOptimizationSettings(
+          item.title,
+          item.description,
+        );
         return;
       case DutyPermissionKind.overlay:
         await DutyLockChannel.requestOverlayPermission();
@@ -166,6 +182,7 @@ class DutyPermissionsService {
         return Permission.camera;
       case DutyPermissionKind.locationServices:
       case DutyPermissionKind.batteryOptimization:
+      case DutyPermissionKind.oemBatteryOptimization:
       case DutyPermissionKind.overlay:
         return null;
     }
@@ -194,6 +211,13 @@ class DutyPermissionsService {
       case DutyPermissionKind.batteryOptimization:
         final opened =
             await DisableBatteryOptimization.showDisableBatteryOptimizationSettings();
+        return opened ?? false;
+      case DutyPermissionKind.oemBatteryOptimization:
+        final opened = await DisableBatteryOptimization
+            .showDisableManufacturerBatteryOptimizationSettings(
+          'Autostart / battery saver',
+          'Allow this app to run in the background.',
+        );
         return opened ?? false;
       case DutyPermissionKind.overlay:
         await DutyLockChannel.requestOverlayPermission();
@@ -271,6 +295,13 @@ class DutyPermissionsService {
         final opened =
             await DisableBatteryOptimization.showDisableBatteryOptimizationSettings();
         return opened ?? false;
+      case DutyPermissionKind.oemBatteryOptimization:
+        final opened = await DisableBatteryOptimization
+            .showDisableManufacturerBatteryOptimizationSettings(
+          'Autostart / battery saver',
+          'Allow this app to run in the background.',
+        );
+        return opened ?? false;
       case DutyPermissionKind.overlay:
         await DutyLockChannel.requestOverlayPermission();
         return DutyLockChannel.hasOverlayPermission();
@@ -335,16 +366,4 @@ class DutyPermissionsService {
     return DutyPermissionState.denied;
   }
 
-  Future<bool> _isBatteryOptimizationDisabled() async {
-    try {
-      final disabled =
-          await DisableBatteryOptimization.isBatteryOptimizationDisabled;
-      if (disabled == true) return true;
-      final manufacturer =
-          await DisableBatteryOptimization.isManufacturerBatteryOptimizationDisabled;
-      return manufacturer == true;
-    } catch (_) {
-      return false;
-    }
-  }
 }

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../../../core/l10n/l10n.dart';
+import '../../../core/permissions/duty_battery_exemption.dart';
 import '../../../core/permissions/duty_permission_status.dart';
 import '../../../core/permissions/duty_permissions_service.dart';
 import '../../../core/theme/app_colors.dart';
@@ -64,6 +65,7 @@ class _DutyReadinessSheetState extends State<DutyReadinessSheet>
   bool _loading = true;
   bool _continuing = false;
   DutyPermissionKind? _fixingKind;
+  bool _didAutoRequestBattery = false;
 
   @override
   void initState() {
@@ -104,6 +106,20 @@ class _DutyReadinessSheetState extends State<DutyReadinessSheet>
       _report = report;
       _loading = false;
     });
+    if (!_didAutoRequestBattery &&
+        report.items.any(
+          (item) =>
+              item.kind == DutyPermissionKind.batteryOptimization && !item.isOk,
+        )) {
+      _didAutoRequestBattery = true;
+      unawaited(_autoRequestStockBattery());
+    }
+  }
+
+  Future<void> _autoRequestStockBattery() async {
+    await batteryExemptionRequester.ensureStockBatteryExemption();
+    if (!mounted) return;
+    await _load();
   }
 
   Future<void> _fix(DutyPermissionItem item) async {
@@ -229,7 +245,8 @@ class _DutyReadinessSheetState extends State<DutyReadinessSheet>
               padding: EdgeInsets.all(24),
               child: Center(child: CircularProgressIndicator()),
             )
-          else if (report != null && !allRequiredOk)
+          else if (report != null &&
+              (!allRequiredOk || report.warningItems.isNotEmpty))
             ConstrainedBox(
               constraints: BoxConstraints(
                 maxHeight: MediaQuery.sizeOf(context).height * 0.42,

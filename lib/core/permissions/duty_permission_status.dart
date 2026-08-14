@@ -6,6 +6,7 @@ enum DutyPermissionKind {
   backgroundLocation,
   notifications,
   batteryOptimization,
+  oemBatteryOptimization,
   overlay,
   camera,
 }
@@ -33,6 +34,7 @@ class DutyPermissionItem {
       state == DutyPermissionState.restricted ||
       kind == DutyPermissionKind.locationServices ||
       kind == DutyPermissionKind.batteryOptimization ||
+      kind == DutyPermissionKind.oemBatteryOptimization ||
       kind == DutyPermissionKind.overlay;
 
   String fixActionLabel(AppLocalizations l10n) {
@@ -42,6 +44,8 @@ class DutyPermissionItem {
         return l10n.openLocationSettings;
       case DutyPermissionKind.batteryOptimization:
         return l10n.openBatterySettings;
+      case DutyPermissionKind.oemBatteryOptimization:
+        return l10n.openOemBatterySettings;
       case DutyPermissionKind.overlay:
         return l10n.grantOverlayPermission;
       case DutyPermissionKind.backgroundLocation:
@@ -75,7 +79,17 @@ class DutyReadinessReport {
   List<DutyPermissionItem> get actionRequired =>
       requiredItems.where((i) => !i.isOk).toList(growable: false);
 
-  /// Required checks with failures first so the sheet matches the status banner.
+  List<DutyPermissionItem> get warningItems => items
+      .where((i) => !i.requiredForDuty && !i.isOk)
+      .toList(growable: false);
+
+  bool get hasBatteryWarning => warningItems.any(
+        (i) =>
+            i.kind == DutyPermissionKind.batteryOptimization ||
+            i.kind == DutyPermissionKind.oemBatteryOptimization,
+      );
+
+  /// Required checks with failures first, then warning-only rows.
   List<DutyPermissionItem> get displayItems {
     final sorted = requiredItems.toList(growable: true);
     sorted.sort((a, b) {
@@ -84,6 +98,6 @@ class DutyReadinessReport {
       }
       return 0;
     });
-    return sorted;
+    return [...sorted, ...warningItems];
   }
 }
