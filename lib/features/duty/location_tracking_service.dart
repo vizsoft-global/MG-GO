@@ -247,6 +247,29 @@ Future<Map<String, dynamic>> setDutyStateViaHttp({
   return Map<String, dynamic>.from(jsonDecode(response.body) as Map);
 }
 
+Future<Map<String, dynamic>> clearLiveLocationViaHttp({
+  required String accessToken,
+}) async {
+  final uri = Uri.parse(
+    '${Env.supabaseUrl}/rest/v1/rpc/driver_clear_live_location',
+  );
+  final response = await http.post(
+    uri,
+    headers: {
+      'Authorization': 'Bearer $accessToken',
+      'apikey': Env.supabaseAnonKey,
+      'Content-Type': 'application/json',
+    },
+    body: '{}',
+  );
+
+  if (response.statusCode < 200 || response.statusCode >= 300) {
+    throw LocationTrackingException(await decodeRpcError(response.body));
+  }
+
+  return Map<String, dynamic>.from(jsonDecode(response.body) as Map);
+}
+
 Future<String?> readDutyAccessToken() => DutySessionStorage.readAccessToken();
 
 Future<void> persistDutyAccessToken(String token) =>

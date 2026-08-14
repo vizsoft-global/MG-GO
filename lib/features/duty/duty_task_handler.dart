@@ -32,6 +32,7 @@ class DutyTaskHandler extends TaskHandler {
   DateTime? _lastMockLoggedAt;
   DateTime? _lastBatteryWarnAt;
   bool _autoCheckedOut = false;
+  bool _clearedLiveForGpsOff = false;
   AppLocalizations? _l10n;
   String _lastNotificationText = '';
   Position? _lastGoodPosition;
@@ -41,8 +42,8 @@ class DutyTaskHandler extends TaskHandler {
   }
 
   List<NotificationButton> _notificationButtons(AppLocalizations l10n) => [
-        NotificationButton(id: 'go_offline', text: l10n.goOffline),
-      ];
+    NotificationButton(id: 'go_offline', text: l10n.goOffline),
+  ];
 
   @override
   Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
@@ -50,6 +51,7 @@ class DutyTaskHandler extends TaskHandler {
     _lastNotificationText = l10n.onDutyTapToOpen;
     _scheduler.reset();
     _autoCheckedOut = false;
+    _clearedLiveForGpsOff = false;
     _lastGoodPosition = null;
   }
 
@@ -98,6 +100,7 @@ class DutyTaskHandler extends TaskHandler {
 
       if (!await _sampler.isServiceEnabled()) {
         await _updateNotification(l10n.onDutyTurnOnGps);
+        await _maybeClearLiveLocation(token);
         return;
       }
 
@@ -105,8 +108,11 @@ class DutyTaskHandler extends TaskHandler {
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
         await _updateNotification(l10n.onDutyLocationPermissionNeeded);
+        await _maybeClearLiveLocation(token);
         return;
       }
+
+      _clearedLiveForGpsOff = false;
 
       // Always sample GPS locally so we can detect idle → moving transitions.
       // Prefer a fresh accurate last-known fix for low latency; fall back to a
@@ -138,11 +144,7 @@ class DutyTaskHandler extends TaskHandler {
         _lastGoodPosition = reportPosition;
       }
 
-      applyLiveMotion(
-        _scheduler,
-        liveFix: position,
-        now: now,
-      );
+      applyLiveMotion(_scheduler, liveFix: position, now: now);
 
       final extras = await _collectReportExtras(reportPosition);
       if (extras.activeDeliveryId != null) {
@@ -357,6 +359,14 @@ class DutyTaskHandler extends TaskHandler {
         'lng': position.longitude,
       }),
     );
+  }
+
+  Future<void> _maybeClearLiveLocation(String token) async {
+    if (_clearedLiveForGpsOff) return;
+    try {
+      await clearLiveLocationViaHttp(accessToken: token);
+      _clearedLiveForGpsOff = true;
+    } catch (_) {}
   }
 
   Future<LocationReportExtras> _collectReportExtras(Position position) async {
