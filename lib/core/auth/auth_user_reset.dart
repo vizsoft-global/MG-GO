@@ -10,6 +10,7 @@ import '../../features/deliveries/delivery_service.dart';
 import '../../features/duty/duty_background_service.dart';
 import '../../features/duty/duty_lifecycle_controller.dart';
 import '../../features/duty/duty_location_provider.dart';
+import '../../features/duty/duty_session_gate_provider.dart';
 import '../../features/earnings/earnings_providers.dart';
 import '../../features/home/home_providers.dart';
 import '../../features/home/zone_monitor_provider.dart';
@@ -62,6 +63,7 @@ void _resetUserScopedProviders(Ref ref, {String? previousUserId}) {
   ref.invalidate(dutyLocationProvider);
   ref.invalidate(zoneMonitorProvider);
   ref.invalidate(dutyLifecycleControllerProvider);
+  ref.invalidate(dutySessionGateProvider);
 
   if (previousUserId != null && previousUserId.isNotEmpty) {
     unawaited(DutyBackgroundService.stop());
