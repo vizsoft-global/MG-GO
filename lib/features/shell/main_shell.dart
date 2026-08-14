@@ -15,6 +15,7 @@ import '../auth/rider_auth_service.dart';
 import '../deliveries/delivery_proximity_preview.dart';
 import '../deliveries/delivery_proximity_service.dart';
 import '../home/home_providers.dart';
+import '../profile/avatar_upload_controller.dart';
 
 class MainShell extends ConsumerStatefulWidget {
   const MainShell({required this.navigationShell, super.key});
@@ -101,36 +102,39 @@ class _MainShellState extends ConsumerState<MainShell>
         AppLifecycleActions.moveTaskToBack();
       },
       child: Scaffold(
-      // `navigationShell` is itself an IndexedStack of the active branches —
-      // letting it render the body preserves per-tab navigation state and
-      // sub-route history.
-      body: Column(
-        children: [
-          const OfflineBanner(),
-          Expanded(child: widget.navigationShell),
-        ],
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: widget.navigationShell.currentIndex,
-        onDestinationSelected: (i) => widget.navigationShell.goBranch(
-          i,
-          initialLocation: i == widget.navigationShell.currentIndex,
+        // `navigationShell` is itself an IndexedStack of the active branches —
+        // letting it render the body preserves per-tab navigation state and
+        // sub-route history.
+        body: Column(
+          children: [
+            const OfflineBanner(),
+            Expanded(child: widget.navigationShell),
+          ],
         ),
-        backgroundColor: AppColors.white,
-        indicatorColor: AppColors.accentOrange.withValues(alpha: 0.15),
-        destinations: [
-          for (var i = 0; i < tabs.length; i++)
-            NavigationDestination(
-              icon: Icon(tabs[i].icon, color: AppColors.textPrimary),
-              selectedIcon: Icon(
-                tabs[i].activeIcon,
-                color: AppColors.accentOrange,
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: widget.navigationShell.currentIndex,
+          onDestinationSelected: (i) {
+            if (i == 4) refreshRiderAvatar(ref);
+            widget.navigationShell.goBranch(
+              i,
+              initialLocation: i == widget.navigationShell.currentIndex,
+            );
+          },
+          backgroundColor: AppColors.white,
+          indicatorColor: AppColors.accentOrange.withValues(alpha: 0.15),
+          destinations: [
+            for (var i = 0; i < tabs.length; i++)
+              NavigationDestination(
+                icon: Icon(tabs[i].icon, color: AppColors.textPrimary),
+                selectedIcon: Icon(
+                  tabs[i].activeIcon,
+                  color: AppColors.accentOrange,
+                ),
+                label: tabs[i].label,
               ),
-              label: tabs[i].label,
-            ),
-        ],
+          ],
+        ),
       ),
-    ),
     );
   }
 }

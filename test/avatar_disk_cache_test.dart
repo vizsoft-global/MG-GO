@@ -19,28 +19,33 @@ void main() {
     }
   });
 
-  test('loadIfMatches returns bytes after save for the same object key', () async {
-    const key = 'driver-avatars/abc/2026-08-13/photo.jpg';
-    final bytes = Uint8List.fromList([1, 2, 3, 4]);
+  test(
+    'loadIfMatches returns bytes after save for the same object key',
+    () async {
+      const key = 'driver-avatars/abc/2026-08-13/photo.jpg';
+      final bytes = Uint8List.fromList([1, 2, 3, 4]);
 
-    await cache.save(objectKey: key, bytes: bytes);
+      await cache.save(objectKey: key, bytes: bytes);
 
-    expect(await cache.loadIfMatches(key), bytes);
-  });
+      expect(await cache.loadIfMatches(key), bytes);
+    },
+  );
 
-  test('loadIfMatches is null after a simulated app restart with a different key',
-      () async {
-    await cache.save(
-      objectKey: 'driver-avatars/abc/old.jpg',
-      bytes: Uint8List.fromList([9, 9]),
-    );
+  test(
+    'loadIfMatches is null after a simulated app restart with a different key',
+    () async {
+      await cache.save(
+        objectKey: 'driver-avatars/abc/old.jpg',
+        bytes: Uint8List.fromList([9, 9]),
+      );
 
-    final restarted = AvatarDiskCache(directory: dir);
-    expect(
-      await restarted.loadIfMatches('driver-avatars/abc/new.jpg'),
-      isNull,
-    );
-  });
+      final restarted = AvatarDiskCache(directory: dir);
+      expect(
+        await restarted.loadIfMatches('driver-avatars/abc/new.jpg'),
+        isNull,
+      );
+    },
+  );
 
   test('loadIfMatches survives a new cache instance (app relaunch)', () async {
     const key = 'driver-avatars/abc/2026-08-13/photo.jpg';
@@ -50,6 +55,26 @@ void main() {
     final restarted = AvatarDiskCache(directory: dir);
     expect(await restarted.loadIfMatches(key), bytes);
   });
+
+  test(
+    'loadIfMatches misses when the same key was overwritten later',
+    () async {
+      const key = 'drivers/abc/avatar.jpg';
+      final first = DateTime.utc(2026, 8, 13, 10);
+      final second = DateTime.utc(2026, 8, 14, 10);
+      await cache.save(
+        objectKey: key,
+        bytes: Uint8List.fromList([1, 1, 1]),
+        updatedAt: first,
+      );
+
+      expect(
+        await cache.loadIfMatches(key, updatedAt: first),
+        Uint8List.fromList([1, 1, 1]),
+      );
+      expect(await cache.loadIfMatches(key, updatedAt: second), isNull);
+    },
+  );
 
   test('clear removes the retained photo', () async {
     const key = 'driver-avatars/abc/photo.jpg';
