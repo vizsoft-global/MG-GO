@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:battery_plus/battery_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:disable_battery_optimization/disable_battery_optimization.dart';
+import 'package:flutter_device_compass/flutter_device_compass.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -17,6 +18,7 @@ import '../../core/security/security_event_repository.dart';
 import '../../core/security/security_event_types.dart';
 import '../../l10n/app_localizations.dart';
 import 'adaptive_location_scheduler.dart';
+import 'heading_fuser.dart';
 import 'live_map_heartbeat.dart';
 import 'live_position_publisher.dart';
 import 'location_tracking_service.dart';
@@ -31,7 +33,14 @@ class DutyTaskHandler extends TaskHandler {
   final _sampler = LocationSampler.instance;
   final _battery = Battery();
   final _publisher = LivePositionPublisher();
+  final _heading = HeadingFuser();
   static const _mockLogCooldown = Duration(minutes: 2);
+
+  /// Time-based GPS cadence while on duty. `distanceFilter: 0` on purpose — the
+  /// filter and a fixed interval are mutually exclusive, and the interval is what
+  /// the admin interpolator needs. A stationary rider is dealt with by the
+  /// scheduler's 30s idle interval, not by starving the stream.
+  static const _streamInterval = LiveCadence.movingInterval;
 
   /// How long a successful edge publish is trusted to cover the durable write.
   /// Two Durable Object flush intervals (10s each) plus slack: past this the
@@ -51,6 +60,7 @@ class DutyTaskHandler extends TaskHandler {
   String _lastNotificationText = '';
   Position? _lastGoodPosition;
   StreamSubscription<Position>? _positionSub;
+  StreamSubscription<CompassEvent>? _compassSub;
   LocationReportExtras? _cachedExtras;
   DateTime? _cachedExtrasAt;
   int? _cachedBatteryPct;
@@ -80,8 +90,10 @@ class DutyTaskHandler extends TaskHandler {
     _cachedBatteryPct = null;
     _cachedBatteryAt = null;
     _streamStateChangePending = false;
+    _heading.reset();
     _dutyStateVersion = await readDutyStateVersion();
     _startPositionStream();
+    _startCompassStream();
   }
 
   /// The repeat event is a **watchdog**, not the sampling clock.
@@ -99,22 +111,46 @@ class DutyTaskHandler extends TaskHandler {
   Future<void> onDestroy(DateTime timestamp, bool isTimeout) async {
     await _positionSub?.cancel();
     _positionSub = null;
+    await _compassSub?.cancel();
+    _compassSub = null;
     _publisher.dispose();
     _scheduler.reset();
+    _heading.reset();
   }
 
   void _startPositionStream() {
     if (!Env.isLiveIngestEnabled) return;
     _positionSub?.cancel();
-    // distanceFilter 10m: a parked phone stops emitting, which is exactly the
-    // battery behaviour we want; the 30s idle heartbeat comes off the watchdog.
     _positionSub = _sampler
-        .positionStream(distanceFilter: 10)
+        .positionStream(distanceFilter: 0, intervalDuration: _streamInterval)
         .listen(
           (position) => unawaited(_onStreamPosition(position)),
           onError: (_) {},
           cancelOnError: false,
         );
+  }
+
+  /// Feeds the compass into the fuser at sensor rate.
+  ///
+  /// A failure here is not worth surfacing: the fuser simply has no compass, and
+  /// heading falls back to the GPS course exactly as it behaved before fusion.
+  /// The stream is nullable because a device without a magnetometer has none.
+  void _startCompassStream() {
+    if (!Env.isLiveIngestEnabled) return;
+    _compassSub?.cancel();
+    try {
+      _compassSub = FlutterCompass.events?.listen(
+        (event) => _heading.onCompass(
+          event.heading,
+          accuracyDeg: event.accuracy,
+          now: DateTime.now(),
+        ),
+        onError: (_) {},
+        cancelOnError: false,
+      );
+    } catch (_) {
+      _compassSub = null;
+    }
   }
 
   /// Continuous-stream path: classify motion, then publish to the edge on the
@@ -150,6 +186,8 @@ class DutyTaskHandler extends TaskHandler {
         speedMps: position.speed >= 0 ? position.speed : null,
         accuracyMeters: position.accuracy,
         headingDeg: extras.headingDeg,
+        headingSource: extras.headingSource,
+        compassDeg: extras.compassDeg,
         altitudeM: extras.altitudeM,
         batteryPct: await _batteryPct(now),
         networkType: extras.networkType,
@@ -452,8 +490,11 @@ class DutyTaskHandler extends TaskHandler {
       await bumpDutyStateVersion();
       await _positionSub?.cancel();
       _positionSub = null;
+      await _compassSub?.cancel();
+      _compassSub = null;
       _publisher.reset();
       _scheduler.reset();
+      _heading.reset();
       _autoCheckedOut = true;
       FlutterForegroundTask.sendDataToMain(
         jsonEncode({'event': 'manual_offline_from_notification'}),
@@ -523,21 +564,23 @@ class DutyTaskHandler extends TaskHandler {
     } catch (_) {}
   }
 
-  /// [_collectReportExtras] with a short cache, so the 5s stream does not
+  /// [_collectReportExtras] with a short cache, so the 1Hz stream does not
   /// re-read connectivity and charging state on every fix. Heading and altitude
   /// come from the position itself and are always current.
   Future<LocationReportExtras> _reportExtras(
     Position position,
     DateTime now,
   ) async {
+    final fused = _fuseHeading(position, now);
     final cached = _cachedExtras;
     final cachedAt = _cachedExtrasAt;
     if (cached != null &&
         cachedAt != null &&
         now.difference(cachedAt) < _extrasMaxAge) {
-      final heading = position.heading;
       return LocationReportExtras(
-        headingDeg: heading >= 0 ? heading : null,
+        headingDeg: fused.degrees,
+        headingSource: fused.source.apiValue,
+        compassDeg: _heading.compassDeg,
         altitudeM: position.altitude,
         networkType: cached.networkType,
         chargingState: cached.chargingState,
@@ -546,10 +589,25 @@ class DutyTaskHandler extends TaskHandler {
         activeDeliveryId: await readActiveDeliveryId(),
       );
     }
-    final fresh = await _collectReportExtras(position);
+    final fresh = await _collectReportExtras(position, fused);
     _cachedExtras = fresh;
     _cachedExtrasAt = now;
     return fresh;
+  }
+
+  /// Resolves the bearing for this fix: GPS course while moving, compass at a
+  /// standstill.
+  ///
+  /// The course is aged from `position.timestamp` rather than [now], so the
+  /// heartbeat path — which may be re-reporting a last-known fix from minutes ago
+  /// — cannot present that fix's stale course as a current bearing.
+  FusedHeading _fuseHeading(Position position, DateTime now) {
+    _heading.onPosition(
+      courseDeg: position.heading,
+      speedMps: position.speed,
+      now: position.timestamp,
+    );
+    return _heading.heading(now);
   }
 
   Future<int?> _batteryPct(DateTime now) async {
@@ -566,7 +624,10 @@ class DutyTaskHandler extends TaskHandler {
     return _cachedBatteryPct;
   }
 
-  Future<LocationReportExtras> _collectReportExtras(Position position) async {
+  Future<LocationReportExtras> _collectReportExtras(
+    Position position,
+    FusedHeading fused,
+  ) async {
     String? networkType;
     try {
       final results = await Connectivity().checkConnectivity();
@@ -598,11 +659,12 @@ class DutyTaskHandler extends TaskHandler {
       chargingState = 'unknown';
     }
 
-    final heading = position.heading;
     final activeDeliveryId = await readActiveDeliveryId();
 
     return LocationReportExtras(
-      headingDeg: heading >= 0 ? heading : null,
+      headingDeg: fused.degrees,
+      headingSource: fused.source.apiValue,
+      compassDeg: _heading.compassDeg,
       altitudeM: position.altitude,
       networkType: networkType,
       chargingState: chargingState,

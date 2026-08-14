@@ -21,6 +21,8 @@ class LiveFix {
     this.speedMps,
     this.accuracyMeters,
     this.headingDeg,
+    this.headingSource,
+    this.compassDeg,
     this.altitudeM,
     this.batteryPct,
     this.networkType,
@@ -39,6 +41,12 @@ class LiveFix {
   final double? speedMps;
   final double? accuracyMeters;
   final double? headingDeg;
+
+  /// `none` / `gps` / `compass` — see `HEADING_SOURCES` in the admin's
+  /// `fleet-wire.ts`. Null on builds that predate fusion, which the Worker reads
+  /// as `gps` when a bearing is present.
+  final String? headingSource;
+  final double? compassDeg;
   final double? altitudeM;
   final int? batteryPct;
   final String? networkType;
@@ -59,6 +67,8 @@ class LiveFix {
     'speed_mps': speedMps,
     'accuracy_m': accuracyMeters,
     'heading_deg': headingDeg,
+    'heading_source': headingSource,
+    'compass_deg': compassDeg,
     'altitude_m': altitudeM,
     'battery_pct': batteryPct,
     'network_type': networkType,
@@ -80,6 +90,8 @@ class LiveFix {
     speedMps: speedMps,
     accuracyMeters: accuracyMeters,
     headingDeg: headingDeg,
+    headingSource: headingSource,
+    compassDeg: compassDeg,
     altitudeM: altitudeM,
     batteryPct: batteryPct,
     networkType: networkType,
@@ -101,20 +113,43 @@ class LiveFix {
 class LiveCadence {
   const LiveCadence();
 
-  /// Fixed 5s while moving. Interpolation needs predictable spacing.
-  static const movingInterval = Duration(seconds: 5);
+  /// Fixed 1s while moving. Interpolation needs predictable spacing, and at 1Hz
+  /// the admin renderer can hold a buffer *behind* the newest fix and still draw
+  /// between two known points — which is the difference between gliding and
+  /// dead-reckoning.
+  static const movingInterval = Duration(seconds: 1);
 
-  /// A stationary driver still has to look alive on the map.
+  /// A stationary driver still has to look alive on the map — but no faster than
+  /// this. A parked phone at 1Hz is 500 identical points a second across the
+  /// fleet, carrying no information and costing a Durable Object turn each.
   static const idleInterval = Duration(seconds: 30);
 
-  /// Three fixes is 15s of movement — long enough to amortise a POST, short
-  /// enough that a batch never introduces visible lag.
-  static const batchSize = 3;
+  /// Two fixes at 1Hz is 2s of movement. Halves the request count without
+  /// putting visible lag on the map; the Durable Object timestamps each point
+  /// from its own `client_ts`, so a batch is not a coarser trail.
+  static const batchSize = 2;
 
+  /// Upper bound on how long a fix may sit in the buffer. At 1Hz [batchSize]
+  /// normally fires first; this covers the case where the stream slows and a
+  /// single fix would otherwise wait for a partner that never arrives.
+  static const maxBufferHold = Duration(seconds: 2);
+
+  /// Spacing between the fixes themselves — what the admin interpolator measures.
   Duration intervalFor(TrackingStatus status) => switch (status) {
     TrackingStatus.moving => movingInterval,
     TrackingStatus.idle => idleInterval,
     // Submitting a delivery is a state change, not a heartbeat.
+    TrackingStatus.deliverySubmit => Duration.zero,
+  };
+
+  /// How long a *buffer* may wait before leaving the device, which is a
+  /// different question from [intervalFor]: while moving, a fix waits up to
+  /// [maxBufferHold] for a batch partner, so publishing at the 1s fix interval
+  /// would send singletons and give up the batching entirely. An idle driver has
+  /// no partner coming, so its heartbeat interval is its deadline.
+  Duration flushDeadlineFor(TrackingStatus status) => switch (status) {
+    TrackingStatus.moving => maxBufferHold,
+    TrackingStatus.idle => idleInterval,
     TrackingStatus.deliverySubmit => Duration.zero,
   };
 
@@ -130,7 +165,7 @@ class LiveCadence {
     if (status == TrackingStatus.deliverySubmit) return true;
     if (buffered >= batchSize) return true;
     if (lastPublishAt == null) return true;
-    return now.difference(lastPublishAt) >= intervalFor(status);
+    return now.difference(lastPublishAt) >= flushDeadlineFor(status);
   }
 }
 
@@ -159,6 +194,12 @@ class LivePositionPublisher {
   /// so one bad chunk cannot lose a whole day of queued history.
   static const replayChunkSize = 50;
 
+  /// ~20s of movement at 1Hz. Sized against the trail rather than the pin: a
+  /// dropped fix used to cost only a stale pin for a second, but the edge now
+  /// draws ten minutes of history from these points, so a two-second network
+  /// hiccup should not leave a visible gap in the line.
+  static const maxBufferedFixes = 20;
+
   bool get enabled => Env.isLiveIngestEnabled;
   int get buffered => _buffer.length;
   DateTime? get lastSuccessAt => _lastSuccessAt;
@@ -166,9 +207,9 @@ class LivePositionPublisher {
   void add(LiveFix fix) {
     if (!enabled) return;
     _buffer.add(fix);
-    // A stall must not grow without bound. Keep the newest, which is the only
-    // one that can still be the live pin.
-    while (_buffer.length > LiveCadence.batchSize * 4) {
+    // A stall must not grow without bound. The newest fixes win: they are the
+    // live pin and the freshest trail.
+    while (_buffer.length > maxBufferedFixes) {
       _buffer.removeAt(0);
     }
   }

@@ -8,6 +8,7 @@ LiveFix _fix({
   TrackingStatus status = TrackingStatus.moving,
   bool replay = false,
   DateTime? clientTs,
+  String? headingSource = 'gps',
 }) {
   return LiveFix(
     latitude: 29.3759,
@@ -17,6 +18,8 @@ LiveFix _fix({
     speedMps: 8.2,
     accuracyMeters: 6,
     headingDeg: 91,
+    headingSource: headingSource,
+    compassDeg: 88,
     batteryPct: 74,
     isMocked: false,
     replay: replay,
@@ -28,15 +31,19 @@ void main() {
     const cadence = LiveCadence();
     final now = DateTime.utc(2026, 1, 1, 12);
 
-    test('moving spacing is a fixed 5s', () {
+    test('moving spacing is a fixed 1s', () {
       expect(cadence.intervalFor(TrackingStatus.moving), LiveCadence.movingInterval);
-      expect(LiveCadence.movingInterval, const Duration(seconds: 5));
+      expect(LiveCadence.movingInterval, const Duration(seconds: 1));
+    });
 
+    test('a single moving fix waits up to 2s for a batch partner', () {
+      // The gate is the buffer deadline, not the fix interval: publishing at 1s
+      // would send one fix per request and give up batching entirely.
       expect(
         cadence.shouldPublish(
           buffered: 1,
           status: TrackingStatus.moving,
-          now: now.add(const Duration(seconds: 4)),
+          now: now.add(const Duration(milliseconds: 1500)),
           lastPublishAt: now,
         ),
         isFalse,
@@ -45,11 +52,32 @@ void main() {
         cadence.shouldPublish(
           buffered: 1,
           status: TrackingStatus.moving,
-          now: now.add(const Duration(seconds: 5)),
+          now: now.add(LiveCadence.maxBufferHold),
           lastPublishAt: now,
         ),
         isTrue,
       );
+    });
+
+    test('two fixes at 1Hz publish as one batch', () {
+      expect(LiveCadence.batchSize, 2);
+      expect(
+        cadence.shouldPublish(
+          buffered: 2,
+          status: TrackingStatus.moving,
+          now: now.add(const Duration(seconds: 1)),
+          lastPublishAt: now,
+        ),
+        isTrue,
+        reason: '~2s of movement per request rather than one request per second',
+      );
+    });
+
+    test('idle stays at 30s even though moving went to 1Hz', () {
+      // A parked phone at 1Hz is the same coordinate 30 times over, and each one
+      // costs a Durable Object turn.
+      expect(LiveCadence.idleInterval, const Duration(seconds: 30));
+      expect(cadence.flushDeadlineFor(TrackingStatus.idle), LiveCadence.idleInterval);
     });
 
     test('a stationary driver still heartbeats every 30s', () {
@@ -136,6 +164,9 @@ void main() {
       ]));
       expect(json['tracking_status'], 'moving');
       expect(json['replay'], isFalse);
+      // Additive since fusion. The Worker reads a missing `heading_source` as
+      // `gps`, so older builds keep rotating their marker.
+      expect(json.keys, containsAll(<String>['heading_source', 'compass_deg']));
       // Must round-trip through JSON: an unencodable value would fail only at
       // runtime, on a background isolate, where nobody sees it.
       expect(jsonDecode(jsonEncode(json))['lat'], 29.3759);
@@ -155,6 +186,12 @@ void main() {
       expect(replayed.clientTs, original.clientTs);
       expect(replayed.trackingStatus, original.trackingStatus);
       expect(replayed.toWireJson()['replay'], isTrue);
+    });
+
+    test('asReplay carries the heading source, which asReplay could silently drop', () {
+      final replayed = _fix(headingSource: 'compass').asReplay();
+      expect(replayed.headingSource, 'compass');
+      expect(replayed.toWireJson()['heading_source'], 'compass');
     });
   });
 
