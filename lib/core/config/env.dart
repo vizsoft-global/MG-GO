@@ -26,6 +26,24 @@ class Env {
     defaultValue: 'https://dpdadmin-prod.vercel.app',
   );
 
+  /// Cloudflare `dpd-live` edge origin for the 5s live position rail
+  /// (Live Tracking V2). Empty disables the edge path entirely and the app
+  /// behaves exactly as it did before it existed: `driver_report_location` on
+  /// the adaptive cadence and nothing else.
+  static const liveIngestUrl = String.fromEnvironment(
+    'LIVE_INGEST_URL',
+    defaultValue: '',
+  );
+
+  static bool get isLiveIngestEnabled => liveIngestUrl.trim().isNotEmpty;
+
+  /// `POST` target for batched GPS fixes. Trailing slashes are tolerated so a
+  /// mistyped env value cannot produce `//ingest`.
+  static String get liveIngestEndpoint {
+    final base = liveIngestUrl.trim().replaceAll(RegExp(r'/+$'), '');
+    return '$base/ingest';
+  }
+
   static String get passcodeLoginUrl =>
       '$supabaseUrl/functions/v1/driver-passcode-login';
 

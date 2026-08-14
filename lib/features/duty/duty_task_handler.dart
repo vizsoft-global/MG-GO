@@ -8,6 +8,7 @@ import 'package:disable_battery_optimization/disable_battery_optimization.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:geolocator/geolocator.dart';
 
+import '../../core/config/env.dart';
 import '../../core/geo/location_sampler.dart';
 import '../../core/l10n/localizations_loader.dart';
 import '../../core/permissions/duty_battery_exemption.dart';
@@ -17,6 +18,7 @@ import '../../core/security/security_event_types.dart';
 import '../../l10n/app_localizations.dart';
 import 'adaptive_location_scheduler.dart';
 import 'live_map_heartbeat.dart';
+import 'live_position_publisher.dart';
 import 'location_tracking_service.dart';
 
 @pragma('vm:entry-point')
@@ -28,7 +30,19 @@ class DutyTaskHandler extends TaskHandler {
   final _scheduler = AdaptiveLocationScheduler();
   final _sampler = LocationSampler.instance;
   final _battery = Battery();
+  final _publisher = LivePositionPublisher();
   static const _mockLogCooldown = Duration(minutes: 2);
+
+  /// How long a successful edge publish is trusted to cover the durable write.
+  /// Two Durable Object flush intervals (10s each) plus slack: past this the
+  /// safety net takes over so `driver_locations` is never left stale.
+  static const _edgeDurableGrace = Duration(seconds: 25);
+
+  /// Extras (connectivity, charging state) are stable over seconds; re-reading
+  /// them at 5s would burn battery to learn nothing.
+  static const _extrasMaxAge = Duration(seconds: 30);
+  static const _batteryMaxAge = Duration(seconds: 60);
+
   DateTime? _lastMockLoggedAt;
   DateTime? _lastBatteryWarnAt;
   bool _autoCheckedOut = false;
@@ -36,6 +50,13 @@ class DutyTaskHandler extends TaskHandler {
   AppLocalizations? _l10n;
   String _lastNotificationText = '';
   Position? _lastGoodPosition;
+  StreamSubscription<Position>? _positionSub;
+  LocationReportExtras? _cachedExtras;
+  DateTime? _cachedExtrasAt;
+  int? _cachedBatteryPct;
+  DateTime? _cachedBatteryAt;
+  int? _dutyStateVersion;
+  bool _streamStateChangePending = false;
 
   Future<AppLocalizations> _localizations() async {
     return _l10n ??= await loadSavedLocalizations();
@@ -50,11 +71,25 @@ class DutyTaskHandler extends TaskHandler {
     final l10n = await _localizations();
     _lastNotificationText = l10n.onDutyTapToOpen;
     _scheduler.reset();
+    _publisher.reset();
     _autoCheckedOut = false;
     _clearedLiveForGpsOff = false;
     _lastGoodPosition = null;
+    _cachedExtras = null;
+    _cachedExtrasAt = null;
+    _cachedBatteryPct = null;
+    _cachedBatteryAt = null;
+    _streamStateChangePending = false;
+    _dutyStateVersion = await readDutyStateVersion();
+    _startPositionStream();
   }
 
+  /// The repeat event is a **watchdog**, not the sampling clock.
+  ///
+  /// Fixes arrive continuously from [_startPositionStream]; this tick exists to
+  /// notice what a stream cannot report — GPS switched off, permission revoked,
+  /// battery restriction, a dead edge rail — and to keep `driver_locations`
+  /// fresh when the edge is unreachable.
   @override
   void onRepeatEvent(DateTime timestamp) {
     unawaited(_tick(timestamp));
@@ -62,7 +97,97 @@ class DutyTaskHandler extends TaskHandler {
 
   @override
   Future<void> onDestroy(DateTime timestamp, bool isTimeout) async {
+    await _positionSub?.cancel();
+    _positionSub = null;
+    _publisher.dispose();
     _scheduler.reset();
+  }
+
+  void _startPositionStream() {
+    if (!Env.isLiveIngestEnabled) return;
+    _positionSub?.cancel();
+    // distanceFilter 10m: a parked phone stops emitting, which is exactly the
+    // battery behaviour we want; the 30s idle heartbeat comes off the watchdog.
+    _positionSub = _sampler
+        .positionStream(distanceFilter: 10)
+        .listen(
+          (position) => unawaited(_onStreamPosition(position)),
+          onError: (_) {},
+          cancelOnError: false,
+        );
+  }
+
+  /// Continuous-stream path: classify motion, then publish to the edge on the
+  /// 5s cadence. Deliberately does *not* call `driver_report_location` — that
+  /// stays on the watchdog so a GPS storm cannot turn into a write storm.
+  Future<void> _onStreamPosition(Position position) async {
+    if (_autoCheckedOut || !_publisher.enabled) return;
+
+    // A mocked fix is dropped silently here; the watchdog owns the security
+    // event and the driver-facing notification, with its own cooldown.
+    if (position.isMocked && !await SecurityBypassStore.readEnabled()) return;
+
+    final now = DateTime.now();
+    final previousStatus = _scheduler.status;
+    applyLiveMotion(_scheduler, liveFix: position, now: now);
+    final stateChanged =
+        _scheduler.movementJustStarted || _scheduler.status != previousStatus;
+    if (stateChanged) _streamStateChangePending = true;
+
+    if (position.accuracy <= coarseGpsAccuracyMeters) {
+      _lastGoodPosition = position;
+    }
+
+    final extras = await _reportExtras(position, now);
+    if (extras.activeDeliveryId != null) _scheduler.holdDeliveryStatus();
+
+    _publisher.add(
+      LiveFix(
+        latitude: position.latitude,
+        longitude: position.longitude,
+        trackingStatus: _scheduler.status,
+        clientTs: position.timestamp,
+        speedMps: position.speed >= 0 ? position.speed : null,
+        accuracyMeters: position.accuracy,
+        headingDeg: extras.headingDeg,
+        altitudeM: extras.altitudeM,
+        batteryPct: await _batteryPct(now),
+        networkType: extras.networkType,
+        chargingState: extras.chargingState,
+        isMocked: extras.isMocked,
+        locationProvider: extras.locationProvider,
+        activeDeliveryId: extras.activeDeliveryId,
+      ),
+    );
+
+    if (!_publisher.shouldPublish(
+      status: _scheduler.status,
+      now: now,
+      stateChanged: stateChanged,
+    )) {
+      return;
+    }
+
+    final token = await readDutyAccessToken();
+    if (token == null || token.isEmpty) return;
+    final ok = await _publisher.flush(
+      accessToken: token,
+      now: now,
+      dutyStateVersion: _dutyStateVersion,
+    );
+    if (!ok) {
+      // Edge unreachable — hand this fix to the durable path immediately rather
+      // than waiting for the next watchdog tick to notice.
+      await _tick(now, force: true);
+    }
+  }
+
+  /// True while a recent edge publish still guarantees the durable write.
+  bool _edgeCoveringDurableWrite(DateTime now) {
+    if (!_publisher.enabled) return false;
+    final lastSuccess = _publisher.lastSuccessAt;
+    if (lastSuccess == null) return false;
+    return now.difference(lastSuccess) <= _edgeDurableGrace;
   }
 
   @override
@@ -146,7 +271,7 @@ class DutyTaskHandler extends TaskHandler {
 
       applyLiveMotion(_scheduler, liveFix: position, now: now);
 
-      final extras = await _collectReportExtras(reportPosition);
+      final extras = await _reportExtras(reportPosition, now);
       if (extras.activeDeliveryId != null) {
         _scheduler.holdDeliveryStatus();
       }
@@ -156,10 +281,33 @@ class DutyTaskHandler extends TaskHandler {
         return;
       }
 
-      int? batteryPct;
-      try {
-        batteryPct = await _battery.batteryLevel;
-      } catch (_) {}
+      // The edge rail owns the durable write in the happy path (the Durable
+      // Object flushes to `driver_locations` every 10s). Writing again from here
+      // would double every position. State changes and the first sample still
+      // go direct, because those must not wait on a flush.
+      final mustReportDirectly =
+          force ||
+          _scheduler.needsInitialReport ||
+          _scheduler.movementJustStarted ||
+          _streamStateChangePending ||
+          _scheduler.status == TrackingStatus.deliverySubmit;
+      if (!mustReportDirectly && _edgeCoveringDurableWrite(now)) {
+        await _updateNotification(
+          l10n.onDutyStatusLabel(
+            switch (_scheduler.status) {
+              TrackingStatus.moving => l10n.moving,
+              TrackingStatus.deliverySubmit => l10n.deliveryLogged,
+              TrackingStatus.idle => l10n.idle,
+            },
+            '',
+            l10n.onDuty,
+          ),
+        );
+        return;
+      }
+      _streamStateChangePending = false;
+
+      final batteryPct = await _batteryPct(now);
 
       final speed = position.speed >= 0 ? position.speed : null;
       LocationReportResult report;
@@ -299,6 +447,12 @@ class DutyTaskHandler extends TaskHandler {
         );
       }
       await clearDutyAccessToken();
+      // Invalidate this session for the edge hub before the service dies: a
+      // handler that outlives the clock-out must not keep publishing pins.
+      await bumpDutyStateVersion();
+      await _positionSub?.cancel();
+      _positionSub = null;
+      _publisher.reset();
       _scheduler.reset();
       _autoCheckedOut = true;
       FlutterForegroundTask.sendDataToMain(
@@ -367,6 +521,49 @@ class DutyTaskHandler extends TaskHandler {
       await clearLiveLocationViaHttp(accessToken: token);
       _clearedLiveForGpsOff = true;
     } catch (_) {}
+  }
+
+  /// [_collectReportExtras] with a short cache, so the 5s stream does not
+  /// re-read connectivity and charging state on every fix. Heading and altitude
+  /// come from the position itself and are always current.
+  Future<LocationReportExtras> _reportExtras(
+    Position position,
+    DateTime now,
+  ) async {
+    final cached = _cachedExtras;
+    final cachedAt = _cachedExtrasAt;
+    if (cached != null &&
+        cachedAt != null &&
+        now.difference(cachedAt) < _extrasMaxAge) {
+      final heading = position.heading;
+      return LocationReportExtras(
+        headingDeg: heading >= 0 ? heading : null,
+        altitudeM: position.altitude,
+        networkType: cached.networkType,
+        chargingState: cached.chargingState,
+        isMocked: position.isMocked,
+        locationProvider: cached.locationProvider,
+        activeDeliveryId: await readActiveDeliveryId(),
+      );
+    }
+    final fresh = await _collectReportExtras(position);
+    _cachedExtras = fresh;
+    _cachedExtrasAt = now;
+    return fresh;
+  }
+
+  Future<int?> _batteryPct(DateTime now) async {
+    final cachedAt = _cachedBatteryAt;
+    if (cachedAt != null && now.difference(cachedAt) < _batteryMaxAge) {
+      return _cachedBatteryPct;
+    }
+    try {
+      _cachedBatteryPct = await _battery.batteryLevel;
+    } catch (_) {
+      // Keep the previous reading; a missing battery level is not worth a gap.
+    }
+    _cachedBatteryAt = now;
+    return _cachedBatteryPct;
   }
 
   Future<LocationReportExtras> _collectReportExtras(Position position) async {

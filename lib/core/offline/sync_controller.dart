@@ -4,7 +4,10 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../config/env.dart';
 import '../../features/duty/adaptive_location_scheduler.dart';
+import '../../features/duty/duty_session_storage.dart';
+import '../../features/duty/live_position_publisher.dart';
 import '../../features/duty/location_tracking_service.dart';
 import '../../features/deliveries/delivery_models.dart';
 import '../../features/deliveries/delivery_service.dart';
@@ -257,7 +260,18 @@ class SyncController extends Notifier<SyncState> {
     var synced = 0;
     final token = Supabase.instance.client.auth.currentSession?.accessToken;
     if (token == null) return synced;
+
+    // Queued points are history, not "where the driver is now". Sent through the
+    // edge with replay: true they are written to history and cannot move the
+    // live pin — which is what made a reconnect burst walk a driver backwards
+    // across the map. Without the edge configured, the old direct path stands.
+    final replayed = await _replayLocationRowsViaEdge(rows, token);
+    if (replayed.isNotEmpty) {
+      synced += replayed.length;
+    }
+
     for (final row in rows) {
+      if (replayed.contains(row['id'])) continue;
       final id = row['id'];
       try {
         await reportLocationViaHttp(
@@ -302,6 +316,86 @@ class SyncController extends Notifier<SyncState> {
       }
     }
     return synced;
+  }
+
+  /// Publishes queued points to the edge as replay history in one pass.
+  ///
+  /// All-or-nothing per batch: a partial success would leave rows whose
+  /// ordering relative to the durable fallback is unknowable, so a failure just
+  /// returns empty and every row falls through to `driver_report_location`.
+  Future<Set<Object>> _replayLocationRowsViaEdge(
+    List<Map<String, Object?>> rows,
+    String token,
+  ) async {
+    if (!Env.isLiveIngestEnabled || rows.isEmpty) return const <Object>{};
+
+    final publisher = LivePositionPublisher();
+    try {
+      final fixes = <LiveFix>[];
+      final ids = <Object>[];
+      for (final row in rows) {
+        final lat = (row['lat'] as num?)?.toDouble();
+        final lng = (row['lng'] as num?)?.toDouble();
+        final id = row['id'];
+        if (lat == null || lng == null || id == null) continue;
+        fixes.add(
+          LiveFix(
+            latitude: lat,
+            longitude: lng,
+            trackingStatus: _statusFromApiValue(
+              row['tracking_status'] as String? ?? 'idle',
+            ),
+            clientTs: _queuedAt(row),
+            speedMps: (row['speed_mps'] as num?)?.toDouble(),
+            accuracyMeters: (row['accuracy_m'] as num?)?.toDouble(),
+            headingDeg: (row['heading_deg'] as num?)?.toDouble(),
+            altitudeM: (row['altitude_m'] as num?)?.toDouble(),
+            batteryPct: row['battery_pct'] as int?,
+            networkType: row['network_type'] as String?,
+            chargingState: row['charging_state'] as String?,
+            isMocked: row['is_mocked'] == null
+                ? null
+                : (row['is_mocked'] as int) == 1,
+            locationProvider: row['location_provider'] as String?,
+            activeDeliveryId: row['active_delivery_id'] as String?,
+            deliveryId: row['delivery_id'] as String?,
+            replay: true,
+          ),
+        );
+        ids.add(id);
+      }
+      if (fixes.isEmpty) return const <Object>{};
+
+      final ok = await publisher.publishReplay(
+        accessToken: token,
+        fixes: fixes,
+        dutyStateVersion: await DutySessionStorage.readDutyStateVersion(),
+      );
+      if (!ok) return const <Object>{};
+
+      for (final id in ids) {
+        await OfflineDb.instance.deletePendingById(
+          table: 'pending_location_reports',
+          id: id,
+        );
+      }
+      return ids.toSet();
+    } catch (_) {
+      return const <Object>{};
+    } finally {
+      publisher.dispose();
+    }
+  }
+
+  /// Original capture time of a queued point (`captured_at`, epoch millis).
+  /// Without it the edge would stamp "now" and a day of replayed history would
+  /// collapse onto the reconnect moment.
+  DateTime _queuedAt(Map<String, Object?> row) {
+    final capturedAt = row['captured_at'];
+    if (capturedAt is int) {
+      return DateTime.fromMillisecondsSinceEpoch(capturedAt);
+    }
+    return DateTime.now();
   }
 
   Future<int> _syncPickupRows(List<Map<String, Object?>> rows) async {

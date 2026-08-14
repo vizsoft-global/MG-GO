@@ -29,16 +29,20 @@ String displaySpeedKmhLabel(double? speedMps) {
   return (mps * 3.6).toStringAsFixed(1);
 }
 
-/// Adaptive GPS sampling + server push cadence for fleet live tracking.
+/// GPS sampling + server push cadence for fleet live tracking.
 ///
-/// Targets ops responsiveness (admin live map) without saturating the DB:
-/// - moving: push about every 10–15s
-/// - idle: heartbeat every 45–60s (keeps pin fresh; no dead-zone on the map)
+/// - moving: **fixed 5s**. The admin interpolator predicts where a driver will
+///   be between fixes, and prediction needs predictable spacing — the old
+///   10–15s jittered window is what made pins teleport.
+/// - idle: heartbeat every 30s (keeps pin fresh; no dead-zone on the map)
 /// - delivery submit / first on-duty sample / idle→moving: immediate
 class AdaptiveLocationScheduler {
   AdaptiveLocationScheduler({math.Random? random})
     : _random = random ?? math.Random();
 
+  // Retained so callers constructing with a seeded Random keep compiling; the
+  // cadence itself is deliberately no longer randomised.
+  // ignore: unused_field
   final math.Random _random;
 
   static const movingSpeedThresholdMps = 1.5;
@@ -62,8 +66,6 @@ class AdaptiveLocationScheduler {
   /// First on-duty sample should reach the server for zone + dashboard state.
   bool get needsInitialReport => _needsInitialReport;
 
-  Duration tickInterval = const Duration(seconds: 15);
-
   /// Whether we should call `driver_report_location` on this tick.
   ///
   /// Moving drivers report on the short adaptive interval. Idle drivers still
@@ -82,11 +84,14 @@ class AdaptiveLocationScheduler {
     return now.difference(_lastSampleAt!) >= _intervalForStatus(_status);
   }
 
+  static const movingReportInterval = Duration(seconds: 5);
+  static const idleReportInterval = Duration(seconds: 30);
+
   Duration _intervalForStatus(TrackingStatus status) {
     return switch (status) {
       // Heartbeat so admin live map never looks "stuck" when stationary.
-      TrackingStatus.idle => Duration(seconds: 45 + _random.nextInt(16)),
-      TrackingStatus.moving => Duration(seconds: 10 + _random.nextInt(6)),
+      TrackingStatus.idle => idleReportInterval,
+      TrackingStatus.moving => movingReportInterval,
       TrackingStatus.deliverySubmit => Duration.zero,
     };
   }

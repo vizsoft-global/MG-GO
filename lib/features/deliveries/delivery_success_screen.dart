@@ -8,7 +8,11 @@ import 'add_delivery_flow.dart';
 
 /// Shown after pickup, delivery, or cancel is logged successfully.
 class DeliverySuccessScreen extends ConsumerWidget {
-  const DeliverySuccessScreen({super.key, this.queued = false, this.stage});
+  const DeliverySuccessScreen({
+    super.key,
+    this.queued = false,
+    this.stage,
+  });
 
   final bool queued;
   final String? stage;
@@ -53,109 +57,109 @@ class DeliverySuccessScreen extends ConsumerWidget {
           ),
         ),
         body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              children: [
-                const Spacer(flex: 2),
-                const _SuccessBadge(),
-                const SizedBox(height: 28),
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            children: [
+              const Spacer(flex: 2),
+              const _SuccessBadge(),
+              const SizedBox(height: 28),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.4,
+                ),
+              ),
+              const Spacer(flex: 3),
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: FilledButton(
+                  onPressed: () {
+                    if (isPickup && !queued) {
+                      context.go('/deliveries/active');
+                      return;
+                    }
+                    openDeliveryAction(context, ref, replace: true);
+                  },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.accentOrange,
+                    foregroundColor: AppColors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: Text(
+                    primaryLabel,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  subtitle,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.textSecondary,
-                    height: 1.4,
-                  ),
-                ),
-                const Spacer(flex: 3),
-                SizedBox(
+              ),
+              if (queued) ...[
+                const SizedBox(height: 10),
+                Container(
                   width: double.infinity,
-                  height: 52,
-                  child: FilledButton(
-                    onPressed: () {
-                      if (isPickup && !queued) {
-                        context.go('/deliveries/active');
-                        return;
-                      }
-                      openDeliveryAction(context, ref, replace: true);
-                    },
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.accentOrange,
-                      foregroundColor: AppColors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    child: Text(
-                      primaryLabel,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                      ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardBlue,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    l10n.offlineModePendingSync,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.primaryBlue,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-                if (queued) ...[
-                  const SizedBox(height: 10),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.cardBlue,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      l10n.offlineModePendingSync,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.primaryBlue,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: TextButton(
-                    onPressed: () => context.go('/deliveries'),
-                    style: TextButton.styleFrom(
-                      backgroundColor: AppColors.accentOrange.withValues(
-                        alpha: 0.12,
-                      ),
-                      foregroundColor: AppColors.accentOrange,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    child: Text(
-                      l10n.backToDeliveries,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
               ],
-            ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: TextButton(
+                  onPressed: () => context.go('/deliveries'),
+                  style: TextButton.styleFrom(
+                    backgroundColor: AppColors.accentOrange.withValues(
+                      alpha: 0.12,
+                    ),
+                    foregroundColor: AppColors.accentOrange,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: Text(
+                    l10n.backToDeliveries,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
           ),
         ),
+      ),
       ),
     );
   }
