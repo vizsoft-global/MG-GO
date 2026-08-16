@@ -4,10 +4,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/permissions/duty_session_gate.dart';
+import '../duty/duty_session_gate_provider.dart';
+import '../home/home_providers.dart';
 import '../shift/on_duty_gate.dart';
 import 'active_delivery_provider.dart';
 import 'delivery_models.dart';
 import 'delivery_proximity_preview.dart';
+
+bool _isFullyClockedIn(WidgetRef ref) {
+  final current = ref.read(homeDashboardProvider).value;
+  if (current == null) return false;
+  final sessionGate = ref.read(dutySessionGateProvider);
+  return dutyToggleShowsIn(
+    isOnline: current.isOnline,
+    isOnDuty: current.isOnDuty,
+    permissionsReady: sessionGate.permissionsReady,
+    needsFreshClockIn: sessionGate.needsFreshClockIn,
+    auditComplete: sessionGate.auditComplete,
+  );
+}
+
+String _finishPath({
+  required String deliveryId,
+  required FinishOutcome outcome,
+  required bool provisionalClockIn,
+}) {
+  final provisional = provisionalClockIn ? '&provisionalClockIn=1' : '';
+  return '/deliveries/finish/$deliveryId?outcome=${outcome.name}$provisional';
+}
 
 /// Opens pickup or finish flow depending on whether a delivery is in progress.
 Future<void> openDeliveryAction(
@@ -16,12 +41,14 @@ Future<void> openDeliveryAction(
   FinishOutcome? outcome,
   bool replace = false,
 }) async {
+  final wasFullyClockedIn = _isFullyClockedIn(ref);
   final ok = await ensureOnDutyForAction(
     context,
     ref,
     action: OnDutyAction.addDelivery,
   );
   if (ok != true || !context.mounted) return;
+  final provisionalClockIn = !wasFullyClockedIn;
 
   unawaited(ref.read(deliveryProximityPreviewProvider.notifier).warmUp());
 
@@ -34,8 +61,11 @@ Future<void> openDeliveryAction(
   if (!context.mounted) return;
 
   if (active != null) {
-    final path =
-        '/deliveries/finish/${active.id}?outcome=${(outcome ?? FinishOutcome.delivered).name}';
+    final path = _finishPath(
+      deliveryId: active.id,
+      outcome: outcome ?? FinishOutcome.delivered,
+      provisionalClockIn: provisionalClockIn,
+    );
     if (replace) {
       context.go(path);
     } else {
@@ -71,6 +101,7 @@ Future<void> openFinishDelivery(
   required FinishOutcome outcome,
   bool replace = false,
 }) async {
+  final wasFullyClockedIn = _isFullyClockedIn(ref);
   final ok = await ensureOnDutyForAction(
     context,
     ref,
@@ -78,7 +109,11 @@ Future<void> openFinishDelivery(
   );
   if (ok != true || !context.mounted) return;
 
-  final path = '/deliveries/finish/$deliveryId?outcome=${outcome.name}';
+  final path = _finishPath(
+    deliveryId: deliveryId,
+    outcome: outcome,
+    provisionalClockIn: !wasFullyClockedIn,
+  );
   if (replace) {
     context.go(path);
   } else {

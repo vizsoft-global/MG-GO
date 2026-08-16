@@ -282,6 +282,10 @@ Future<Map<String, dynamic>> clearLiveLocationViaHttp({
   return Map<String, dynamic>.from(jsonDecode(response.body) as Map);
 }
 
+/// Re-reads the duty session from disk. Only the foreground service needs this; the UI
+/// isolate is the writer and its cache is never behind. See [DutySessionStorage].
+Future<void> reloadDutySession() => DutySessionStorage.reload();
+
 Future<String?> readDutyAccessToken() => DutySessionStorage.readAccessToken();
 
 Future<void> persistDutyAccessToken(String token) =>

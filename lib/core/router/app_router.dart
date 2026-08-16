@@ -178,7 +178,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final outcome = outcomeRaw == FinishOutcome.cancelled.name
               ? FinishOutcome.cancelled
               : FinishOutcome.delivered;
-          return FinishDeliveryScreen(deliveryId: id, outcome: outcome);
+          return FinishDeliveryScreen(
+            deliveryId: id,
+            outcome: outcome,
+            provisionalClockIn:
+                state.uri.queryParameters['provisionalClockIn'] == '1',
+          );
         },
       ),
       GoRoute(

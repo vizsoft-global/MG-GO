@@ -38,14 +38,24 @@ Future<bool?> ensureOnDutyForAction(
   }
 
   final sessionGate = ref.read(dutySessionGateProvider);
+  // Match the Home toggle: leftover server is_on_duty must not skip Clock In
+  // when the UI still shows Out (fresh install / incomplete permissions).
+  final fullyClockedIn = current != null &&
+      dutyToggleShowsIn(
+        isOnline: current.isOnline,
+        isOnDuty: current.isOnDuty,
+        permissionsReady: sessionGate.permissionsReady,
+        needsFreshClockIn: sessionGate.needsFreshClockIn,
+        auditComplete: sessionGate.auditComplete,
+      );
 
-  if (action == OnDutyAction.addDelivery && current?.isOnDuty == true) {
+  if (action == OnDutyAction.addDelivery && fullyClockedIn) {
     if (!context.mounted) return false;
     return ensureDutyPermissionsForOnDutySession(context);
   }
 
   if (shouldSkipShiftForGoOnDuty(
-    isOnlineOnDuty: current?.isOnlineOnDuty == true,
+    isOnlineOnDuty: fullyClockedIn,
     needsFreshClockIn: sessionGate.needsFreshClockIn,
   )) {
     if (!context.mounted) return false;
@@ -63,7 +73,12 @@ Future<bool?> ensureOnDutyForAction(
   }
 
   if (!context.mounted) return null;
-  final wentIn = await _goInWithReadiness(context, ref);
+  final wentIn = await _goInWithReadiness(
+    context,
+    ref,
+    // Delivery / Mark as Delivered must show Clock In — never silent re-clock.
+    requirePrompt: action == OnDutyAction.addDelivery,
+  );
   if (wentIn == true) {
     ref.read(dutySessionGateProvider.notifier).markClockInCompleted();
     return true;
@@ -77,7 +92,11 @@ Future<bool?> ensureOnDutyForAction(
     shift = await _promptMandatoryShift(context, ref, shiftExpired: true);
     if (!_hasActiveShift(shift)) return null;
     if (!context.mounted) return null;
-    final retry = await _goInWithReadiness(context, ref);
+    final retry = await _goInWithReadiness(
+      context,
+      ref,
+      requirePrompt: action == OnDutyAction.addDelivery,
+    );
     if (retry == true) {
       ref.read(dutySessionGateProvider.notifier).markClockInCompleted();
       return true;
@@ -110,9 +129,14 @@ Future<DailyShift?> _promptMandatoryShift(
   return ref.read(todayShiftProvider).value;
 }
 
-Future<bool?> _goInWithReadiness(BuildContext context, WidgetRef ref) async {
+Future<bool?> _goInWithReadiness(
+  BuildContext context,
+  WidgetRef ref, {
+  bool requirePrompt = false,
+}) async {
   if (Platform.isAndroid && context.mounted) {
-    if (ref.read(dutySessionGateProvider).permissionsReady) {
+    if (!requirePrompt &&
+        ref.read(dutySessionGateProvider).permissionsReady) {
       return _applyOnDuty(ref, context);
     }
     return showDutyReadinessSheet(
@@ -121,6 +145,29 @@ Future<bool?> _goInWithReadiness(BuildContext context, WidgetRef ref) async {
       onContinue: () => _applyOnDuty(ref, context),
     );
   }
+
+  if (requirePrompt && context.mounted) {
+    final l10n = context.l10n;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.startDuty),
+        content: Text(l10n.mustBeOnDutyToAddDelivery),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.startDuty),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return null;
+  }
+
   return _applyOnDuty(ref, context);
 }
 

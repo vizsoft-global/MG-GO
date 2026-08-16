@@ -55,9 +55,14 @@ class _MainShellState extends ConsumerState<MainShell>
   Future<void> _enforceLoginVerificationGate() async {
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId == null || !mounted) return;
-    final needs = await LoginVerificationStore.needsCapture(userId);
+    // Sync exempt flags first — checking needsCapture before refresh can send
+    // the driver to Verify Identity with a stale/cleared skip-login-photo cache
+    // right after network reconnect.
     await ref.read(loginVerificationRefreshListenableProvider).refresh();
     if (!mounted) return;
+    final needs =
+        ref.read(loginVerificationRefreshListenableProvider).needsCapture ??
+            await LoginVerificationStore.needsCapture(userId);
     if (needs) {
       context.go('/login-verification');
     }

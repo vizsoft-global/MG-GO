@@ -29,6 +29,16 @@ enum ZoneTimeoutMode {
   returnGrace,
 }
 
+/// Remaining seconds in an outside-zone episode (0 when the window is exhausted).
+int remainingOutsideSeconds({
+  required DateTime outsideSince,
+  required DateTime now,
+  required int windowSeconds,
+}) {
+  final elapsed = now.difference(outsideSince).inSeconds;
+  return (windowSeconds - elapsed).clamp(0, windowSeconds);
+}
+
 class ZoneMonitorState {
   const ZoneMonitorState({
     this.isOutsideZone = false,
@@ -89,7 +99,12 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
       final wasOnDuty = previous?.asData?.value.isOnDuty ?? false;
       final isOnDuty = curr.isOnDuty;
       if (!isOnDuty && wasOnDuty) {
-        _stopMonitoring(reset: true);
+        // Pause only — keep _outsideSince so clock-in outside continues the
+        // same episode instead of granting a fresh 45-minute window.
+        _pauseForClockOut();
+      } else if (isOnDuty && !wasOnDuty) {
+        _checkoutTriggered = false;
+        _reevaluateOutsideFromDuty();
       }
     });
 
@@ -124,15 +139,22 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
     _countdownTimer = null;
   }
 
-  void _stopMonitoring({required bool reset}) {
+  /// Stops the visible countdown without erasing the outside episode.
+  void _pauseForClockOut() {
+    _cancelTimer();
+    _checkoutTriggered = false;
+    state = state.copyWith(
+      isOutsideZone: false,
+      isChecking: false,
+    );
+  }
+
+  void _clearOutsideEpisode() {
     _cancelTimer();
     _outsideSince = null;
     _activeMode = ZoneTimeoutMode.none;
     _hadActiveDeliveryWhileOutside = false;
     _checkoutTriggered = false;
-    if (reset) {
-      state = const ZoneMonitorState();
-    }
   }
 
   void _reevaluateOutsideFromDuty() {
@@ -174,6 +196,7 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
   void _restartOutsideEpisode() {
     if (_outsideSince == null) return;
     _cancelTimer();
+    // Delivery just ended while still outside — switch to return-grace from now.
     _outsideSince = DateTime.now();
     _activeMode = _hadActiveDeliveryWhileOutside
         ? ZoneTimeoutMode.returnGrace
@@ -200,11 +223,8 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
     }
 
     if (!outside) {
-      _cancelTimer();
-      _outsideSince = null;
-      _activeMode = ZoneTimeoutMode.none;
-      _hadActiveDeliveryWhileOutside = false;
-      _checkoutTriggered = false;
+      // Only a real return to the zone clears the episode clock.
+      _clearOutsideEpisode();
       state = state.copyWith(
         isOutsideZone: false,
         remainingSeconds: zoneIdleTimeoutSeconds,
@@ -228,8 +248,11 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
   void _tickCountdown() {
     if (_outsideSince == null) return;
     final window = _windowSecondsForMode(_activeMode);
-    final elapsed = DateTime.now().difference(_outsideSince!).inSeconds;
-    final remaining = (window - elapsed).clamp(0, window);
+    final remaining = remainingOutsideSeconds(
+      outsideSince: _outsideSince!,
+      now: DateTime.now(),
+      windowSeconds: window,
+    );
     state = state.copyWith(
       isOutsideZone: true,
       remainingSeconds: remaining,
@@ -294,7 +317,9 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
           isOnline: false,
         );
     await ref.read(homeDashboardProvider.notifier).refresh();
-    _stopMonitoring(reset: true);
+    // Pause — do not clear _outsideSince. Clocking back in while still
+    // outside must resume (or immediately re-checkout) the same episode.
+    _pauseForClockOut();
 
     try {
       final l10n = await loadSavedLocalizations();
