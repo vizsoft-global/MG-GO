@@ -1,8 +1,11 @@
 import 'dart:convert';
 
+import 'package:dpd_userapp/core/config/env.dart';
 import 'package:dpd_userapp/features/duty/adaptive_location_scheduler.dart';
 import 'package:dpd_userapp/features/duty/live_position_publisher.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 
 LiveFix _fix({
   TrackingStatus status = TrackingStatus.moving,
@@ -195,11 +198,24 @@ void main() {
     });
   });
 
-  group('LivePositionPublisher with no LIVE_INGEST_URL', () {
+  group('Env.liveIngestUrl', () {
+    test('defaults to the production edge when the build never mentions it', () {
+      // The old default was `''`, so a release built without
+      // `--dart-define-from-file=env/prod.json` shipped with the live rail off and
+      // nothing to show it: every other backend URL has a prod default, so the app
+      // worked, and the admin map quietly ran on minute-old database reads.
+      expect(Env.liveIngestUrl, Env.prodLiveIngestUrl);
+      expect(Env.isLiveIngestEnabled, isTrue);
+      expect(Env.liveIngestEndpoint, '${Env.prodLiveIngestUrl}/ingest');
+    });
+  });
+
+  group('LivePositionPublisher with the rail switched off', () {
     test('is inert, so the app behaves exactly as it did before the edge', () async {
-      // Env.liveIngestUrl defaults to empty under `flutter test`; this is the
-      // shipped-disabled path and it must never buffer, publish or throw.
-      final publisher = LivePositionPublisher();
+      // The kill switch is now an explicitly empty `LIVE_INGEST_URL`. Injected here
+      // rather than inferred from the build, so this path stays covered on a build
+      // where the rail is on.
+      final publisher = LivePositionPublisher(enabled: false);
       addTearDown(publisher.dispose);
 
       expect(publisher.enabled, isFalse);
@@ -223,6 +239,65 @@ void main() {
         await publisher.publishReplay(accessToken: 'token', fixes: [_fix()]),
         isFalse,
       );
+      expect(publisher.lastSuccessAt, isNull);
+    });
+  });
+
+  group('LivePositionPublisher with the rail on', () {
+    test('posts the batch to /ingest as the driver, not anonymously', () async {
+      // The room resolves the driver from this header alone and answers 401 when it
+      // cannot (`resolveDriverId` in fleet-room.ts). A production build did exactly
+      // that once and then never published again, so the shape of the request is
+      // asserted rather than assumed.
+      http.Request? sent;
+      final publisher = LivePositionPublisher(
+        enabled: true,
+        endpoint: 'https://edge.test/ingest',
+        client: MockClient((request) async {
+          sent = request;
+          return http.Response('{"ok":true,"accepted":2}', 200);
+        }),
+      );
+      addTearDown(publisher.dispose);
+
+      publisher.add(_fix());
+      publisher.add(_fix());
+      final ok = await publisher.flush(
+        accessToken: 'driver-jwt',
+        now: DateTime.utc(2026, 1, 1, 12),
+        dutyStateVersion: 7,
+      );
+
+      expect(ok, isTrue);
+      expect(sent, isNotNull);
+      expect(sent!.url.toString(), 'https://edge.test/ingest');
+      expect(sent!.headers['Authorization'], 'Bearer driver-jwt');
+      final body = jsonDecode(sent!.body) as Map<String, dynamic>;
+      expect((body['points'] as List).length, 2);
+      // Without this the room cannot tell this session from a foreground service that
+      // outlived a clock-out, which is what `409 stale_duty_state` exists to refuse.
+      expect(body['duty_state_version'], 7);
+      expect(publisher.buffered, 0);
+    });
+
+    test('a rejected batch is dropped so the durable path owns the fix', () async {
+      final publisher = LivePositionPublisher(
+        enabled: true,
+        endpoint: 'https://edge.test/ingest',
+        client: MockClient(
+          (_) async => http.Response('{"ok":false,"error":"unauthorized"}', 401),
+        ),
+      );
+      addTearDown(publisher.dispose);
+
+      publisher.add(_fix());
+      final ok = await publisher.flush(
+        accessToken: 'expired-jwt',
+        now: DateTime.utc(2026, 1, 1, 12),
+      );
+
+      expect(ok, isFalse, reason: 'caller falls back to driver_report_location');
+      expect(publisher.buffered, 0, reason: 'stale coordinates must not be re-sent');
       expect(publisher.lastSuccessAt, isNull);
     });
   });

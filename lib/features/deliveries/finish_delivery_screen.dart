@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -31,11 +33,16 @@ class FinishDeliveryScreen extends ConsumerStatefulWidget {
   const FinishDeliveryScreen({
     required this.deliveryId,
     required this.outcome,
+    this.provisionalClockIn = false,
     super.key,
   });
 
   final String deliveryId;
   final FinishOutcome outcome;
+
+  /// True when the driver was Clocked Out and we clocked them In only to open
+  /// this screen. Leaving without completing must restore Clocked Out.
+  final bool provisionalClockIn;
 
   @override
   ConsumerState<FinishDeliveryScreen> createState() =>
@@ -54,6 +61,7 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
   bool _submitting = false;
   bool _uploadingProof = false;
   String? _error;
+  bool _completedOk = false;
 
   @override
   void initState() {
@@ -65,6 +73,17 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
   void dispose() {
     _cancelNoteController.dispose();
     super.dispose();
+  }
+
+  Future<void> _leaveWithoutCompleting() async {
+    if (_submitting) return;
+    if (widget.provisionalClockIn && !_completedOk) {
+      await ref.read(homeDashboardProvider.notifier).setDutyState(
+            isOnDuty: false,
+            isOnline: false,
+          );
+    }
+    if (mounted) context.pop();
   }
 
   bool get _requiresCancelReason => _outcome == FinishOutcome.cancelled;
@@ -242,6 +261,7 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
           'result': queued ? 'queued' : 'ok',
         },
       );
+      _completedOk = true;
       // Navigate to success before invalidating active delivery. Invalidating
       // first lets ActiveDeliveryScreen (still under the stack) race to /home.
       context.go(
@@ -295,12 +315,18 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
     final l10n = context.l10n;
     final isDelivered = _outcome == FinishOutcome.delivered;
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        unawaited(_leaveWithoutCompleting());
+      },
+      child: Scaffold(
       backgroundColor: AppColors.pageBackground,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: _submitting ? null : () => context.pop(),
+          onPressed: _submitting ? null : () => unawaited(_leaveWithoutCompleting()),
         ),
         title: Text(isDelivered ? l10n.markAsDelivered : l10n.cancelOrder),
       ),
@@ -429,6 +455,7 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 }

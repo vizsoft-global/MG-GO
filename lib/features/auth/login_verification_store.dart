@@ -42,6 +42,12 @@ class LoginVerificationStore {
     await prefs.setBool(_globalExemptKey, exempt);
   }
 
+  /// Last known fleet-wide skip flag, or `null` if never synced.
+  static Future<bool?> readGlobalExemptCached() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_globalExemptKey);
+  }
+
   static Future<void> setPerDriverExemptCached({
     required String userId,
     required bool exempt,

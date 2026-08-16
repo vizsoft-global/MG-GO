@@ -91,6 +91,10 @@ class DutyTaskHandler extends TaskHandler {
     _cachedBatteryAt = null;
     _streamStateChangePending = false;
     _heading.reset();
+    // This isolate may be a reused one whose preferences cache predates the clock-out
+    // and clock-in that just happened. Read through disk before trusting either the
+    // token or the duty version. See DutySessionStorage.
+    await reloadDutySession();
     _dutyStateVersion = await readDutyStateVersion();
     _startPositionStream();
     _startCompassStream();
@@ -255,6 +259,15 @@ class DutyTaskHandler extends TaskHandler {
     try {
       final l10n = await _localizations();
       await _maybeWarnBatteryRestriction(now, l10n);
+      // Once per watchdog tick, not per fix: this is a platform-channel round trip, and
+      // the values behind it (token, duty version, active delivery) change at human
+      // speed. Without it a service that outlived a clock-out keeps posting with the
+      // token that clock-out cleared and the driver reads Offline while moving.
+      // `_dutyStateVersion` is deliberately *not* re-read here. It is captured once in
+      // onStart, because its whole job is to let the edge refuse a service that outlived
+      // a clock-out — and that service would otherwise pick up the version the clock-out
+      // bumped and carry on as if it were the new session.
+      await reloadDutySession();
       final token = await readDutyAccessToken();
       if (token == null || token.isEmpty) {
         await _updateNotification(l10n.onDutySignInAgain);
@@ -303,7 +316,7 @@ class DutyTaskHandler extends TaskHandler {
         await _updateNotification(l10n.onDutyStationaryGpsPaused);
         return;
       }
-      if (reportPosition.accuracy <= 100) {
+      if (reportPosition.accuracy <= coarseGpsAccuracyMeters) {
         _lastGoodPosition = reportPosition;
       }
 

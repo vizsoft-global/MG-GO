@@ -105,6 +105,27 @@ void main() {
         isTrue,
       );
     });
+
+    test('does not skip when Home toggle would show Out', () {
+      // fullyClockedIn uses dutyToggleShowsIn — Out must not skip Clock In.
+      expect(
+        dutyToggleShowsIn(
+          isOnline: true,
+          isOnDuty: true,
+          permissionsReady: true,
+          needsFreshClockIn: true,
+          auditComplete: true,
+        ),
+        isFalse,
+      );
+      expect(
+        shouldSkipShiftForGoOnDuty(
+          isOnlineOnDuty: false,
+          needsFreshClockIn: true,
+        ),
+        isFalse,
+      );
+    });
   });
 
   group('shouldPromptShiftOnClockIn', () {

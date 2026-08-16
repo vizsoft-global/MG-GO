@@ -26,14 +26,39 @@ class Env {
     defaultValue: 'https://dpdadmin-prod.vercel.app',
   );
 
-  /// Cloudflare `dpd-live` edge origin for the 5s live position rail
-  /// (Live Tracking V2). Empty disables the edge path entirely and the app
-  /// behaves exactly as it did before it existed: `driver_report_location` on
-  /// the adaptive cadence and nothing else.
-  static const liveIngestUrl = String.fromEnvironment(
+  /// Production `dpd-live` edge origin. Deployed Worker for `FLEET_ROOM=fleet-kw`.
+  static const prodLiveIngestUrl = 'https://dpd-live.vizsoft.workers.dev';
+
+  /// Sentinel for "the build never mentioned `LIVE_INGEST_URL`".
+  ///
+  /// `String.fromEnvironment` cannot tell an absent key from one passed as `""`,
+  /// and those two cases must not mean the same thing here — see [liveIngestUrl].
+  static const _liveIngestUnset = '__live_ingest_unset__';
+
+  static const _liveIngestUrlRaw = String.fromEnvironment(
     'LIVE_INGEST_URL',
-    defaultValue: '',
+    defaultValue: _liveIngestUnset,
   );
+
+  /// Cloudflare `dpd-live` edge origin for the 1Hz live position rail
+  /// (Live Tracking V2).
+  ///
+  /// Absent from the build ⇒ [prodLiveIngestUrl], the same way [supabaseUrl] and
+  /// [adminApiBaseUrl] already default to the production stack. Passed as an empty
+  /// string ⇒ the rail is off and the app behaves exactly as it did before the edge
+  /// existed: `driver_report_location` on the adaptive cadence and nothing else. That
+  /// is still the kill switch, it just has to be stated rather than assumed.
+  ///
+  /// It defaults on because the old default was silently catastrophic. A release built
+  /// without `--dart-define-from-file=env/prod.json` kept working in every visible way
+  /// — Supabase, admin API and Firebase all have prod defaults — while publishing not
+  /// one fix to the edge. The admin's Live Tracking V2 page then showed a socket that
+  /// said "live" and a fleet that only moved when the room re-read the database a minute
+  /// later: frozen pins, a speed left over from the last write, and status changes that
+  /// arrived when they felt like it. Nothing anywhere reported a problem, because from
+  /// the app's point of view there was none.
+  static String get liveIngestUrl =>
+      _liveIngestUrlRaw == _liveIngestUnset ? prodLiveIngestUrl : _liveIngestUrlRaw;
 
   static bool get isLiveIngestEnabled => liveIngestUrl.trim().isNotEmpty;
 

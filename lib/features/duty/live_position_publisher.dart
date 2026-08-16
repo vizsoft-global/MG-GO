@@ -179,11 +179,22 @@ class LivePositionPublisher {
     http.Client? client,
     this.cadence = const LiveCadence(),
     this.timeout = const Duration(seconds: 2),
-  }) : _client = client ?? http.Client();
+    bool? enabled,
+    String? endpoint,
+  }) : _client = client ?? http.Client(),
+       _enabled = enabled ?? Env.isLiveIngestEnabled,
+       _endpoint = endpoint ?? Env.liveIngestEndpoint;
 
   final http.Client _client;
   final LiveCadence cadence;
   final Duration timeout;
+
+  /// Resolved once at construction rather than read per fix. Injectable so both the
+  /// publishing path and the kill-switch path are testable without a build-time define
+  /// — the rail being off used to be provable only by not building the env file, which
+  /// is exactly how it shipped off by accident.
+  final bool _enabled;
+  final String _endpoint;
 
   final List<LiveFix> _buffer = <LiveFix>[];
   DateTime? _lastPublishAt;
@@ -200,7 +211,7 @@ class LivePositionPublisher {
   /// hiccup should not leave a visible gap in the line.
   static const maxBufferedFixes = 20;
 
-  bool get enabled => Env.isLiveIngestEnabled;
+  bool get enabled => _enabled;
   int get buffered => _buffer.length;
   DateTime? get lastSuccessAt => _lastSuccessAt;
 
@@ -304,7 +315,7 @@ class LivePositionPublisher {
     try {
       final response = await _client
           .post(
-            Uri.parse(Env.liveIngestEndpoint),
+            Uri.parse(_endpoint),
             headers: {
               'Authorization': 'Bearer $accessToken',
               'Content-Type': 'application/json',
