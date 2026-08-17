@@ -26,6 +26,10 @@ class ProfileHeaderCard extends ConsumerWidget {
     final l10n = context.l10n;
     final localPreview = ref.watch(avatarLocalPreviewProvider);
     final persistedBytes = ref.watch(persistedAvatarBytesProvider).value;
+    // Held in memory across the Profile tab's avatar refresh, so a driver who
+    // already has a photo never drops back to their initials while the key
+    // check and the download run.
+    final warmBytes = ref.watch(avatarWarmBytesProvider);
     final overrideUrl = ref.watch(profileAvatarDisplayOverrideProvider);
     final remoteUrl =
         ref.watch(profileAvatarUrlProvider).value ?? profile.avatarUrl;
@@ -80,7 +84,7 @@ class ProfileHeaderCard extends ConsumerWidget {
           ProfileAvatar(
             fullName: profile.fullName,
             photoUrl: avatarUrl,
-            localBytes: localPreview ?? persistedBytes,
+            localBytes: localPreview ?? persistedBytes ?? warmBytes,
             onTap: onAvatarTap,
           ),
           const SizedBox(height: 10),

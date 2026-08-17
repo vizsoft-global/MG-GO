@@ -18,18 +18,30 @@ class ActiveDeliveryScreen extends ConsumerWidget {
     final l10n = context.l10n;
     final activeAsync = ref.watch(activeDeliveryProvider);
 
-    return Scaffold(
+    // Pickup submit and the Thank You screen both arrive here with `go`, which
+    // clears the root stack — so the device back button pops the only route and
+    // takes the app down with it. One handler for the gesture and the arrow so
+    // the two cannot drift apart again.
+    void leave() {
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/home');
+      }
+    }
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop || !context.mounted) return;
+        leave();
+      },
+      child: Scaffold(
       backgroundColor: AppColors.pageBackground,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/home');
-            }
-          },
+          onPressed: leave,
         ),
         title: Text(l10n.activeDeliveryBanner),
       ),
@@ -164,6 +176,7 @@ class ActiveDeliveryScreen extends ConsumerWidget {
             ],
           );
         },
+      ),
       ),
     );
   }

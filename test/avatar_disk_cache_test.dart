@@ -82,4 +82,28 @@ void main() {
     await cache.clear();
     expect(await cache.loadIfMatches(key), isNull);
   });
+
+  // Profile used to wait on the profile RPC for the object key before it could
+  // ask the cache anything, so a driver with a cached photo watched their
+  // initials on every visit.
+  test('loadAny returns the photo without being told the object key', () async {
+    final bytes = Uint8List.fromList([4, 5, 6]);
+    await cache.save(objectKey: 'drivers/abc/avatar.jpg', bytes: bytes);
+
+    final restarted = AvatarDiskCache(directory: dir);
+    expect(await restarted.loadAny(), bytes);
+  });
+
+  test('loadAny is null on a cold cache', () async {
+    expect(await cache.loadAny(), isNull);
+  });
+
+  test('loadAny is null after sign-out clears the cache', () async {
+    await cache.save(
+      objectKey: 'drivers/abc/avatar.jpg',
+      bytes: Uint8List.fromList([1, 2]),
+    );
+    await cache.clear();
+    expect(await cache.loadAny(), isNull);
+  });
 }

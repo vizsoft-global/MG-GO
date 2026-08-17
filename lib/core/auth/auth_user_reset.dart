@@ -49,6 +49,9 @@ final authUserResetControllerProvider = Provider<void>((ref) {
 void _resetUserScopedProviders(Ref ref, {String? previousUserId}) {
   ref.read(avatarLocalPreviewProvider.notifier).set(null);
   ref.read(profileAvatarDisplayOverrideProvider.notifier).set(null);
+  // Held in memory rather than behind a provider that refetches, so it has to
+  // be dropped explicitly or the next rider opens Profile on this one's face.
+  ref.read(avatarWarmBytesProvider.notifier).set(null);
   ref.invalidate(riderProfileProvider);
   ref.invalidate(profileAvatarUrlProvider);
   ref.invalidate(persistedAvatarBytesProvider);

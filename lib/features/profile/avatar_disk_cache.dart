@@ -69,6 +69,21 @@ class AvatarDiskCache {
     return bytes.isEmpty ? null : Uint8List.fromList(bytes);
   }
 
+  /// The retained photo without checking which object key it belongs to.
+  ///
+  /// [loadIfMatches] cannot answer until the profile RPC has returned the
+  /// current key, so a driver with a perfectly good cached photo still watched
+  /// their initials until the network replied. The cache is wiped on sign-out
+  /// and on every user change, so the only photo this can return is the
+  /// signed-in rider's own last one.
+  Future<Uint8List?> loadAny() async {
+    final dir = await _dir();
+    final bytesFile = File('${dir.path}/$_bytesName');
+    if (!await bytesFile.exists()) return null;
+    final bytes = await bytesFile.readAsBytes();
+    return bytes.isEmpty ? null : Uint8List.fromList(bytes);
+  }
+
   Future<void> clear() async {
     final dir = await _dir();
     final keyFile = File('${dir.path}/$_keyName');
