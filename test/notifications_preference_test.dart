@@ -9,7 +9,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-NotificationInboxItem _bannerItem({required String id}) {
+NotificationInboxItem _bannerItem({required String id, DateTime? receivedAt}) {
   return NotificationInboxItem(
     dispatchItemId: id,
     campaignId: 'camp-$id',
@@ -19,7 +19,7 @@ NotificationInboxItem _bannerItem({required String id}) {
     priority: 'normal',
     actionType: 'open_screen',
     actionParams: const {},
-    receivedAt: DateTime.utc(2026, 8, 13),
+    receivedAt: receivedAt ?? DateTime.utc(2026, 8, 13),
     bannerObjectKey: 'notifications/assets/$id.jpg',
   );
 }
@@ -69,6 +69,73 @@ void main() {
     expect(visible.items, isEmpty);
     expect(visible.effectiveUnreadCount, 0);
     expect(visible.unreadCount, 0);
+  });
+
+  group('re-enabling notifications', () {
+    final window = NotificationMuteWindow(
+      from: DateTime.utc(2026, 8, 13, 9),
+      until: DateTime.utc(2026, 8, 13, 17),
+    );
+
+    test('only campaigns from inside the off period are muted', () {
+      final snapshot = NotificationInboxSnapshot(
+        items: [
+          _bannerItem(id: 'before', receivedAt: DateTime.utc(2026, 8, 13, 8)),
+          _bannerItem(id: 'during', receivedAt: DateTime.utc(2026, 8, 13, 12)),
+          _bannerItem(id: 'after', receivedAt: DateTime.utc(2026, 8, 13, 18)),
+        ],
+        unreadCount: 3,
+      );
+
+      expect(
+        idsArrivedDuringMute(window: window, snapshot: snapshot),
+        {'during'},
+      );
+      expect(
+        idsArrivedDuringMute(window: null, snapshot: snapshot),
+        isEmpty,
+      );
+    });
+
+    test('muted items stay in history but stop being new', () {
+      final snapshot = NotificationInboxSnapshot(
+        items: [
+          _bannerItem(id: 'during', receivedAt: DateTime.utc(2026, 8, 13, 12)),
+          _bannerItem(id: 'after', receivedAt: DateTime.utc(2026, 8, 13, 18)),
+        ],
+        unreadCount: 2,
+      );
+
+      final seen = inboxWithMutedMarkedSeen(
+        snapshot: snapshot,
+        mutedIds: {'during'},
+      );
+
+      expect(seen.items.map((i) => i.dispatchItemId), ['during', 'after']);
+      expect(seen.items.first.isUnread, isFalse);
+      expect(seen.items.last.isUnread, isTrue);
+      // The server count would still say 2, and `effectiveUnreadCount` prefers
+      // it whenever it is above zero, so the recount has to be written back.
+      expect(seen.unreadCount, 1);
+      expect(seen.effectiveUnreadCount, 1);
+    });
+
+    test('an unread item the rider already had is left alone', () {
+      final snapshot = NotificationInboxSnapshot(
+        items: [
+          _bannerItem(id: 'before', receivedAt: DateTime.utc(2026, 8, 13, 8)),
+        ],
+        unreadCount: 1,
+      );
+
+      final seen = inboxWithMutedMarkedSeen(
+        snapshot: snapshot,
+        mutedIds: idsArrivedDuringMute(window: window, snapshot: snapshot),
+      );
+
+      expect(seen.items.single.isUnread, isTrue);
+      expect(seen.effectiveUnreadCount, 1);
+    });
   });
 
   test('foreground banners are skipped when notifications are disabled', () {
