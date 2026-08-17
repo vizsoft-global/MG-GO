@@ -37,7 +37,35 @@ final profileAvatarDisplayOverrideProvider =
       ProfileAvatarDisplayOverrideNotifier.new,
     );
 
+/// Last known photo bytes, held in memory for the whole session.
+///
+/// [persistedAvatarBytesProvider] cannot paint the first frame: it waits on the
+/// profile RPC for the object key, and [refreshRiderAvatar] invalidates it
+/// every time the Profile tab is tapped — so the driver saw initials until the
+/// network answered, on every visit. This survives both.
+final avatarWarmBytesProvider =
+    NotifierProvider<AvatarWarmBytesNotifier, Uint8List?>(
+      AvatarWarmBytesNotifier.new,
+    );
+
+/// Lifts the retained photo off disk once at startup, long before Profile is
+/// opened, so opening it is a memory read rather than file IO plus an RPC.
+final avatarWarmUpProvider = FutureProvider<void>((ref) async {
+  if (ref.read(avatarWarmBytesProvider) != null) return;
+  final bytes = await ref.read(avatarDiskCacheProvider).loadAny();
+  if (bytes == null) return;
+  if (ref.read(avatarWarmBytesProvider) != null) return;
+  ref.read(avatarWarmBytesProvider.notifier).set(bytes);
+});
+
 class AvatarLocalPreviewNotifier extends Notifier<Uint8List?> {
+  @override
+  Uint8List? build() => null;
+
+  void set(Uint8List? bytes) => state = bytes;
+}
+
+class AvatarWarmBytesNotifier extends Notifier<Uint8List?> {
   @override
   Uint8List? build() => null;
 
@@ -61,7 +89,10 @@ final persistedAvatarBytesProvider = FutureProvider<Uint8List?>((ref) async {
     key,
     updatedAt: profile?.avatarUpdatedAt,
   );
-  if (hit != null) return hit;
+  if (hit != null) {
+    ref.read(avatarWarmBytesProvider.notifier).set(hit);
+    return hit;
+  }
 
   final url = await ref
       .read(riderAuthServiceProvider)
@@ -80,6 +111,7 @@ final persistedAvatarBytesProvider = FutureProvider<Uint8List?>((ref) async {
       bytes: bytes,
       updatedAt: profile?.avatarUpdatedAt,
     );
+    ref.read(avatarWarmBytesProvider.notifier).set(bytes);
     return bytes;
   } catch (_) {
     return null;
@@ -152,6 +184,7 @@ class AvatarUploadController extends AsyncNotifier<AvatarUploadOutcome?> {
             bytes: bytes,
             updatedAt: DateTime.now().toUtc(),
           );
+      ref.read(avatarWarmBytesProvider.notifier).set(bytes);
       ref.invalidate(persistedAvatarBytesProvider);
 
       final auth = ref.read(riderAuthServiceProvider);

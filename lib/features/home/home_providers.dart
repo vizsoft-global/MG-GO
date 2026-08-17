@@ -115,10 +115,22 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboard> {
   static const _maxAttempts = 3;
   static const _retryDelay = Duration(milliseconds: 500);
 
+  /// Rider the value currently in [state] was fetched for. A new notifier is
+  /// only constructed by `invalidate` — `refresh` and the duty writers reassign
+  /// state on this instance — so a null here means the retained value predates
+  /// the user change that triggered the invalidate.
+  String? _valueRiderId;
+
+  /// False while Riverpod is still serving the previous rider's dashboard.
+  bool get holdsCurrentRiderValue =>
+      _valueRiderId != null &&
+      _valueRiderId == Supabase.instance.client.auth.currentUser?.id;
+
   @override
   Future<HomeDashboard> build() async {
     final dashboard = await _fetchWithRetry();
     await _ensureAccessAllowed();
+    _valueRiderId = Supabase.instance.client.auth.currentUser?.id;
     return dashboard;
   }
 
@@ -171,6 +183,7 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboard> {
         final dashboard =
             await ref.read(homeServiceProvider).fetchDashboard();
         await _ensureAccessAllowed();
+        _valueRiderId = Supabase.instance.client.auth.currentUser?.id;
         return dashboard;
       },
     );
@@ -189,6 +202,7 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboard> {
             .read(homeServiceProvider)
             .setDutyState(isOnDuty: isOnDuty, isOnline: isOnline);
         await _ensureAccessAllowed();
+        _valueRiderId = Supabase.instance.client.auth.currentUser?.id;
         return dashboard;
       },
     );

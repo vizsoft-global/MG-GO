@@ -51,7 +51,13 @@ class HomeScreen extends ConsumerWidget {
       body: SafeArea(child: Center(child: CircularProgressIndicator())),
     );
 
-    switch (homeDashboardUiState(dashboardAsync)) {
+    final showsPreviousRider =
+        !ref.read(homeDashboardProvider.notifier).holdsCurrentRiderValue;
+
+    switch (homeDashboardUiState(
+      dashboardAsync,
+      valueIsStale: showsPreviousRider,
+    )) {
       case HomeDashboardUiState.loading:
         return loadingScaffold();
       case HomeDashboardUiState.error:

@@ -45,4 +45,28 @@ void main() {
       HomeDashboardUiState.data,
     );
   });
+
+  // `invalidate` on the auth change keeps serving the signed-out rider's
+  // dashboard until the new fetch lands. Rendering it says "on duty", which is
+  // what flashed the clock-in toggle to In right after a re-login.
+  test('the previous rider\'s retained value shows loading, not data', () {
+    final afterUserChange =
+        const AsyncLoading<int>().copyWithPrevious(const AsyncData(1));
+
+    expect(afterUserChange.hasValue, isTrue);
+    expect(
+      homeDashboardUiState(afterUserChange, valueIsStale: true),
+      HomeDashboardUiState.loading,
+    );
+  });
+
+  test('a refresh for the same rider still shows data', () {
+    expect(
+      homeDashboardUiState(
+        const AsyncLoading<int>().copyWithPrevious(const AsyncData(1)),
+        valueIsStale: false,
+      ),
+      HomeDashboardUiState.data,
+    );
+  });
 }
