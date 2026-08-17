@@ -921,7 +921,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pleaseSignInAgain => 'Please sign in again';
 
   @override
-  String get accountNotActive => 'Your account is not active';
+  String get accountNotActive =>
+      'Your account is inactive or suspended. Please contact your administrator.';
 
   @override
   String get outsideAllowedDeliveryArea =>

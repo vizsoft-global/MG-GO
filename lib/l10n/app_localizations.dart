@@ -1703,7 +1703,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountNotActive.
   ///
   /// In en, this message translates to:
-  /// **'Your account is not active'**
+  /// **'Your account is inactive or suspended. Please contact your administrator.'**
   String get accountNotActive;
 
   /// No description provided for @outsideAllowedDeliveryArea.

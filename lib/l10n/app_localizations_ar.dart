@@ -913,7 +913,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pleaseSignInAgain => 'يرجى تسجيل الدخول مجدداً';
 
   @override
-  String get accountNotActive => 'حسابك غير نشط';
+  String get accountNotActive =>
+      'حسابك غير نشط أو موقوف. يرجى التواصل مع المسؤول.';
 
   @override
   String get outsideAllowedDeliveryArea =>

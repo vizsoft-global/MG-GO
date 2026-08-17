@@ -480,7 +480,7 @@
   "apply": "Apply",
   "today": "Today",
   "pleaseSignInAgain": "Please sign in again",
-  "accountNotActive": "Your account is not active",
+  "accountNotActive": "Your account is inactive or suspended. Please contact your administrator.",
   "outsideAllowedDeliveryArea": "You are outside the allowed delivery area. Move closer to your zone or an assigned restaurant.",
   "gpsRequiredForDelivery": "GPS location is required to log a delivery",
   "zoneNotConfigured": "Your zone is not configured. Contact admin.",

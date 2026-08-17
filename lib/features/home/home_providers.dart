@@ -10,12 +10,23 @@ import 'home_models.dart';
 import 'remote_duty_monitor.dart';
 
 class HomeServiceException implements Exception {
-  HomeServiceException(this.message);
+  HomeServiceException(this.message, {this.rejection});
 
   final String message;
 
+  /// Set when the server refused the write outright, so the UI can name the
+  /// reason instead of falling back to "could not update".
+  final DutyRejection? rejection;
+
   @override
   String toString() => message;
+}
+
+/// The refusal behind a failed duty write, if it was one.
+DutyRejection? lastDutyRejection(Object? error) {
+  if (error == null) return null;
+  if (error is HomeServiceException) return error.rejection;
+  return dutyRejectionFrom(error.toString());
 }
 
 class HomeService {
@@ -77,6 +88,13 @@ class HomeService {
       }
       return HomeDashboard.fromJson(map);
     } on PostgrestException catch (e) {
+      final rejection = dutyRejectionFrom(e.message);
+      if (rejection != null) {
+        // A refusal is not a failed round trip. Queueing it replays the same
+        // refusal on every sync, and answering with the cached dashboard makes
+        // the tap look like it did nothing at all.
+        throw HomeServiceException(_friendlyError(e), rejection: rejection);
+      }
       _networkStatus.recordRpcFailure();
       if (userId != null) {
         await _offlineRepo.queueDutyState(

@@ -284,7 +284,7 @@
   "apply": "تطبيق",
   "today": "اليوم",
   "pleaseSignInAgain": "يرجى تسجيل الدخول مجدداً",
-  "accountNotActive": "حسابك غير نشط",
+  "accountNotActive": "حسابك غير نشط أو موقوف. يرجى التواصل مع المسؤول.",
   "outsideAllowedDeliveryArea": "أنت خارج منطقة التوصيل المسموحة. اقترب من منطقتك أو مطعم مُعيَّن.",
   "gpsRequiredForDelivery": "موقع GPS مطلوب لتسجيل التوصيل",
   "zoneNotConfigured": "منطقتك غير مهيأة. تواصل مع المسؤول.",

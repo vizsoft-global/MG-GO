@@ -11,6 +11,7 @@ import '../../features/duty/live_position_publisher.dart';
 import '../../features/duty/location_tracking_service.dart';
 import '../../features/deliveries/delivery_models.dart';
 import '../../features/deliveries/delivery_service.dart';
+import '../../features/home/home_duty_errors.dart';
 import '../../features/shift/shift_providers.dart';
 import '../../features/shift/shift_service.dart';
 import '../device/device_identity_service.dart';
@@ -244,13 +245,22 @@ class SyncController extends Notifier<SyncState> {
         }
         synced++;
       } catch (e) {
-        if (id != null) {
-          await OfflineDb.instance.markPendingFailure(
+        if (id == null) continue;
+        if (isPermanentDutyQueueRejection(e.toString())) {
+          // A refusal cannot be retried into a success. Keeping the row makes
+          // every sync re-send it, which is what filled the audit with dozens
+          // of `inactive` duty.on events for one suspended driver.
+          await OfflineDb.instance.deletePendingById(
             table: 'pending_duty_state',
             id: id,
-            error: e.toString(),
           );
+          continue;
         }
+        await OfflineDb.instance.markPendingFailure(
+          table: 'pending_duty_state',
+          id: id,
+          error: e.toString(),
+        );
       }
     }
     return synced;

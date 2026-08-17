@@ -7,12 +7,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/offline/offline_repo.dart';
 import '../../core/l10n/l10n.dart';
+import '../../l10n/app_localizations.dart';
 import '../../core/permissions/duty_battery_exemption.dart';
 import '../../core/permissions/duty_permissions_service.dart';
 import '../../core/permissions/duty_session_gate.dart';
 import '../duty/duty_session_gate_provider.dart';
 import '../duty/on_duty_permission_gate.dart';
 import '../duty/widgets/duty_readiness_sheet.dart';
+import '../home/home_duty_errors.dart';
 import '../home/home_models.dart';
 import '../home/home_providers.dart';
 import 'shift_models.dart';
@@ -137,7 +139,7 @@ Future<bool?> _goInWithReadiness(
   if (Platform.isAndroid && context.mounted) {
     if (!requirePrompt &&
         ref.read(dutySessionGateProvider).permissionsReady) {
-      return _applyOnDuty(ref, context);
+      return (await _applyOnDuty(ref, context)).started;
     }
     return showDutyReadinessSheet(
       context,
@@ -168,19 +170,44 @@ Future<bool?> _goInWithReadiness(
     if (confirmed != true || !context.mounted) return null;
   }
 
-  return _applyOnDuty(ref, context);
+  return (await _applyOnDuty(ref, context)).started;
 }
 
-Future<bool> _applyOnDuty(WidgetRef ref, BuildContext context) async {
+Future<DutyStartResult> _applyOnDuty(
+  WidgetRef ref,
+  BuildContext context,
+) async {
+  final l10n = context.l10n;
   if (Platform.isAndroid) {
-    final report = await DutyPermissionsService().audit(context.l10n);
-    if (!report.canStartDuty) return false;
+    final report = await DutyPermissionsService().audit(l10n);
+    if (!report.canStartDuty) return const DutyStartResult.blocked();
   }
   await ref
       .read(homeDashboardProvider.notifier)
       .setDutyState(isOnDuty: true, isOnline: true);
   unawaited(batteryExemptionRequester.ensureStockBatteryExemption());
-  return ref.read(homeDashboardProvider).value?.isOnlineOnDuty ?? false;
+  return dutyStartResultFrom(
+    ref,
+    l10n,
+    ref.read(homeDashboardProvider).value?.isOnlineOnDuty ?? false,
+  );
+}
+
+/// Names the server's refusal behind a clock-in that did not take, so the
+/// readiness sheet can say why instead of reopening on the same state.
+///
+/// A failure with no rejection attached is a device check or a dismissal — the
+/// sheet already lists those, and inventing copy for them would repeat it.
+DutyStartResult dutyStartResultFrom(
+  WidgetRef ref,
+  AppLocalizations l10n,
+  bool? started,
+) {
+  if (started == true) return const DutyStartResult.started();
+  final rejection = lastDutyRejection(ref.read(homeDashboardProvider).error);
+  return rejection == null
+      ? const DutyStartResult.blocked()
+      : DutyStartResult.refused(dutyRejectionMessage(l10n, rejection));
 }
 
 bool _lastDutyErrorIsShiftRequired(WidgetRef ref) {
