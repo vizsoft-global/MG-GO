@@ -18,6 +18,7 @@ import '../duty/on_duty_permission_gate.dart';
 import '../shift/on_duty_gate.dart';
 import '../shift/shift_providers.dart';
 import 'home_dashboard_ui_state.dart';
+import 'home_duty_errors.dart';
 import 'home_models.dart';
 import 'home_providers.dart';
 import 'widgets/bonus_action_card.dart';
@@ -144,13 +145,14 @@ class HomeScreen extends ConsumerWidget {
                           OnDutyPermissionGate(
                             isOnDuty: isOnDuty,
                             onCompleteFreshClockIn: () async {
+                              final l10n = context.l10n;
                               final ok = await ensureOnDutyForAction(
                                 context,
                                 ref,
                                 action: OnDutyAction.goOnDuty,
                                 dashboard: dashboard,
                               );
-                              return ok == true;
+                              return dutyStartResultFrom(ref, l10n, ok);
                             },
                           ),
                           HomeHeader(
@@ -293,7 +295,14 @@ class HomeScreen extends ConsumerWidget {
       },
     );
     if (ok == false && context.mounted && turnOn) {
-      _snack(context, context.l10n.couldNotUpdateDutyStatus);
+      final l10n = context.l10n;
+      final rejection = lastDutyRejection(ref.read(homeDashboardProvider).error);
+      _snack(
+        context,
+        rejection == null
+            ? l10n.couldNotUpdateDutyStatus
+            : dutyRejectionMessage(l10n, rejection),
+      );
     }
   }
 

@@ -21,7 +21,11 @@ class OnDutyPermissionGate extends ConsumerStatefulWidget {
   });
 
   final bool isOnDuty;
-  final Future<bool> Function()? onCompleteFreshClockIn;
+
+  /// Performs the fresh clock-in this gate is holding the rider on, and reports
+  /// whether the server took it — a refusal has to reach the sheet, or the gate
+  /// simply reopens on the same state with nothing said.
+  final Future<DutyStartResult> Function()? onCompleteFreshClockIn;
 
   @override
   ConsumerState<OnDutyPermissionGate> createState() =>
@@ -98,16 +102,16 @@ class _OnDutyPermissionGateState extends ConsumerState<OnDutyPermissionGate>
       context,
       flow: DutyReadinessFlow.goOnline,
       onContinue: () async {
-        if (!mounted) return false;
+        if (!mounted) return const DutyStartResult.blocked();
         ref.read(dutySessionGateProvider.notifier).applyAudit(
               isOnDuty: widget.isOnDuty,
               permissionsReady: true,
             );
         if (!ref.read(dutySessionGateProvider).needsFreshClockIn) {
-          return true;
+          return const DutyStartResult.started();
         }
         final complete = widget.onCompleteFreshClockIn;
-        if (complete == null) return true;
+        if (complete == null) return const DutyStartResult.started();
         return complete();
       },
     );
@@ -140,6 +144,6 @@ Future<bool?> ensureDutyPermissionsForOnDutySession(
   return showDutyReadinessSheet(
     context,
     flow: DutyReadinessFlow.goOnline,
-    onContinue: () async => true,
+    onContinue: () async => const DutyStartResult.started(),
   );
 }

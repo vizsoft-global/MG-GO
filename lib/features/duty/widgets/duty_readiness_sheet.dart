@@ -9,7 +9,31 @@ import '../../../core/permissions/duty_permissions_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../l10n/app_localizations.dart';
 
-typedef DutyReadinessCallback = Future<bool> Function();
+/// Outcome of the duty write the sheet's primary button starts.
+///
+/// A bare `false` cannot say whether the permission checks failed or the server
+/// refused the account, which is what left this sheet re-running its audit and
+/// showing the same green checklist to a suspended driver.
+class DutyStartResult {
+  const DutyStartResult._(this.started, this.refusedMessage);
+
+  /// The duty write went through.
+  const DutyStartResult.started() : this._(true, null);
+
+  /// The server refused it, with a reason worth showing the rider.
+  const DutyStartResult.refused(String message) : this._(false, message);
+
+  /// Stopped short of the write — failed device checks, or the rider backed out.
+  const DutyStartResult.blocked() : this._(false, null);
+
+  final bool started;
+
+  /// Rider-facing reason the server gave, or null when there is nothing to say
+  /// beyond the checks already listed.
+  final String? refusedMessage;
+}
+
+typedef DutyReadinessCallback = Future<DutyStartResult> Function();
 
 enum DutyReadinessFlow {
   startDuty,
@@ -22,7 +46,7 @@ Future<bool?> showDutyReadinessSheet(
   DutyReadinessFlow flow = DutyReadinessFlow.startDuty,
 }) async {
   if (!Platform.isAndroid) {
-    return onContinue();
+    return (await onContinue()).started;
   }
 
   final result = await showModalBottomSheet<bool>(
@@ -47,11 +71,15 @@ class DutyReadinessSheet extends StatefulWidget {
   const DutyReadinessSheet({
     required this.onContinue,
     this.flow = DutyReadinessFlow.startDuty,
+    this.service,
     super.key,
   });
 
   final DutyReadinessCallback onContinue;
   final DutyReadinessFlow flow;
+
+  /// Injected by tests only; the audit is platform-channel bound.
+  final DutyPermissionsService? service;
 
   @override
   State<DutyReadinessSheet> createState() => _DutyReadinessSheetState();
@@ -59,11 +87,13 @@ class DutyReadinessSheet extends StatefulWidget {
 
 class _DutyReadinessSheetState extends State<DutyReadinessSheet>
     with WidgetsBindingObserver {
-  final _service = DutyPermissionsService();
+  late final DutyPermissionsService _service =
+      widget.service ?? DutyPermissionsService();
   DutyReadinessReport? _report;
   bool _loading = true;
   bool _continuing = false;
   DutyPermissionKind? _fixingKind;
+  String? _refusedMessage;
 
   @override
   void initState() {
@@ -149,14 +179,16 @@ class _DutyReadinessSheetState extends State<DutyReadinessSheet>
       setState(() => _continuing = false);
       return;
     }
-    final ok = await widget.onContinue();
+    final result = await widget.onContinue();
     if (!mounted) return;
-    setState(() => _continuing = false);
-    if (ok) {
+    setState(() {
+      _continuing = false;
+      _refusedMessage = result.refusedMessage;
+    });
+    if (result.started) {
       Navigator.of(context).pop(true);
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -222,6 +254,10 @@ class _DutyReadinessSheetState extends State<DutyReadinessSheet>
               total: report.requiredTotal,
               l10n: l10n,
             ),
+          ],
+          if (_refusedMessage != null) ...[
+            const SizedBox(height: 8),
+            _RefusalBanner(message: _refusedMessage!),
           ],
           const SizedBox(height: 12),
           if (_loading)
@@ -322,6 +358,45 @@ class _StatusBanner extends StatelessWidget {
                   : l10n.someChecksPassed(okCount, total),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: fg,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The server's refusal. Separate from [_StatusBanner] because the device
+/// checks can all pass and the clock-in still be refused, and a green banner
+/// above a dead button is what made this look like nothing happened.
+class _RefusalBanner extends StatelessWidget {
+  const _RefusalBanner({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.rejectedRed.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.block_outlined,
+            color: AppColors.rejectedRed,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.rejectedRed,
                     fontWeight: FontWeight.w600,
                   ),
             ),
