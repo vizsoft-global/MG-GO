@@ -326,6 +326,10 @@ class DutyTaskHandler extends TaskHandler {
       if (extras.activeDeliveryId != null) {
         _scheduler.holdDeliveryStatus();
       }
+      // The open delivery this fix belongs to. `delivery_submit` without it is refused by
+      // the RPC, so it is both what we send and what decides the status we may claim.
+      final deliveryId = extras.activeDeliveryId;
+      final reportStatus = _scheduler.reportableStatus(deliveryId);
 
       if (!force && !_scheduler.shouldReportToServer(now)) {
         await _updateNotification(l10n.onDutyStationaryGpsPaused);
@@ -341,11 +345,11 @@ class DutyTaskHandler extends TaskHandler {
           _scheduler.needsInitialReport ||
           _scheduler.movementJustStarted ||
           _streamStateChangePending ||
-          _scheduler.status == TrackingStatus.deliverySubmit;
+          reportStatus == TrackingStatus.deliverySubmit;
       if (!mustReportDirectly && _edgeCoveringDurableWrite(now)) {
         await _updateNotification(
           l10n.onDutyStatusLabel(
-            switch (_scheduler.status) {
+            switch (reportStatus) {
               TrackingStatus.moving => l10n.moving,
               TrackingStatus.deliverySubmit => l10n.deliveryLogged,
               TrackingStatus.idle => l10n.idle,
@@ -370,8 +374,9 @@ class DutyTaskHandler extends TaskHandler {
           speedMps: speed,
           accuracyMeters: reportPosition.accuracy,
           batteryPct: batteryPct,
-          trackingStatus: _scheduler.status,
-          forceHistory: _scheduler.status == TrackingStatus.deliverySubmit,
+          trackingStatus: reportStatus,
+          deliveryId: deliveryId,
+          forceHistory: reportStatus == TrackingStatus.deliverySubmit,
           extras: extras,
         );
       } catch (_) {
@@ -383,8 +388,9 @@ class DutyTaskHandler extends TaskHandler {
             'speed_mps': speed,
             'accuracy_meters': reportPosition.accuracy,
             'battery_pct': batteryPct,
-            'tracking_status': _scheduler.status.apiValue,
-            'force_history': _scheduler.status == TrackingStatus.deliverySubmit,
+            'tracking_status': reportStatus.apiValue,
+            'delivery_id': deliveryId,
+            'force_history': reportStatus == TrackingStatus.deliverySubmit,
             'heading_deg': extras.headingDeg,
             'altitude_m': extras.altitudeM,
             'network_type': extras.networkType,

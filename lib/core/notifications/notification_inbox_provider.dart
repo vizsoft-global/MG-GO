@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'notification_inbox_models.dart';
 import 'notification_inbox_repository.dart';
+import 'notification_mute_store.dart';
 import 'notifications_preference.dart';
 import 'notifications_preference_provider.dart';
 import 'screenshot_restriction_store.dart';
@@ -20,6 +23,9 @@ class NotificationInboxNotifier
     Supabase.instance.client.auth.onAuthStateChange.listen((event) {
       if (event.event == AuthChangeEvent.signedOut) {
         state = const AsyncData(NotificationInboxSnapshot.empty);
+        // Ids belong to the rider that just left; the window belongs to the
+        // device's toggle, which the next rider inherits as-is.
+        unawaited(notificationMuteStore.saveMutedIds(<String>{}));
       }
     });
     return _fetch();
@@ -28,6 +34,17 @@ class NotificationInboxNotifier
   Future<void> refresh() async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(_fetch);
+  }
+
+  /// Refetch without blanking the list or surfacing a failure.
+  ///
+  /// Used when the refetch is a side effect of something else the rider did —
+  /// switching notifications back on — where a spinner, or an error card if
+  /// they happen to be in a tunnel, would be a worse answer than the list they
+  /// were already looking at.
+  Future<void> refreshInBackground() async {
+    final result = await AsyncValue.guard(_fetch);
+    if (result.hasValue) state = result;
   }
 
   Future<void> markAllRead() async {
@@ -106,7 +123,35 @@ class NotificationInboxNotifier
             ),
           ),
     );
-    return snapshot;
+    return _applyMuted(snapshot);
+  }
+
+  /// Fold any closed mute window into the snapshot the rest of the app reads.
+  ///
+  /// This has to run against a *fetch* rather than at the moment the toggle
+  /// flips: nothing refreshes the inbox while notifications are off, so the
+  /// loaded snapshot at that moment does not yet contain the campaign the
+  /// rider is about to be handed.
+  Future<NotificationInboxSnapshot> _applyMuted(
+    NotificationInboxSnapshot snapshot,
+  ) async {
+    var muted = await notificationMuteStore.readMutedIds();
+    final window = await notificationMuteStore.readClosedWindow();
+    if (window != null) {
+      muted = {
+        ...muted,
+        ...idsArrivedDuringMute(window: window, snapshot: snapshot),
+      };
+    }
+
+    // Ids the inbox no longer carries cannot be shown, so keeping them would
+    // only grow the list forever.
+    final present = snapshot.items.map((i) => i.dispatchItemId).toSet();
+    final kept = muted.intersection(present);
+    await notificationMuteStore.saveMutedIds(kept);
+    if (window != null) await notificationMuteStore.clearWindow();
+
+    return inboxWithMutedMarkedSeen(snapshot: snapshot, mutedIds: kept);
   }
 }
 

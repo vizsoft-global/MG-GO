@@ -134,6 +134,39 @@ void main() {
       scheduler.holdDeliveryStatus();
       expect(scheduler.status, TrackingStatus.deliverySubmit);
     });
+
+    test('a held delivery status is only reportable with a delivery id', () {
+      // `driver_report_location` raises `delivery_id_required` for delivery_submit with
+      // no delivery, so an unnamed heartbeat has to fall back rather than be thrown away.
+      final scheduler = AdaptiveLocationScheduler(random: _ZeroRandom());
+      final now = DateTime(2026, 1, 1, 12);
+
+      scheduler.updateFromPosition(_pos(speed: 5), now);
+      scheduler.holdDeliveryStatus();
+
+      expect(scheduler.reportableStatus('d1'), TrackingStatus.deliverySubmit);
+      expect(scheduler.reportableStatus(null), TrackingStatus.moving);
+      expect(scheduler.reportableStatus(''), TrackingStatus.moving);
+    });
+
+    test('an unnamed delivery hold falls back to idle for a stopped rider', () {
+      final scheduler = AdaptiveLocationScheduler(random: _ZeroRandom());
+      final now = DateTime(2026, 1, 1, 12);
+
+      scheduler.updateFromPosition(_pos(speed: 0), now);
+      scheduler.holdDeliveryStatus();
+
+      expect(scheduler.reportableStatus(null), TrackingStatus.idle);
+    });
+
+    test('motion and idle statuses are reportable as they are', () {
+      final scheduler = AdaptiveLocationScheduler(random: _ZeroRandom());
+      final now = DateTime(2026, 1, 1, 12);
+
+      scheduler.updateFromPosition(_pos(speed: 5), now);
+      expect(scheduler.reportableStatus(null), TrackingStatus.moving);
+      expect(scheduler.reportableStatus('d1'), TrackingStatus.moving);
+    });
   });
 
   group('displaySpeedMps', () {

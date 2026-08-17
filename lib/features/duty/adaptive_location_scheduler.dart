@@ -52,6 +52,7 @@ class AdaptiveLocationScheduler {
   static const idleHoldDuration = Duration(seconds: 90);
 
   TrackingStatus _status = TrackingStatus.idle;
+  TrackingStatus _motionStatus = TrackingStatus.idle;
   DateTime? _lastSampleAt;
   DateTime? _lastMovementAt;
   double? _lastLat;
@@ -121,6 +122,21 @@ class AdaptiveLocationScheduler {
     _status = TrackingStatus.deliverySubmit;
   }
 
+  /// The status a report may claim, given the delivery it is able to name.
+  ///
+  /// `driver_report_location` treats `delivery_submit` as the fix taken *at* submission
+  /// and raises `delivery_id_required` without a delivery to attach it to. [holdDeliveryStatus]
+  /// reuses the status as "still on this delivery" so the admin live list keeps reading On
+  /// Delivery, which means every heartbeat of a delivery has to carry the id — and when it
+  /// cannot, reporting the motion status is far better than losing the fix. Losing it is
+  /// what took a rider off the live map for the whole delivery: the RPC threw on every
+  /// watchdog tick, each fix went to the offline queue, and the queue replayed the same
+  /// rejection until the rows aged out.
+  TrackingStatus reportableStatus(String? deliveryId) {
+    if (_status != TrackingStatus.deliverySubmit) return _status;
+    return deliveryId == null || deliveryId.isEmpty ? _motionStatus : _status;
+  }
+
   void updateFromPosition(Position position, DateTime now) {
     final previous = _status;
     final speed = position.speed;
@@ -145,6 +161,10 @@ class AdaptiveLocationScheduler {
       _status = TrackingStatus.idle;
     }
 
+    // The delivery hold overwrites [_status], so the last status movement alone accounts
+    // for is kept beside it as the fallback for [reportableStatus].
+    if (_status != TrackingStatus.deliverySubmit) _motionStatus = _status;
+
     _lastLat = position.latitude;
     _lastLng = position.longitude;
   }
@@ -156,6 +176,7 @@ class AdaptiveLocationScheduler {
 
   void reset() {
     _status = TrackingStatus.idle;
+    _motionStatus = TrackingStatus.idle;
     _lastSampleAt = null;
     _lastMovementAt = null;
     _lastLat = null;
