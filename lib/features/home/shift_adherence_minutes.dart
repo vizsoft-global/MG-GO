@@ -8,8 +8,23 @@ int shiftMinutesEarlyOut({
   DateTime? actualOut,
 }) {
   if (actualOut == null) return 0;
-  final effectiveOut =
-      actualOut.isBefore(scheduledStart) ? scheduledStart : actualOut;
-  final minutes = scheduledEnd.difference(effectiveOut).inMinutes;
+  final start = scheduledStart.toUtc();
+  final end = scheduledEnd.toUtc();
+  final out = actualOut.toUtc();
+  final effectiveOut = out.isBefore(start) ? start : out;
+  final minutes = end.difference(effectiveOut).inMinutes;
   return minutes > 0 ? minutes : 0;
+}
+
+/// Early-out cannot exceed the scheduled window.
+///
+/// A stale `minutes_early_out: 415` for a 5-hour shift (18000s) is the
+/// unclamped `end − out` that included the pre-shift gap. Cap at the length
+/// the server already computed rather than re-deriving instants on the
+/// device clock.
+int capShiftEarlyOutMinutes(int minutes, {int scheduledSeconds = 0}) {
+  if (minutes <= 0) return 0;
+  if (scheduledSeconds <= 0) return minutes;
+  final cap = scheduledSeconds ~/ 60;
+  return minutes > cap ? cap : minutes;
 }
