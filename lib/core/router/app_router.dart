@@ -181,8 +181,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return FinishDeliveryScreen(
             deliveryId: id,
             outcome: outcome,
-            provisionalClockIn:
-                state.uri.queryParameters['provisionalClockIn'] == '1',
           );
         },
       ),

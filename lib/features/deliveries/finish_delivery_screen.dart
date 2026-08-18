@@ -33,16 +33,11 @@ class FinishDeliveryScreen extends ConsumerStatefulWidget {
   const FinishDeliveryScreen({
     required this.deliveryId,
     required this.outcome,
-    this.provisionalClockIn = false,
     super.key,
   });
 
   final String deliveryId;
   final FinishOutcome outcome;
-
-  /// True when the driver was Clocked Out and we clocked them In only to open
-  /// this screen. Leaving without completing must restore Clocked Out.
-  final bool provisionalClockIn;
 
   @override
   ConsumerState<FinishDeliveryScreen> createState() =>
@@ -61,7 +56,6 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
   bool _submitting = false;
   bool _uploadingProof = false;
   String? _error;
-  bool _completedOk = false;
 
   @override
   void initState() {
@@ -77,12 +71,6 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
 
   Future<void> _leaveWithoutCompleting() async {
     if (_submitting) return;
-    if (widget.provisionalClockIn && !_completedOk) {
-      await ref.read(homeDashboardProvider.notifier).setDutyState(
-            isOnDuty: false,
-            isOnline: false,
-          );
-    }
     if (mounted) context.pop();
   }
 
@@ -261,7 +249,6 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
           'result': queued ? 'queued' : 'ok',
         },
       );
-      _completedOk = true;
       // Navigate to success before invalidating active delivery. Invalidating
       // first lets ActiveDeliveryScreen (still under the stack) race to /home.
       context.go(
