@@ -303,3 +303,10 @@ String formatTimeOfDay12h(TimeOfDayValue time) {
   final h12 = hour % 12 == 0 ? 12 : hour % 12;
   return '$h12:$minute $period';
 }
+
+/// `shift_locked` means today's row exists and has not ended. Reuse it
+/// instead of showing the rider an error for a window they already submitted.
+DailyShift? existingShiftToReuseOnLock(DailyShift? shift) {
+  if (shift == null || !shift.isActive) return null;
+  return shift;
+}

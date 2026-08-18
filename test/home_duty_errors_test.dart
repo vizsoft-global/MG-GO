@@ -91,4 +91,40 @@ void main() {
       }
     });
   });
+
+  group('decideDutyStartKind', () {
+    test('a leftover on-duty dashboard cannot hide an account refusal', () {
+      expect(
+        decideDutyStartKind(
+          started: true,
+          rejection: DutyRejection.accountNotActive,
+        ),
+        DutyStartKind.refused,
+      );
+    });
+
+    test('names a refusal even when the write looks unset', () {
+      expect(
+        decideDutyStartKind(
+          started: false,
+          rejection: DutyRejection.accountNotActive,
+        ),
+        DutyStartKind.refused,
+      );
+    });
+
+    test('a successful write with no refusal is started', () {
+      expect(
+        decideDutyStartKind(started: true, rejection: null),
+        DutyStartKind.started,
+      );
+    });
+
+    test('a failed write with no refusal is a device block, not invented copy', () {
+      expect(
+        decideDutyStartKind(started: false, rejection: null),
+        DutyStartKind.blocked,
+      );
+    });
+  });
 }

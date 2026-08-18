@@ -53,6 +53,17 @@ class PushTokenRepository {
       onConflict: 'token',
     );
 
+    await _client
+        .from('driver_push_tokens')
+        .update({
+          'is_active': false,
+          'invalidated_at': now,
+          'updated_at': now,
+        })
+        .eq('driver_id', userId)
+        .eq('is_active', true)
+        .neq('token', token);
+
     await storeToken(token);
   }
 

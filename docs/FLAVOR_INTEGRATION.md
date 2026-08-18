@@ -8,7 +8,7 @@ Every driver-facing backend call routes through [`lib/core/config/env.dart`](../
 |-------|--------|
 | Supabase | `eoksxkdssptgyqyywdju` |
 | Admin API | `https://dpdadmin-prod.vercel.app` |
-| Firebase (native) | `musallam-delivery-prod` |
+| Firebase (native) | `musallam-delivery-prod` — Gradle file is `android/app/google-services.json` (not `src/main/`) |
 | R2 (via admin) | `dpd-private-prod` |
 | `applicationId` | `com.musallam_delivery.app` (do not change) |
 
@@ -46,5 +46,5 @@ External testing infrastructure may still exist outside this repo; the **driver 
 |---------|----------------|
 | App throws at startup | `env/prod.json` points at testing Supabase or non-prod admin |
 | Login works, uploads return 401/403 | Admin JWT audience mismatch (wrong admin deployment) |
-| FCM never arrives | Wrong `google-services.json` or token registered on wrong project |
+| FCM never arrives | `android/app/google-services.json` is `musallam-delivery-kw` (Gradle ignores `src/main/`); Admin JWT invalid (`app/invalid-credential`) |
 | App shows the block screen on launch | Android Developer options are enabled — turn them off in phone Settings |

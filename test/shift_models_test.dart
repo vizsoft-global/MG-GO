@@ -41,4 +41,34 @@ void main() {
       expect(session.resolveEndDayOffset(), 1);
     });
   });
+
+  group('existingShiftToReuseOnLock', () {
+    DailyShift shift({required DateTime end}) {
+      return DailyShift(
+        id: 's1',
+        shiftDate: DateTime(2026, 8, 18),
+        shiftType: ShiftType.single,
+        session1Start: '09:00:00',
+        session1End: '18:00:00',
+        session1EndDayOffset: 0,
+        shiftEndAt: end,
+        isLocked: true,
+      );
+    }
+
+    test('reuses today\'s unexpired row instead of treating lock as failure', () {
+      final existing = shift(end: DateTime.now().add(const Duration(hours: 4)));
+      expect(existingShiftToReuseOnLock(existing), same(existing));
+    });
+
+    test('does not reuse a missing or already-ended row', () {
+      expect(existingShiftToReuseOnLock(null), isNull);
+      expect(
+        existingShiftToReuseOnLock(
+          shift(end: DateTime.now().subtract(const Duration(minutes: 1))),
+        ),
+        isNull,
+      );
+    });
+  });
 }

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:app_links/app_links.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -10,9 +9,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../firebase_options.dart';
 import '../permissions/permission_request_gate.dart';
 import 'fcm_background.dart';
+import 'firebase_app_guard.dart';
 import 'local_notification_service.dart';
 import 'notification_event_repository.dart';
 import 'notification_inbox_provider.dart';
@@ -79,11 +78,7 @@ class PushNotificationController extends Notifier<bool> {
 
   Future<void> _bootstrap() async {
     try {
-      if (Firebase.apps.isEmpty) {
-        await Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform,
-        );
-      }
+      await ensureFirebaseApp();
       FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
       await LocalNotificationService.instance.initialize();

@@ -1,4 +1,3 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +17,7 @@ import 'core/config/env.dart';
 import 'core/l10n/localizations_loader.dart';
 import 'core/l10n/locale_provider.dart';
 import 'core/notifications/fcm_background.dart';
+import 'core/notifications/firebase_app_guard.dart';
 import 'core/observability/sentry_config.dart';
 import 'core/observability/sentry_provider_observer.dart';
 import 'core/offline/offline_db.dart';
@@ -25,7 +25,6 @@ import 'core/router/app_router.dart';
 import 'core/security/developer_mode_gate.dart';
 import 'core/security/security_bypass_store.dart';
 import 'core/telemetry/telemetry_controller.dart';
-import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 
 Future<void> main() async {
@@ -92,15 +91,11 @@ Future<void> _bootstrapServices() async {
   }
   // SecurityBypassStore already loaded in main() for the hard-block check.
 
-  if (Firebase.apps.isEmpty) {
-    try {
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
-      FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-    } catch (e) {
-      debugPrint('[notifications] Firebase init skipped: $e');
-    }
+  try {
+    await ensureFirebaseApp();
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  } catch (e) {
+    debugPrint('[notifications] Firebase init skipped: $e');
   }
 }
 

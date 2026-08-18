@@ -30,12 +30,12 @@ bool shouldSkipShiftForGoOnDuty({
   return isOnlineOnDuty && !needsFreshClockIn;
 }
 
-/// After install / revoked-permission re-login, always collect shift times
-/// even if `driver_get_today_shift` still returns today's row.
+/// After install / revoked-permission re-login, still skip the sheet when
+/// today's shift row is unexpired. Re-collecting times hits `shift_locked`.
 bool shouldPromptShiftOnClockIn({
   required bool hasActiveShift,
   required bool needsFreshClockIn,
 }) {
-  if (needsFreshClockIn) return true;
-  return !hasActiveShift;
+  if (hasActiveShift) return false;
+  return needsFreshClockIn || !hasActiveShift;
 }

@@ -129,13 +129,15 @@ void main() {
   });
 
   group('shouldPromptShiftOnClockIn', () {
-    test('always prompts after a fresh-clock-in session even if a shift exists', () {
+    test('does not re-collect times when today already has an unexpired shift', () {
+      // Re-login after revoked permissions, or reinstall, still has today's row.
+      // Prompting again submits a second window and the server answers shift_locked.
       expect(
         shouldPromptShiftOnClockIn(
           hasActiveShift: true,
           needsFreshClockIn: true,
         ),
-        isTrue,
+        isFalse,
       );
     });
 

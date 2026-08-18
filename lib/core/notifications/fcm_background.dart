@@ -1,13 +1,12 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
-import '../../firebase_options.dart';
+import 'firebase_app_guard.dart';
 import 'notification_payload.dart';
 import 'screenshot_restriction_store.dart';
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await ensureFirebaseApp();
 
   final payload = NotificationPayload.fromFcmData(message.data);
   if (payload.screenshotRestricted != null && payload.campaignId.isNotEmpty) {
