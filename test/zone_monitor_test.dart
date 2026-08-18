@@ -65,4 +65,68 @@ void main() {
       );
     });
   });
+
+  group('zone report must not look like in-zone', () {
+    test('a missing or unknown report after clock-in is not in-zone', () {
+      expect(isConfirmedInZone(null), isFalse);
+      expect(isConfirmedInZone('unknown'), isFalse);
+      expect(isConfirmedInZone('out_of_zone'), isFalse);
+      expect(isConfirmedInZone('in_zone'), isTrue);
+    });
+
+    test('only an explicit out_of_zone report resumes the countdown', () {
+      expect(isConfirmedOutOfZone('out_of_zone'), isTrue);
+      expect(isConfirmedOutOfZone(null), isFalse);
+      expect(isConfirmedOutOfZone('unknown'), isFalse);
+    });
+  });
+
+  group('second clock-out/in keeps remaining time', () {
+    const window = zoneIdleTimeoutSeconds;
+
+    test('paused remaining survives a wiped episode start on the next clock-in', () {
+      final firstOutside = DateTime.utc(2026, 8, 16, 10, 0);
+      final firstClockOut = firstOutside.add(const Duration(minutes: 10));
+      final paused = freezeRemainingOnPause(
+        outsideSince: firstOutside,
+        now: firstClockOut,
+        windowSeconds: window,
+      );
+      expect(paused, window - 600);
+
+      // First clock-in resumes. Then 8 more minutes on duty, second clock-out.
+      final secondClockOut = firstClockOut.add(const Duration(minutes: 8));
+      final pausedAgain = freezeRemainingOnPause(
+        outsideSince: resumeOutsideSince(
+          existingOutsideSince: firstOutside,
+          pausedRemainingSeconds: paused,
+          now: firstClockOut,
+          windowSeconds: window,
+        )!,
+        now: secondClockOut,
+        windowSeconds: window,
+      );
+      expect(pausedAgain, window - 600 - 480);
+
+      // Service starts before GPS: lastReport is null, episode start was cleared.
+      // Ten minutes off-duty must not eat the frozen remainder.
+      final secondClockIn = secondClockOut.add(const Duration(minutes: 10));
+      final resumed = resumeOutsideSince(
+        existingOutsideSince: null,
+        pausedRemainingSeconds: pausedAgain,
+        now: secondClockIn,
+        windowSeconds: window,
+      )!;
+      expect(
+        remainingOutsideSeconds(
+          outsideSince: resumed,
+          now: secondClockIn,
+          windowSeconds: window,
+        ),
+        pausedAgain,
+      );
+      expect(pausedAgain, isNot(window));
+    });
+  });
 }
+

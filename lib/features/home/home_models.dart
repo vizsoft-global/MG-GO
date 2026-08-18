@@ -75,6 +75,19 @@ class ShiftAdherence {
     final scheduledStartAt = parse(json['scheduled_start_at'] as String?);
     final scheduledEndAt = parse(json['scheduled_end_at'] as String?);
     final actualOutAt = parse(json['actual_out_at'] as String?);
+    final scheduledSeconds = (json['scheduled_seconds'] as num?)?.toInt() ?? 0;
+    final jsonEarly = (json['minutes_early_out'] as num?)?.toInt();
+    final recomputed = scheduledStartAt != null && scheduledEndAt != null
+        ? shiftMinutesEarlyOut(
+            scheduledStart: scheduledStartAt,
+            scheduledEnd: scheduledEndAt,
+            actualOut: actualOutAt,
+          )
+        : 0;
+    // Prefer the server minutes when present. Recomputing from ISO strings
+    // on the device clock can skip the window clamp (naive 09:35 vs UTC
+    // 08:30Z → 415, or 150) even when Postgres already sent 300.
+    final rawEarly = jsonEarly ?? recomputed;
 
     return ShiftAdherence(
       scheduledStartAt: scheduledStartAt,
@@ -82,15 +95,12 @@ class ShiftAdherence {
       actualInAt: parse(json['actual_in_at'] as String?),
       actualOutAt: actualOutAt,
       minutesLate: (json['minutes_late'] as num?)?.toInt() ?? 0,
-      minutesEarlyOut: scheduledStartAt != null && scheduledEndAt != null
-          ? shiftMinutesEarlyOut(
-              scheduledStart: scheduledStartAt,
-              scheduledEnd: scheduledEndAt,
-              actualOut: actualOutAt,
-            )
-          : (json['minutes_early_out'] as num?)?.toInt() ?? 0,
+      minutesEarlyOut: capShiftEarlyOutMinutes(
+        rawEarly,
+        scheduledSeconds: scheduledSeconds,
+      ),
       onlineSeconds: (json['online_seconds'] as num?)?.toInt() ?? 0,
-      scheduledSeconds: (json['scheduled_seconds'] as num?)?.toInt() ?? 0,
+      scheduledSeconds: scheduledSeconds,
     );
   }
 }
