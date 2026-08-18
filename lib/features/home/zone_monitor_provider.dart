@@ -39,6 +39,38 @@ int remainingOutsideSeconds({
   return (windowSeconds - elapsed).clamp(0, windowSeconds);
 }
 
+/// Only a confirmed in-zone fix may clear the 45-minute episode.
+/// A missing report after clock-in (service up, GPS not yet) is not in-zone.
+bool isConfirmedInZone(String? zoneStatus) => zoneStatus == 'in_zone';
+
+bool isConfirmedOutOfZone(String? zoneStatus) => zoneStatus == 'out_of_zone';
+
+int freezeRemainingOnPause({
+  required DateTime outsideSince,
+  required DateTime now,
+  required int windowSeconds,
+}) =>
+    remainingOutsideSeconds(
+      outsideSince: outsideSince,
+      now: now,
+      windowSeconds: windowSeconds,
+    );
+
+/// Rebuild [outsideSince] so remaining at [now] matches the frozen pause.
+DateTime? resumeOutsideSince({
+  DateTime? existingOutsideSince,
+  int? pausedRemainingSeconds,
+  required DateTime now,
+  required int windowSeconds,
+}) {
+  if (pausedRemainingSeconds != null) {
+    final remaining = pausedRemainingSeconds.clamp(0, windowSeconds);
+    final elapsed = windowSeconds - remaining;
+    return now.subtract(Duration(seconds: elapsed));
+  }
+  return existingOutsideSince ?? now;
+}
+
 class ZoneMonitorState {
   const ZoneMonitorState({
     this.isOutsideZone = false,
@@ -84,6 +116,7 @@ final zoneMonitorProvider =
 class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
   Timer? _countdownTimer;
   DateTime? _outsideSince;
+  int? _pausedRemainingSeconds;
   ZoneTimeoutMode _activeMode = ZoneTimeoutMode.none;
   bool _hadActiveDeliveryWhileOutside = false;
   bool _checkoutTriggered = false;
@@ -99,8 +132,8 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
       final wasOnDuty = previous?.asData?.value.isOnDuty ?? false;
       final isOnDuty = curr.isOnDuty;
       if (!isOnDuty && wasOnDuty) {
-        // Pause only — keep _outsideSince so clock-in outside continues the
-        // same episode instead of granting a fresh 45-minute window.
+        // Freeze remaining. A later clock-in while still outside resumes
+        // that remainder instead of granting a fresh 45-minute window.
         _pauseForClockOut();
       } else if (isOnDuty && !wasOnDuty) {
         _checkoutTriggered = false;
@@ -139,19 +172,34 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
     _countdownTimer = null;
   }
 
-  /// Stops the visible countdown without erasing the outside episode.
+  /// Stops the visible countdown and freezes remaining seconds.
+  ///
+  /// [ _outsideSince ] is cleared after the freeze so a second clock-out
+  /// before GPS arrives cannot recompute remaining from wall-clock (that
+  /// would eat off-duty time, or look like a fresh 45 if since was wiped).
   void _pauseForClockOut() {
     _cancelTimer();
     _checkoutTriggered = false;
+    if (_pausedRemainingSeconds == null && _outsideSince != null) {
+      _pausedRemainingSeconds = freezeRemainingOnPause(
+        outsideSince: _outsideSince!,
+        now: DateTime.now(),
+        windowSeconds: _windowSecondsForMode(_activeMode),
+      );
+    }
+    _outsideSince = null;
     state = state.copyWith(
       isOutsideZone: false,
       isChecking: false,
+      remainingSeconds:
+          _pausedRemainingSeconds ?? state.remainingSeconds,
     );
   }
 
   void _clearOutsideEpisode() {
     _cancelTimer();
     _outsideSince = null;
+    _pausedRemainingSeconds = null;
     _activeMode = ZoneTimeoutMode.none;
     _hadActiveDeliveryWhileOutside = false;
     _checkoutTriggered = false;
@@ -163,6 +211,7 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
     if (hasActiveDelivery) {
       _cancelTimer();
       _outsideSince = null;
+      _pausedRemainingSeconds = null;
       _activeMode = ZoneTimeoutMode.none;
       state = state.copyWith(
         isOutsideZone: false,
@@ -177,10 +226,10 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
     final duty = ref.read(dutyLocationProvider);
     if (!duty.isServiceRunning) return;
 
-    final outside = duty.isOutsideZone;
-    if (outside) {
+    final zone = duty.lastReport?.zoneStatus;
+    if (isConfirmedOutOfZone(zone)) {
       _applyOutsideState(true);
-    } else {
+    } else if (isConfirmedInZone(zone)) {
       _applyOutsideState(false);
     }
   }
@@ -198,6 +247,7 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
     _cancelTimer();
     // Delivery just ended while still outside — switch to return-grace from now.
     _outsideSince = DateTime.now();
+    _pausedRemainingSeconds = null;
     _activeMode = _hadActiveDeliveryWhileOutside
         ? ZoneTimeoutMode.returnGrace
         : ZoneTimeoutMode.idle;
@@ -212,6 +262,7 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
     if (hasActiveDelivery) {
       _cancelTimer();
       _outsideSince = null;
+      _pausedRemainingSeconds = null;
       state = state.copyWith(
         isOutsideZone: false,
         remainingSeconds: zoneIdleTimeoutSeconds,
@@ -235,12 +286,19 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
       return;
     }
 
-    _outsideSince ??= DateTime.now();
     if (_activeMode == ZoneTimeoutMode.none) {
       _activeMode = _hadActiveDeliveryWhileOutside
           ? ZoneTimeoutMode.returnGrace
           : ZoneTimeoutMode.idle;
     }
+    final window = _windowSecondsForMode(_activeMode);
+    _outsideSince = resumeOutsideSince(
+      existingOutsideSince: _outsideSince,
+      pausedRemainingSeconds: _pausedRemainingSeconds,
+      now: DateTime.now(),
+      windowSeconds: window,
+    );
+    _pausedRemainingSeconds = null;
     _ensureCountdownRunning();
     _tickCountdown();
   }
@@ -317,8 +375,8 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
           isOnline: false,
         );
     await ref.read(homeDashboardProvider.notifier).refresh();
-    // Pause — do not clear _outsideSince. Clocking back in while still
-    // outside must resume (or immediately re-checkout) the same episode.
+    // Freeze remaining. Clocking back in while still outside must resume
+    // (or immediately re-checkout) the same episode.
     _pauseForClockOut();
 
     try {
