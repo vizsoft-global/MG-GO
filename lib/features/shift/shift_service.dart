@@ -123,6 +123,20 @@ class ShiftService {
       }
       return shift;
     } on PostgrestException catch (e) {
+      final mapped = _mapPostgrest(e);
+      if (mapped.code == 'shift_locked') {
+        try {
+          final reuse = existingShiftToReuseOnLock(await fetchTodayShift());
+          if (reuse != null) {
+            if (userId != null) {
+              await _offlineRepo.saveActiveShiftCache(userId, reuse.toJson());
+            }
+            return reuse;
+          }
+        } catch (_) {
+          // Fall through to the original lock error if today's row cannot be read.
+        }
+      }
       _networkStatus.recordRpcFailure();
       if (userId != null && _networkStatus.isOffline) {
         await _offlineRepo.queueShiftSubmission(userId: userId, payload: params);
@@ -130,7 +144,7 @@ class ShiftService {
         await _offlineRepo.saveActiveShiftCache(userId, optimistic.toJson());
         return optimistic;
       }
-      throw _mapPostgrest(e);
+      throw mapped;
     }
   }
 

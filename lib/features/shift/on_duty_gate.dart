@@ -203,11 +203,18 @@ DutyStartResult dutyStartResultFrom(
   AppLocalizations l10n,
   bool? started,
 ) {
-  if (started == true) return const DutyStartResult.started();
   final rejection = lastDutyRejection(ref.read(homeDashboardProvider).error);
-  return rejection == null
-      ? const DutyStartResult.blocked()
-      : DutyStartResult.refused(dutyRejectionMessage(l10n, rejection));
+  switch (decideDutyStartKind(
+    started: started == true,
+    rejection: rejection,
+  )) {
+    case DutyStartKind.refused:
+      return DutyStartResult.refused(dutyRejectionMessage(l10n, rejection!));
+    case DutyStartKind.started:
+      return const DutyStartResult.started();
+    case DutyStartKind.blocked:
+      return const DutyStartResult.blocked();
+  }
 }
 
 bool _lastDutyErrorIsShiftRequired(WidgetRef ref) {

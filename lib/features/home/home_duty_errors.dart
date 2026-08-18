@@ -70,3 +70,18 @@ String dutyRejectionMessage(AppLocalizations l10n, DutyRejection rejection) {
     DutyRejection.serverOutdated => l10n.serverUpdateRequired,
   };
 }
+
+/// Outcome of a clock-in write, once the leftover dashboard and the server's
+/// refusal are both in hand. A retained `isOnlineOnDuty` must never hide a
+/// refusal — Riverpod keeps the previous dashboard under an AsyncError, and
+/// that leftover is what made a suspended rider look like they went In.
+enum DutyStartKind { started, refused, blocked }
+
+DutyStartKind decideDutyStartKind({
+  required bool started,
+  required DutyRejection? rejection,
+}) {
+  if (rejection != null) return DutyStartKind.refused;
+  if (started) return DutyStartKind.started;
+  return DutyStartKind.blocked;
+}
