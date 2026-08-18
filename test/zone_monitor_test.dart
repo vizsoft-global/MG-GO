@@ -81,6 +81,47 @@ void main() {
     });
   });
 
+  group('active delivery does not pause the 45-minute window', () {
+    test('out_of_zone still starts the countdown while a pickup is open', () {
+      expect(
+        zoneCountdownDrive(
+          zoneStatus: 'out_of_zone',
+          hasActiveDelivery: true,
+        ),
+        ZoneCountdownDrive.startOrResume,
+      );
+      expect(
+        zoneCountdownDrive(
+          zoneStatus: 'out_of_zone',
+          hasActiveDelivery: false,
+        ),
+        ZoneCountdownDrive.startOrResume,
+      );
+    });
+
+    test('in_zone still clears the episode during a delivery', () {
+      expect(
+        zoneCountdownDrive(
+          zoneStatus: 'in_zone',
+          hasActiveDelivery: true,
+        ),
+        ZoneCountdownDrive.clear,
+      );
+    });
+
+    test('Home shows the 45:00 banner during an active delivery', () {
+      expect(
+        showsOutsideZoneBanner(
+          isOnDuty: true,
+          locationDenied: false,
+          outsideFromGps: true,
+          outsideFromCountdown: false,
+        ),
+        isTrue,
+      );
+    });
+  });
+
   group('second clock-out/in keeps remaining time', () {
     const window = zoneIdleTimeoutSeconds;
 
