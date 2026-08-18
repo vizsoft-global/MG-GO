@@ -74,7 +74,8 @@ Every `driver_report_location` sets:
 
 While **In**, the app shows:
 
-- A **10-minute countdown banner** when out of zone (`zone_monitor_provider`)
+- A **45-minute countdown banner** when out of zone (`zone_monitor_provider`), including while a delivery is in progress
+- A **20-minute** return-grace banner after finishing a delivery still outside the zone
 - A **zone status chip** on home from the latest location report
 
 Admin can audit via `driver_location_history.zone_status`.

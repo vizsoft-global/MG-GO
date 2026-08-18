@@ -118,11 +118,12 @@ class HomeScreen extends ConsumerWidget {
         final outsideFromService = dutyLocation.isOutsideZone;
         final outsideFromMonitor =
             zoneState.isOutsideZone && !zoneState.locationDenied;
-        final showZoneBanner =
-            isOnline &&
-            !hasActiveDelivery &&
-            !zoneState.suppressedForActiveDelivery &&
-            (outsideFromService || outsideFromMonitor);
+        final showZoneBanner = showsOutsideZoneBanner(
+          isOnDuty: isOnline,
+          locationDenied: zoneState.locationDenied,
+          outsideFromGps: outsideFromService,
+          outsideFromCountdown: outsideFromMonitor,
+        );
 
         return Scaffold(
           backgroundColor: pageBg,

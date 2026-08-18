@@ -13,7 +13,7 @@ import '../duty/duty_location_provider.dart';
 import 'home_providers.dart';
 import 'remote_duty_monitor.dart';
 
-/// Idle outside-zone warning window (no active delivery).
+/// Outside-zone warning window while on duty (including during a delivery).
 /// Matches admin `attendance_auto_checkout_minutes` default (45).
 const zoneIdleTimeoutSeconds = 45 * 60;
 
@@ -44,6 +44,37 @@ int remainingOutsideSeconds({
 bool isConfirmedInZone(String? zoneStatus) => zoneStatus == 'in_zone';
 
 bool isConfirmedOutOfZone(String? zoneStatus) => zoneStatus == 'out_of_zone';
+
+enum ZoneCountdownDrive { startOrResume, clear, hold }
+
+/// GPS → countdown. An in-progress pickup does not pause the window: the
+/// server cron still ages `out_of_zone_since` during `in_transit`, so hiding
+/// the client timer left Home showing Out of zone with no 45:00 banner.
+ZoneCountdownDrive zoneCountdownDrive({
+  required String? zoneStatus,
+  required bool hasActiveDelivery,
+}) {
+  // [hasActiveDelivery] is part of the contract so call sites cannot skip it;
+  // an open pickup must not pause or clear the window.
+  switch ((zoneStatus, hasActiveDelivery)) {
+    case ('in_zone', _):
+      return ZoneCountdownDrive.clear;
+    case ('out_of_zone', _):
+      return ZoneCountdownDrive.startOrResume;
+    default:
+      return ZoneCountdownDrive.hold;
+  }
+}
+
+bool showsOutsideZoneBanner({
+  required bool isOnDuty,
+  required bool locationDenied,
+  required bool outsideFromGps,
+  required bool outsideFromCountdown,
+}) {
+  if (!isOnDuty || locationDenied) return false;
+  return outsideFromGps || outsideFromCountdown;
+}
 
 int freezeRemainingOnPause({
   required DateTime outsideSince,
@@ -78,7 +109,6 @@ class ZoneMonitorState {
     this.isChecking = false,
     this.locationDenied = false,
     this.timeoutMode = ZoneTimeoutMode.none,
-    this.suppressedForActiveDelivery = false,
   });
 
   final bool isOutsideZone;
@@ -86,7 +116,6 @@ class ZoneMonitorState {
   final bool isChecking;
   final bool locationDenied;
   final ZoneTimeoutMode timeoutMode;
-  final bool suppressedForActiveDelivery;
 
   ZoneMonitorState copyWith({
     bool? isOutsideZone,
@@ -94,7 +123,6 @@ class ZoneMonitorState {
     bool? isChecking,
     bool? locationDenied,
     ZoneTimeoutMode? timeoutMode,
-    bool? suppressedForActiveDelivery,
   }) {
     return ZoneMonitorState(
       isOutsideZone: isOutsideZone ?? this.isOutsideZone,
@@ -102,8 +130,6 @@ class ZoneMonitorState {
       isChecking: isChecking ?? this.isChecking,
       locationDenied: locationDenied ?? this.locationDenied,
       timeoutMode: timeoutMode ?? this.timeoutMode,
-      suppressedForActiveDelivery:
-          suppressedForActiveDelivery ?? this.suppressedForActiveDelivery,
     );
   }
 }
@@ -206,31 +232,21 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
   }
 
   void _reevaluateOutsideFromDuty() {
-    final hasActiveDelivery =
-        ref.read(activeDeliveryProvider).asData?.value != null;
-    if (hasActiveDelivery) {
-      _cancelTimer();
-      _outsideSince = null;
-      _pausedRemainingSeconds = null;
-      _activeMode = ZoneTimeoutMode.none;
-      state = state.copyWith(
-        isOutsideZone: false,
-        remainingSeconds: _windowSecondsForMode(ZoneTimeoutMode.idle),
-        isChecking: false,
-        timeoutMode: ZoneTimeoutMode.none,
-        suppressedForActiveDelivery: true,
-      );
-      return;
-    }
-
     final duty = ref.read(dutyLocationProvider);
     if (!duty.isServiceRunning) return;
 
-    final zone = duty.lastReport?.zoneStatus;
-    if (isConfirmedOutOfZone(zone)) {
-      _applyOutsideState(true);
-    } else if (isConfirmedInZone(zone)) {
-      _applyOutsideState(false);
+    final hasActiveDelivery =
+        ref.read(activeDeliveryProvider).asData?.value != null;
+    switch (zoneCountdownDrive(
+      zoneStatus: duty.lastReport?.zoneStatus,
+      hasActiveDelivery: hasActiveDelivery,
+    )) {
+      case ZoneCountdownDrive.startOrResume:
+        _applyOutsideState(true);
+      case ZoneCountdownDrive.clear:
+        _applyOutsideState(false);
+      case ZoneCountdownDrive.hold:
+        break;
     }
   }
 
@@ -257,22 +273,6 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
   }
 
   void _applyOutsideState(bool outside) {
-    final hasActiveDelivery =
-        ref.read(activeDeliveryProvider).asData?.value != null;
-    if (hasActiveDelivery) {
-      _cancelTimer();
-      _outsideSince = null;
-      _pausedRemainingSeconds = null;
-      state = state.copyWith(
-        isOutsideZone: false,
-        remainingSeconds: zoneIdleTimeoutSeconds,
-        isChecking: false,
-        timeoutMode: ZoneTimeoutMode.none,
-        suppressedForActiveDelivery: true,
-      );
-      return;
-    }
-
     if (!outside) {
       // Only a real return to the zone clears the episode clock.
       _clearOutsideEpisode();
@@ -281,7 +281,6 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
         remainingSeconds: zoneIdleTimeoutSeconds,
         isChecking: false,
         timeoutMode: ZoneTimeoutMode.none,
-        suppressedForActiveDelivery: false,
       );
       return;
     }
@@ -316,7 +315,6 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
       remainingSeconds: remaining,
       isChecking: false,
       timeoutMode: _activeMode,
-      suppressedForActiveDelivery: false,
     );
     if (remaining <= 0) {
       _cancelTimer();
