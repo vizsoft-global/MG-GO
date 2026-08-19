@@ -10,6 +10,7 @@ Future<ShiftType?> showShiftTypeSheet(
 }) {
   return showModalBottomSheet<ShiftType>(
     context: context,
+    useRootNavigator: true,
     backgroundColor: AppColors.white,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),

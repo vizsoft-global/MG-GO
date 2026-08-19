@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../../core/geo/location_sampler.dart';
+import '../../core/geo/zone_geometry.dart';
 import '../deliveries/delivery_proximity_service.dart';
 import '../home/home_models.dart';
 import '../home/home_providers.dart';
@@ -16,9 +17,10 @@ import 'duty_location_provider.dart';
 /// UI lag by reading a high-accuracy GPS stream (~5 m / high accuracy) on the
 /// main isolate and evaluating against the locally cached zone polygon.
 ///
-/// The server report is still authoritative for audit / history purposes —
-/// this provider only updates the UI-facing `zone_status` field on
-/// [DutyLocationState] so banners and chips can react immediately.
+/// The server report is still authoritative for audit / history purposes.
+/// Delivery-range status still lands on [DutyLocationState.lastReport]; the
+/// assigned-zone polygon (0 m buffer) is written separately so the 45-minute
+/// timer cannot be cleared by a restaurant-range heartbeat.
 final localZoneMonitorControllerProvider = Provider<void>((ref) {
   final controller = _LocalZoneMonitorController(ref);
   ref.onDispose(controller.dispose);
@@ -119,16 +121,38 @@ class _LocalZoneMonitorController {
           latitude: position.latitude,
           longitude: position.longitude,
         );
-    if (proximity.reason ==
+    if (proximity.reason !=
         DeliveryProximityBlockReason.contextUnavailable) {
-      return;
+      final status = proximity.allowed ? 'in_zone' : 'out_of_zone';
+      _ref.read(dutyLocationProvider.notifier).applyLocalZoneStatus(
+            status,
+            inRange: proximity.allowed,
+          );
     }
 
-    final status = proximity.allowed ? 'in_zone' : 'out_of_zone';
-    _ref.read(dutyLocationProvider.notifier).applyLocalZoneStatus(
-          status,
-          inRange: proximity.allowed,
-        );
+    // 0-buffer assigned polygon — same rule as `out_of_zone_since`.
+    // Delivery-range `evaluate()` uses Allowed Distance and must not drive
+    // the 45-minute timer (or a pickup in restaurant range would hide it).
+    final hasAssignedZone =
+        context.zoneId != null && context.zoneId!.trim().isNotEmpty;
+    final zone = context.zoneShape;
+    final duty = _ref.read(dutyLocationProvider.notifier);
+    if (hasAssignedZone && zone != null) {
+      final inside = isPointInsideZoneShape(
+        lat: position.latitude,
+        lng: position.longitude,
+        shape: zone,
+      );
+      duty.applyAssignedZoneStatus(
+        inside ? 'in_zone' : 'out_of_zone',
+        hasAssignedZone: true,
+      );
+    } else {
+      duty.applyAssignedZoneStatus(
+        null,
+        hasAssignedZone: hasAssignedZone,
+      );
+    }
   }
 
   Future<void> _stop() async {

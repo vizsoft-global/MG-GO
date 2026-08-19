@@ -20,6 +20,8 @@ class DutyLocationState {
     this.isServiceRunning = false,
     this.trackingStatus = TrackingStatus.idle,
     this.errorMessage,
+    this.hasAssignedZone = false,
+    this.assignedZoneStatus,
   });
 
   final LocationReportResult? lastReport;
@@ -27,7 +29,20 @@ class DutyLocationState {
   final TrackingStatus trackingStatus;
   final String? errorMessage;
 
-  bool get isOutsideZone => lastReport?.zoneStatus == 'out_of_zone';
+  /// Rider has `drivers.zone_id`. The 45-minute timer uses [assignedZoneStatus],
+  /// not [lastReport.zoneStatus] (that field is restaurant delivery range).
+  final bool hasAssignedZone;
+
+  /// Strict inside/outside the assigned polygon (0 m buffer). Survives
+  /// [DutyLocationNotifier.applyReport] so a delivery heartbeat cannot
+  /// overwrite it with restaurant `in_zone`.
+  final String? assignedZoneStatus;
+
+  bool get isOutsideZone {
+    if (hasAssignedZone) return assignedZoneStatus == 'out_of_zone';
+    return lastReport?.zoneStatus == 'out_of_zone';
+  }
+
   double? get speedMps => lastReport?.speedMps;
   double get distanceTodayMeters => lastReport?.distanceTodayMeters ?? 0;
 
@@ -37,12 +52,16 @@ class DutyLocationState {
     TrackingStatus? trackingStatus,
     String? errorMessage,
     bool clearError = false,
+    bool? hasAssignedZone,
+    String? assignedZoneStatus,
   }) {
     return DutyLocationState(
       lastReport: lastReport ?? this.lastReport,
       isServiceRunning: isServiceRunning ?? this.isServiceRunning,
       trackingStatus: trackingStatus ?? this.trackingStatus,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      hasAssignedZone: hasAssignedZone ?? this.hasAssignedZone,
+      assignedZoneStatus: assignedZoneStatus ?? this.assignedZoneStatus,
     );
   }
 }
@@ -70,6 +89,26 @@ class DutyLocationNotifier extends Notifier<DutyLocationState> {
       lastReport: report,
       trackingStatus: status,
       clearError: true,
+    );
+  }
+
+  /// Assigned-zone in/out. Must not be folded into [applyReport] or
+  /// [applyLocalZoneStatus] — those write restaurant / buffered range.
+  void applyAssignedZoneStatus(
+    String? zoneStatus, {
+    required bool hasAssignedZone,
+  }) {
+    if (state.hasAssignedZone == hasAssignedZone &&
+        state.assignedZoneStatus == zoneStatus) {
+      return;
+    }
+    state = DutyLocationState(
+      lastReport: state.lastReport,
+      isServiceRunning: state.isServiceRunning,
+      trackingStatus: state.trackingStatus,
+      errorMessage: state.errorMessage,
+      hasAssignedZone: hasAssignedZone,
+      assignedZoneStatus: zoneStatus,
     );
   }
 

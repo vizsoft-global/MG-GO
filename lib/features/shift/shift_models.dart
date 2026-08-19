@@ -46,6 +46,13 @@ class TimeOfDayValue {
   factory TimeOfDayValue.fromDateTime(DateTime dt) {
     return TimeOfDayValue(hour: dt.hour, minute: dt.minute);
   }
+
+  @override
+  bool operator ==(Object other) =>
+      other is TimeOfDayValue && other.hour == hour && other.minute == minute;
+
+  @override
+  int get hashCode => Object.hash(hour, minute);
 }
 
 class DailyShift {
@@ -309,4 +316,49 @@ String formatTimeOfDay12h(TimeOfDayValue time) {
 DailyShift? existingShiftToReuseOnLock(DailyShift? shift) {
   if (shift == null || !shift.isActive) return null;
   return shift;
+}
+
+/// Clock-out does not delete today's row. A refresh that comes back empty
+/// must not forget a still-active window — that is what reopened an empty
+/// shift sheet on the next Clock In.
+DailyShift? keepActiveShiftIfFetchMissed({
+  required DailyShift? fetched,
+  required DailyShift? previous,
+}) {
+  if (fetched != null) return fetched;
+  if (previous != null && previous.isActive) return previous;
+  return null;
+}
+
+/// Values the shift sheet can paint so a re-clock-in is not a blank form.
+class ShiftFormSeed {
+  const ShiftFormSeed({
+    required this.type,
+    required this.session1Start,
+    required this.session1End,
+    this.session2Start,
+    this.session2End,
+  });
+
+  final ShiftType type;
+  final TimeOfDayValue session1Start;
+  final TimeOfDayValue session1End;
+  final TimeOfDayValue? session2Start;
+  final TimeOfDayValue? session2End;
+
+  static ShiftFormSeed? fromDailyShift(DailyShift shift) {
+    if (shift.session1Start.isEmpty || shift.session1End.isEmpty) return null;
+    final session2Start = shift.session2Start;
+    final session2End = shift.session2End;
+    return ShiftFormSeed(
+      type: shift.shiftType,
+      session1Start: parseApiTime(shift.session1Start),
+      session1End: parseApiTime(shift.session1End),
+      session2Start: session2Start == null || session2Start.isEmpty
+          ? null
+          : parseApiTime(session2Start),
+      session2End:
+          session2End == null || session2End.isEmpty ? null : parseApiTime(session2End),
+    );
+  }
 }

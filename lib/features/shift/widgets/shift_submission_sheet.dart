@@ -16,11 +16,13 @@ Future<bool> showShiftSubmissionSheet(
   ShiftSubmissionCallback? onSubmitted,
   bool required = false,
   bool shiftExpired = false,
+  DailyShift? initial,
 }) async {
   final result = await showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
+    useRootNavigator: true,
     isDismissible: true,
     enableDrag: true,
     backgroundColor: AppColors.white,
@@ -31,6 +33,7 @@ Future<bool> showShiftSubmissionSheet(
       onSubmitted: onSubmitted,
       required: required,
       shiftExpired: shiftExpired,
+      initial: initial,
     ),
   );
   return result ?? false;
@@ -41,12 +44,14 @@ class ShiftSubmissionSheet extends ConsumerStatefulWidget {
     this.onSubmitted,
     this.required = false,
     this.shiftExpired = false,
+    this.initial,
     super.key,
   });
 
   final ShiftSubmissionCallback? onSubmitted;
   final bool required;
   final bool shiftExpired;
+  final DailyShift? initial;
 
   @override
   ConsumerState<ShiftSubmissionSheet> createState() =>
@@ -61,6 +66,20 @@ class _ShiftSubmissionSheetState extends ConsumerState<ShiftSubmissionSheet> {
   TimeOfDayValue? _s2End;
   String? _errorKey;
   bool _submitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final seed = widget.initial == null
+        ? null
+        : ShiftFormSeed.fromDailyShift(widget.initial!);
+    if (seed == null) return;
+    _type = seed.type;
+    _s1Start = seed.session1Start;
+    _s1End = seed.session1End;
+    _s2Start = seed.session2Start;
+    _s2End = seed.session2End;
+  }
 
   bool get _s1EndsNextDay =>
       _s1Start != null && _s1End != null && _s1End!.totalMinutes <= _s1Start!.totalMinutes;
