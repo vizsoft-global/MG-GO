@@ -1333,6 +1333,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Camera access is needed to take a photo. Allow it when asked, or enable Camera in Settings.';
 
   @override
+  String get rearCameraRequired =>
+      'Rear camera is required to take a pickup photo.';
+
+  @override
   String get profilePictureUpdated => 'Profile picture updated';
 
   @override

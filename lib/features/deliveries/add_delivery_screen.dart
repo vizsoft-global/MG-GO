@@ -25,6 +25,7 @@ import 'delivery_proximity_preview.dart';
 import 'delivery_proximity_service.dart';
 import 'delivery_service.dart';
 import 'pending_deliveries_screen.dart';
+import 'capture_pickup_proof.dart';
 import 'widgets/delivery_proof_widgets.dart';
 import '../duty/adaptive_location_scheduler.dart';
 import '../duty/duty_background_service.dart';
@@ -107,20 +108,10 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
     return true;
   }
 
-  Future<void> _showProofSourcePicker() async {
-    final source = await showProofSourceSheet(context);
-    if (source == null || !mounted) return;
-    await _pickProof(source);
-  }
-
-  Future<void> _pickProof(ImageSource source) async {
+  Future<void> _captureProof() async {
     final XFile? file;
     try {
-      file = await pickImageRespectingCameraPermission(
-        source: source,
-        maxWidth: 2048,
-        imageQuality: 85,
-      );
+      file = await capturePickupProof(context);
     } catch (e) {
       if (!mounted) return;
       final message = userMessageIfCameraPermissionDenied(e, context.l10n);
@@ -415,7 +406,8 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
                         ),
                         const SizedBox(height: 10),
                         DeliveryProofUploadArea(
-                          onTap: _submitting ? null : _showProofSourcePicker,
+                          cameraOnly: true,
+                          onTap: _submitting ? null : _captureProof,
                         ),
                         if (_proofFile != null) ...[
                           const SizedBox(height: 12),

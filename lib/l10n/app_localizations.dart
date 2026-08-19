@@ -2420,6 +2420,12 @@ abstract class AppLocalizations {
   /// **'Camera access is needed to take a photo. Allow it when asked, or enable Camera in Settings.'**
   String get profileCameraPermissionDenied;
 
+  /// No description provided for @rearCameraRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Rear camera is required to take a pickup photo.'**
+  String get rearCameraRequired;
+
   /// No description provided for @profilePictureUpdated.
   ///
   /// In en, this message translates to:
