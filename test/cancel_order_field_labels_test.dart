@@ -56,5 +56,37 @@ void main() {
       isTrue,
     );
     expect(find.text('Note (optional)'), findsOneWidget);
+    expect(find.text('Take photo'), findsOneWidget);
+    expect(find.text('Take photo or choose from gallery'), findsNothing);
+    expect(find.byIcon(Icons.photo_library_outlined), findsNothing);
+  });
+
+  testWidgets('Mark as Delivered proof is take-photo only, not gallery',
+      (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          networkStatusProvider.overrideWith(_OnlineNetwork.new),
+        ],
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const FinishDeliveryScreen(
+            deliveryId: 'delivery-1',
+            outcome: FinishOutcome.delivered,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('Take photo'), findsOneWidget);
+    expect(find.text('Take photo or choose from gallery'), findsNothing);
+    expect(find.byIcon(Icons.photo_library_outlined), findsNothing);
   });
 }

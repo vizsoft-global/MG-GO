@@ -1334,7 +1334,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rearCameraRequired =>
-      'Rear camera is required to take a pickup photo.';
+      'Rear camera is required to take an order photo.';
 
   @override
   String get profilePictureUpdated => 'Profile picture updated';
