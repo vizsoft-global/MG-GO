@@ -25,7 +25,7 @@ import 'delivery_proximity_preview.dart';
 import 'delivery_proximity_service.dart';
 import 'delivery_service.dart';
 import 'pending_deliveries_screen.dart';
-import 'capture_pickup_proof.dart';
+import 'capture_order_proof.dart';
 import 'widgets/delivery_proof_widgets.dart';
 import '../duty/adaptive_location_scheduler.dart';
 import '../duty/duty_background_service.dart';
@@ -111,7 +111,7 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
   Future<void> _captureProof() async {
     final XFile? file;
     try {
-      file = await capturePickupProof(context);
+      file = await captureOrderProof(context);
     } catch (e) {
       if (!mounted) return;
       final message = userMessageIfCameraPermissionDenied(e, context.l10n);

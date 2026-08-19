@@ -23,6 +23,7 @@ import '../duty/duty_location_provider.dart';
 import '../duty/location_tracking_service.dart';
 import '../home/home_providers.dart';
 import 'active_delivery_provider.dart';
+import 'capture_order_proof.dart';
 import 'delivery_messages.dart';
 import 'delivery_models.dart';
 import 'delivery_service.dart';
@@ -88,20 +89,10 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
     return true;
   }
 
-  Future<void> _showProofSourcePicker() async {
-    final source = await showProofSourceSheet(context);
-    if (source == null || !mounted) return;
-    await _pickProof(source);
-  }
-
-  Future<void> _pickProof(ImageSource source) async {
+  Future<void> _captureProof() async {
     final XFile? file;
     try {
-      file = await pickImageRespectingCameraPermission(
-        source: source,
-        maxWidth: 2048,
-        imageQuality: 85,
-      );
+      file = await captureOrderProof(context);
     } catch (e) {
       if (!mounted) return;
       final message = userMessageIfCameraPermissionDenied(e, context.l10n);
@@ -389,7 +380,8 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
                   ),
                   const SizedBox(height: 10),
                   DeliveryProofUploadArea(
-                    onTap: _submitting ? null : _showProofSourcePicker,
+                    cameraOnly: true,
+                    onTap: _submitting ? null : _captureProof,
                   ),
                   if (_proofFile != null) ...[
                     const SizedBox(height: 12),

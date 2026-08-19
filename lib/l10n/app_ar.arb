@@ -404,7 +404,7 @@
   "monthDec": "ديس",
   "profileImageUploadFailed": "فشل رفع صورة الملف: {error}",
   "profileCameraPermissionDenied": "يلزم السماح للكاميرا لالتقاط صورة. اسمح بذلك عند الطلب، أو فعّل الكاميرا من الإعدادات.",
-  "rearCameraRequired": "الكاميرا الخلفية مطلوبة لالتقاط صورة الاستلام.",
+  "rearCameraRequired": "الكاميرا الخلفية مطلوبة لالتقاط صورة الطلب.",
   "profilePictureUpdated": "تم تحديث صورة الملف",
   "uploadedPreviewFailed": "تم الرفع لكن تعذّر عرض المعاينة. اسحب للتحديث — تواصل مع الدعم إن استمر.",
   "notificationsTurnedOff": "تم إيقاف الإشعارات",

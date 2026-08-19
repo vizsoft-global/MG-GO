@@ -1326,7 +1326,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get rearCameraRequired =>
-      'الكاميرا الخلفية مطلوبة لالتقاط صورة الاستلام.';
+      'الكاميرا الخلفية مطلوبة لالتقاط صورة الطلب.';
 
   @override
   String get profilePictureUpdated => 'تم تحديث صورة الملف';

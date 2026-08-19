@@ -20,7 +20,8 @@ Widget _l10nApp(Widget home) {
 }
 
 void main() {
-  testWidgets('pickup proof area is take-photo only, not gallery', (tester) async {
+  testWidgets('pickup and finish proof areas are take-photo only, not gallery',
+      (tester) async {
     await tester.pumpWidget(
       _l10nApp(
         const Scaffold(
@@ -53,7 +54,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
 
     expect(
-      find.text('Rear camera is required to take a pickup photo.'),
+      find.text('Rear camera is required to take an order photo.'),
       findsOneWidget,
     );
     expect(find.byIcon(Icons.cameraswitch), findsNothing);
