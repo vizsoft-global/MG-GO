@@ -124,6 +124,11 @@ class HomeScreen extends ConsumerWidget {
           outsideFromGps: outsideFromService,
           outsideFromCountdown: outsideFromMonitor,
         );
+        final idleZoneStatus = zoneStatusForIdleTimer(
+          hasAssignedZone: dutyLocation.hasAssignedZone,
+          assignedZoneStatus: dutyLocation.assignedZoneStatus,
+          deliveryRangeStatus: dutyLocation.lastReport?.zoneStatus,
+        );
 
         return Scaffold(
           backgroundColor: pageBg,
@@ -193,9 +198,8 @@ class HomeScreen extends ConsumerWidget {
                               isOnline: isOnline,
                             ),
                             if ((activeShift != null && activeShift.isActive) ||
-                                (dutyLocation.lastReport?.zoneStatus != null &&
-                                    dutyLocation.lastReport!.zoneStatus !=
-                                        'unknown')) ...[
+                                (idleZoneStatus != null &&
+                                    idleZoneStatus != 'unknown')) ...[
                               const SizedBox(height: 8),
                               Wrap(
                                 spacing: 8,
@@ -205,13 +209,10 @@ class HomeScreen extends ConsumerWidget {
                                   if (activeShift != null &&
                                       activeShift.isActive)
                                     CurrentShiftChip(shift: activeShift),
-                                  if (dutyLocation.lastReport?.zoneStatus !=
-                                          null &&
-                                      dutyLocation.lastReport!.zoneStatus !=
-                                          'unknown')
+                                  if (idleZoneStatus != null &&
+                                      idleZoneStatus != 'unknown')
                                     ZoneStatusChip(
-                                      zoneStatus:
-                                          dutyLocation.lastReport?.zoneStatus,
+                                      zoneStatus: idleZoneStatus,
                                     ),
                                 ],
                               ),

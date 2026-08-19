@@ -92,6 +92,8 @@ class ShiftTimeField extends StatelessWidget {
     final picked = await showTimePicker(
       context: context,
       initialTime: initial,
+      initialEntryMode: TimePickerEntryMode.dialOnly,
+      useRootNavigator: true,
       builder: (context, child) {
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),

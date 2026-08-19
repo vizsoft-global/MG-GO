@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dpd_userapp/features/duty/adaptive_location_scheduler.dart';
+import 'package:dpd_userapp/features/duty/duty_location_provider.dart';
 import 'package:dpd_userapp/features/home/zone_monitor_provider.dart';
 
 void main() {
@@ -119,6 +121,74 @@ void main() {
         ),
         isTrue,
       );
+    });
+  });
+
+  group('designated zone drives the idle timer, not restaurant range', () {
+    test('an open pickup in delivery range still starts the timer outside the assigned zone', () {
+      expect(
+        zoneStatusForIdleTimer(
+          hasAssignedZone: true,
+          assignedZoneStatus: 'out_of_zone',
+          deliveryRangeStatus: 'in_zone',
+        ),
+        'out_of_zone',
+      );
+      expect(
+        zoneCountdownDrive(
+          zoneStatus: zoneStatusForIdleTimer(
+            hasAssignedZone: true,
+            assignedZoneStatus: 'out_of_zone',
+            deliveryRangeStatus: 'in_zone',
+          ),
+          hasActiveDelivery: true,
+        ),
+        ZoneCountdownDrive.startOrResume,
+      );
+    });
+
+    test('a restaurant heartbeat cannot clear a designated-zone episode', () {
+      expect(
+        zoneCountdownDrive(
+          zoneStatus: zoneStatusForIdleTimer(
+            hasAssignedZone: true,
+            assignedZoneStatus: 'out_of_zone',
+            deliveryRangeStatus: 'in_zone',
+          ),
+          hasActiveDelivery: true,
+        ),
+        isNot(ZoneCountdownDrive.clear),
+      );
+    });
+
+    test('without an assigned zone, delivery range still drives the timer', () {
+      expect(
+        zoneStatusForIdleTimer(
+          hasAssignedZone: false,
+          assignedZoneStatus: null,
+          deliveryRangeStatus: 'out_of_zone',
+        ),
+        'out_of_zone',
+      );
+    });
+
+    test('a restaurant heartbeat cannot overwrite assigned-zone outside', () {
+      const assignedOutside = DutyLocationState(
+        hasAssignedZone: true,
+        assignedZoneStatus: 'out_of_zone',
+      );
+      final afterPickupHeartbeat = assignedOutside.copyWith(
+        lastReport: const LocationReportResult(
+          zoneStatus: 'in_zone',
+          inRange: true,
+          lastSeenAt: null,
+          historyWritten: false,
+          trackingStatus: 'delivery_submit',
+        ),
+      );
+      expect(afterPickupHeartbeat.assignedZoneStatus, 'out_of_zone');
+      expect(afterPickupHeartbeat.isOutsideZone, isTrue);
+      expect(afterPickupHeartbeat.lastReport?.zoneStatus, 'in_zone');
     });
   });
 

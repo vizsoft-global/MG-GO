@@ -70,7 +70,12 @@ Future<bool?> ensureOnDutyForAction(
     needsFreshClockIn: sessionGate.needsFreshClockIn,
   )) {
     if (!context.mounted) return null;
-    shift = await _promptMandatoryShift(context, ref, shiftExpired: shift != null);
+    shift = await _promptMandatoryShift(
+      context,
+      ref,
+      shiftExpired: shift != null,
+      initial: shift,
+    );
     if (!_hasActiveShift(shift) || !context.mounted) return null;
   }
 
@@ -91,7 +96,12 @@ Future<bool?> ensureOnDutyForAction(
     await _clearShiftCache(ref);
     ref.read(todayShiftProvider.notifier).clearLocal();
     if (!context.mounted) return null;
-    shift = await _promptMandatoryShift(context, ref, shiftExpired: true);
+    shift = await _promptMandatoryShift(
+      context,
+      ref,
+      shiftExpired: true,
+      initial: shift,
+    );
     if (!_hasActiveShift(shift)) return null;
     if (!context.mounted) return null;
     final retry = await _goInWithReadiness(
@@ -113,19 +123,25 @@ bool _hasActiveShift(DailyShift? shift) =>
     shift != null && shift.isActive;
 
 Future<DailyShift?> _loadActiveShift(WidgetRef ref) async {
+  final previous = ref.read(todayShiftProvider).value;
   await ref.read(todayShiftProvider.notifier).refresh();
-  return ref.read(todayShiftProvider).value;
+  return keepActiveShiftIfFetchMissed(
+    fetched: ref.read(todayShiftProvider).value,
+    previous: previous,
+  );
 }
 
 Future<DailyShift?> _promptMandatoryShift(
   BuildContext context,
   WidgetRef ref, {
   required bool shiftExpired,
+  DailyShift? initial,
 }) async {
   final submitted = await showShiftSubmissionSheet(
     context,
     required: true,
     shiftExpired: shiftExpired,
+    initial: initial,
   );
   if (!submitted) return null;
   return ref.read(todayShiftProvider).value;

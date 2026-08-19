@@ -45,6 +45,21 @@ bool isConfirmedInZone(String? zoneStatus) => zoneStatus == 'in_zone';
 
 bool isConfirmedOutOfZone(String? zoneStatus) => zoneStatus == 'out_of_zone';
 
+/// The idle timer follows the **assigned** zone (0-buffer, same as
+/// `out_of_zone_since`), not restaurant delivery range.
+///
+/// An open pickup heartbeats `driver_report_location` every ~1s with
+/// `zone_status` = restaurant `in_range`. That must not start or clear
+/// the 45-minute window while the rider is outside the designated zone.
+String? zoneStatusForIdleTimer({
+  required bool hasAssignedZone,
+  required String? assignedZoneStatus,
+  required String? deliveryRangeStatus,
+}) {
+  if (hasAssignedZone) return assignedZoneStatus;
+  return deliveryRangeStatus;
+}
+
 enum ZoneCountdownDrive { startOrResume, clear, hold }
 
 /// GPS → countdown. An in-progress pickup does not pause the window: the
@@ -238,7 +253,11 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
     final hasActiveDelivery =
         ref.read(activeDeliveryProvider).asData?.value != null;
     switch (zoneCountdownDrive(
-      zoneStatus: duty.lastReport?.zoneStatus,
+      zoneStatus: zoneStatusForIdleTimer(
+        hasAssignedZone: duty.hasAssignedZone,
+        assignedZoneStatus: duty.assignedZoneStatus,
+        deliveryRangeStatus: duty.lastReport?.zoneStatus,
+      ),
       hasActiveDelivery: hasActiveDelivery,
     )) {
       case ZoneCountdownDrive.startOrResume:
@@ -343,7 +362,8 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
       lng = position?.longitude;
     } catch (_) {}
 
-    final dutyReport = ref.read(dutyLocationProvider).lastReport;
+    final duty = ref.read(dutyLocationProvider);
+    final dutyReport = duty.lastReport;
     final modeLabel = switch (_activeMode) {
       ZoneTimeoutMode.returnGrace => 'return_grace',
       ZoneTimeoutMode.idle => 'idle',
@@ -362,6 +382,7 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
               'latitude': lat,
               'longitude': lng,
               'zone_status': dutyReport?.zoneStatus,
+              'assigned_zone_status': duty.assignedZoneStatus,
               'outside_since': _outsideSince?.toIso8601String(),
             },
           );

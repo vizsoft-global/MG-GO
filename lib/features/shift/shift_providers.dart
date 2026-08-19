@@ -20,10 +20,15 @@ class TodayShiftNotifier extends AsyncNotifier<DailyShift?> {
   }
 
   Future<void> refresh() async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(
-      () => ref.read(shiftServiceProvider).fetchTodayShift(),
-    );
+    final previous = state.value;
+    try {
+      final fetched = await ref.read(shiftServiceProvider).fetchTodayShift();
+      state = AsyncData(
+        keepActiveShiftIfFetchMissed(fetched: fetched, previous: previous),
+      );
+    } catch (e, st) {
+      state = previous != null ? AsyncData(previous) : AsyncError(e, st);
+    }
     _scheduleExpiryRefresh(state.value);
   }
 
