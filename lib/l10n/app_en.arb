@@ -753,6 +753,7 @@
     }
   },
   "profileCameraPermissionDenied": "Camera access is needed to take a photo. Allow it when asked, or enable Camera in Settings.",
+  "rearCameraRequired": "Rear camera is required to take a pickup photo.",
   "profilePictureUpdated": "Profile picture updated",
   "uploadedPreviewFailed": "Uploaded, but preview could not load. Pull down to refresh — contact support if it persists.",
   "notificationsTurnedOff": "Notifications turned off",

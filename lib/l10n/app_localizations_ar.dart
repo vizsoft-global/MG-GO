@@ -1325,6 +1325,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'يلزم السماح للكاميرا لالتقاط صورة. اسمح بذلك عند الطلب، أو فعّل الكاميرا من الإعدادات.';
 
   @override
+  String get rearCameraRequired =>
+      'الكاميرا الخلفية مطلوبة لالتقاط صورة الاستلام.';
+
+  @override
   String get profilePictureUpdated => 'تم تحديث صورة الملف';
 
   @override

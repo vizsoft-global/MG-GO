@@ -65,9 +65,14 @@ Future<ImageSource?> showProofSourceSheet(BuildContext context) {
 }
 
 class DeliveryProofUploadArea extends StatelessWidget {
-  const DeliveryProofUploadArea({required this.onTap, super.key});
+  const DeliveryProofUploadArea({
+    required this.onTap,
+    this.cameraOnly = false,
+    super.key,
+  });
 
   final VoidCallback? onTap;
+  final bool cameraOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -90,13 +95,15 @@ class DeliveryProofUploadArea extends StatelessWidget {
           child: Column(
             children: [
               Icon(
-                Icons.cloud_upload_outlined,
+                cameraOnly
+                    ? Icons.photo_camera_outlined
+                    : Icons.cloud_upload_outlined,
                 size: 36,
                 color: AppColors.textSecondary.withValues(alpha: 0.8),
               ),
               const SizedBox(height: 8),
               Text(
-                l10n.takePhotoOrChooseGallery,
+                cameraOnly ? l10n.takePhoto : l10n.takePhotoOrChooseGallery,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                   fontWeight: FontWeight.w500,
