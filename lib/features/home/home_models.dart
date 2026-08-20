@@ -427,3 +427,31 @@ class HomeDeliveryRuleSummary {
     );
   }
 }
+
+/// A cached on-duty dashboard must not light the Clock In toggle after sign-out.
+///
+/// Sign-out clears the tracking token; a leftover cache from the previous
+/// session is what flashed "In" until the live RPC landed.
+Map<String, dynamic> dutySafeHomeDashboardCache({
+  required Map<String, dynamic> cached,
+  required bool hasLiveDutyToken,
+}) {
+  if (hasLiveDutyToken) return cached;
+  final driver = Map<String, dynamic>.from(
+    cached['driver'] is Map
+        ? Map<String, dynamic>.from(cached['driver'] as Map)
+        : const {},
+  );
+  final session = Map<String, dynamic>.from(
+    cached['session'] is Map
+        ? Map<String, dynamic>.from(cached['session'] as Map)
+        : const {},
+  );
+  driver['is_on_duty'] = false;
+  session['is_online'] = false;
+  return {
+    ...cached,
+    'driver': driver,
+    'session': session,
+  };
+}

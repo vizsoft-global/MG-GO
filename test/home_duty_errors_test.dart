@@ -29,7 +29,10 @@ void main() {
         dutyRejectionFrom('driver_suspended'),
         DutyRejection.accountNotActive,
       );
-      expect(dutyRejectionFrom('shift_required'), DutyRejection.shiftRequired);
+      expect(
+        dutyRejectionFrom('driver_archived'),
+        DutyRejection.driverArchived,
+      );
       expect(
         dutyRejectionFrom('not_authenticated'),
         DutyRejection.notAuthenticated,
@@ -56,7 +59,7 @@ void main() {
 
   group('isPermanentDutyQueueRejection', () {
     test('drops rows the server can only refuse again', () {
-      expect(isPermanentDutyQueueRejection('inactive'), isTrue);
+      expect(isPermanentDutyQueueRejection('driver_archived'), isTrue);
       expect(isPermanentDutyQueueRejection('shift_required'), isTrue);
     });
 

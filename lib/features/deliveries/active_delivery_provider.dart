@@ -22,7 +22,11 @@ final activeDeliveryProvider = FutureProvider<ActiveDelivery?>((ref) async {
   try {
     final active = await service.getActivePickup();
     if (active != null) {
-      await setActiveDeliverySession(active.id);
+      await setActiveDeliverySession(
+        active.id,
+        externalOrderId: active.externalOrderId,
+        pickupAt: active.pickupAt,
+      );
       return active;
     }
 
@@ -68,11 +72,25 @@ Future<ActiveDelivery?> _loadLocalActiveDelivery(String? userId) async {
   final sessionId = await DutySessionStorage.readActiveDeliveryId();
   if (sessionId == null || sessionId.isEmpty) return null;
 
-  // Offline-only: session without a queue row yet (pickup just queued in-memory).
+  final orderId = await DutySessionStorage.readActiveDeliveryOrderId();
+  final pickupAt = await DutySessionStorage.readActiveDeliveryPickupAt();
+  return activeDeliveryFromPersistedSession(
+    sessionId: sessionId,
+    externalOrderId: orderId,
+    pickupAt: pickupAt,
+  );
+}
+
+/// Offline fallback when the pickup is already synced (no pending-queue row).
+ActiveDelivery activeDeliveryFromPersistedSession({
+  required String sessionId,
+  String? externalOrderId,
+  DateTime? pickupAt,
+}) {
   return ActiveDelivery(
     id: sessionId,
-    externalOrderId: '',
-    pickupAt: DateTime.now(),
+    externalOrderId: externalOrderId ?? '',
+    pickupAt: pickupAt ?? DateTime.fromMillisecondsSinceEpoch(0),
   );
 }
 
@@ -80,8 +98,16 @@ Future<void> refreshActiveDelivery(WidgetRef ref) async {
   ref.invalidate(activeDeliveryProvider);
 }
 
-Future<void> setActiveDeliverySession(String? deliveryId) async {
-  await DutySessionStorage.setActiveDeliveryId(deliveryId);
+Future<void> setActiveDeliverySession(
+  String? deliveryId, {
+  String? externalOrderId,
+  DateTime? pickupAt,
+}) async {
+  await DutySessionStorage.setActiveDelivery(
+    deliveryId: deliveryId,
+    externalOrderId: externalOrderId,
+    pickupAt: pickupAt,
+  );
 }
 
 Future<String?> readActiveDeliverySession() =>

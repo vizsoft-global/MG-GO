@@ -111,7 +111,9 @@ class RiderAuthService {
     try {
       final row = await _client
           .from('drivers')
-          .select('is_blocked, blocked_reason, login_verification_exempt')
+          .select(
+            'is_blocked, blocked_reason, login_verification_exempt, archived_at',
+          )
           .eq('id', user.id)
           .maybeSingle();
       if (row == null) return const DriverAccessStatus.allowed();
@@ -122,6 +124,10 @@ class RiderAuthService {
           exempt: row['login_verification_exempt'] == true,
         );
       } catch (_) {}
+
+      if (row['archived_at'] != null) {
+        return const DriverAccessStatus.archived();
+      }
 
       final blocked = row['is_blocked'] == true;
       if (!blocked) return const DriverAccessStatus.allowed();

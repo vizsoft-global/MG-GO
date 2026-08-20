@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/offline/network_status_provider.dart';
 import '../../core/offline/offline_repo.dart';
+import '../../features/duty/duty_session_storage.dart';
 import '../auth/driver_access_monitor.dart';
 import '../auth/rider_auth_service.dart';
 import 'home_duty_errors.dart';
@@ -53,7 +54,13 @@ class HomeService {
       if (userId != null) {
         final cached = await _offlineRepo.loadHomeDashboardCache(userId);
         if (cached != null) {
-          return HomeDashboard.fromJson(cached);
+          final token = await DutySessionStorage.readAccessToken();
+          return HomeDashboard.fromJson(
+            dutySafeHomeDashboardCache(
+              cached: cached,
+              hasLiveDutyToken: token != null && token.isNotEmpty,
+            ),
+          );
         }
       }
       throw HomeServiceException(_friendlyError(e));

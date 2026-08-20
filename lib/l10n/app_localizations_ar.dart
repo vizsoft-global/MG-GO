@@ -211,6 +211,38 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get photoAttached => 'تم إرفاق الصورة';
+
+  @override
+  String photoAttachedWithSizeKb(String sizeKb) {
+    return '$sizeKb ك.ب · تم إرفاق الصورة';
+  }
+
+  @override
+  String photoAttachedWithSizeMb(String sizeMb) {
+    return '$sizeMb م.ب · تم إرفاق الصورة';
+  }
+
+  @override
+  String get proofUploaded => 'تم الرفع';
+
+  @override
+  String proofUploadedWithSizeKb(String sizeKb) {
+    return '$sizeKb ك.ب · تم الرفع';
+  }
+
+  @override
+  String proofUploadedWithSizeMb(String sizeMb) {
+    return '$sizeMb م.ب · تم الرفع';
+  }
+
+  @override
+  String get viewProofPhoto => 'عرض الصورة';
+
+  @override
+  String get proofReplaceHint => 'التقاط صورة جديدة يستبدل الصورة الحالية.';
+
+  @override
   String get fileEmpty => 'الملف فارغ';
 
   @override

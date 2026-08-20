@@ -120,14 +120,19 @@ class _DutyReadinessSheetState extends State<DutyReadinessSheet>
   }
 
   Future<void> _reloadAfterResume() async {
-    // App Info / system settings can take a moment to propagate permission changes.
+    // A runtime permission dialog pauses the activity. Reloading here with a
+    // full-sheet spinner races the in-flight request() and is what left Camera
+    // spinning until the rider killed the app.
+    if (_fixingKind != null) return;
     await Future<void>.delayed(const Duration(milliseconds: 350));
-    if (!mounted) return;
-    await _load();
+    if (!mounted || _fixingKind != null) return;
+    await _load(showSpinner: _report == null);
   }
 
-  Future<void> _load() async {
-    setState(() => _loading = true);
+  Future<void> _load({bool showSpinner = true}) async {
+    if (showSpinner && mounted) {
+      setState(() => _loading = true);
+    }
     final report = await _service.audit(context.l10n);
     if (!mounted) return;
     setState(() {
@@ -157,7 +162,7 @@ class _DutyReadinessSheetState extends State<DutyReadinessSheet>
     required DutyPermissionKind kind,
     required bool wasOk,
   }) async {
-    await _load();
+    await _load(showSpinner: false);
     if (!mounted || wasOk) return;
 
     final current = _report?.items
@@ -167,7 +172,7 @@ class _DutyReadinessSheetState extends State<DutyReadinessSheet>
 
     await Future<void>.delayed(const Duration(milliseconds: 400));
     if (!mounted) return;
-    await _load();
+    await _load(showSpinner: false);
   }
 
   Future<void> _continue() async {

@@ -140,7 +140,7 @@ class NotificationInboxNotifier
     if (window != null) {
       muted = {
         ...muted,
-        ...idsArrivedDuringMute(window: window, snapshot: snapshot),
+        ...idsUnreadAtMuteClose(snapshot: snapshot),
       };
     }
 

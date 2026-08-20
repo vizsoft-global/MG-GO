@@ -208,6 +208,38 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get photoAttached => 'Photo attached';
+
+  @override
+  String photoAttachedWithSizeKb(String sizeKb) {
+    return '$sizeKb KB · Photo attached';
+  }
+
+  @override
+  String photoAttachedWithSizeMb(String sizeMb) {
+    return '$sizeMb MB · Photo attached';
+  }
+
+  @override
+  String get proofUploaded => 'Uploaded';
+
+  @override
+  String proofUploadedWithSizeKb(String sizeKb) {
+    return '$sizeKb KB · Uploaded';
+  }
+
+  @override
+  String proofUploadedWithSizeMb(String sizeMb) {
+    return '$sizeMb MB · Uploaded';
+  }
+
+  @override
+  String get viewProofPhoto => 'View photo';
+
+  @override
+  String get proofReplaceHint => 'Taking another photo replaces this one.';
+
+  @override
   String get fileEmpty => 'File is empty';
 
   @override

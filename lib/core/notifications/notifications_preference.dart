@@ -45,6 +45,20 @@ Set<String> idsArrivedDuringMute({
       .toSet();
 }
 
+/// Re-enabling must not surface anything already sitting in the inbox as new.
+///
+/// Received-at can miss the mute window (clock skew, a campaign created before
+/// the toggle went off). The product rule is stronger than the timestamps:
+/// whatever is unread at the moment the toggle comes back on is history.
+Set<String> idsUnreadAtMuteClose({
+  required NotificationInboxSnapshot snapshot,
+}) {
+  return snapshot.items
+      .where((item) => item.isUnread)
+      .map((item) => item.dispatchItemId)
+      .toSet();
+}
+
 /// Re-enabling notifications must not hand the rider a stack of new ones.
 ///
 /// A campaign sent while the toggle was off was suppressed, not withheld: the

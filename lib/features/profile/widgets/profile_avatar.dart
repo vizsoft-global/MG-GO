@@ -9,6 +9,7 @@ class ProfileAvatar extends StatelessWidget {
     required this.fullName,
     this.photoUrl,
     this.localBytes,
+    this.expectingPhoto = false,
     this.onTap,
     super.key,
   });
@@ -16,6 +17,7 @@ class ProfileAvatar extends StatelessWidget {
   final String fullName;
   final String? photoUrl;
   final Uint8List? localBytes;
+  final bool expectingPhoto;
   final VoidCallback? onTap;
 
   @override
@@ -84,6 +86,18 @@ class ProfileAvatar extends StatelessWidget {
         key: ValueKey(photoUrl),
         gaplessPlayback: true,
         errorBuilder: (_, _, _) => _initialsFallback(),
+      );
+    }
+    if (expectingPhoto) {
+      return const ColoredBox(
+        color: AppColors.cardBlue,
+        child: Center(
+          child: SizedBox(
+            width: 22,
+            height: 22,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
       );
     }
     return _initialsFallback();

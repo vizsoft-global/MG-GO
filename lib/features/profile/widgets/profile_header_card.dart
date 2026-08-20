@@ -85,6 +85,11 @@ class ProfileHeaderCard extends ConsumerWidget {
             fullName: profile.fullName,
             photoUrl: avatarUrl,
             localBytes: localPreview ?? persistedBytes ?? warmBytes,
+            expectingPhoto: (profile.avatarObjectKey?.trim().isNotEmpty ?? false) &&
+                localPreview == null &&
+                persistedBytes == null &&
+                warmBytes == null &&
+                (avatarUrl == null || avatarUrl.isEmpty),
             onTap: onAvatarTap,
           ),
           const SizedBox(height: 10),

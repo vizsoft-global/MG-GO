@@ -120,6 +120,42 @@
       }
     }
   },
+  "photoAttached": "Photo attached",
+  "photoAttachedWithSizeKb": "{sizeKb} KB · Photo attached",
+  "@photoAttachedWithSizeKb": {
+    "placeholders": {
+      "sizeKb": {
+        "type": "String"
+      }
+    }
+  },
+  "photoAttachedWithSizeMb": "{sizeMb} MB · Photo attached",
+  "@photoAttachedWithSizeMb": {
+    "placeholders": {
+      "sizeMb": {
+        "type": "String"
+      }
+    }
+  },
+  "proofUploaded": "Uploaded",
+  "proofUploadedWithSizeKb": "{sizeKb} KB · Uploaded",
+  "@proofUploadedWithSizeKb": {
+    "placeholders": {
+      "sizeKb": {
+        "type": "String"
+      }
+    }
+  },
+  "proofUploadedWithSizeMb": "{sizeMb} MB · Uploaded",
+  "@proofUploadedWithSizeMb": {
+    "placeholders": {
+      "sizeMb": {
+        "type": "String"
+      }
+    }
+  },
+  "viewProofPhoto": "View photo",
+  "proofReplaceHint": "Taking another photo replaces this one.",
   "fileEmpty": "File is empty",
   "fileTooLarge10Mb": "Image must be 10 MB or smaller",
   "fileTooLarge2Mb": "Profile image must be 2 MB or smaller",

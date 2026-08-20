@@ -22,6 +22,12 @@ class DutyPermissionsService {
       return const DutyReadinessReport(items: []);
     }
 
+    // status() on some OEMs deadlocks while a permission.request() dialog is
+    // up. Wait for that request to finish before reading anything.
+    return _serializedRequest(() => _auditUnlocked(l10n));
+  }
+
+  Future<DutyReadinessReport> _auditUnlocked(AppLocalizations l10n) async {
     final locationServices = await Geolocator.isLocationServiceEnabled();
     final geoPermission = await Geolocator.checkPermission();
     final fine = await Permission.location.status;
@@ -146,7 +152,10 @@ class DutyPermissionsService {
     }
 
     final status = await permission.status;
-    if (status.isPermanentlyDenied || status.isDenied) {
+    // First denial is `denied` — that is when the OS dialog should appear
+    // (or just appeared). Opening App Settings here hid the prompt until the
+    // rider killed the app. Settings are only for a permanent/restricted deny.
+    if (status.isPermanentlyDenied) {
       await openSettings(item.kind);
     }
   }

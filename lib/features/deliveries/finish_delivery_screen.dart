@@ -390,7 +390,11 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
                       sizeBytes: _proofSizeBytes,
                       progress: _uploadProgress,
                       uploading: _uploadingProof,
-                      onRemove: _submitting ? null : () => setState(() => _proofFile = null),
+                      previewPath: _proofFile!.path,
+                      uploaded: false,
+                      onRemove: _submitting
+                          ? null
+                          : () => setState(() => _proofFile = null),
                     ),
                   ],
                   if (_error != null) ...[

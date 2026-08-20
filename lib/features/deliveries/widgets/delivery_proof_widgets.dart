@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -131,6 +133,8 @@ class DeliveryProofFileRow extends StatelessWidget {
     required this.progress,
     required this.uploading,
     required this.onRemove,
+    this.previewPath,
+    this.uploaded = false,
     super.key,
   });
 
@@ -139,6 +143,8 @@ class DeliveryProofFileRow extends StatelessWidget {
   final double progress;
   final bool uploading;
   final VoidCallback? onRemove;
+  final String? previewPath;
+  final bool uploaded;
 
   @override
   Widget build(BuildContext context) {
@@ -150,92 +156,205 @@ class DeliveryProofFileRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: AppColors.cardBlue,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              l10n.imgLabel,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: AppColors.primaryBlue,
+          Row(
+            children: [
+              _ProofThumb(
+                path: previewPath,
+                fallbackLabel: l10n.imgLabel,
+                onOpen: previewPath == null || previewPath!.isEmpty
+                    ? null
+                    : () => _openProofPreview(context, previewPath!),
               ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  uploading
-                      ? l10n.uploadingProgress(
-                          (progress * 100).clamp(0, 100).round(),
-                        )
-                      : _readyLabel(l10n),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: uploading
-                        ? AppColors.primaryBlue
-                        : AppColors.textSecondary,
-                  ),
-                ),
-                if (uploading) ...[
-                  const SizedBox(height: 6),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: progress > 0 && progress < 1 ? progress : null,
-                      minHeight: 6,
-                      backgroundColor: AppColors.border,
-                      color: AppColors.primaryBlue,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          if (!uploading)
-            const Padding(
-              padding: EdgeInsets.only(left: 8),
-              child: Icon(
-                Icons.check_circle,
-                size: 20,
-                color: AppColors.progressGreen,
+                    const SizedBox(height: 4),
+                    Text(
+                      uploading
+                          ? l10n.uploadingProgress(
+                              (progress * 100).clamp(0, 100).round(),
+                            )
+                          : _statusLabel(l10n),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: uploading
+                            ? AppColors.primaryBlue
+                            : uploaded
+                                ? AppColors.progressGreen
+                                : AppColors.textSecondary,
+                      ),
+                    ),
+                    if (previewPath != null && previewPath!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      GestureDetector(
+                        onTap: () => _openProofPreview(context, previewPath!),
+                        child: Text(
+                          l10n.viewProofPhoto,
+                          style:
+                              Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    color: AppColors.primaryBlue,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                        ),
+                      ),
+                    ],
+                    if (uploading) ...[
+                      const SizedBox(height: 6),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: progress > 0 && progress < 1 ? progress : null,
+                          minHeight: 6,
+                          backgroundColor: AppColors.border,
+                          color: AppColors.primaryBlue,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
-            ),
-          IconButton(
-            onPressed: onRemove,
-            icon: const Icon(Icons.delete_outline),
-            color: AppColors.textSecondary,
+              if (!uploading)
+                const Padding(
+                  padding: EdgeInsets.only(left: 8),
+                  child: Icon(
+                    Icons.check_circle,
+                    size: 20,
+                    color: AppColors.progressGreen,
+                  ),
+                ),
+              IconButton(
+                onPressed: onRemove,
+                icon: const Icon(Icons.delete_outline),
+                color: AppColors.textSecondary,
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l10n.proofReplaceHint,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: AppColors.dayLabelGrey,
+                  fontSize: 10,
+                ),
           ),
         ],
       ),
     );
   }
 
-  String _readyLabel(AppLocalizations l10n) {
+  String _statusLabel(AppLocalizations l10n) {
     final size = sizeBytes;
-    if (size == null) return l10n.readyToUpload;
+    if (uploaded) {
+      if (size == null) return l10n.proofUploaded;
+      final kb = size / 1024;
+      if (kb < 1024) {
+        return l10n.proofUploadedWithSizeKb(kb.toStringAsFixed(0));
+      }
+      return l10n.proofUploadedWithSizeMb((kb / 1024).toStringAsFixed(1));
+    }
+    if (size == null) return l10n.photoAttached;
     final kb = size / 1024;
     if (kb < 1024) {
-      return l10n.readyToUploadWithSizeKb(kb.toStringAsFixed(0));
+      return l10n.photoAttachedWithSizeKb(kb.toStringAsFixed(0));
     }
-    final mb = kb / 1024;
-    return l10n.readyToUploadWithSizeMb(mb.toStringAsFixed(1));
+    return l10n.photoAttachedWithSizeMb((kb / 1024).toStringAsFixed(1));
   }
+}
+
+class _ProofThumb extends StatelessWidget {
+  const _ProofThumb({
+    required this.path,
+    required this.fallbackLabel,
+    this.onOpen,
+  });
+
+  final String? path;
+  final String fallbackLabel;
+  final VoidCallback? onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final filePath = path;
+    Widget child;
+    if (filePath != null && filePath.isNotEmpty) {
+      child = Image.file(
+        File(filePath),
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => _fallback(context),
+      );
+    } else {
+      child = _fallback(context);
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onOpen,
+        borderRadius: BorderRadius.circular(8),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: SizedBox(width: 48, height: 48, child: child),
+        ),
+      ),
+    );
+  }
+
+  Widget _fallback(BuildContext context) {
+    return ColoredBox(
+      color: AppColors.cardBlue,
+      child: Center(
+        child: Text(
+          fallbackLabel,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: AppColors.primaryBlue,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+Future<void> _openProofPreview(BuildContext context, String path) {
+  return showDialog<void>(
+    context: context,
+    builder: (context) {
+      return Dialog(
+        backgroundColor: Colors.black,
+        insetPadding: const EdgeInsets.all(16),
+        child: Stack(
+          children: [
+            Center(
+              child: InteractiveViewer(
+                child: Image.file(
+                  File(path),
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.close, color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
 }

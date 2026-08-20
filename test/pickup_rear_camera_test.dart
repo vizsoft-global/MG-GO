@@ -64,4 +64,25 @@ void main() {
     expect(find.byIcon(Icons.photo_library_outlined), findsNothing);
     expect(find.byKey(const Key('rear-camera-shutter')), findsNothing);
   });
+
+  testWidgets('captured proof row says Photo attached, not Ready to upload',
+      (tester) async {
+    await tester.pumpWidget(
+      _l10nApp(
+        Scaffold(
+          body: DeliveryProofFileRow(
+            name: 'proof.jpg',
+            sizeBytes: 2048,
+            progress: 0,
+            uploading: false,
+            uploaded: false,
+            onRemove: () {},
+          ),
+        ),
+      ),
+    );
+
+    expect(find.textContaining('Photo attached'), findsOneWidget);
+    expect(find.textContaining('Ready to upload'), findsNothing);
+  });
 }

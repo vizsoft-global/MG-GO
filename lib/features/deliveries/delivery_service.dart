@@ -413,6 +413,9 @@ class DeliveryService {
     if (msg.contains('driver_not_active')) {
       return DeliveryServiceException('', code: 'inactive');
     }
+    if (msg.contains('driver_archived')) {
+      return DeliveryServiceException('', code: 'driver_archived');
+    }
     if (msg.contains('driver_blocked')) {
       final reason = DriverAccessParser.reasonFromPostgrest(e);
       return DeliveryServiceException(

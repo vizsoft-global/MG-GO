@@ -220,7 +220,11 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
             longitude: position.longitude,
           );
 
-      await setActiveDeliverySession(created.id);
+      await setActiveDeliverySession(
+        created.id,
+        externalOrderId: created.externalOrderId,
+        pickupAt: created.pickupAt,
+      );
 
       try {
         await ref
@@ -416,6 +420,8 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
                             sizeBytes: _proofSizeBytes,
                             progress: _uploadProgress,
                             uploading: _uploadingProof,
+                            previewPath: _proofFile!.path,
+                            uploaded: false,
                             onRemove: _submitting ? null : _removeProof,
                           ),
                         ],

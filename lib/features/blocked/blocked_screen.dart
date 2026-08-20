@@ -13,15 +13,21 @@ class BlockedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final message = (reason?.trim().isNotEmpty ?? false)
-        ? reason!.trim()
-        : l10n.accountBlockedDefault;
+    final message = reason == 'driver_archived'
+        ? l10n.authDriverArchived
+        : ((reason?.trim().isNotEmpty ?? false)
+            ? reason!.trim()
+            : l10n.accountBlockedDefault);
     return Scaffold(
       backgroundColor: AppColors.pageBackground,
       body: SafeArea(
         child: GateScreenBody(
-          icon: Icons.block_rounded,
-          title: l10n.accessBlocked,
+          icon: reason == 'driver_archived'
+              ? Icons.archive_outlined
+              : Icons.block_rounded,
+          title: reason == 'driver_archived'
+              ? l10n.authDriverArchived
+              : l10n.accessBlocked,
           message: message,
           ctaLabel: l10n.backToSignIn,
           onCta: () => context.go('/login'),

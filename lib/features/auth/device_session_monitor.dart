@@ -110,12 +110,21 @@ class _DeviceSessionMonitor with WidgetsBindingObserver {
         return;
       }
       if (result.kicked) {
+        final status =
+            await _ref.read(riderAuthServiceProvider).fetchAppAccessStatus();
+        if (status.blocked) {
+          await _ref.read(driverAccessEnforcerProvider).enforce(
+                reason: status.reason,
+              );
+          return;
+        }
         await _handleKick(result);
       }
     } on PostgrestException catch (e) {
       final blockedReason = DriverAccessParser.reasonFromPostgrest(e);
       if (blockedReason != null ||
-          e.message.toLowerCase().contains('driver_blocked')) {
+          e.message.toLowerCase().contains('driver_blocked') ||
+          e.message.toLowerCase().contains('driver_archived')) {
         await _ref.read(driverAccessEnforcerProvider).enforce(
               reason: blockedReason,
             );

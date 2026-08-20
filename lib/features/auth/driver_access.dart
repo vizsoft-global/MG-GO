@@ -6,12 +6,22 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class DriverAccessStatus {
   const DriverAccessStatus({
     required this.blocked,
+    this.archived = false,
     this.reason,
   });
 
-  const DriverAccessStatus.allowed() : blocked = false, reason = null;
+  const DriverAccessStatus.allowed()
+      : blocked = false,
+        archived = false,
+        reason = null;
+
+  const DriverAccessStatus.archived()
+      : blocked = true,
+        archived = true,
+        reason = 'driver_archived';
 
   final bool blocked;
+  final bool archived;
   final String? reason;
 }
 
@@ -38,6 +48,7 @@ class DriverAccessParser {
 
   static String? reasonFromMessage(String message) {
     final lower = message.toLowerCase();
+    if (lower.contains('driver_archived')) return 'driver_archived';
     if (!lower.contains('driver_blocked')) return null;
     return reasonFromJsonString(message) ??
         _extractReasonFromText(message) ??
@@ -61,7 +72,8 @@ class DriverAccessParser {
   static bool _looksBlocked(Map<String, dynamic> map) {
     if (map['blocked'] == true || map['is_blocked'] == true) return true;
     final error = map['error'];
-    if (error == 'driver_blocked') return true;
+    if (error == 'driver_blocked' || error == 'driver_archived') return true;
+    if (map['archived_at'] != null) return true;
     return false;
   }
 
