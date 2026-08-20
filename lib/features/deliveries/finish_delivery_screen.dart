@@ -126,9 +126,10 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
       return;
     }
 
+    final proofFile = file;
     setState(() {
       _proofs.add(
-        AttachedProof(file: file, mime: mime, sizeBytes: size),
+        AttachedProof(file: proofFile, mime: mime, sizeBytes: size),
       );
       _uploadProgress = 0;
       _error = null;
