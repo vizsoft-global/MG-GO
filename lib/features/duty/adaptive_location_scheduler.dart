@@ -68,6 +68,11 @@ class AdaptiveLocationScheduler {
   /// First on-duty sample should reach the server for zone + dashboard state.
   bool get needsInitialReport => _needsInitialReport;
 
+  /// When a report was last accepted, or null if none is on record since the last reset or
+  /// delivery submission. Read by `heartbeatPosition`, which has to know how long the rider
+  /// has been silent before it can decide that a coarse fix beats no fix.
+  DateTime? get lastReportedAt => _lastSampleAt;
+
   /// Whether we should call `driver_report_location` on this tick.
   ///
   /// Moving drivers report on the short adaptive interval. Idle drivers still

@@ -543,6 +543,9 @@ class AppLocalizationsAr extends AppLocalizations {
       'جميع التوصيلات الموثّقة تُحتسب ضمن الحوافز';
 
   @override
+  String get confirmedOnceVerified => 'يُؤكَّد بعد التوثيق';
+
+  @override
   String get countsTowardIncentiveDeliveries => 'تُحتسب ضمن توصيلات الحوافز';
 
   @override

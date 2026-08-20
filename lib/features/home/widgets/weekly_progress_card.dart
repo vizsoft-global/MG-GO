@@ -5,6 +5,7 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../home_models.dart';
 import 'cash_stack.dart';
+import 'verified_count_note.dart';
 
 class WeeklyProgressCard extends StatefulWidget {
   const WeeklyProgressCard({
@@ -128,6 +129,8 @@ class _WeeklyProgressCardState extends State<WeeklyProgressCard> {
                           ],
                         ),
                       ),
+                      const SizedBox(height: 10),
+                      const VerifiedCountNote(),
                     ],
                   )
                 : const SizedBox(width: double.infinity),

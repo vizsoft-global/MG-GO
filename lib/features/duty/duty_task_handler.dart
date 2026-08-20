@@ -306,11 +306,15 @@ class DutyTaskHandler extends TaskHandler {
       // Coarse indoor fixes would yank the live-map pin. Heartbeat the last
       // accurate position instead of skipping the report (which dropped the
       // driver off the admin map after ~8 minutes).
+      final lastReportedAt = _scheduler.lastReportedAt;
       final reportPosition = heartbeatPosition(
         current: position,
         lastGood: _lastGoodPosition,
         force: force,
         needsInitialReport: _scheduler.needsInitialReport,
+        sinceLastReport: lastReportedAt == null
+            ? null
+            : now.difference(lastReportedAt),
       );
       if (reportPosition == null) {
         await _updateNotification(l10n.onDutyStationaryGpsPaused);

@@ -28,6 +28,7 @@ void main() {
         lastGood: lastGood,
         force: false,
         needsInitialReport: false,
+        sinceLastReport: Duration.zero,
       ),
       lastGood,
     );
@@ -41,6 +42,7 @@ void main() {
         lastGood: null,
         force: false,
         needsInitialReport: true,
+        sinceLastReport: Duration.zero,
       ),
       coarse,
     );
@@ -53,8 +55,52 @@ void main() {
         lastGood: null,
         force: false,
         needsInitialReport: false,
+        sinceLastReport: Duration.zero,
       ),
       isNull,
+    );
+  });
+
+  test('a rider with no accurate fix ever still reports once a beat has passed', () {
+    // Clocking in indoors can mean never seeing a fix under 50m. Staying quiet then is not
+    // caution, it is silence: the admin map ages the rider to GPS Offline while they stand
+    // in the restaurant with the app open. There is no pin to protect, so a coarse one wins.
+    final coarse = _pos(accuracy: 180);
+    expect(
+      heartbeatPosition(
+        current: coarse,
+        lastGood: null,
+        force: false,
+        needsInitialReport: false,
+        sinceLastReport: AdaptiveLocationScheduler.idleReportInterval,
+      ),
+      coarse,
+    );
+    expect(
+      heartbeatPosition(
+        current: coarse,
+        lastGood: null,
+        force: false,
+        needsInitialReport: false,
+        sinceLastReport: null,
+      ),
+      coarse,
+    );
+  });
+
+  test('a warm accurate pin is still preferred over a coarse fix after a beat', () {
+    // The liveness rule above must not become a licence to overwrite a good pin: this is
+    // the indoor case only, where `lastGood` is null.
+    final lastGood = _pos(accuracy: 12, lat: 29.38);
+    expect(
+      heartbeatPosition(
+        current: _pos(accuracy: 180, lat: 29.90),
+        lastGood: lastGood,
+        force: false,
+        needsInitialReport: false,
+        sinceLastReport: const Duration(minutes: 5),
+      ),
+      lastGood,
     );
   });
 
@@ -67,6 +113,7 @@ void main() {
         lastGood: lastGood,
         force: false,
         needsInitialReport: false,
+        sinceLastReport: Duration.zero,
       ),
       live,
     );
@@ -84,6 +131,7 @@ void main() {
         lastGood: lastGood,
         force: false,
         needsInitialReport: false,
+        sinceLastReport: Duration.zero,
       ),
       lastGood,
     );
@@ -98,6 +146,7 @@ void main() {
         lastGood: lastGood,
         force: true,
         needsInitialReport: false,
+        sinceLastReport: Duration.zero,
       ),
       lastGood,
     );
@@ -123,6 +172,7 @@ void main() {
         lastGood: stale,
         force: false,
         needsInitialReport: false,
+        sinceLastReport: Duration.zero,
       ),
       coarse,
     );
@@ -136,6 +186,7 @@ void main() {
         lastGood: _pos(accuracy: 12, lat: 29.38),
         force: false,
         needsInitialReport: false,
+        sinceLastReport: Duration.zero,
       ),
       urban,
     );

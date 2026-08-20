@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../earnings/earnings_models.dart' show formatKwd;
 import '../home_models.dart';
 import 'kd_note.dart';
+import 'verified_count_note.dart';
 
 class WeeklyBumperCard extends StatelessWidget {
   const WeeklyBumperCard({required this.incentive, super.key});
@@ -89,6 +90,8 @@ class WeeklyBumperCard extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 6),
+          const VerifiedCountNote(),
           const SizedBox(height: 8),
           LayoutBuilder(
             builder: (context, constraints) {
