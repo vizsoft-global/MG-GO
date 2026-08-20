@@ -12,9 +12,11 @@ Future<bool> handleDeliveryServiceExceptionActions(
   DeliveryServiceException error,
   WidgetRef ref,
 ) async {
-  if (error.code == 'driver_blocked') {
+  if (error.code == 'driver_blocked' || error.code == 'driver_archived') {
     await ref.read(driverAccessEnforcerProvider).enforce(
-          reason: error.message.isNotEmpty ? error.message : null,
+          reason: error.code == 'driver_archived'
+              ? 'driver_archived'
+              : (error.message.isNotEmpty ? error.message : null),
         );
     return true;
   }
@@ -37,6 +39,7 @@ String messageForDeliveryServiceException(
     'driver_blocked' => error.message.isNotEmpty
         ? error.message
         : l10n.accountBlockedDefault,
+    'driver_archived' => l10n.authDriverArchived,
     'delivery_out_of_range' => l10n.outsideAllowedDeliveryArea,
     'driver_off_duty' => l10n.mustBeOnDutyToAddDelivery,
     'location_required' => l10n.gpsRequiredForDelivery,
@@ -44,6 +47,8 @@ String messageForDeliveryServiceException(
     'active_pickup_exists' => l10n.activePickupExists,
     'cancel_reason_required' => l10n.cancelReasonRequired,
     'duplicate_order_id' => l10n.duplicateOrderId,
+    'too_many_proofs' => l10n.proofMaxReached,
+    'invalid_proof_keys' => l10n.somethingWentWrong,
     'device_revoked' => l10n.signedInOnAnotherDeviceToast,
     _ => error.message.isNotEmpty ? error.message : l10n.somethingWentWrong,
   };

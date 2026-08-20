@@ -440,6 +440,66 @@ abstract class AppLocalizations {
   /// **'{sizeMb} MB · Ready to upload'**
   String readyToUploadWithSizeMb(String sizeMb);
 
+  /// No description provided for @photoAttached.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo attached'**
+  String get photoAttached;
+
+  /// No description provided for @photoAttachedWithSizeKb.
+  ///
+  /// In en, this message translates to:
+  /// **'{sizeKb} KB · Photo attached'**
+  String photoAttachedWithSizeKb(String sizeKb);
+
+  /// No description provided for @photoAttachedWithSizeMb.
+  ///
+  /// In en, this message translates to:
+  /// **'{sizeMb} MB · Photo attached'**
+  String photoAttachedWithSizeMb(String sizeMb);
+
+  /// No description provided for @proofUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded'**
+  String get proofUploaded;
+
+  /// No description provided for @proofUploadedWithSizeKb.
+  ///
+  /// In en, this message translates to:
+  /// **'{sizeKb} KB · Uploaded'**
+  String proofUploadedWithSizeKb(String sizeKb);
+
+  /// No description provided for @proofUploadedWithSizeMb.
+  ///
+  /// In en, this message translates to:
+  /// **'{sizeMb} MB · Uploaded'**
+  String proofUploadedWithSizeMb(String sizeMb);
+
+  /// No description provided for @viewProofPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'View photo'**
+  String get viewProofPhoto;
+
+  /// No description provided for @proofAddHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You can attach up to 5 photos.'**
+  String get proofAddHint;
+
+  /// No description provided for @proofMaxReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum of 5 photos.'**
+  String get proofMaxReached;
+
+  /// No description provided for @addAnotherPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Add another photo'**
+  String get addAnotherPhoto;
+
   /// No description provided for @fileEmpty.
   ///
   /// In en, this message translates to:
@@ -2423,7 +2483,7 @@ abstract class AppLocalizations {
   /// No description provided for @rearCameraRequired.
   ///
   /// In en, this message translates to:
-  /// **'Rear camera is required to take a pickup photo.'**
+  /// **'Rear camera is required to take an order photo.'**
   String get rearCameraRequired;
 
   /// No description provided for @profilePictureUpdated.

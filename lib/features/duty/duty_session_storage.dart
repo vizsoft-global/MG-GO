@@ -41,18 +41,62 @@ class DutySessionStorage {
     await prefs.remove(_accessTokenKey);
   }
 
+  static const _activeDeliveryOrderIdKey = 'duty_active_delivery_order_id';
+  static const _activeDeliveryPickupAtKey = 'duty_active_delivery_pickup_at';
+
   static Future<void> setActiveDeliveryId(String? deliveryId) async {
+    await setActiveDelivery(deliveryId: deliveryId);
+  }
+
+  static Future<void> setActiveDelivery({
+    required String? deliveryId,
+    String? externalOrderId,
+    DateTime? pickupAt,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     if (deliveryId == null || deliveryId.isEmpty) {
       await prefs.remove(_activeDeliveryIdKey);
-    } else {
-      await prefs.setString(_activeDeliveryIdKey, deliveryId);
+      await prefs.remove(_activeDeliveryOrderIdKey);
+      await prefs.remove(_activeDeliveryPickupAtKey);
+      return;
+    }
+    final previousId = prefs.getString(_activeDeliveryIdKey);
+    await prefs.setString(_activeDeliveryIdKey, deliveryId);
+    if (externalOrderId != null) {
+      final orderId = externalOrderId.trim();
+      if (orderId.isEmpty) {
+        await prefs.remove(_activeDeliveryOrderIdKey);
+      } else {
+        await prefs.setString(_activeDeliveryOrderIdKey, orderId);
+      }
+    } else if (previousId != deliveryId) {
+      await prefs.remove(_activeDeliveryOrderIdKey);
+    }
+    if (pickupAt != null) {
+      await prefs.setString(
+        _activeDeliveryPickupAtKey,
+        pickupAt.toIso8601String(),
+      );
+    } else if (previousId != deliveryId) {
+      await prefs.remove(_activeDeliveryPickupAtKey);
     }
   }
 
   static Future<String?> readActiveDeliveryId() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_activeDeliveryIdKey);
+  }
+
+  static Future<String?> readActiveDeliveryOrderId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_activeDeliveryOrderIdKey);
+  }
+
+  static Future<DateTime?> readActiveDeliveryPickupAt() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_activeDeliveryPickupAtKey);
+    if (raw == null || raw.isEmpty) return null;
+    return DateTime.tryParse(raw);
   }
 
   /// Monotonic counter bumped on every clock-in and clock-out.

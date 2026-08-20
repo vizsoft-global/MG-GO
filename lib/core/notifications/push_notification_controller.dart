@@ -15,6 +15,7 @@ import 'firebase_app_guard.dart';
 import 'local_notification_service.dart';
 import 'notification_event_repository.dart';
 import 'notification_inbox_provider.dart';
+import 'notification_mute_store.dart';
 import 'notification_payload.dart';
 import 'notification_router.dart';
 import 'notifications_preference.dart';
@@ -211,6 +212,14 @@ class PushNotificationController extends Notifier<bool> {
     if (!shouldDeliverForegroundBanner(
       notificationsEnabled: ref.read(notificationsEnabledProvider),
     )) {
+      return;
+    }
+
+    final muted = await notificationMuteStore.readMutedIds();
+    final dispatchId = payload.dispatchItemId;
+    if (dispatchId != null &&
+        dispatchId.isNotEmpty &&
+        muted.contains(dispatchId)) {
       return;
     }
 

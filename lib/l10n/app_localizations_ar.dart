@@ -211,6 +211,44 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get photoAttached => 'تم إرفاق الصورة';
+
+  @override
+  String photoAttachedWithSizeKb(String sizeKb) {
+    return '$sizeKb ك.ب · تم إرفاق الصورة';
+  }
+
+  @override
+  String photoAttachedWithSizeMb(String sizeMb) {
+    return '$sizeMb م.ب · تم إرفاق الصورة';
+  }
+
+  @override
+  String get proofUploaded => 'تم الرفع';
+
+  @override
+  String proofUploadedWithSizeKb(String sizeKb) {
+    return '$sizeKb ك.ب · تم الرفع';
+  }
+
+  @override
+  String proofUploadedWithSizeMb(String sizeMb) {
+    return '$sizeMb م.ب · تم الرفع';
+  }
+
+  @override
+  String get viewProofPhoto => 'عرض الصورة';
+
+  @override
+  String get proofAddHint => 'يمكنك إرفاق حتى 5 صور.';
+
+  @override
+  String get proofMaxReached => 'الحد الأقصى 5 صور.';
+
+  @override
+  String get addAnotherPhoto => 'إضافة صورة أخرى';
+
+  @override
   String get fileEmpty => 'الملف فارغ';
 
   @override

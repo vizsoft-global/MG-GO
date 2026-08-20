@@ -120,21 +120,27 @@ void main() {
       expect(seen.effectiveUnreadCount, 1);
     });
 
-    test('an unread item the rider already had is left alone', () {
+    test('unread inbox rows at re-enable are history, not new', () {
       final snapshot = NotificationInboxSnapshot(
         items: [
           _bannerItem(id: 'before', receivedAt: DateTime.utc(2026, 8, 13, 8)),
+          _bannerItem(id: 'during', receivedAt: DateTime.utc(2026, 8, 13, 12)),
         ],
-        unreadCount: 1,
+        unreadCount: 2,
+      );
+
+      expect(
+        idsUnreadAtMuteClose(snapshot: snapshot),
+        {'before', 'during'},
       );
 
       final seen = inboxWithMutedMarkedSeen(
         snapshot: snapshot,
-        mutedIds: idsArrivedDuringMute(window: window, snapshot: snapshot),
+        mutedIds: idsUnreadAtMuteClose(snapshot: snapshot),
       );
 
-      expect(seen.items.single.isUnread, isTrue);
-      expect(seen.effectiveUnreadCount, 1);
+      expect(seen.items.every((item) => !item.isUnread), isTrue);
+      expect(seen.unreadCount, 0);
     });
   });
 

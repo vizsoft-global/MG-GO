@@ -170,8 +170,13 @@ Future<void> enforceDriverBlockedFromError(
   if (error is! PostgrestException) return;
   final reason = DriverAccessParser.reasonFromPostgrest(error);
   if (reason == null &&
-      !error.message.toLowerCase().contains('driver_blocked')) {
+      !error.message.toLowerCase().contains('driver_blocked') &&
+      !error.message.toLowerCase().contains('driver_archived')) {
     return;
   }
-  await ref.read(driverAccessEnforcerProvider).enforce(reason: reason);
+  await ref.read(driverAccessEnforcerProvider).enforce(
+        reason: error.message.toLowerCase().contains('driver_archived')
+            ? 'driver_archived'
+            : reason,
+      );
 }

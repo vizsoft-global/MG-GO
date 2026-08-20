@@ -413,6 +413,9 @@ class DeliveryService {
     if (msg.contains('driver_not_active')) {
       return DeliveryServiceException('', code: 'inactive');
     }
+    if (msg.contains('driver_archived')) {
+      return DeliveryServiceException('', code: 'driver_archived');
+    }
     if (msg.contains('driver_blocked')) {
       final reason = DriverAccessParser.reasonFromPostgrest(e);
       return DeliveryServiceException(
@@ -439,6 +442,12 @@ class DeliveryService {
     }
     if (msg.contains('device_revoked') || msg.contains('device_id_required')) {
       return DeliveryServiceException('', code: 'device_revoked');
+    }
+    if (msg.contains('too_many_proofs')) {
+      return DeliveryServiceException('', code: 'too_many_proofs');
+    }
+    if (msg.contains('invalid_proof_keys')) {
+      return DeliveryServiceException('', code: 'invalid_proof_keys');
     }
     if (msg.contains('invalid_order_id')) {
       return DeliveryServiceException('', code: 'invalid_order_id');

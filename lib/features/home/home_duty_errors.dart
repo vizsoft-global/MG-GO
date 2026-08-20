@@ -7,6 +7,7 @@ import '../../l10n/app_localizations.dart';
 /// offline queue and must never be hidden behind the cached dashboard.
 enum DutyRejection {
   accountNotActive,
+  driverArchived,
   shiftRequired,
   notAuthenticated,
   serverOutdated,
@@ -21,6 +22,7 @@ DutyRejection? dutyRejectionFrom(String? message) {
   if (msg.contains('could not find the function')) {
     return DutyRejection.serverOutdated;
   }
+  if (msg.contains('driver_archived')) return DutyRejection.driverArchived;
   if (msg.contains('shift_required')) return DutyRejection.shiftRequired;
   if (msg.contains('inactive') || msg.contains('driver_suspended')) {
     return DutyRejection.accountNotActive;
@@ -36,7 +38,9 @@ DutyRejection? dutyRejectionFrom(String? message) {
 /// server would have accepted.
 bool isPermanentDutyQueueRejection(String? message) {
   return switch (dutyRejectionFrom(message)) {
-    DutyRejection.accountNotActive || DutyRejection.shiftRequired => true,
+    DutyRejection.accountNotActive ||
+    DutyRejection.driverArchived ||
+    DutyRejection.shiftRequired => true,
     DutyRejection.notAuthenticated ||
     DutyRejection.serverOutdated ||
     null => false,
@@ -55,6 +59,8 @@ String friendlyHomeDutyError(String message) {
       return 'Submit today\'s shift before going on duty.';
     case DutyRejection.accountNotActive:
       return 'Your account is inactive or suspended. Please contact your administrator.';
+    case DutyRejection.driverArchived:
+      return 'Your driver account has been archived. Contact your administrator.';
     case null:
       return msg.isEmpty ? 'Could not load home dashboard' : msg;
   }
@@ -65,6 +71,7 @@ String friendlyHomeDutyError(String message) {
 String dutyRejectionMessage(AppLocalizations l10n, DutyRejection rejection) {
   return switch (rejection) {
     DutyRejection.accountNotActive => l10n.accountNotActive,
+    DutyRejection.driverArchived => l10n.authDriverArchived,
     DutyRejection.shiftRequired => l10n.shiftRequiredBeforeDuty,
     DutyRejection.notAuthenticated => l10n.sessionExpired,
     DutyRejection.serverOutdated => l10n.serverUpdateRequired,

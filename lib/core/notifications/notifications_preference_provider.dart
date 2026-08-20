@@ -37,18 +37,20 @@ class NotificationsEnabledNotifier extends Notifier<bool> {
   }
 
   Future<void> setEnabled(bool enabled) async {
-    state = enabled;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(kNotificationsEnabledPrefKey, enabled);
-
     final now = DateTime.now().toUtc();
     if (!enabled) {
+      state = false;
+      await prefs.setBool(kNotificationsEnabledPrefKey, false);
       await notificationMuteStore.openWindow(now);
       return;
     }
-    // Close the window before refetching, or the fetch reads it as still open
-    // and hands the rider everything that arrived while the toggle was off.
+    // Close and fold the mute window *before* flipping the toggle back on.
+    // Registering the FCM token at the same instant used to deliver a queued
+    // campaign as a new banner.
     await notificationMuteStore.closeWindow(now);
     await ref.read(notificationInboxProvider.notifier).refreshInBackground();
+    await prefs.setBool(kNotificationsEnabledPrefKey, true);
+    state = true;
   }
 }

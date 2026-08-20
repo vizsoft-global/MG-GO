@@ -35,6 +35,24 @@ void main() {
     expect(find.byIcon(Icons.photo_library_outlined), findsNothing);
   });
 
+  testWidgets('after one photo the capture area says Add another photo',
+      (tester) async {
+    await tester.pumpWidget(
+      _l10nApp(
+        const Scaffold(
+          body: DeliveryProofUploadArea(
+            cameraOnly: true,
+            addAnother: true,
+            onTap: null,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Add another photo'), findsOneWidget);
+    expect(find.text('Take photo'), findsNothing);
+  });
+
   testWidgets('rear capture has no flip or gallery when there is no rear camera',
       (tester) async {
     await tester.pumpWidget(
@@ -63,5 +81,59 @@ void main() {
     expect(find.byIcon(Icons.photo_library), findsNothing);
     expect(find.byIcon(Icons.photo_library_outlined), findsNothing);
     expect(find.byKey(const Key('rear-camera-shutter')), findsNothing);
+  });
+
+  testWidgets('captured proof row says Photo attached, not Ready to upload',
+      (tester) async {
+    await tester.pumpWidget(
+      _l10nApp(
+        Scaffold(
+          body: DeliveryProofFileRow(
+            name: 'proof.jpg',
+            sizeBytes: 2048,
+            progress: 0,
+            uploading: false,
+            uploaded: false,
+            onRemove: () {},
+          ),
+        ),
+      ),
+    );
+
+    expect(find.textContaining('Photo attached'), findsOneWidget);
+    expect(find.textContaining('Ready to upload'), findsNothing);
+  });
+
+  testWidgets('two captured proof rows can show at once', (tester) async {
+    await tester.pumpWidget(
+      _l10nApp(
+        Scaffold(
+          body: Column(
+            children: [
+              DeliveryProofFileRow(
+                name: 'one.jpg',
+                sizeBytes: 1024,
+                progress: 0,
+                uploading: false,
+                uploaded: false,
+                onRemove: () {},
+              ),
+              DeliveryProofFileRow(
+                name: 'two.jpg',
+                sizeBytes: 2048,
+                progress: 0,
+                uploading: false,
+                uploaded: false,
+                onRemove: () {},
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('one.jpg'), findsOneWidget);
+    expect(find.text('two.jpg'), findsOneWidget);
+    expect(find.textContaining('Photo attached'), findsNWidgets(2));
   });
 }
