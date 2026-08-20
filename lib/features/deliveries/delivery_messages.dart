@@ -47,6 +47,8 @@ String messageForDeliveryServiceException(
     'active_pickup_exists' => l10n.activePickupExists,
     'cancel_reason_required' => l10n.cancelReasonRequired,
     'duplicate_order_id' => l10n.duplicateOrderId,
+    'too_many_proofs' => l10n.proofMaxReached,
+    'invalid_proof_keys' => l10n.somethingWentWrong,
     'device_revoked' => l10n.signedInOnAnotherDeviceToast,
     _ => error.message.isNotEmpty ? error.message : l10n.somethingWentWrong,
   };

@@ -155,7 +155,9 @@
     }
   },
   "viewProofPhoto": "View photo",
-  "proofReplaceHint": "Taking another photo replaces this one.",
+  "proofAddHint": "You can attach up to 5 photos.",
+  "proofMaxReached": "Maximum of 5 photos.",
+  "addAnotherPhoto": "Add another photo",
   "fileEmpty": "File is empty",
   "fileTooLarge10Mb": "Image must be 10 MB or smaller",
   "fileTooLarge2Mb": "Profile image must be 2 MB or smaller",

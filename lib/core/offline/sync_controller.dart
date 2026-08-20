@@ -11,6 +11,7 @@ import '../../features/duty/live_position_publisher.dart';
 import '../../features/duty/location_tracking_service.dart';
 import '../../features/deliveries/delivery_models.dart';
 import '../../features/deliveries/delivery_service.dart';
+import '../../features/deliveries/proof_payload.dart';
 import '../../features/home/home_duty_errors.dart';
 import '../../features/shift/shift_providers.dart';
 import '../../features/shift/shift_service.dart';
@@ -536,29 +537,34 @@ class SyncController extends Notifier<SyncState> {
     required String table,
     required DriverUploadService uploadService,
   }) async {
-    String? objectKey = row['proof_object_key'] as String?;
-    final localPath = row['proof_local_path'] as String?;
+    final existingKeys = decodeProofPayload(row['proof_object_key'] as String?);
+    final localPaths = decodeProofPayload(row['proof_local_path'] as String?);
     final mime = row['proof_mime'] as String?;
-    if ((objectKey == null || objectKey.isEmpty) &&
-        localPath != null &&
-        localPath.isNotEmpty) {
-      final file = File(localPath);
-      if (await file.exists()) {
-        final bytes = await file.readAsBytes();
-        final upload = await uploadService.uploadOrderProof(
-          bytes: bytes,
-          contentType: mime ?? 'image/jpeg',
-          filename: file.uri.pathSegments.last,
-        );
-        objectKey = upload.objectKey;
-        await OfflineDb.instance.updatePendingDeliveryObjectKey(
-          id: id,
-          objectKey: objectKey,
-          table: table,
-        );
-      }
+    final keys = [...existingKeys];
+
+    for (var i = keys.length; i < localPaths.length; i++) {
+      final file = File(localPaths[i]);
+      if (!await file.exists()) continue;
+      final bytes = await file.readAsBytes();
+      final upload = await uploadService.uploadOrderProof(
+        bytes: bytes,
+        contentType: mime ?? 'image/jpeg',
+        filename: file.uri.pathSegments.last,
+      );
+      keys.add(upload.objectKey);
     }
-    return objectKey;
+
+    if (keys.isEmpty) return existingKeys.isEmpty ? null : encodeProofPayload(existingKeys);
+
+    final encoded = encodeProofPayload(keys);
+    if (encoded != null && encoded != row['proof_object_key']) {
+      await OfflineDb.instance.updatePendingDeliveryObjectKey(
+        id: id,
+        objectKey: encoded,
+        table: table,
+      );
+    }
+    return encoded;
   }
 
   Future<void> _remapCompletionDeliveryIds({

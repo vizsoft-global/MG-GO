@@ -3,6 +3,7 @@ class OrderProofConstraints {
   OrderProofConstraints._();
 
   static const maxBytes = 10 * 1024 * 1024;
+  static const maxCount = 5;
 
   static const allowedExtensions = {
     'jpg',

@@ -482,11 +482,23 @@ abstract class AppLocalizations {
   /// **'View photo'**
   String get viewProofPhoto;
 
-  /// No description provided for @proofReplaceHint.
+  /// No description provided for @proofAddHint.
   ///
   /// In en, this message translates to:
-  /// **'Taking another photo replaces this one.'**
-  String get proofReplaceHint;
+  /// **'You can attach up to 5 photos.'**
+  String get proofAddHint;
+
+  /// No description provided for @proofMaxReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum of 5 photos.'**
+  String get proofMaxReached;
+
+  /// No description provided for @addAnotherPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Add another photo'**
+  String get addAnotherPhoto;
 
   /// No description provided for @fileEmpty.
   ///

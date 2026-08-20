@@ -26,6 +26,7 @@ import 'delivery_proximity_service.dart';
 import 'delivery_service.dart';
 import 'pending_deliveries_screen.dart';
 import 'capture_order_proof.dart';
+import 'proof_payload.dart';
 import 'widgets/delivery_proof_widgets.dart';
 import '../duty/adaptive_location_scheduler.dart';
 import '../duty/duty_background_service.dart';
@@ -45,9 +46,7 @@ typedef AddDeliveryScreen = PickupScreen;
 class _PickupScreenState extends ConsumerState<PickupScreen> {
   final _orderIdController = TextEditingController();
 
-  XFile? _proofFile;
-  String? _proofMime;
-  int? _proofSizeBytes;
+  final List<AttachedProof> _proofs = [];
   double _uploadProgress = 0;
   bool _submitting = false;
   bool _uploadingProof = false;
@@ -109,6 +108,10 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
   }
 
   Future<void> _captureProof() async {
+    if (_proofs.length >= OrderProofConstraints.maxCount) {
+      setState(() => _error = context.l10n.proofMaxReached);
+      return;
+    }
     final XFile? file;
     try {
       file = await captureOrderProof(context);
@@ -143,19 +146,19 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
     }
 
     setState(() {
-      _proofFile = file;
-      _proofMime = mime;
-      _proofSizeBytes = size;
+      _proofs.add(
+        AttachedProof(file: file, mime: mime, sizeBytes: size),
+      );
       _uploadProgress = 0;
       _error = null;
     });
   }
 
-  void _removeProof() {
+  void _removeProof(int index) {
     setState(() {
-      _proofFile = null;
-      _proofMime = null;
-      _proofSizeBytes = null;
+      if (index >= 0 && index < _proofs.length) {
+        _proofs.removeAt(index);
+      }
       _uploadProgress = 0;
     });
   }
@@ -186,36 +189,45 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
       String? objectKey;
       final isOffline = ref.read(networkStatusProvider).isOffline;
       String? proofLocalPath;
-      if (isOffline && _proofFile != null) {
-        final ext = _proofFile!.name.contains('.')
-            ? '.${_proofFile!.name.split('.').last}'
-            : '.jpg';
-        proofLocalPath = await OfflineDb.instance.copyProofToQueue(
-          sourcePath: _proofFile!.path,
-          extensionWithDot: ext,
-        );
-      } else if (_proofFile != null) {
-        // Keep the proof row in its ready state; the confirm button spinner
-        // already indicates processing (avoid flashing "Uploading" again).
-        final bytes = await _proofFile!.readAsBytes();
-        final name =
-            _proofFile!.name.isNotEmpty ? _proofFile!.name : 'proof.jpg';
-        final mime = _proofMime ?? 'image/jpeg';
-        final upload = await ref
-            .read(driverUploadServiceProvider)
-            .uploadOrderProof(
-              bytes: bytes,
-              contentType: mime,
-              filename: name,
+      if (_proofs.isNotEmpty) {
+        if (isOffline) {
+          final paths = <String>[];
+          for (final proof in _proofs) {
+            final ext = proof.file.name.contains('.')
+                ? '.${proof.file.name.split('.').last}'
+                : '.jpg';
+            paths.add(
+              await OfflineDb.instance.copyProofToQueue(
+                sourcePath: proof.file.path,
+                extensionWithDot: ext,
+              ),
             );
-        objectKey = upload.objectKey;
+          }
+          proofLocalPath = encodeProofPayload(paths);
+        } else {
+          final keys = <String>[];
+          for (final proof in _proofs) {
+            final bytes = await proof.file.readAsBytes();
+            final name =
+                proof.file.name.isNotEmpty ? proof.file.name : 'proof.jpg';
+            final upload = await ref
+                .read(driverUploadServiceProvider)
+                .uploadOrderProof(
+                  bytes: bytes,
+                  contentType: proof.mime,
+                  filename: name,
+                );
+            keys.add(upload.objectKey);
+          }
+          objectKey = encodeProofPayload(keys);
+        }
       }
 
       final created = await ref.read(deliveryServiceProvider).createPickup(
             orderId: orderId,
             proofObjectKey: objectKey,
             proofLocalPath: proofLocalPath,
-            proofMime: _proofMime,
+            proofMime: _proofs.isEmpty ? null : _proofs.first.mime,
             latitude: position.latitude,
             longitude: position.longitude,
           );
@@ -409,22 +421,34 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
                               ?.copyWith(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 10),
-                        DeliveryProofUploadArea(
-                          cameraOnly: true,
-                          onTap: _submitting ? null : _captureProof,
-                        ),
-                        if (_proofFile != null) ...[
+                        if (_proofs.length < OrderProofConstraints.maxCount)
+                          DeliveryProofUploadArea(
+                            cameraOnly: true,
+                            addAnother: _proofs.isNotEmpty,
+                            onTap: _submitting ? null : _captureProof,
+                          ),
+                        for (var i = 0; i < _proofs.length; i++) ...[
                           const SizedBox(height: 12),
                           DeliveryProofFileRow(
-                            name: _proofFile!.name,
-                            sizeBytes: _proofSizeBytes,
+                            name: _proofs[i].file.name,
+                            sizeBytes: _proofs[i].sizeBytes,
                             progress: _uploadProgress,
                             uploading: _uploadingProof,
-                            previewPath: _proofFile!.path,
+                            previewPath: _proofs[i].file.path,
                             uploaded: false,
-                            onRemove: _submitting ? null : _removeProof,
+                            onRemove: _submitting ? null : () => _removeProof(i),
                           ),
                         ],
+                        const SizedBox(height: 6),
+                        Text(
+                          _proofs.length >= OrderProofConstraints.maxCount
+                              ? l10n.proofMaxReached
+                              : l10n.proofAddHint,
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                color: AppColors.dayLabelGrey,
+                                fontSize: 10,
+                              ),
+                        ),
                       ],
                     ),
                   ),

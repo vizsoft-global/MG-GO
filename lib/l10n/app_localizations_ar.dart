@@ -240,7 +240,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get viewProofPhoto => 'عرض الصورة';
 
   @override
-  String get proofReplaceHint => 'التقاط صورة جديدة يستبدل الصورة الحالية.';
+  String get proofAddHint => 'يمكنك إرفاق حتى 5 صور.';
+
+  @override
+  String get proofMaxReached => 'الحد الأقصى 5 صور.';
+
+  @override
+  String get addAnotherPhoto => 'إضافة صورة أخرى';
 
   @override
   String get fileEmpty => 'الملف فارغ';

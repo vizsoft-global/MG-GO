@@ -70,11 +70,13 @@ class DeliveryProofUploadArea extends StatelessWidget {
   const DeliveryProofUploadArea({
     required this.onTap,
     this.cameraOnly = false,
+    this.addAnother = false,
     super.key,
   });
 
   final VoidCallback? onTap;
   final bool cameraOnly;
+  final bool addAnother;
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +107,9 @@ class DeliveryProofUploadArea extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                cameraOnly ? l10n.takePhoto : l10n.takePhotoOrChooseGallery,
+                cameraOnly
+                    ? (addAnother ? l10n.addAnotherPhoto : l10n.takePhoto)
+                    : l10n.takePhotoOrChooseGallery,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                   fontWeight: FontWeight.w500,
@@ -124,6 +128,18 @@ class DeliveryProofUploadArea extends StatelessWidget {
       ),
     );
   }
+}
+
+class AttachedProof {
+  const AttachedProof({
+    required this.file,
+    required this.mime,
+    required this.sizeBytes,
+  });
+
+  final XFile file;
+  final String mime;
+  final int sizeBytes;
 }
 
 class DeliveryProofFileRow extends StatelessWidget {
@@ -240,14 +256,6 @@ class DeliveryProofFileRow extends StatelessWidget {
                 color: AppColors.textSecondary,
               ),
             ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            l10n.proofReplaceHint,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: AppColors.dayLabelGrey,
-                  fontSize: 10,
-                ),
           ),
         ],
       ),

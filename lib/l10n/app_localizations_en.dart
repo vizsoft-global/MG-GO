@@ -237,7 +237,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewProofPhoto => 'View photo';
 
   @override
-  String get proofReplaceHint => 'Taking another photo replaces this one.';
+  String get proofAddHint => 'You can attach up to 5 photos.';
+
+  @override
+  String get proofMaxReached => 'Maximum of 5 photos.';
+
+  @override
+  String get addAnotherPhoto => 'Add another photo';
 
   @override
   String get fileEmpty => 'File is empty';
