@@ -178,6 +178,7 @@
   "zoneTimeoutCheckedOut": "تم إخراجك من الخدمة لبقائك خارج منطقة التوصيل لفترة طويلة.",
   "autoCheckoutOffline": "تم إخراجك تلقائياً بعد البقاء دون اتصال لفترة طويلة.",
   "autoCheckoutOutOfZone": "تم إخراجك تلقائياً بعد البقاء خارج منطقتك المخصصة لفترة طويلة.",
+  "autoCheckoutShiftEnd": "تم إخراجك تلقائياً عند انتهاء ورديتك.",
   "completeMoreEarnMore": "أكمل المزيد. اربح المزيد.",
   "liveBonusQuestsToday": "مهام المكافآت النشطة لليوم",
   "viewAll": "عرض الكل",

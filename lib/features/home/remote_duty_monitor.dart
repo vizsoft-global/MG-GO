@@ -161,14 +161,18 @@ class _RemoteDutyMonitor with WidgetsBindingObserver {
         .maybeSingle();
 
     final reason = log?['check_out_reason'] as String?;
-    if (reason != 'auto_offline' && reason != 'auto_out_of_zone') {
+    if (reason != 'auto_offline' &&
+        reason != 'auto_out_of_zone' &&
+        reason != 'auto_shift_end') {
       return;
     }
 
     final l10n = await loadSavedLocalizations();
     final message = reason == 'auto_offline'
         ? l10n.autoCheckoutOffline
-        : l10n.autoCheckoutOutOfZone;
+        : reason == 'auto_out_of_zone'
+            ? l10n.autoCheckoutOutOfZone
+            : l10n.autoCheckoutShiftEnd;
 
     final messenger = scaffoldMessengerKey.currentState;
     if (messenger == null) return;

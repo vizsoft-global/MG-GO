@@ -48,6 +48,9 @@ class NotificationsEnabledNotifier extends Notifier<bool> {
     // Close and fold the mute window *before* flipping the toggle back on.
     // Registering the FCM token at the same instant used to deliver a queued
     // campaign as a new banner.
+    await ref
+        .read(notificationInboxProvider.notifier)
+        .markLoadedInboxSeenForMuteClose();
     await notificationMuteStore.closeWindow(now);
     await ref.read(notificationInboxProvider.notifier).refreshInBackground();
     await prefs.setBool(kNotificationsEnabledPrefKey, true);

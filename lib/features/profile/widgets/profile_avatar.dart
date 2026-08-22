@@ -75,8 +75,8 @@ class ProfileAvatar extends StatelessWidget {
       return Image.memory(
         localBytes!,
         fit: BoxFit.cover,
-        key: ValueKey(localBytes.hashCode),
         gaplessPlayback: true,
+        excludeFromSemantics: true,
       );
     }
     if (photoUrl != null && photoUrl!.isNotEmpty) {

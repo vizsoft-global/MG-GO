@@ -303,6 +303,7 @@
   "zoneTimeoutCheckedOut": "You were checked out for staying outside your delivery area too long.",
   "autoCheckoutOffline": "You were checked out automatically after being offline too long.",
   "autoCheckoutOutOfZone": "You were checked out automatically after staying outside your assigned zone too long.",
+  "autoCheckoutShiftEnd": "You were checked out automatically when your shift ended.",
   "completeMoreEarnMore": "Complete more. Earn more.",
   "liveBonusQuestsToday": "Live bonus quests for today",
   "viewAll": "View all",

@@ -569,6 +569,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'You were checked out automatically after staying outside your assigned zone too long.';
 
   @override
+  String get autoCheckoutShiftEnd =>
+      'You were checked out automatically when your shift ended.';
+
+  @override
   String get completeMoreEarnMore => 'Complete more. Earn more.';
 
   @override
