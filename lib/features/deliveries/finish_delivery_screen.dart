@@ -22,6 +22,7 @@ import '../duty/duty_background_service.dart';
 import '../duty/duty_location_provider.dart';
 import '../duty/location_tracking_service.dart';
 import '../home/home_providers.dart';
+import '../home/refresh_home_progress.dart';
 import 'active_delivery_provider.dart';
 import 'capture_order_proof.dart';
 import 'proof_payload.dart';
@@ -272,6 +273,7 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
       // would refetch active delivery twice.
       ref.invalidate(myDeliveriesProvider);
       ref.invalidate(pendingDeliveriesProvider);
+      refreshHomeProgress(ref);
     } on DeliveryServiceException catch (e) {
       _logSubmitError(e.code ?? 'delivery_error');
       if (await handleDeliveryServiceExceptionActions(e, ref)) return;

@@ -32,6 +32,7 @@ import '../duty/adaptive_location_scheduler.dart';
 import '../duty/duty_background_service.dart';
 import '../duty/duty_location_provider.dart';
 import '../duty/location_tracking_service.dart';
+import '../home/refresh_home_progress.dart';
 
 class PickupScreen extends ConsumerStatefulWidget {
   const PickupScreen({super.key});
@@ -261,6 +262,7 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
       // would refetch active delivery twice and flicker Active Delivery.
       ref.invalidate(myDeliveriesProvider);
       ref.invalidate(pendingDeliveriesProvider);
+      refreshHomeProgress(ref);
 
       if (!mounted) return;
       final queued = created.status == 'queued';

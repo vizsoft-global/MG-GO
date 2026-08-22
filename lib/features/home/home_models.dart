@@ -344,6 +344,7 @@ class HomeIncentiveProgress {
   const HomeIncentiveProgress({
     required this.name,
     required this.eligibleCount,
+    required this.progressCount,
     required this.target,
     required this.rewardKwd,
     required this.remainingDeliveries,
@@ -353,6 +354,8 @@ class HomeIncentiveProgress {
 
   final String name;
   final int eligibleCount;
+  /// Submitted orders for the Home bar (pay still uses [eligibleCount]).
+  final int progressCount;
   final int target;
   final double rewardKwd;
   final int remainingDeliveries;
@@ -385,12 +388,19 @@ class HomeIncentiveProgress {
   }
 
   factory HomeIncentiveProgress.fromJson(Map<String, dynamic> json) {
+    final eligible = (json['eligible_count'] as num?)?.toInt() ?? 0;
+    final progress = (json['progress_count'] as num?)?.toInt() ?? eligible;
+    final target = (json['target'] as num?)?.toInt() ?? 0;
+    final leftover = target - progress;
+    final remaining = (json['remaining_deliveries'] as num?)?.toInt() ??
+        (target > 0 ? (leftover < 0 ? 0 : leftover) : 0);
     return HomeIncentiveProgress(
       name: json['name'] as String? ?? 'Weekly Bonus',
-      eligibleCount: (json['eligible_count'] as num?)?.toInt() ?? 0,
-      target: (json['target'] as num?)?.toInt() ?? 0,
+      eligibleCount: eligible,
+      progressCount: progress,
+      target: target,
       rewardKwd: (json['reward_kwd'] as num?)?.toDouble() ?? 0,
-      remainingDeliveries: (json['remaining_deliveries'] as num?)?.toInt() ?? 0,
+      remainingDeliveries: remaining,
       targetMode: json['target_mode'] as String? ?? 'single',
       tiers: (json['tiers'] as List? ?? [])
           .map(
