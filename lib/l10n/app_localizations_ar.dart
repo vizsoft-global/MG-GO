@@ -568,6 +568,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'تم إخراجك تلقائياً بعد البقاء خارج منطقتك المخصصة لفترة طويلة.';
 
   @override
+  String get autoCheckoutShiftEnd =>
+      'تم إخراجك تلقائياً عند انتهاء ورديتك.';
+
+  @override
   String get completeMoreEarnMore => 'أكمل المزيد. اربح المزيد.';
 
   @override

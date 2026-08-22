@@ -28,3 +28,15 @@ int capShiftEarlyOutMinutes(int minutes, {int scheduledSeconds = 0}) {
   final cap = scheduledSeconds ~/ 60;
   return minutes > cap ? cap : minutes;
 }
+
+/// Prefer the server length; if a stale payload omitted it, derive from the window.
+int resolveScheduledSeconds({
+  required int declaredSeconds,
+  DateTime? scheduledStart,
+  DateTime? scheduledEnd,
+}) {
+  if (declaredSeconds > 0) return declaredSeconds;
+  if (scheduledStart == null || scheduledEnd == null) return 0;
+  final seconds = scheduledEnd.toUtc().difference(scheduledStart.toUtc()).inSeconds;
+  return seconds > 0 ? seconds : 0;
+}

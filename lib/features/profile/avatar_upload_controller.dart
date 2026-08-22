@@ -17,7 +17,8 @@ import 'avatar_picker_errors.dart';
 void refreshRiderAvatar(WidgetRef ref) {
   unawaited(ref.refresh(riderProfileProvider.future));
   ref.invalidate(profileAvatarUrlProvider);
-  ref.invalidate(persistedAvatarBytesProvider);
+  // Keep persisted bytes mounted. Invalidating this provider drops
+  // Image.memory and flashes initials while the same photo reloads.
 }
 
 final avatarUploadControllerProvider =

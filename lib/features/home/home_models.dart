@@ -75,7 +75,12 @@ class ShiftAdherence {
     final scheduledStartAt = parse(json['scheduled_start_at'] as String?);
     final scheduledEndAt = parse(json['scheduled_end_at'] as String?);
     final actualOutAt = parse(json['actual_out_at'] as String?);
-    final scheduledSeconds = (json['scheduled_seconds'] as num?)?.toInt() ?? 0;
+    final declaredSeconds = (json['scheduled_seconds'] as num?)?.toInt() ?? 0;
+    final scheduledSeconds = resolveScheduledSeconds(
+      declaredSeconds: declaredSeconds,
+      scheduledStart: scheduledStartAt,
+      scheduledEnd: scheduledEndAt,
+    );
     final jsonEarly = (json['minutes_early_out'] as num?)?.toInt();
     final recomputed = scheduledStartAt != null && scheduledEndAt != null
         ? shiftMinutesEarlyOut(

@@ -36,6 +36,21 @@ class NotificationInboxNotifier
     state = await AsyncValue.guard(_fetch);
   }
 
+  /// Mark whatever is already loaded as history *before* the toggle comes back
+  /// on. A failed refetch must not hand those rows back as a new banner.
+  Future<void> markLoadedInboxSeenForMuteClose() async {
+    final current = state.value;
+    if (current == null || current.items.isEmpty) return;
+    final muted = {
+      ...await notificationMuteStore.readMutedIds(),
+      ...idsUnreadAtMuteClose(snapshot: current),
+    };
+    await notificationMuteStore.saveMutedIds(muted);
+    state = AsyncData(
+      inboxWithMutedMarkedSeen(snapshot: current, mutedIds: muted),
+    );
+  }
+
   /// Refetch without blanking the list or surfacing a failure.
   ///
   /// Used when the refetch is a side effect of something else the rider did —

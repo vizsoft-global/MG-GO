@@ -1064,6 +1064,12 @@ abstract class AppLocalizations {
   /// **'You were checked out automatically after staying outside your assigned zone too long.'**
   String get autoCheckoutOutOfZone;
 
+  /// No description provided for @autoCheckoutShiftEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'You were checked out automatically when your shift ended.'**
+  String get autoCheckoutShiftEnd;
+
   /// No description provided for @completeMoreEarnMore.
   ///
   /// In en, this message translates to:

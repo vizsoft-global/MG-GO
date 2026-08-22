@@ -84,6 +84,19 @@ void main() {
     expect(adherence.minutesEarlyOut, 300);
   });
 
+  test('fromJson caps 310 when scheduled_seconds is missing by deriving the window', () {
+    final adherence = ShiftAdherence.fromJson({
+      'scheduled_start_at': '2026-08-13T08:30:00+00:00',
+      'scheduled_end_at': '2026-08-13T13:30:00+00:00',
+      'actual_out_at': '2026-08-13T08:20:00+00:00',
+      'minutes_late': 0,
+      'minutes_early_out': 310,
+      'online_seconds': 0,
+    });
+    expect(adherence.minutesEarlyOut, 300);
+    expect(adherence.scheduledSeconds, 18000);
+  });
+
   test('fromJson does not shrink a during-shift early-out', () {
     final adherence = ShiftAdherence.fromJson({
       'scheduled_start_at': '2026-08-13T08:30:00+00:00',

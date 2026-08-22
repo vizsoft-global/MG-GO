@@ -46,4 +46,12 @@ class DutySessionGate extends Notifier<DutySessionGateState> {
       auditComplete: true,
     );
   }
+
+  void markNeedsFreshClockIn() {
+    state = DutySessionGateState(
+      permissionsReady: state.permissionsReady,
+      needsFreshClockIn: true,
+      auditComplete: state.auditComplete,
+    );
+  }
 }
