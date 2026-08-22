@@ -704,14 +704,20 @@ class ActiveOffer {
   bool get hasProgress => currentCount > 0;
 
   factory ActiveOffer.fromJson(Map<String, dynamic> json) {
+    final progress = (json['progress_count'] as num?)?.toInt() ??
+        (json['current_count'] as num?)?.toInt() ??
+        0;
+    final target = (json['target'] as num?)?.toInt() ?? 0;
+    final leftover = target - progress;
     return ActiveOffer(
       ruleId: json['rule_id']?.toString() ?? '',
       name: (json['name'] as String?) ?? '',
       period: (json['period'] as String?) ?? 'weekly',
       scopeType: (json['scope_type'] as String?) ?? 'restaurant',
-      currentCount: (json['current_count'] as num?)?.toInt() ?? 0,
-      target: (json['target'] as num?)?.toInt() ?? 0,
-      remainingDeliveries: (json['remaining_deliveries'] as num?)?.toInt() ?? 0,
+      currentCount: progress,
+      target: target,
+      remainingDeliveries: (json['remaining_deliveries'] as num?)?.toInt() ??
+          (target > 0 ? (leftover < 0 ? 0 : leftover) : 0),
       baseMinimumDeliveries:
           (json['base_minimum_deliveries'] as num?)?.toInt() ?? 0,
       rewardKwd: (json['reward_kwd'] as num?)?.toDouble() ?? 0,

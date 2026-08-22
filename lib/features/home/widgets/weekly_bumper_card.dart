@@ -19,7 +19,7 @@ class WeeklyBumperCard extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final progress = incentive!.eligibleCount / incentive!.maxTierThreshold;
+    final progress = incentive!.progressCount / incentive!.maxTierThreshold;
     final tiers = incentive!.tiers.isNotEmpty
         ? incentive!.tiers
         : [
@@ -81,7 +81,7 @@ class WeeklyBumperCard extends StatelessWidget {
               children: [
                 TextSpan(text: '${l10n.deliveredOrders} '),
                 TextSpan(
-                  text: '${incentive!.eligibleCount}',
+                  text: '${incentive!.progressCount}',
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF141414),

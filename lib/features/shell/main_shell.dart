@@ -14,6 +14,7 @@ import '../auth/login_verification_store.dart';
 import '../auth/rider_auth_service.dart';
 import '../deliveries/delivery_proximity_preview.dart';
 import '../deliveries/delivery_proximity_service.dart';
+import '../deliveries/widgets/add_delivery_docked_button.dart';
 import '../home/home_providers.dart';
 import '../profile/avatar_upload_controller.dart';
 
@@ -74,27 +75,27 @@ class _MainShellState extends ConsumerState<MainShell>
     final isOnlineOnDuty =
         ref.watch(homeDashboardProvider).value?.isOnlineOnDuty ?? false;
     final tabs = [
-      _TabItem(
+      MainShellTabItem(
         label: l10n.tabHome,
         icon: Icons.home_outlined,
         activeIcon: Icons.home_rounded,
       ),
-      _TabItem(
+      MainShellTabItem(
         label: l10n.tabDeliveries,
         icon: Icons.inventory_2_outlined,
         activeIcon: Icons.inventory_2,
       ),
-      _TabItem(
+      MainShellTabItem(
         label: l10n.tabEarnings,
         icon: Icons.payments_outlined,
         activeIcon: Icons.payments,
       ),
-      _TabItem(
+      MainShellTabItem(
         label: l10n.tabVehicle,
         icon: Icons.two_wheeler_outlined,
         activeIcon: Icons.two_wheeler,
       ),
-      _TabItem(
+      MainShellTabItem(
         label: l10n.tabProfile,
         icon: Icons.person_outline_rounded,
         activeIcon: Icons.person_rounded,
@@ -116,8 +117,9 @@ class _MainShellState extends ConsumerState<MainShell>
           Expanded(child: widget.navigationShell),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: MainShellTabBar(
         selectedIndex: widget.navigationShell.currentIndex,
+        tabs: tabs,
         onDestinationSelected: (i) {
           if (i == 4) refreshRiderAvatar(ref);
           widget.navigationShell.goBranch(
@@ -125,27 +127,15 @@ class _MainShellState extends ConsumerState<MainShell>
             initialLocation: i == widget.navigationShell.currentIndex,
           );
         },
-        backgroundColor: AppColors.white,
-        indicatorColor: AppColors.accentOrange.withValues(alpha: 0.15),
-        destinations: [
-          for (var i = 0; i < tabs.length; i++)
-            NavigationDestination(
-              icon: Icon(tabs[i].icon, color: AppColors.textPrimary),
-              selectedIcon: Icon(
-                tabs[i].activeIcon,
-                color: AppColors.accentOrange,
-              ),
-              label: tabs[i].label,
-            ),
-        ],
+        centerAction: const AddDeliveryDockedButton(),
       ),
     ),
     );
   }
 }
 
-class _TabItem {
-  const _TabItem({
+class MainShellTabItem {
+  const MainShellTabItem({
     required this.label,
     required this.icon,
     required this.activeIcon,
@@ -154,4 +144,107 @@ class _TabItem {
   final String label;
   final IconData icon;
   final IconData activeIcon;
+}
+
+/// Five-tab bar with a raised center Add Delivery action in a middle gap
+/// so the FAB does not cover the Earnings label.
+class MainShellTabBar extends StatelessWidget {
+  const MainShellTabBar({
+    required this.selectedIndex,
+    required this.tabs,
+    required this.onDestinationSelected,
+    required this.centerAction,
+    super.key,
+  });
+
+  final int selectedIndex;
+  final List<MainShellTabItem> tabs;
+  final ValueChanged<int> onDestinationSelected;
+  final Widget centerAction;
+
+  static const _barHeight = 64.0;
+  static const _fabSize = 56.0;
+  static const _gapWidth = 72.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+    return Material(
+      color: AppColors.white,
+      elevation: 8,
+      shadowColor: Colors.black.withValues(alpha: 0.08),
+      child: Padding(
+        padding: EdgeInsets.only(bottom: bottomInset),
+        child: SizedBox(
+          height: _barHeight + 16,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: _barHeight,
+                child: const DecoratedBox(
+                  decoration: BoxDecoration(
+                    border: Border(
+                      top: BorderSide(color: AppColors.border),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: _barHeight,
+                child: Row(
+                  children: [
+                    for (var i = 0; i < 2; i++)
+                      Expanded(child: _buildTab(context, i)),
+                    const SizedBox(width: _gapWidth),
+                    for (var i = 2; i < tabs.length; i++)
+                      Expanded(child: _buildTab(context, i)),
+                  ],
+                ),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: (_barHeight - _fabSize) / 2 + 10,
+                child: Center(child: centerAction),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTab(BuildContext context, int index) {
+    final tab = tabs[index];
+    final selected = index == selectedIndex;
+    final color =
+        selected ? AppColors.accentOrange : AppColors.textPrimary;
+    return InkWell(
+      onTap: () => onDestinationSelected(index),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(selected ? tab.activeIcon : tab.icon, color: color, size: 22),
+          const SizedBox(height: 2),
+          Text(
+            tab.label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
