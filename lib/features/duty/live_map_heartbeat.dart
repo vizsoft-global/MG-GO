@@ -22,11 +22,15 @@ const coarseGpsAccuracyMeters = 50.0;
 const coarseGpsHeartbeatMaxAge = Duration(minutes: 2);
 
 /// Picks which GPS sample to send to `driver_report_location`.
+///
+/// [sinceLastReport] is how long the rider has been silent. `null` means no report is on
+/// record at all, which counts as past due.
 Position? heartbeatPosition({
   required Position current,
   required Position? lastGood,
   required bool force,
   required bool needsInitialReport,
+  required Duration? sinceLastReport,
   double maxAccuracyMeters = coarseGpsAccuracyMeters,
   Duration maxLastGoodAge = coarseGpsHeartbeatMaxAge,
 }) {
@@ -46,11 +50,21 @@ Position? heartbeatPosition({
   }
 
   if (lastGood == null) {
-    // Nothing to heartbeat. Send the coarse fix only when a report is required at all,
-    // otherwise stay quiet and let the next sample try again.
+    // Nothing to heartbeat. Send the coarse fix when a report is required at all, otherwise
+    // stay quiet and let the next sample try again.
     if (force ||
         needsInitialReport ||
         current.speed >= AdaptiveLocationScheduler.movingSpeedThresholdMps) {
+      return current;
+    }
+    // Staying quiet indefinitely is how a rider who clocks in indoors and never sees one
+    // accurate fix goes fully silent: the admin map ages them to GPS Offline while they are
+    // standing in the restaurant with the app open. Once a whole idle beat has passed with
+    // nothing sent, an honestly approximate pin beats no pin at all — and it costs nothing,
+    // because the fleet room defers a coarse fix for pin purposes while still advancing
+    // `lastFixAtMs`, so this buys liveness without moving the marker onto a cell tower.
+    if (sinceLastReport == null ||
+        sinceLastReport >= AdaptiveLocationScheduler.idleReportInterval) {
       return current;
     }
     return null;

@@ -171,6 +171,7 @@
   "deliveryRuleDefault": "قاعدة توصيل",
   "deliveryRules": "قواعد التوصيل",
   "allVerifiedCountTowardIncentives": "جميع التوصيلات الموثّقة تُحتسب ضمن الحوافز",
+  "confirmedOnceVerified": "يُؤكَّد بعد التوثيق",
   "countsTowardIncentiveDeliveries": "تُحتسب ضمن توصيلات الحوافز",
   "outsideDeliveryAreaReturnSoon": "خارج المنطقة. عد خلال 45 دقيقة.",
   "outsideDeliveryAreaReturnAfterDelivery": "خارج المنطقة. عد خلال 20 دقيقة.",

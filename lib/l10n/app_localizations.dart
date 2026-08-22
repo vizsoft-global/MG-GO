@@ -1022,6 +1022,12 @@ abstract class AppLocalizations {
   /// **'All verified deliveries count toward incentives'**
   String get allVerifiedCountTowardIncentives;
 
+  /// No description provided for @confirmedOnceVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed once verified'**
+  String get confirmedOnceVerified;
+
   /// No description provided for @countsTowardIncentiveDeliveries.
   ///
   /// In en, this message translates to:

@@ -257,6 +257,7 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboard> {
         primaryWeeklyIncentive: current.primaryWeeklyIncentive,
         deliveryRules: current.deliveryRules,
         shiftAdherence: current.shiftAdherence,
+        banner: current.banner,
       ),
     );
   }

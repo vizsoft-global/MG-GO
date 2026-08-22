@@ -23,6 +23,7 @@ import 'home_models.dart';
 import 'home_providers.dart';
 import 'widgets/bonus_action_card.dart';
 import 'widgets/current_shift_chip.dart';
+import 'widgets/home_banner_card.dart';
 import 'widgets/home_header.dart';
 import 'widgets/incentive_quest_card.dart';
 import 'widgets/home_notifications_card.dart';
@@ -188,6 +189,10 @@ class HomeScreen extends ConsumerWidget {
                                   zoneState.timeoutMode ==
                                   ZoneTimeoutMode.returnGrace,
                             ),
+                          ],
+                          if (dashboard.banner != null) ...[
+                            const SizedBox(height: 12),
+                            HomeBannerCard(banner: dashboard.banner!),
                           ],
                           if (isOnline) ...[
                             const SizedBox(height: 12),

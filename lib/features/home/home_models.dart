@@ -105,6 +105,44 @@ class ShiftAdherence {
   }
 }
 
+class HomeBanner {
+  const HomeBanner({
+    required this.id,
+    required this.imageUrl,
+    this.captionEn,
+    this.captionAr,
+    this.deepLink,
+  });
+
+  final String id;
+  final String imageUrl;
+  final String? captionEn;
+  final String? captionAr;
+  final String? deepLink;
+
+  String? captionFor(String localeName) {
+    final isAr = localeName.toLowerCase().startsWith('ar');
+    final primary = isAr ? captionAr : captionEn;
+    final fallback = isAr ? captionEn : captionAr;
+    final text = (primary != null && primary.trim().isNotEmpty)
+        ? primary
+        : fallback;
+    final trimmed = text?.trim();
+    return trimmed == null || trimmed.isEmpty ? null : trimmed;
+  }
+
+  factory HomeBanner.fromJson(Map<String, dynamic> json) {
+    final imageUrl = json['image_url'] as String? ?? '';
+    return HomeBanner(
+      id: json['id'] as String? ?? '',
+      imageUrl: imageUrl,
+      captionEn: json['caption_en'] as String?,
+      captionAr: json['caption_ar'] as String?,
+      deepLink: json['deep_link'] as String?,
+    );
+  }
+}
+
 class HomeDashboard {
   const HomeDashboard({
     required this.driver,
@@ -113,6 +151,7 @@ class HomeDashboard {
     this.primaryWeeklyIncentive,
     this.deliveryRules = const [],
     this.shiftAdherence,
+    this.banner,
   });
 
   final HomeDriverInfo driver;
@@ -121,6 +160,7 @@ class HomeDashboard {
   final HomeIncentiveProgress? primaryWeeklyIncentive;
   final List<HomeDeliveryRuleSummary> deliveryRules;
   final ShiftAdherence? shiftAdherence;
+  final HomeBanner? banner;
 
   bool get isOnline => session.isOnline;
   bool get isOnDuty => driver.isOnDuty;
@@ -175,6 +215,13 @@ class HomeDashboard {
           : ShiftAdherence.fromJson(
               Map<String, dynamic>.from(json['shift_adherence'] as Map),
             ),
+      banner: () {
+        if (json['banner'] is! Map) return null;
+        final parsed = HomeBanner.fromJson(
+          Map<String, dynamic>.from(json['banner'] as Map),
+        );
+        return parsed.imageUrl.trim().isEmpty ? null : parsed;
+      }(),
     );
   }
 }

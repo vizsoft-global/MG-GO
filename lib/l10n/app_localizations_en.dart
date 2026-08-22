@@ -542,6 +542,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'All verified deliveries count toward incentives';
 
   @override
+  String get confirmedOnceVerified => 'Confirmed once verified';
+
+  @override
   String get countsTowardIncentiveDeliveries =>
       'Counts toward incentive deliveries';
 

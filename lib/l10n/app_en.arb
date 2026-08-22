@@ -296,6 +296,7 @@
   "deliveryRuleDefault": "Delivery rule",
   "deliveryRules": "Delivery Rules",
   "allVerifiedCountTowardIncentives": "All verified deliveries count toward incentives",
+  "confirmedOnceVerified": "Confirmed once verified",
   "countsTowardIncentiveDeliveries": "Counts toward incentive deliveries",
   "outsideDeliveryAreaReturnSoon": "Outside zone. Return within 45 minutes.",
   "outsideDeliveryAreaReturnAfterDelivery": "Outside zone. Return within 20 minutes.",
