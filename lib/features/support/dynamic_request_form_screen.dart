@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
+import 'request_form_submit.dart';
 import 'request_type_definition.dart';
 import 'support_providers.dart';
 
@@ -144,8 +145,6 @@ class _DynamicRequestFormScreenState
     try {
       final payload = <String, dynamic>{};
       double? amount;
-      DateTime? start;
-      DateTime? end;
       String? details;
       String? severity;
 
@@ -164,9 +163,8 @@ class _DynamicRequestFormScreenState
           case 'amount_kwd':
             amount = value is num ? value.toDouble() : double.tryParse('$value');
           case 'start_date':
-            start = _values[field.fieldKey] as DateTime?;
           case 'end_date':
-            end = _values[field.fieldKey] as DateTime?;
+            break;
           case 'details':
             details = '$value';
           case 'severity':
@@ -176,14 +174,16 @@ class _DynamicRequestFormScreenState
         }
       }
 
+      final range = resolveRequestDateRange(fields: fields, values: _values);
       if (def.dateRangeRequired &&
-          (start == null || end == null || end.isBefore(start))) {
+          !isInclusiveDateRangeValid(range.start, range.end)) {
         throw Exception(l10n.supportErrorLeaveTypeDatesRequired);
       }
-      if (_files.length < def.minAttachments) {
-        throw Exception(
-          l10n.supportErrorAttachmentsMin(def.minAttachments),
-        );
+      final minFiles = requiresRequestAttachment(fields)
+          ? (def.minAttachments < 1 ? 1 : def.minAttachments)
+          : def.minAttachments;
+      if (_files.length < minFiles) {
+        throw Exception(l10n.supportErrorAttachmentsMin(minFiles));
       }
 
       final attachments =
@@ -194,8 +194,8 @@ class _DynamicRequestFormScreenState
             payload: payload,
             attachments: attachments,
             amountKwd: amount,
-            startDate: start,
-            endDate: end,
+            startDate: range.start,
+            endDate: range.end,
             details: details,
             severity: severity,
           );
@@ -207,8 +207,9 @@ class _DynamicRequestFormScreenState
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('$e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(supportUserMessage(e))),
+        );
       }
     } finally {
       if (mounted) setState(() => _submitting = false);

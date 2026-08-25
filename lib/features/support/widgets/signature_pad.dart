@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 class SignaturePadController extends ChangeNotifier {
@@ -88,7 +89,7 @@ class SignaturePadController extends ChangeNotifier {
   }
 }
 
-class SignaturePad extends StatelessWidget {
+class SignaturePad extends StatefulWidget {
   const SignaturePad({
     required this.controller,
     super.key,
@@ -97,26 +98,65 @@ class SignaturePad extends StatelessWidget {
   final SignaturePadController controller;
 
   @override
+  State<SignaturePad> createState() => _SignaturePadState();
+}
+
+class _SignaturePadState extends State<SignaturePad> {
+  int? _activePointer;
+
+  void _start(PointerEvent event) {
+    if (_activePointer != null) return;
+    _activePointer = event.pointer;
+    widget.controller.startStroke(event.localPosition);
+  }
+
+  void _extend(PointerEvent event) {
+    if (event.pointer != _activePointer) return;
+    widget.controller.extendStroke(event.localPosition);
+  }
+
+  void _end(PointerEvent event) {
+    if (event.pointer != _activePointer) return;
+    _activePointer = null;
+    widget.controller.endStroke();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: controller,
+      listenable: widget.controller,
       builder: (context, _) {
         return LayoutBuilder(
           builder: (context, constraints) {
-            controller._padSize = Size(
+            widget.controller._padSize = Size(
               constraints.maxWidth,
               constraints.maxHeight,
             );
-            return GestureDetector(
-              onPanStart: (d) => controller.startStroke(d.localPosition),
-              onPanUpdate: (d) => controller.extendStroke(d.localPosition),
-              onPanEnd: (_) => controller.endStroke(),
-              child: CustomPaint(
-                painter: _SignaturePainter(
-                  strokes: controller.visibleStrokes,
-                  textDirection: Directionality.of(context),
+            // Listener sees every pointer, including vertical ones a Pan
+            // recognizer loses to a parent ListView. EagerGestureRecognizer
+            // then wins the arena so the list does not scroll mid-stroke.
+            return RawGestureDetector(
+              behavior: HitTestBehavior.opaque,
+              gestures: <Type, GestureRecognizerFactory>{
+                EagerGestureRecognizer:
+                    GestureRecognizerFactoryWithHandlers<EagerGestureRecognizer>(
+                  EagerGestureRecognizer.new,
+                  (_) {},
                 ),
-                size: Size(constraints.maxWidth, constraints.maxHeight),
+              },
+              child: Listener(
+                behavior: HitTestBehavior.opaque,
+                onPointerDown: _start,
+                onPointerMove: _extend,
+                onPointerUp: _end,
+                onPointerCancel: _end,
+                child: CustomPaint(
+                  painter: _SignaturePainter(
+                    strokes: widget.controller.visibleStrokes,
+                    textDirection: Directionality.of(context),
+                  ),
+                  size: Size(constraints.maxWidth, constraints.maxHeight),
+                ),
               ),
             );
           },

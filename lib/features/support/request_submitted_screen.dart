@@ -110,7 +110,7 @@ class RequestSubmittedScreen extends StatelessWidget {
                 style: FilledButton.styleFrom(backgroundColor: AppColors.accentOrange),
                 onPressed: () {
                   if (requestId != null) {
-                    context.go('/profile/support/requests/$requestId');
+                    context.push('/profile/support/requests/$requestId');
                   } else {
                     context.go('/profile/support/requests');
                   }

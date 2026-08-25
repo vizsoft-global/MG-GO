@@ -107,6 +107,53 @@ void main() {
     expect(find.byType(CheckboxListTile), findsOneWidget);
   });
 
+  testWidgets('a required file field blocks submit when nothing is attached',
+      (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          requestTypesProvider.overrideWith(
+            (ref) async => [
+              RequestTypeDefinition.fromJson(const {
+                'key': 'fuel',
+                'label_en': 'Fuel',
+                'is_system': true,
+                'sort_order': 1,
+                'date_range_required': false,
+                'min_attachments': 0,
+              }),
+            ],
+          ),
+          requestFieldsProvider('fuel').overrideWith(
+            (ref) async => [
+              RequestFieldDefinition.fromJson(const {
+                'field_key': 'attachment',
+                'label_en': 'Attachment',
+                'kind': 'file',
+                'target': 'attachments',
+                'is_required': true,
+                'sort_order': 1,
+              }),
+            ],
+          ),
+        ],
+        child: const MaterialApp(
+          locale: Locale('en'),
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+          ],
+          home: DynamicRequestFormScreen(type: 'fuel'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Submit request'));
+    await tester.pump();
+    expect(find.textContaining('Attach at least 1'), findsOneWidget);
+  });
+
   testWidgets('required fields are enforced before anything is sent',
       (tester) async {
     await tester.pumpWidget(_harness());
@@ -117,7 +164,7 @@ void main() {
 
     // The first unsatisfied field names itself; no request is created, which is
     // also why the (unoverridden) support service is never read.
-    expect(find.text('Exception: Item is required'), findsOneWidget);
+    expect(find.text('Item is required'), findsOneWidget);
   });
 
   testWidgets('server labels follow the locale', (tester) async {
