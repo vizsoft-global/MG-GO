@@ -2325,6 +2325,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get supportYourResponse => 'Your response';
 
   @override
+  String get supportResponseRequired => 'Enter a response before submitting';
+
+  @override
+  String get supportQuestionRequired => 'Enter a question before sending';
+
+  @override
+  String get supportFieldAmount => 'Amount';
+
+  @override
+  String get supportFieldTransferType => 'Transfer type';
+
+  @override
+  String get supportTransferTypeCash => 'Cash';
+
+  @override
+  String get supportTransferTypeSalary => 'Salary';
+
+  @override
+  String get supportRejectionReason => 'Rejection reason';
+
+  @override
+  String get supportClarificationFromAdmin => 'From admin';
+
+  @override
+  String get supportClarificationYourReply => 'Your reply';
+
+  @override
   String get supportSubmitResponse => 'Submit response';
 
   @override

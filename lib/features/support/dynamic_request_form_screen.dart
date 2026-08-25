@@ -47,11 +47,19 @@ class _DynamicRequestFormScreenState
   Future<void> _pickDate(String key, {bool monthOnly = false}) async {
     final now = DateTime.now();
     final current = _values[key] as DateTime?;
+    final lastDate = requestFormLastSelectableDate(
+      now: now,
+      monthOnly: monthOnly,
+    );
+    var initial = current ?? now;
+    if (initial.isAfter(lastDate)) initial = lastDate;
+    final firstDate = DateTime(now.year - 1);
+    if (initial.isBefore(firstDate)) initial = firstDate;
     final picked = await showDatePicker(
       context: context,
-      initialDate: current ?? now,
-      firstDate: DateTime(now.year - 1),
-      lastDate: DateTime(now.year + 2),
+      initialDate: initial,
+      firstDate: firstDate,
+      lastDate: lastDate,
     );
     if (picked == null) return;
     setState(() => _values[key] = monthOnly

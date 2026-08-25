@@ -52,6 +52,15 @@ bool requiresRequestAttachment(List<RequestFieldDefinition> fields) {
   );
 }
 
+/// Month pickers (fuel period) must not offer a future month.
+DateTime requestFormLastSelectableDate({
+  required DateTime now,
+  required bool monthOnly,
+}) {
+  if (monthOnly) return DateTime(now.year, now.month, now.day);
+  return DateTime(now.year + 2, now.month, now.day);
+}
+
 String? isoDateOnly(DateTime? value) {
   if (value == null) return null;
   final year = value.year.toString().padLeft(4, '0');

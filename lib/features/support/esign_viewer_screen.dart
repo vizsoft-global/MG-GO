@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/l10n/locale_formatters.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
+import 'esign_full_document_screen.dart';
+import 'support_models.dart';
 import 'support_providers.dart';
 import 'widgets/esign_pdf_preview.dart';
 import 'widgets/esign_sensitive_scope.dart';
@@ -143,12 +144,20 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
     }
   }
 
-  Future<void> _openDocument() async {
+  Future<void> _openDocument(EsignRequestDetail detail) async {
     final url = _documentUrl;
     if (url == null) return;
-    final uri = Uri.tryParse(url);
-    if (uri == null) return;
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
+    final key = detail.documentStorageKey ?? '';
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => EsignFullDocumentScreen(
+          url: url,
+          title: detail.title,
+          isImage: _isImageKey(key),
+          restricted: detail.screenshotRestricted,
+        ),
+      ),
+    );
   }
 
   String _formatDate(DateTime? value, AppLocalizations l10n) {
@@ -271,13 +280,13 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                           else
                             EsignPdfPreview(
                               url: _documentUrl!,
-                              onOpenExternal: _openDocument,
+                              onOpenExternal: () => _openDocument(detail),
                             ),
                           if (_isImageKey(detail.documentStorageKey!)) ...[
                             const SizedBox(height: 8),
                             OutlinedButton.icon(
-                              onPressed: _openDocument,
-                              icon: const Icon(Icons.open_in_new),
+                              onPressed: () => _openDocument(detail),
+                              icon: const Icon(Icons.open_in_full),
                               label: Text(l10n.esignOpenFullDocument),
                             ),
                           ],

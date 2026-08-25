@@ -4226,6 +4226,60 @@ abstract class AppLocalizations {
   /// **'Your response'**
   String get supportYourResponse;
 
+  /// No description provided for @supportResponseRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a response before submitting'**
+  String get supportResponseRequired;
+
+  /// No description provided for @supportQuestionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a question before sending'**
+  String get supportQuestionRequired;
+
+  /// No description provided for @supportFieldAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get supportFieldAmount;
+
+  /// No description provided for @supportFieldTransferType.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer type'**
+  String get supportFieldTransferType;
+
+  /// No description provided for @supportTransferTypeCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get supportTransferTypeCash;
+
+  /// No description provided for @supportTransferTypeSalary.
+  ///
+  /// In en, this message translates to:
+  /// **'Salary'**
+  String get supportTransferTypeSalary;
+
+  /// No description provided for @supportRejectionReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejection reason'**
+  String get supportRejectionReason;
+
+  /// No description provided for @supportClarificationFromAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'From admin'**
+  String get supportClarificationFromAdmin;
+
+  /// No description provided for @supportClarificationYourReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Your reply'**
+  String get supportClarificationYourReply;
+
   /// No description provided for @supportSubmitResponse.
   ///
   /// In en, this message translates to:

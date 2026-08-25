@@ -67,6 +67,19 @@ void main() {
     );
   });
 
+  test('a month picker cannot move past this month', () {
+    final now = DateTime(2026, 8, 25);
+    expect(
+      requestFormLastSelectableDate(now: now, monthOnly: true),
+      DateTime(2026, 8, 25),
+    );
+    expect(
+      requestFormLastSelectableDate(now: now, monthOnly: false)
+          .isAfter(now),
+      isTrue,
+    );
+  });
+
   test('formats a calendar date without a timezone shift', () {
     expect(isoDateOnly(DateTime(2026, 8, 25, 23, 30)), '2026-08-25');
     expect(isoDateOnly(null), isNull);
