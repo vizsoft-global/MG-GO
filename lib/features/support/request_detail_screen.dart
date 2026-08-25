@@ -294,7 +294,9 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
         title: Text(l10n.supportRequestDetailsTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.pop(),
+          onPressed: () => context.canPop()
+              ? context.pop()
+              : context.go('/profile/support/requests'),
         ),
       ),
       body: async.when(

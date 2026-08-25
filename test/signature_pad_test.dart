@@ -93,6 +93,37 @@ void main() {
     }
   });
 
+  testWidgets('vertical drag records ink even when the pad sits in a ListView',
+      (tester) async {
+    final c = SignaturePadController();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ListView(
+            children: [
+              const SizedBox(height: 24),
+              SizedBox(
+                width: _padSize.width,
+                height: _padSize.height,
+                child: SignaturePad(controller: c),
+              ),
+              const SizedBox(height: 800),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    final pad = tester.getRect(find.byType(SignaturePad));
+    await tester.timedDragFrom(
+      pad.center,
+      const Offset(0, 70),
+      const Duration(milliseconds: 300),
+    );
+    await tester.pump();
+    expect(c.hasInk, isTrue);
+  });
+
   testWidgets('the pad reports the size it was actually laid out at', (tester) async {
     final c = SignaturePadController();
     await tester.pumpWidget(

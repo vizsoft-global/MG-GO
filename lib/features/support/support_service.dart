@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'request_form_submit.dart';
 import 'request_type_definition.dart';
 import 'support_models.dart';
 
@@ -78,8 +79,8 @@ class SupportService {
         'p_payload': payload,
         'p_attachments': attachments,
         'p_amount_kwd': amountKwd,
-        'p_start_date': startDate?.toIso8601String().split('T').first,
-        'p_end_date': endDate?.toIso8601String().split('T').first,
+        'p_start_date': isoDateOnly(startDate),
+        'p_end_date': isoDateOnly(endDate),
         'p_details': details,
         'p_severity': severity,
       },
