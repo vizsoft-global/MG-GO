@@ -12,6 +12,8 @@ import '../../core/l10n/locale_formatters.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../profile/avatar_picker_errors.dart';
+import 'request_detail_fields.dart';
+import 'request_form_submit.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
 
@@ -134,7 +136,12 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
 
   Future<void> _submitClarification() async {
     final answer = _answerCtrl.text.trim();
-    if (answer.isEmpty && _files.isEmpty) return;
+    if (answer.isEmpty && _files.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.supportResponseRequired)),
+      );
+      return;
+    }
     setState(() => _submitting = true);
     try {
       final keys = await _uploadFiles();
@@ -154,7 +161,9 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(supportUserMessage(e))),
+        );
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -163,50 +172,67 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
 
   Future<void> _askQuestion() async {
     final ctrl = TextEditingController();
-    final sent = await showModalBottomSheet<bool>(
+    bool? sent;
+    try {
+      sent = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          left: 20, right: 20, top: 20,
-          bottom: 20 + MediaQuery.viewInsetsOf(ctx).bottom,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(ctx.l10n.supportAskQuestion,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 6),
-            Text(
-              ctx.l10n.supportAskQuestionBody,
-              style: const TextStyle(color: AppColors.textSecondary),
+      builder: (ctx) {
+        String? error;
+        return StatefulBuilder(
+          builder: (ctx, setSheet) => Padding(
+            padding: EdgeInsets.only(
+              left: 20, right: 20, top: 20,
+              bottom: 20 + MediaQuery.viewInsetsOf(ctx).bottom,
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: ctrl,
-              maxLines: 3,
-              autofocus: true,
-              decoration: InputDecoration(
-                hintText: ctx.l10n.supportAskQuestionHint,
-                border: const OutlineInputBorder(),
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(ctx.l10n.supportAskQuestion,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 6),
+                Text(
+                  ctx.l10n.supportAskQuestionBody,
+                  style: const TextStyle(color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: ctrl,
+                  maxLines: 3,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    hintText: ctx.l10n.supportAskQuestionHint,
+                    border: const OutlineInputBorder(),
+                    errorText: error,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: () {
+                      if (ctrl.text.trim().isEmpty) {
+                        setSheet(() => error = ctx.l10n.supportQuestionRequired);
+                        return;
+                      }
+                      Navigator.pop(ctx, true);
+                    },
+                    child: Text(ctx.l10n.supportSendQuestion),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: Text(ctx.l10n.supportSendQuestion),
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
-    if (sent == true && ctrl.text.trim().isNotEmpty) {
-      setState(() => _answerCtrl.text = ctrl.text.trim());
-      await _submitClarification();
+      if (sent == true && ctrl.text.trim().isNotEmpty) {
+        setState(() => _answerCtrl.text = ctrl.text.trim());
+        await _submitClarification();
+      }
+    } finally {
+      ctrl.dispose();
     }
   }
 
@@ -245,7 +271,9 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(supportUserMessage(e))),
+        );
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -278,7 +306,9 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(supportUserMessage(e))),
+        );
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -301,7 +331,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('$e')),
+        error: (e, _) => Center(child: Text(supportUserMessage(e))),
         data: (detail) {
           final needsClarify = detail.status == 'needs_clarification';
           final awaitingAck = detail.payload['awaiting_driver_ack'] == true &&
@@ -358,12 +388,15 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                 ),
                 const SizedBox(height: 12),
               ],
-              if (needsClarify) ...[
+              if (detail.clarifications.any(clarificationHasContent)) ...[
                 _ClarificationReasonCard(clarifications: detail.clarifications),
                 const SizedBox(height: 12),
               ],
               if (awaitingAck) ...[
                 _AdminResponseCard(detail: detail),
+                const SizedBox(height: 12),
+              ] else if (detail.status == 'rejected') ...[
+                _RejectionReasonCard(reason: _adminComment(detail)),
                 const SizedBox(height: 12),
               ],
               if (awaitingReschedule) ...[
@@ -407,21 +440,45 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                   children: [
                     Expanded(
                       child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(48),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                         onPressed: _submitting ? null : _askQuestion,
-                        child: Text(l10n.supportAskQuestion),
+                        child: Text(
+                          l10n.supportAskQuestion,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: FilledButton(
-                        style: FilledButton.styleFrom(backgroundColor: AppColors.blueberry),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.blueberry,
+                          minimumSize: const Size.fromHeight(48),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                         onPressed: _submitting ? null : _submitClarification,
                         child: _submitting
                             ? const SizedBox(
                                 height: 18, width: 18,
                                 child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                               )
-                            : Text(l10n.supportSubmitResponse),
+                            : Text(
+                                l10n.supportSubmitResponse,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                              ),
                       ),
                     ),
                   ],
@@ -681,6 +738,31 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
         }
         rows.add((l10n.supportFieldAttachment, firstAttachmentName(), true));
         return rows;
+      case 'fuel':
+        final rows = <(String, String, bool)>[];
+        final amount = firstAmount(req, payload);
+        if (amount != null) {
+          rows.add((l10n.supportFieldAmount, money(amount), false));
+        }
+        final period = payload['period_month']?.toString().trim();
+        if (period != null && period.isNotEmpty) {
+          rows.add((l10n.supportFieldPeriodMonth, period, false));
+        }
+        if (payload['distance_km'] != null) {
+          rows.add((l10n.supportFieldDistanceKm, '${payload['distance_km']}', false));
+        }
+        final transfer = fuelTransferTypeLabel(
+          raw: req['fuel_transfer_type'],
+          cash: l10n.supportTransferTypeCash,
+          salary: l10n.supportTransferTypeSalary,
+        );
+        if (transfer != null) {
+          rows.add((l10n.supportFieldTransferType, transfer, true));
+        }
+        if (detail.attachments.isNotEmpty) {
+          rows.add((l10n.supportFieldEvidence, firstAttachmentName(), true));
+        }
+        return rows;
       default:
         return const [];
     }
@@ -735,6 +817,12 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
   /// the primary source here.
   static String? _adminComment(SupportRequestDetail detail) {
     for (final step in _completedStepsNewestFirst(detail)) {
+      final note = step['decision_note']?.toString().trim();
+      if (note != null && note.isNotEmpty) return note;
+    }
+    // Reject writes the in-progress step as `rejected`, not `completed`.
+    for (final step in detail.steps) {
+      if (step['status'] != 'rejected') continue;
       final note = step['decision_note']?.toString().trim();
       if (note != null && note.isNotEmpty) return note;
     }
@@ -960,20 +1048,85 @@ class _ClarificationReasonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final open = clarifications.where((c) => c['answered_at'] == null).toList();
-    if (open.isEmpty) return const SizedBox.shrink();
+    final l10n = context.l10n;
+    final thread = clarificationThread(clarifications)
+        .where(clarificationHasContent)
+        .toList();
+    if (thread.isEmpty) return const SizedBox.shrink();
     return _Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(context.l10n.supportReason,
+          Text(l10n.supportReason,
               style: const TextStyle(
                   color: AppColors.textSecondary, fontSize: 12)),
+          const SizedBox(height: 8),
+          ...thread.map((c) {
+            final question = c['question']?.toString().trim() ?? '';
+            final answer = c['answer']?.toString().trim() ?? '';
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (question.isNotEmpty) ...[
+                    Text(
+                      l10n.supportClarificationFromAdmin,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(question),
+                  ],
+                  if (answer.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.supportClarificationYourReply,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(answer),
+                  ],
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+class _RejectionReasonCard extends StatelessWidget {
+  const _RejectionReasonCard({required this.reason});
+
+  final String? reason;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = reason?.trim();
+    if (text == null || text.isEmpty) return const SizedBox.shrink();
+    return _Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            context.l10n.supportRejectionReason,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           const SizedBox(height: 6),
-          ...open.map((c) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Text('${c['question'] ?? ''}'),
-              )),
+          Text(text),
         ],
       ),
     );

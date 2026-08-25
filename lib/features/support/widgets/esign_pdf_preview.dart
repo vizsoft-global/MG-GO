@@ -14,6 +14,8 @@ class EsignPdfPreview extends StatelessWidget {
   });
 
   final String url;
+  /// Opens the same signed URL in-app. Must not hand the URL to Notes /
+  /// Downloads — that backgrounds the viewer and shows a system download sheet.
   final VoidCallback onOpenExternal;
 
   @override
@@ -48,7 +50,7 @@ class EsignPdfPreview extends StatelessWidget {
         const SizedBox(height: 8),
         OutlinedButton.icon(
           onPressed: onOpenExternal,
-          icon: const Icon(Icons.open_in_new),
+          icon: const Icon(Icons.open_in_full),
           label: Text(l10n.esignOpenFullDocument),
         ),
       ],

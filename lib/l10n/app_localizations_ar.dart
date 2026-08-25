@@ -568,8 +568,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'تم إخراجك تلقائياً بعد البقاء خارج منطقتك المخصصة لفترة طويلة.';
 
   @override
-  String get autoCheckoutShiftEnd =>
-      'تم إخراجك تلقائياً عند انتهاء ورديتك.';
+  String get autoCheckoutShiftEnd => 'تم إخراجك تلقائياً عند انتهاء ورديتك.';
 
   @override
   String get completeMoreEarnMore => 'أكمل المزيد. اربح المزيد.';
@@ -2311,6 +2310,33 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get supportYourResponse => 'ردك';
+
+  @override
+  String get supportResponseRequired => 'أدخل رداً قبل الإرسال';
+
+  @override
+  String get supportQuestionRequired => 'أدخل سؤالاً قبل الإرسال';
+
+  @override
+  String get supportFieldAmount => 'المبلغ';
+
+  @override
+  String get supportFieldTransferType => 'طريقة التحويل';
+
+  @override
+  String get supportTransferTypeCash => 'نقداً';
+
+  @override
+  String get supportTransferTypeSalary => 'مع الراتب';
+
+  @override
+  String get supportRejectionReason => 'سبب الرفض';
+
+  @override
+  String get supportClarificationFromAdmin => 'من الإدارة';
+
+  @override
+  String get supportClarificationYourReply => 'ردك';
 
   @override
   String get supportSubmitResponse => 'إرسال الرد';
