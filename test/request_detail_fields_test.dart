@@ -29,6 +29,30 @@ void main() {
     );
   });
 
+  test('on-behalf rows use the staff name, not the UUID', () {
+    final rows = onBehalfDetail({
+      'created_on_behalf': true,
+      'created_on_behalf_by': 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+      'created_on_behalf_by_name': 'Ops Admin',
+      'created_on_behalf_at': '2026-08-25T21:15:00+03:00',
+    });
+    expect(rows?.byName, 'Ops Admin');
+    expect(rows?.atIso, isNotEmpty);
+    expect(rows?.hasRows, isTrue);
+  });
+
+  test('First Time hides Lost/Damaged; Renewal keeps it', () {
+    expect(isAssetFirstTime('First Time'), isTrue);
+    expect(hideAssetCurrentStatus('asset_current_status', 'First Time'), isTrue);
+    expect(hideAssetCurrentStatus('asset_current_status', 'Renewal'), isFalse);
+  });
+
+  test('screenshot_restricted parses false from JSON bool and string', () {
+    expect(parseScreenshotRestricted(false), isFalse);
+    expect(parseScreenshotRestricted('false'), isFalse);
+    expect(parseScreenshotRestricted(null), isTrue);
+  });
+
   test('the clarification thread keeps every answered turn', () {
     final thread = clarificationThread([
       {

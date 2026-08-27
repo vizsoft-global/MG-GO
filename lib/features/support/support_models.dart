@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
+import 'request_detail_fields.dart';
 
 class SupportRequestSummary {
   const SupportRequestSummary({
@@ -426,7 +427,7 @@ class EsignRequestSummary {
       status: json['status'] as String? ?? '',
       dueAt: _parseDate(json['due_at']),
       signedAt: _parseDateTime(json['signed_at']),
-      screenshotRestricted: json['screenshot_restricted'] as bool? ?? true,
+      screenshotRestricted: parseScreenshotRestricted(json['screenshot_restricted']),
       categoryKey: json['category_key'] as String?,
       categoryLabel: json['category_label'] as String?,
       createdAt: _parseDateTime(json['created_at']),
@@ -443,7 +444,8 @@ class EsignRequestDetail {
   String get requestCode => raw['request_code'] as String? ?? '';
   String get title => raw['title'] as String? ?? '';
   String get status => raw['status'] as String? ?? '';
-  bool get screenshotRestricted => raw['screenshot_restricted'] as bool? ?? true;
+  bool get screenshotRestricted =>
+      parseScreenshotRestricted(raw['screenshot_restricted']);
   String? get categoryLabel => raw['category_label'] as String?;
   String? get documentStorageKey => raw['document_storage_key'] as String?;
   String? get signatureStorageKey => raw['signature_storage_key'] as String?;

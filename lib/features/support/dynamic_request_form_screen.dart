@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
+import 'request_detail_fields.dart';
 import 'request_form_submit.dart';
 import 'request_type_definition.dart';
 import 'support_providers.dart';
@@ -158,6 +159,9 @@ class _DynamicRequestFormScreenState
 
       for (final field in fields) {
         if (field.kind == 'file' || field.target == 'attachments') continue;
+        if (hideAssetCurrentStatus(field.fieldKey, _values['request_mode'])) {
+          continue;
+        }
         final value = _wireValue(field);
 
         if (field.isRequired && _isEmpty(field, value)) {
@@ -268,10 +272,11 @@ class _DynamicRequestFormScreenState
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
       children: [
-        for (final field in fields) ...[
-          _field(field),
-          const SizedBox(height: 12),
-        ],
+        for (final field in fields)
+          if (!hideAssetCurrentStatus(field.fieldKey, _values['request_mode'])) ...[
+            _field(field),
+            const SizedBox(height: 12),
+          ],
         if (def.minAttachments > 0 &&
             !fields.any((f) => f.kind == 'file' || f.target == 'attachments'))
           _uploadButton(required: true),
@@ -386,7 +391,12 @@ class _DynamicRequestFormScreenState
       items: options
           .map((o) => DropdownMenuItem(value: o.value, child: Text(o.label)))
           .toList(),
-      onChanged: (v) => setState(() => _values[field.fieldKey] = v),
+      onChanged: (v) => setState(() {
+        _values[field.fieldKey] = v;
+        if (field.fieldKey == 'request_mode' && isAssetFirstTime(v)) {
+          _values.remove('asset_current_status');
+        }
+      }),
     );
   }
 

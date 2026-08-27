@@ -4298,6 +4298,24 @@ abstract class AppLocalizations {
   /// **'Add note'**
   String get supportAddNote;
 
+  /// No description provided for @supportCreatedOnBehalfBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Created on behalf by'**
+  String get supportCreatedOnBehalfBy;
+
+  /// No description provided for @supportCreatedOnBehalfAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Created on behalf at'**
+  String get supportCreatedOnBehalfAt;
+
+  /// No description provided for @supportFieldRequestMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Request mode'**
+  String get supportFieldRequestMode;
+
   /// No description provided for @supportUploadDocuments.
   ///
   /// In en, this message translates to:

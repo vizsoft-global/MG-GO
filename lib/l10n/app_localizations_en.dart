@@ -2361,6 +2361,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get supportAddNote => 'Add note';
 
   @override
+  String get supportCreatedOnBehalfBy => 'Created on behalf by';
+
+  @override
+  String get supportCreatedOnBehalfAt => 'Created on behalf at';
+
+  @override
+  String get supportFieldRequestMode => 'Request mode';
+
+  @override
   String get supportUploadDocuments => 'Upload documents';
 
   @override

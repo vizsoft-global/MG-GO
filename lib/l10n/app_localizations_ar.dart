@@ -2348,6 +2348,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get supportAddNote => 'إضافة ملاحظة';
 
   @override
+  String get supportCreatedOnBehalfBy => 'أُنشئ نيابة بواسطة';
+
+  @override
+  String get supportCreatedOnBehalfAt => 'أُنشئ نيابة في';
+
+  @override
+  String get supportFieldRequestMode => 'نوع الطلب';
+
+  @override
   String get supportUploadDocuments => 'رفع المستندات';
 
   @override
