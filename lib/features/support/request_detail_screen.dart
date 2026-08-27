@@ -344,6 +344,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
           final isDocumentType = detail.requestType == 'document' ||
               detail.requestType == 'sick_leave';
           final typedRows = _typedDetailRows(detail, l10n);
+          final onBehalf = onBehalfDetail(detail.payload);
           final payloadEntries = typedRows.isNotEmpty
               ? const <MapEntry<String, dynamic>>[]
               : detail.payload.entries
@@ -352,7 +353,11 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                       e.key != 'driver_ack_at' &&
                       e.key != 'driver_ack_note' &&
                       e.key != 'awaiting_driver_reschedule' &&
-                      e.key != 'reschedule')
+                      e.key != 'reschedule' &&
+                      e.key != 'created_on_behalf' &&
+                      e.key != 'created_on_behalf_by' &&
+                      e.key != 'created_on_behalf_by_name' &&
+                      e.key != 'created_on_behalf_at')
                   .toList();
           final view = RequestStatusView.of(
             l10n: l10n,
@@ -371,7 +376,9 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                 view: view,
               ),
               const SizedBox(height: 12),
-              if (typedRows.isNotEmpty || payloadEntries.isNotEmpty) ...[
+              if (typedRows.isNotEmpty ||
+                  payloadEntries.isNotEmpty ||
+                  (onBehalf?.hasRows ?? false)) ...[
                 _Card(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -380,7 +387,25 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                           style: const TextStyle(fontWeight: FontWeight.w700)),
                       const SizedBox(height: 8),
                       ...typedRows.map((r) => _kv(r.$1, r.$2, chip: r.$3)),
-                      ...payloadEntries.map((e) => _kv(_labelize(e.key), '${e.value}')),
+                      ...payloadEntries
+                          .where((e) =>
+                              e.key != 'created_on_behalf' &&
+                              e.key != 'created_on_behalf_by' &&
+                              e.key != 'created_on_behalf_by_name' &&
+                              e.key != 'created_on_behalf_at')
+                          .map((e) => _kv(_labelize(e.key), '${e.value}')),
+                      if (onBehalf?.byName != null)
+                        _kv(l10n.supportCreatedOnBehalfBy, onBehalf!.byName!),
+                      if (onBehalf?.atIso != null)
+                        _kv(
+                          l10n.supportCreatedOnBehalfAt,
+                          DateTime.tryParse(onBehalf!.atIso!) != null
+                              ? _fmtDateTime(
+                                  DateTime.parse(onBehalf.atIso!),
+                                  l10n,
+                                )
+                              : onBehalf.atIso!,
+                        ),
                       if (detail.currentStepLabel != null)
                         _kv(l10n.status, detail.currentStepLabel!, chip: true),
                     ],
@@ -490,6 +515,9 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                   TextField(
                     controller: _noteCtrl,
                     focusNode: _noteFocus,
+                    autofocus: true,
+                    minLines: 2,
+                    maxLines: 4,
                     decoration: InputDecoration(
                       labelText: l10n.supportNoteOptional,
                       border: const OutlineInputBorder(),
@@ -506,7 +534,9 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                             : () {
                                 if (!_noteVisible) {
                                   setState(() => _noteVisible = true);
-                                  _noteFocus.requestFocus();
+                                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                                    if (mounted) _noteFocus.requestFocus();
+                                  });
                                   return;
                                 }
                                 _respondToReschedule(accept: false);
@@ -550,6 +580,9 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                   TextField(
                     controller: _noteCtrl,
                     focusNode: _noteFocus,
+                    autofocus: true,
+                    minLines: 2,
+                    maxLines: 4,
                     decoration: InputDecoration(
                       labelText: l10n.supportNoteOptional,
                       border: const OutlineInputBorder(),
@@ -565,7 +598,9 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                             ? null
                             : () {
                                 setState(() => _noteVisible = true);
-                                _noteFocus.requestFocus();
+                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  if (mounted) _noteFocus.requestFocus();
+                                });
                               },
                         child: Text(l10n.supportAddNote),
                       ),
@@ -607,14 +642,19 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
   /// the "Request details" card (status / evidence / attachment).
   static Widget _kv(String label, String value, {bool chip = false}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Text(label, style: const TextStyle(color: AppColors.textSecondary)),
+          SizedBox(
+            width: 148,
+            child: Text(
+              label,
+              style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+            ),
           ),
-          Flexible(
+          const SizedBox(width: 12),
+          Expanded(
             child: chip
                 ? Align(
                     alignment: AlignmentDirectional.centerEnd,
@@ -637,7 +677,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                 : Text(
                     value,
                     textAlign: TextAlign.end,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                   ),
           ),
         ],
@@ -715,8 +755,14 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
         if (payload['quantity'] != null) {
           rows.add((l10n.supportFieldQuantity, '${payload['quantity']}', false));
         }
+        final mode = payload['request_mode']?.toString();
+        if (mode != null && mode.isNotEmpty) {
+          rows.add((l10n.supportFieldRequestMode, mode, false));
+        }
         final condition = payload['asset_current_status']?.toString();
-        if (condition != null && condition.isNotEmpty) {
+        if (condition != null &&
+            condition.isNotEmpty &&
+            !isAssetFirstTime(mode)) {
           rows.add((l10n.supportFieldCondition, condition, false));
         }
         rows.add((l10n.supportFieldEvidence, firstAttachmentName(), true));

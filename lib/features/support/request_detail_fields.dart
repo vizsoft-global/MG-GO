@@ -41,6 +41,58 @@ List<Map<String, dynamic>> clarificationThread(
   return copy;
 }
 
+bool isAssetFirstTime(dynamic mode) {
+  return RegExp(r'^\s*first\s*time\s*$', caseSensitive: false)
+      .hasMatch(mode?.toString() ?? '');
+}
+
+bool hideAssetCurrentStatus(String fieldKey, dynamic requestMode) {
+  return fieldKey == 'asset_current_status' && isAssetFirstTime(requestMode);
+}
+
+bool parseScreenshotRestricted(dynamic raw, {bool fallback = true}) {
+  if (raw == null) return fallback;
+  if (raw is bool) return raw;
+  if (raw is num) return raw != 0;
+  switch (raw.toString().trim().toLowerCase()) {
+    case 'false':
+    case '0':
+    case 'no':
+      return false;
+    case 'true':
+    case '1':
+    case 'yes':
+      return true;
+    default:
+      return fallback;
+  }
+}
+
+class OnBehalfDetail {
+  const OnBehalfDetail({this.byName, this.atIso});
+
+  final String? byName;
+  final String? atIso;
+
+  bool get hasRows =>
+      (byName != null && byName!.isNotEmpty) ||
+      (atIso != null && atIso!.isNotEmpty);
+}
+
+OnBehalfDetail? onBehalfDetail(Map<String, dynamic> payload) {
+  final flagged = payload['created_on_behalf'] == true ||
+      payload['created_on_behalf']?.toString() == 'true';
+  final byName = payload['created_on_behalf_by_name']?.toString().trim();
+  final atIso = payload['created_on_behalf_at']?.toString().trim();
+  if (!flagged && (byName == null || byName.isEmpty) && (atIso == null || atIso.isEmpty)) {
+    return null;
+  }
+  return OnBehalfDetail(
+    byName: (byName != null && byName.isNotEmpty) ? byName : null,
+    atIso: (atIso != null && atIso.isNotEmpty) ? atIso : null,
+  );
+}
+
 bool clarificationHasContent(Map<String, dynamic> row) {
   final question = row['question']?.toString().trim() ?? '';
   final answer = row['answer']?.toString().trim() ?? '';
