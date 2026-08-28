@@ -93,6 +93,32 @@ OnBehalfDetail? onBehalfDetail(Map<String, dynamic> payload) {
   );
 }
 
+/// Loan / asset / sick-leave terms stay on the detail after the rider
+/// acknowledges. Hiding the card the moment `awaiting_driver_ack` clears is
+/// why Deduction start date vanished after approve.
+bool showAdminResponseCard({
+  required String requestType,
+  required String status,
+  required bool awaitingAck,
+}) {
+  if (awaitingAck) return true;
+  const termTypes = {'loan', 'asset', 'sick_leave'};
+  return termTypes.contains(requestType) &&
+      (status == 'approved' || status == 'closed');
+}
+
+/// Step `meta` first, then payload — an older approve may have written only one.
+String? loanDeductionStartDate({
+  required Map<String, dynamic> meta,
+  required Map<String, dynamic> payload,
+}) {
+  final fromMeta = meta['deduction_start_date']?.toString().trim();
+  if (fromMeta != null && fromMeta.isNotEmpty) return fromMeta;
+  final fromPayload = payload['deduction_start_date']?.toString().trim();
+  if (fromPayload != null && fromPayload.isNotEmpty) return fromPayload;
+  return null;
+}
+
 bool clarificationHasContent(Map<String, dynamic> row) {
   final question = row['question']?.toString().trim() ?? '';
   final answer = row['answer']?.toString().trim() ?? '';

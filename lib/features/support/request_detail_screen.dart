@@ -27,7 +27,8 @@ import 'support_providers.dart';
 /// completed `request_approval_steps.meta` — `approved_amount`,
 /// `approved_tenure_months`, `deduction_start_date`, `penalty_amount`,
 /// `required_document`, `approved_by`. A term that was never set is not
-/// rendered (or is shown as "Not specified"); no value is ever invented.
+/// rendered (or is shown as "Not specified"). Deduction start date is always
+/// listed after a loan is approved. The card stays after acknowledgement.
 class RequestDetailScreen extends ConsumerStatefulWidget {
   const RequestDetailScreen({required this.requestId, super.key});
 
@@ -417,7 +418,11 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                 _ClarificationReasonCard(clarifications: detail.clarifications),
                 const SizedBox(height: 12),
               ],
-              if (awaitingAck) ...[
+              if (showAdminResponseCard(
+                requestType: detail.requestType,
+                status: detail.status,
+                awaitingAck: awaitingAck,
+              )) ...[
                 _AdminResponseCard(detail: detail),
                 const SizedBox(height: 12),
               ] else if (detail.status == 'rejected') ...[
@@ -676,7 +681,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                   )
                 : Text(
                     value,
-                    textAlign: TextAlign.end,
+                    textAlign: TextAlign.start,
                     style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                   ),
           ),
@@ -1333,13 +1338,13 @@ class _AdminResponseCard extends StatelessWidget {
             l10n.supportMonthsCount('$tenure'),
           ));
         }
-        if (meta['deduction_start_date'] != null) {
-          rows.add((
-            l10n.supportFieldDeductionStarts,
-            _RequestDetailScreenState._formatDay(
-                meta['deduction_start_date'], l10n),
-          ));
-        }
+        final deduction = loanDeductionStartDate(meta: meta, payload: payload);
+        rows.add((
+          l10n.supportFieldDeductionStarts,
+          deduction != null
+              ? _RequestDetailScreenState._formatDay(deduction, l10n)
+              : l10n.supportNotSpecified,
+        ));
         if (meta['approved_by'] != null) {
           rows.add((l10n.supportFieldApprovedBy, '${meta['approved_by']}'));
         }
@@ -1363,7 +1368,8 @@ class _AdminResponseCard extends StatelessWidget {
       case 'sick_leave':
         final required = meta['required_document']?.toString().trim();
         final rows = <(String, String)>[
-          (l10n.status, l10n.supportStatusOnHold),
+          if (detail.status != 'approved' && detail.status != 'closed')
+            (l10n.status, l10n.supportStatusOnHold),
           (
             l10n.supportFieldRequired,
             required != null && required.isNotEmpty
@@ -1492,17 +1498,18 @@ class _TermRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
+          SizedBox(
+            width: 148,
             child: Text(
               label,
               style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
             ),
           ),
           const SizedBox(width: 12),
-          Flexible(
+          Expanded(
             child: Text(
               value,
-              textAlign: TextAlign.end,
+              textAlign: TextAlign.start,
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
