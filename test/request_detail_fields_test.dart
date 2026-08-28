@@ -53,6 +53,51 @@ void main() {
     expect(parseScreenshotRestricted(null), isTrue);
   });
 
+  test('admin response stays after ack on an approved loan', () {
+    expect(
+      showAdminResponseCard(
+        requestType: 'loan',
+        status: 'approved',
+        awaitingAck: false,
+      ),
+      isTrue,
+    );
+    expect(
+      showAdminResponseCard(
+        requestType: 'loan',
+        status: 'pending',
+        awaitingAck: false,
+      ),
+      isFalse,
+    );
+    expect(
+      showAdminResponseCard(
+        requestType: 'complaint',
+        status: 'approved',
+        awaitingAck: false,
+      ),
+      isFalse,
+    );
+  });
+
+  test('deduction start prefers step meta, then payload', () {
+    expect(
+      loanDeductionStartDate(
+        meta: {'deduction_start_date': '2026-09-01'},
+        payload: {'deduction_start_date': '2026-08-01'},
+      ),
+      '2026-09-01',
+    );
+    expect(
+      loanDeductionStartDate(
+        meta: {},
+        payload: {'deduction_start_date': '2026-08-15'},
+      ),
+      '2026-08-15',
+    );
+    expect(loanDeductionStartDate(meta: {}, payload: {}), isNull);
+  });
+
   test('the clarification thread keeps every answered turn', () {
     final thread = clarificationThread([
       {
