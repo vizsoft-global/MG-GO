@@ -2225,10 +2225,28 @@ class AppLocalizationsAr extends AppLocalizations {
   String get supportFieldCategoryRequired => 'الفئة *';
 
   @override
+  String get supportFieldCategory => 'الفئة';
+
+  @override
   String get supportFieldSubjectRequired => 'الموضوع *';
 
   @override
+  String get supportFieldSubject => 'الموضوع';
+
+  @override
   String get supportFieldDescriptionRequired => 'الوصف *';
+
+  @override
+  String get supportFieldDescription => 'الوصف';
+
+  @override
+  String get supportFieldSeverity => 'الخطورة';
+
+  @override
+  String get supportAddAttachment => 'إضافة مرفق';
+
+  @override
+  String get supportAddAttachmentHint => 'أرفق صورة أو مستنداً (اختياري)';
 
   @override
   String get supportFieldSalaryMonth => 'شهر الراتب';

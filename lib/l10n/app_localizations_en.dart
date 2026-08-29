@@ -2237,10 +2237,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get supportFieldCategoryRequired => 'Category *';
 
   @override
+  String get supportFieldCategory => 'Category';
+
+  @override
   String get supportFieldSubjectRequired => 'Subject *';
 
   @override
+  String get supportFieldSubject => 'Subject';
+
+  @override
   String get supportFieldDescriptionRequired => 'Description *';
+
+  @override
+  String get supportFieldDescription => 'Description';
+
+  @override
+  String get supportFieldSeverity => 'Severity';
+
+  @override
+  String get supportAddAttachment => 'Add attachment';
+
+  @override
+  String get supportAddAttachmentHint =>
+      'Attach a photo or document (optional)';
 
   @override
   String get supportFieldSalaryMonth => 'Salary Month';

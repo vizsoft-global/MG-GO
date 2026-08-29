@@ -29,6 +29,37 @@ void main() {
     );
   });
 
+  test('complaint category uses the catalogue, never the raw key', () {
+    expect(
+      complaintCategoryLabel(
+        'salary_issues',
+        labelsByKey: {'salary_issues': 'Salary Issues'},
+      ),
+      'Salary Issues',
+    );
+    expect(complaintCategoryLabel('salary_issues'), 'Salary Issues');
+  });
+
+  test('visible payload hides on-behalf internals, UUIDs and the true flag', () {
+    final rows = visiblePayloadEntries(
+      payload: {
+        'category': 'salary_issues',
+        'subject': 'Late salary',
+        'created_on_behalf': true,
+        'created_on_behalf_by': 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+        'created_on_behalf_by_name': 'Ops Admin',
+        'created_on_behalf_at': '2026-08-25T21:15:00+03:00',
+        'awaiting_driver_ack': false,
+      },
+      categoryLabels: const {'salary_issues': 'Salary Issues'},
+      formatDateTime: (_) => 'should not appear',
+    );
+    expect(rows.map((e) => e.key).toList(), ['category', 'subject']);
+    expect(rows.first.value, 'Salary Issues');
+    expect(rows.any((e) => e.value == 'true'), isFalse);
+    expect(rows.any((e) => looksLikeUuid(e.value)), isFalse);
+  });
+
   test('on-behalf rows use the staff name, not the UUID', () {
     final rows = onBehalfDetail({
       'created_on_behalf': true,
@@ -39,6 +70,13 @@ void main() {
     expect(rows?.byName, 'Ops Admin');
     expect(rows?.atIso, isNotEmpty);
     expect(rows?.hasRows, isTrue);
+    expect(
+      onBehalfDetail({
+        'created_on_behalf': true,
+        'created_on_behalf_by': 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+      })?.byName,
+      isNull,
+    );
   });
 
   test('First Time hides Lost/Damaged; Renewal keeps it', () {
