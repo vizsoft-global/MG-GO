@@ -4064,17 +4064,53 @@ abstract class AppLocalizations {
   /// **'Category *'**
   String get supportFieldCategoryRequired;
 
+  /// No description provided for @supportFieldCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get supportFieldCategory;
+
   /// No description provided for @supportFieldSubjectRequired.
   ///
   /// In en, this message translates to:
   /// **'Subject *'**
   String get supportFieldSubjectRequired;
 
+  /// No description provided for @supportFieldSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get supportFieldSubject;
+
   /// No description provided for @supportFieldDescriptionRequired.
   ///
   /// In en, this message translates to:
   /// **'Description *'**
   String get supportFieldDescriptionRequired;
+
+  /// No description provided for @supportFieldDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get supportFieldDescription;
+
+  /// No description provided for @supportFieldSeverity.
+  ///
+  /// In en, this message translates to:
+  /// **'Severity'**
+  String get supportFieldSeverity;
+
+  /// No description provided for @supportAddAttachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Add attachment'**
+  String get supportAddAttachment;
+
+  /// No description provided for @supportAddAttachmentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach a photo or document (optional)'**
+  String get supportAddAttachmentHint;
 
   /// No description provided for @supportFieldSalaryMonth.
   ///

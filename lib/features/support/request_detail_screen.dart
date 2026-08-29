@@ -344,22 +344,27 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
               : const <String, dynamic>{};
           final isDocumentType = detail.requestType == 'document' ||
               detail.requestType == 'sick_leave';
-          final typedRows = _typedDetailRows(detail, l10n);
+          final categories =
+              ref.watch(complaintCategoriesProvider).asData?.value ??
+                  const <ComplaintCategory>[];
+          final locale = Localizations.localeOf(context);
+          final categoryLabels = {
+            for (final category in categories)
+              category.key: category.label(locale),
+          };
+          final typedRows = _typedDetailRows(
+            detail,
+            l10n,
+            categoryLabels: categoryLabels,
+          );
           final onBehalf = onBehalfDetail(detail.payload);
           final payloadEntries = typedRows.isNotEmpty
-              ? const <MapEntry<String, dynamic>>[]
-              : detail.payload.entries
-                  .where((e) =>
-                      e.key != 'awaiting_driver_ack' &&
-                      e.key != 'driver_ack_at' &&
-                      e.key != 'driver_ack_note' &&
-                      e.key != 'awaiting_driver_reschedule' &&
-                      e.key != 'reschedule' &&
-                      e.key != 'created_on_behalf' &&
-                      e.key != 'created_on_behalf_by' &&
-                      e.key != 'created_on_behalf_by_name' &&
-                      e.key != 'created_on_behalf_at')
-                  .toList();
+              ? const <MapEntry<String, String>>[]
+              : visiblePayloadEntries(
+                  payload: detail.payload,
+                  categoryLabels: categoryLabels,
+                  formatDateTime: (dt) => _fmtDateTime(dt, l10n),
+                );
           final view = RequestStatusView.of(
             l10n: l10n,
             status: detail.status,
@@ -388,13 +393,18 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                           style: const TextStyle(fontWeight: FontWeight.w700)),
                       const SizedBox(height: 8),
                       ...typedRows.map((r) => _kv(r.$1, r.$2, chip: r.$3)),
-                      ...payloadEntries
-                          .where((e) =>
-                              e.key != 'created_on_behalf' &&
-                              e.key != 'created_on_behalf_by' &&
-                              e.key != 'created_on_behalf_by_name' &&
-                              e.key != 'created_on_behalf_at')
-                          .map((e) => _kv(_labelize(e.key), '${e.value}')),
+                      ...payloadEntries.map(
+                        (e) => _kv(
+                          e.key == 'category'
+                              ? l10n.supportFieldCategory
+                              : e.key == 'subject'
+                                  ? l10n.supportFieldSubject
+                                  : e.key == 'description'
+                                      ? l10n.supportFieldDescription
+                                      : humanizeFieldKey(e.key),
+                          e.value,
+                        ),
+                      ),
                       if (onBehalf?.byName != null)
                         _kv(l10n.supportCreatedOnBehalfBy, onBehalf!.byName!),
                       if (onBehalf?.atIso != null)
@@ -446,16 +456,6 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
               ),
               if (needsClarify) ...[
                 const SizedBox(height: 16),
-                if (isDocumentType) ...[
-                  DottedUploadBox(
-                    label: l10n.supportUploadRequestedDocument,
-                    hint: l10n.supportUploadHintChooseOrCapture,
-                    fileCount: _files.length,
-                    onUpload: _pickFile,
-                    onCapture: _captureFile,
-                  ),
-                  const SizedBox(height: 12),
-                ],
                 TextField(
                   controller: _answerCtrl,
                   maxLines: 4,
@@ -464,6 +464,21 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                     hintText: l10n.supportYourResponse,
                     border: const OutlineInputBorder(),
                   ),
+                ),
+                const SizedBox(height: 12),
+                if (_files.isNotEmpty) ...[
+                  _AttachedFilesRow(
+                    names: _files.map((f) => f.name).toList(),
+                    onRemove: (i) => setState(() => _files.removeAt(i)),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                DottedUploadBox(
+                  label: l10n.supportAddAttachment,
+                  hint: l10n.supportAddAttachmentHint,
+                  fileCount: _files.length,
+                  onUpload: _pickFile,
+                  onCapture: _captureFile,
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -696,8 +711,9 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
   /// `start_date`/`end_date`, `request_attachments`) — no invented values.
   static List<(String, String, bool)> _typedDetailRows(
     SupportRequestDetail detail,
-    AppLocalizations l10n,
-  ) {
+    AppLocalizations l10n, {
+    Map<String, String> categoryLabels = const {},
+  }) {
     final payload = detail.payload;
     final req = detail.request;
     final money = _money;
@@ -814,6 +830,29 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
           rows.add((l10n.supportFieldEvidence, firstAttachmentName(), true));
         }
         return rows;
+      case 'complaint':
+        final rows = <(String, String, bool)>[];
+        final category = payload['category']?.toString().trim();
+        if (category != null && category.isNotEmpty) {
+          rows.add((
+            l10n.supportFieldCategory,
+            complaintCategoryLabel(category, labelsByKey: categoryLabels),
+            false,
+          ));
+        }
+        final subject = payload['subject']?.toString().trim();
+        if (subject != null && subject.isNotEmpty) {
+          rows.add((l10n.supportFieldSubject, subject, false));
+        }
+        final description = payload['description']?.toString().trim();
+        if (description != null && description.isNotEmpty) {
+          rows.add((l10n.supportFieldDescription, description, false));
+        }
+        final severity = req['severity']?.toString().trim();
+        if (severity != null && severity.isNotEmpty) {
+          rows.add((l10n.supportFieldSeverity, humanizeFieldKey(severity), false));
+        }
+        return rows;
       default:
         return const [];
     }
@@ -917,10 +956,6 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
       default:
         return null;
     }
-  }
-
-  static String _labelize(String key) {
-    return key.split('_').map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}').join(' ');
   }
 
   static String _typeLabel(String type, AppLocalizations l10n) {

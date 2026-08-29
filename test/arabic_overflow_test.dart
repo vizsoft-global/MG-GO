@@ -289,6 +289,7 @@ Widget _harness(Widget home, {List<RequestTypeDefinition>? types}) {
           .overrideWith((ref) async => _viewerFailed),
       myRequestsProvider.overrideWith((ref) async => _myRequests),
       requestDetailProvider(_requestId).overrideWith((ref) async => _requestDetail),
+      complaintCategoriesProvider.overrideWith((ref) async => const []),
       myVisitsProvider.overrideWith((ref) async => _myVisits),
       visitDepartmentsProvider.overrideWith((ref) async => _visitDepartments),
     ],
@@ -452,6 +453,14 @@ void main() {
     // "9 Aug" while the list one tap away read "9 أغس".
     expect(find.textContaining('أغس'), findsWidgets);
     expect(find.textContaining('Aug'), findsNothing);
+
+    // Clarify is offered on every type. This fixture is a loan, so the box
+    // must sit below Your response rather than being gated to document types.
+    expect(find.text('إضافة مرفق'), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.text('إضافة مرفق')).dy,
+      greaterThan(tester.getTopLeft(find.text('ردك').first).dy),
+    );
   });
 
   testWidgets('visit ticket in Arabic', (tester) async {
