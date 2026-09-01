@@ -3596,6 +3596,42 @@ abstract class AppLocalizations {
   /// **'Leave type and dates are required'**
   String get supportErrorLeaveTypeDatesRequired;
 
+  /// No description provided for @supportErrorFromDateRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'From date is required'**
+  String get supportErrorFromDateRequired;
+
+  /// No description provided for @supportErrorToDateRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'To date is required'**
+  String get supportErrorToDateRequired;
+
+  /// No description provided for @supportErrorToDateBeforeFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'To date cannot be before From date'**
+  String get supportErrorToDateBeforeFrom;
+
+  /// No description provided for @supportErrorNeededByInPast.
+  ///
+  /// In en, this message translates to:
+  /// **'Need by cannot be earlier than today'**
+  String get supportErrorNeededByInPast;
+
+  /// No description provided for @supportFieldLeaveSubtypeOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Specify leave type'**
+  String get supportFieldLeaveSubtypeOther;
+
+  /// No description provided for @supportAttachmentPickFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not attach the file. Try again or take a photo.'**
+  String get supportAttachmentPickFailed;
+
   /// No description provided for @supportErrorJustificationRequired.
   ///
   /// In en, this message translates to:

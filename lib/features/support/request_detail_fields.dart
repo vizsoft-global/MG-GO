@@ -178,8 +178,13 @@ bool showAdminResponseCard({
 }) {
   if (awaitingAck) return true;
   const termTypes = {'loan', 'asset', 'sick_leave'};
-  return termTypes.contains(requestType) &&
-      (status == 'approved' || status == 'closed');
+  if (termTypes.contains(requestType) &&
+      (status == 'approved' || status == 'closed')) {
+    return true;
+  }
+  const responseTypes = {'salary_justification', 'complaint'};
+  return responseTypes.contains(requestType) &&
+      (status == 'responded' || status == 'solved' || status == 'closed');
 }
 
 /// Step `meta` first, then payload — an older approve may have written only one.

@@ -45,16 +45,17 @@ class _DynamicRequestFormScreenState
   TextEditingController _controllerFor(String key) =>
       _controllers.putIfAbsent(key, TextEditingController.new);
 
-  Future<void> _pickDate(String key, {bool monthOnly = false}) async {
+  Future<void> _pickDate(RequestFieldDefinition field) async {
     final now = DateTime.now();
-    final current = _values[key] as DateTime?;
+    final monthOnly = field.kind == 'month';
+    final current = _values[field.fieldKey] as DateTime?;
     final lastDate = requestFormLastSelectableDate(
       now: now,
       monthOnly: monthOnly,
     );
+    final firstDate = requestFormFirstSelectableDate(now: now, field: field);
     var initial = current ?? now;
     if (initial.isAfter(lastDate)) initial = lastDate;
-    final firstDate = DateTime(now.year - 1);
     if (initial.isBefore(firstDate)) initial = firstDate;
     final picked = await showDatePicker(
       context: context,
@@ -63,7 +64,7 @@ class _DynamicRequestFormScreenState
       lastDate: lastDate,
     );
     if (picked == null) return;
-    setState(() => _values[key] = monthOnly
+    setState(() => _values[field.fieldKey] = monthOnly
         ? DateTime(picked.year, picked.month)
         : picked);
   }
@@ -159,7 +160,7 @@ class _DynamicRequestFormScreenState
 
       for (final field in fields) {
         if (field.kind == 'file' || field.target == 'attachments') continue;
-        if (hideAssetCurrentStatus(field.fieldKey, _values['request_mode'])) {
+        if (!shouldShowRequestFormField(field, _values)) {
           continue;
         }
         final value = _wireValue(field);
@@ -186,10 +187,36 @@ class _DynamicRequestFormScreenState
         }
       }
 
+      if (widget.type == 'sick_leave' &&
+          isOtherLeaveSubtype(_values['leave_subtype'])) {
+        final other = _controllerFor('leave_subtype_other').text.trim();
+        if (other.isEmpty) {
+          throw Exception(
+            l10n.supportFieldRequiredNamed(l10n.supportFieldLeaveSubtypeOther),
+          );
+        }
+        payload['leave_subtype_other'] = other;
+      }
+
+      for (final field in fields.where(isNeededByField)) {
+        final neededBy = parseFormDate(_values[field.fieldKey]);
+        if (isNeededByInPast(neededBy, DateTime.now())) {
+          throw Exception(l10n.supportErrorNeededByInPast);
+        }
+      }
+
       final range = resolveRequestDateRange(fields: fields, values: _values);
-      if (def.dateRangeRequired &&
-          !isInclusiveDateRangeValid(range.start, range.end)) {
-        throw Exception(l10n.supportErrorLeaveTypeDatesRequired);
+      final dateIssue = requestFormDateRangeIssue(
+        required: def.dateRangeRequired,
+        start: range.start,
+        end: range.end,
+      );
+      if (dateIssue != null) {
+        throw Exception(switch (dateIssue) {
+          RequestDateRangeIssue.fromRequired => l10n.supportErrorFromDateRequired,
+          RequestDateRangeIssue.toRequired => l10n.supportErrorToDateRequired,
+          RequestDateRangeIssue.toBeforeFrom => l10n.supportErrorToDateBeforeFrom,
+        });
       }
       final minFiles = requiresRequestAttachment(fields)
           ? (def.minAttachments < 1 ? 1 : def.minAttachments)
@@ -269,14 +296,28 @@ class _DynamicRequestFormScreenState
     if (fields.isEmpty) {
       return _Message(l10n.supportRequestTypeNoFields);
     }
+    final ordered = orderRequestFormFields(fields);
+    final hasOtherField =
+        ordered.any((field) => field.fieldKey == 'leave_subtype_other');
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
       children: [
-        for (final field in fields)
-          if (!hideAssetCurrentStatus(field.fieldKey, _values['request_mode'])) ...[
+        for (final field in ordered)
+          if (shouldShowRequestFormField(field, _values)) ...[
             _field(field),
             const SizedBox(height: 12),
           ],
+        if (widget.type == 'sick_leave' &&
+            isOtherLeaveSubtype(_values['leave_subtype']) &&
+            !hasOtherField) ...[
+          TextField(
+            controller: _controllerFor('leave_subtype_other'),
+            decoration: InputDecoration(
+              labelText: '${l10n.supportFieldLeaveSubtypeOther} *',
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
         if (def.minAttachments > 0 &&
             !fields.any((f) => f.kind == 'file' || f.target == 'attachments'))
           _uploadButton(required: true),
@@ -285,10 +326,16 @@ class _DynamicRequestFormScreenState
   }
 
   Widget _field(RequestFieldDefinition field) {
+    final l10n = context.l10n;
     final locale = Localizations.localeOf(context);
-    final label = field.isRequired
-        ? '${field.label(locale)} *'
-        : field.label(locale);
+    final rawLabel = isStartDateField(field)
+        ? l10n.supportFieldFrom
+        : isEndDateField(field)
+            ? l10n.supportFieldTo
+            : field.fieldKey == 'leave_subtype_other'
+                ? l10n.supportFieldLeaveSubtypeOther
+                : field.label(locale);
+    final label = field.isRequired ? '$rawLabel *' : rawLabel;
     final help = field.help(locale);
 
     Widget control;
@@ -319,8 +366,7 @@ class _DynamicRequestFormScreenState
                     : _isoDate(value),
           ),
           trailing: const Icon(Icons.calendar_today_outlined),
-          onTap: () =>
-              _pickDate(field.fieldKey, monthOnly: field.kind == 'month'),
+          onTap: () => _pickDate(field),
         );
       case 'select':
         control = _selectField(field, label, help);

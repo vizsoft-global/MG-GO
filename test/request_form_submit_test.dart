@@ -91,4 +91,66 @@ void main() {
       'Leave type and dates are required',
     );
   });
+
+  test('needed_by cannot open earlier than today', () {
+    final now = DateTime(2026, 9, 1);
+    final field = _field(key: 'needed_by', kind: 'date', target: 'payload');
+    expect(
+      requestFormFirstSelectableDate(now: now, field: field),
+      DateTime(2026, 9, 1),
+    );
+    expect(isNeededByInPast(DateTime(2026, 8, 31), now), isTrue);
+    expect(isNeededByInPast(DateTime(2026, 9, 1), now), isFalse);
+  });
+
+  test('leave date fields render From then To even when sort_order is inverted', () {
+    final fields = [
+      RequestFieldDefinition.fromJson(const {
+        'field_key': 'end_date',
+        'label_en': 'To',
+        'kind': 'date',
+        'target': 'end_date',
+        'is_required': true,
+        'sort_order': 1,
+      }),
+      RequestFieldDefinition.fromJson(const {
+        'field_key': 'start_date',
+        'label_en': 'From',
+        'kind': 'date',
+        'target': 'start_date',
+        'is_required': true,
+        'sort_order': 2,
+      }),
+    ];
+    final ordered = orderRequestFormFields(fields);
+    expect(ordered.first.fieldKey, 'start_date');
+    expect(ordered.last.fieldKey, 'end_date');
+    expect(
+      requestFormDateRangeIssue(required: true, start: null, end: DateTime(2026, 9, 2)),
+      RequestDateRangeIssue.fromRequired,
+    );
+    expect(
+      requestFormDateRangeIssue(
+        required: true,
+        start: DateTime(2026, 9, 2),
+        end: DateTime(2026, 9, 1),
+      ),
+      RequestDateRangeIssue.toBeforeFrom,
+    );
+  });
+
+  test('Other leave subtype is recognized in both locales', () {
+    expect(isOtherLeaveSubtype('Other'), isTrue);
+    expect(isOtherLeaveSubtype('أخرى'), isTrue);
+    expect(isOtherLeaveSubtype('Injury'), isFalse);
+    final other = _field(key: 'leave_subtype_other', kind: 'text', target: 'payload');
+    expect(
+      shouldShowRequestFormField(other, {'leave_subtype': 'Other'}),
+      isTrue,
+    );
+    expect(
+      shouldShowRequestFormField(other, {'leave_subtype': 'Injury'}),
+      isFalse,
+    );
+  });
 }
