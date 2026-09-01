@@ -56,11 +56,21 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
   }
 
   Future<void> _pickFile() async {
-    final picked =
-        await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
-    if (picked == null) return;
-    final bytes = await picked.readAsBytes();
-    setState(() => _files.add((name: picked.name, bytes: bytes)));
+    try {
+      final picked = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+      if (picked == null) return;
+      final bytes = await picked.readAsBytes();
+      if (!mounted) return;
+      setState(() => _files.add((name: picked.name, bytes: bytes)));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.supportAttachmentPickFailed)),
+      );
+    }
   }
 
   Future<void> _captureFile() async {
@@ -121,7 +131,8 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
 
   Future<List<String>> _uploadFiles() async {
     final uid = Supabase.instance.client.auth.currentUser?.id;
-    if (uid == null || _files.isEmpty) return const [];
+    if (_files.isEmpty) return const [];
+    if (uid == null) throw Exception('not_authenticated');
     final keys = <String>[];
     for (final file in _files) {
       final key = '$uid/${DateTime.now().millisecondsSinceEpoch}_${file.name}';
@@ -477,6 +488,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                   label: l10n.supportAddAttachment,
                   hint: l10n.supportAddAttachmentHint,
                   fileCount: _files.length,
+                  onOpen: _chooseDocumentSource,
                   onUpload: _pickFile,
                   onCapture: _captureFile,
                 ),
@@ -1588,6 +1600,7 @@ class DottedUploadBox extends StatelessWidget {
     required this.hint,
     required this.onUpload,
     required this.onCapture,
+    this.onOpen,
     this.fileCount = 0,
     super.key,
   });
@@ -1597,44 +1610,53 @@ class DottedUploadBox extends StatelessWidget {
   final int fileCount;
   final VoidCallback onUpload;
   final VoidCallback onCapture;
+  final VoidCallback? onOpen;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.pageBackground,
+    return Material(
+      color: AppColors.pageBackground,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onOpen,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border, style: BorderStyle.solid),
-      ),
-      child: Column(
-        children: [
-          Text(
-              fileCount > 0
-                  ? context.l10n.supportFilesReady(fileCount)
-                  : label,
-              style: const TextStyle(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 4),
-          Text(hint, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border, style: BorderStyle.solid),
+          ),
+          child: Column(
             children: [
-              OutlinedButton.icon(
-                onPressed: onUpload,
-                icon: const Icon(Icons.image_outlined, size: 18),
-                label: Text(context.l10n.supportUpload),
-              ),
-              const SizedBox(width: 10),
-              OutlinedButton.icon(
-                onPressed: onCapture,
-                icon: const Icon(Icons.camera_alt_outlined, size: 18),
-                label: Text(context.l10n.supportCapture),
+              Text(
+                  fileCount > 0
+                      ? context.l10n.supportFilesReady(fileCount)
+                      : label,
+                  style: const TextStyle(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 4),
+              Text(hint, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              const SizedBox(height: 10),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 10,
+                runSpacing: 8,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: onUpload,
+                    icon: const Icon(Icons.image_outlined, size: 18),
+                    label: Text(context.l10n.supportUpload),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: onCapture,
+                    icon: const Icon(Icons.camera_alt_outlined, size: 18),
+                    label: Text(context.l10n.supportCapture),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }

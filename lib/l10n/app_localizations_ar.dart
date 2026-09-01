@@ -1979,6 +1979,27 @@ class AppLocalizationsAr extends AppLocalizations {
       'نوع الإجازة والتواريخ مطلوبة';
 
   @override
+  String get supportErrorFromDateRequired => 'تاريخ البداية مطلوب';
+
+  @override
+  String get supportErrorToDateRequired => 'تاريخ النهاية مطلوب';
+
+  @override
+  String get supportErrorToDateBeforeFrom =>
+      'تاريخ النهاية لا يمكن أن يكون قبل تاريخ البداية';
+
+  @override
+  String get supportErrorNeededByInPast =>
+      'لا يمكن أن يكون تاريخ الحاجة قبل اليوم';
+
+  @override
+  String get supportFieldLeaveSubtypeOther => 'حدد نوع الإجازة';
+
+  @override
+  String get supportAttachmentPickFailed =>
+      'تعذر إرفاق الملف. حاول مرة أخرى أو التقط صورة.';
+
+  @override
   String get supportErrorJustificationRequired => 'المبرر مطلوب';
 
   @override

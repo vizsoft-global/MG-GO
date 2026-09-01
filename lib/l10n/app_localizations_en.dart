@@ -1987,6 +1987,27 @@ class AppLocalizationsEn extends AppLocalizations {
       'Leave type and dates are required';
 
   @override
+  String get supportErrorFromDateRequired => 'From date is required';
+
+  @override
+  String get supportErrorToDateRequired => 'To date is required';
+
+  @override
+  String get supportErrorToDateBeforeFrom =>
+      'To date cannot be before From date';
+
+  @override
+  String get supportErrorNeededByInPast =>
+      'Need by cannot be earlier than today';
+
+  @override
+  String get supportFieldLeaveSubtypeOther => 'Specify leave type';
+
+  @override
+  String get supportAttachmentPickFailed =>
+      'Could not attach the file. Try again or take a photo.';
+
+  @override
   String get supportErrorJustificationRequired => 'Justification is required';
 
   @override

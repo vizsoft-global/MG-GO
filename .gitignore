@@ -52,6 +52,10 @@ sentry.properties
 
 # Graphify — regenerate locally with `graphify update .`
 graphify-out/
+graphify-out/**
+
+# Golden / visual regression failure dumps (local only)
+test/failures/
 
 # Local Cursor rules (Kannada)
 .cursor/rules/KA.mdc

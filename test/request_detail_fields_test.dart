@@ -116,6 +116,22 @@ void main() {
       ),
       isFalse,
     );
+    expect(
+      showAdminResponseCard(
+        requestType: 'salary_justification',
+        status: 'responded',
+        awaitingAck: false,
+      ),
+      isTrue,
+    );
+    expect(
+      showAdminResponseCard(
+        requestType: 'complaint',
+        status: 'responded',
+        awaitingAck: false,
+      ),
+      isTrue,
+    );
   });
 
   test('deduction start prefers step meta, then payload', () {
