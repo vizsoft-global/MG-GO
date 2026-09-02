@@ -38,8 +38,8 @@ void suppressRemoteDutyAutoCheckoutToastRef(Ref ref, {Duration forDuration = con
 }
 
 /// When the server auto-checkouts (offline / out-of-zone cron), refresh home
-/// duty UI and show a snackbar. Relies on `liveDbRefreshCoordinator` which
-/// already listens to `drivers` updates + 5s poll.
+/// duty UI and show a snackbar. Own filtered `drivers` channel + resume;
+/// the shared coordinator is only a long safety poll now.
 final remoteDutyMonitorProvider = Provider<void>((ref) {
   final monitor = _RemoteDutyMonitor(ref);
   monitor.start();
@@ -52,6 +52,8 @@ class _RemoteDutyMonitor with WidgetsBindingObserver {
   final Ref _ref;
   VoidCallback? _refreshListener;
   Timer? _debounce;
+  RealtimeChannel? _driverChannel;
+  String? _subscribedUserId;
   bool _inFlight = false;
   bool? _lastOnDuty;
 
@@ -59,6 +61,7 @@ class _RemoteDutyMonitor with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _refreshListener = _scheduleSync;
     _ref.read(liveDbRefreshCoordinatorProvider).addListener(_refreshListener!);
+    _resubscribeDriverChannel();
     _seedFromDashboard();
     _scheduleSync();
   }
@@ -71,12 +74,48 @@ class _RemoteDutyMonitor with WidgetsBindingObserver {
           .read(liveDbRefreshCoordinatorProvider)
           .removeListener(_refreshListener!);
     }
+    _teardownDriverChannel();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _scheduleSync();
+    }
+  }
+
+  void _resubscribeDriverChannel() {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) {
+      _teardownDriverChannel();
+      return;
+    }
+    if (_subscribedUserId == userId && _driverChannel != null) return;
+
+    _teardownDriverChannel();
+    _subscribedUserId = userId;
+    _driverChannel = Supabase.instance.client
+        .channel('remote_duty_$userId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'drivers',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'id',
+            value: userId,
+          ),
+          callback: (_) => _scheduleSync(),
+        )
+        .subscribe();
+  }
+
+  void _teardownDriverChannel() {
+    final channel = _driverChannel;
+    _driverChannel = null;
+    _subscribedUserId = null;
+    if (channel != null) {
+      unawaited(Supabase.instance.client.removeChannel(channel));
     }
   }
 
@@ -98,6 +137,7 @@ class _RemoteDutyMonitor with WidgetsBindingObserver {
     final userId = client.auth.currentUser?.id;
     if (userId == null) return;
 
+    _resubscribeDriverChannel();
     _inFlight = true;
     try {
       final row = await client

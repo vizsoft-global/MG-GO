@@ -12,7 +12,7 @@ final appBrandingServiceProvider = Provider<AppBrandingService>((ref) {
   return AppBrandingService(Supabase.instance.client);
 });
 
-/// Driver app settings with live refresh (realtime + polling fallback).
+/// Driver app settings with live refresh (realtime + 15-minute safety poll).
 final appBrandingProvider =
     AsyncNotifierProvider<AppBrandingNotifier, AppBranding>(
       AppBrandingNotifier.new,

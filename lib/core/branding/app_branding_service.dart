@@ -1,8 +1,21 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/login_verification_store.dart';
 import 'app_branding.dart';
 import '../offline/offline_repo.dart';
+
+/// Only a missing-column error may fall through to a narrower SELECT.
+/// A 503/timeout must not walk five variants — that is what amplified
+/// the production settings storm.
+@visibleForTesting
+bool shouldRetryAppSettingsSelect(Object error) {
+  if (error is! PostgrestException) return false;
+  final code = error.code ?? '';
+  if (code == '42703' || code == 'PGRST204') return true;
+  final message = error.message.toLowerCase();
+  return message.contains('does not exist') && message.contains('column');
+}
 
 class AppBrandingService {
   AppBrandingService(this._client);
@@ -64,8 +77,9 @@ class AppBrandingService {
           );
           break;
         }
-      } catch (_) {
-        continue;
+      } catch (error) {
+        if (shouldRetryAppSettingsSelect(error)) continue;
+        break;
       }
     }
     if (fromNetwork != null) {
