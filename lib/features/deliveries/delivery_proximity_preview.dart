@@ -62,8 +62,11 @@ class DeliveryProximityPreviewNotifier
       });
     });
 
-    // Re-evaluate when catalog/settings realtime fires (or the 15-minute
-    // safety poll). GPS movement is the screen-local timer, not this tick.
+    // Also re-evaluate on every coordinator tick (~5s) so that even if the
+    // proximity context DTO is reference-equal (admin only nudged a value that
+    // didn't change our resolved set, or the driver has merely moved), the
+    // banner reflects the latest state quickly instead of waiting for the
+    // 30s screen-local timer.
     final coordinator = ref.watch(liveDbRefreshCoordinatorProvider);
     void onCoordinatorTick() {
       final ctx = ref.read(deliveryProximityContextProvider).value;

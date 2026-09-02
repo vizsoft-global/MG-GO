@@ -332,9 +332,9 @@ class _PartnerBadge extends StatelessWidget {
 }
 
 /// Tiny circular badge that renders the admin-configured driver app icon
-/// (`app_settings.driver_app_icon_url`) live. The branding provider
-/// realtime-subscribes via `liveDbRefreshCoordinator`, so an admin icon
-/// upload refreshes without a re-login.
+/// (`app_settings.driver_app_icon_url`) live. The branding provider polls /
+/// realtime-subscribes via `liveDbRefreshCoordinator`, so when the admin
+/// uploads a new icon this chip refreshes within ~5s without a re-login.
 ///
 /// When no icon URL is set we hide the chip entirely instead of showing a
 /// placeholder — keeps the header clean for tenants that don't use it.

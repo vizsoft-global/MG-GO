@@ -4,14 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Keeps driver-facing DB settings fresh via Supabase Realtime.
-///
-/// A short poll here is what took production down: every rider hit
-/// `app_settings` + `drivers` every 5s, and a 503 retried five column
-/// variants, which is how a Micro project saw ~230k settings reads/hour.
-/// Realtime on the one settings row (and catalog tables) is enough.
-/// The long safety poll covers a dropped socket; resume handlers elsewhere
-/// already refetch on foreground.
+/// Keeps driver-facing DB settings fresh via Supabase Realtime + polling.
 class LiveDbRefreshCoordinator {
   LiveDbRefreshCoordinator(this._client);
 
@@ -22,7 +15,7 @@ class LiveDbRefreshCoordinator {
   RealtimeChannel? _channel;
   bool _started = false;
 
-  static const pollInterval = Duration(minutes: 15);
+  static const pollInterval = Duration(seconds: 5);
 
   void addListener(VoidCallback listener) => _listeners.add(listener);
 
@@ -63,6 +56,12 @@ class LiveDbRefreshCoordinator {
           event: PostgresChangeEvent.all,
           schema: 'public',
           table: 'driver_restaurants',
+          callback: (_) => _notifyListeners(),
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'drivers',
           callback: (_) => _notifyListeners(),
         )
         .subscribe();
