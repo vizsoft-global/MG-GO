@@ -107,6 +107,19 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(
+                  ctx.l10n.supportChooseSource,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
             ListTile(
               leading: const Icon(Icons.image_outlined),
               title: Text(ctx.l10n.supportChooseFromGallery),
@@ -253,23 +266,24 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     setState(() => _submitting = true);
     try {
       String? note = _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim();
+      var keys = const <String>[];
       if (withUpload) {
         if (_files.isEmpty) {
           throw Exception(l10n.supportAttachDocumentFirst);
         }
-        final keys = await _uploadFiles();
-        note = 'Documents uploaded: ${keys.join(', ')}${note != null ? ' · $note' : ''}';
+        keys = await _uploadFiles();
       } else if (note == null) {
         // No custom note typed — record what the driver is actually
         // acknowledging (real submitted/decided terms) so the ack carries
-        // more than a bare timestamp. `driver_acknowledge_request` only
-        // accepts free text, so this is stored via `p_note` → payload.
+        // more than a bare timestamp. Typed text stays on `p_note`;
+        // files go through `p_attachment_keys`.
         final detail = ref.read(requestDetailProvider(widget.requestId)).asData?.value;
         if (detail != null) note = _ackTermsSummary(detail);
       }
       await ref.read(supportServiceProvider).acknowledgeRequest(
             requestId: widget.requestId,
             note: note,
+            attachmentKeys: keys,
           );
       ref.invalidate(requestDetailProvider(widget.requestId));
       ref.invalidate(myRequestsProvider);
@@ -626,6 +640,13 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                   children: [
                     Expanded(
                       child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(48),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                         onPressed: _submitting
                             ? null
                             : () {
@@ -634,13 +655,25 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                                   if (mounted) _noteFocus.requestFocus();
                                 });
                               },
-                        child: Text(l10n.supportAddNote),
+                        child: Text(
+                          l10n.supportAddNote,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: FilledButton(
-                        style: FilledButton.styleFrom(backgroundColor: AppColors.progressGreen),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.progressGreen,
+                          minimumSize: const Size.fromHeight(48),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                         onPressed: _submitting
                             ? null
                             : () {
@@ -655,9 +688,14 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                                 height: 18, width: 18,
                                 child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                               )
-                            : Text(isDocumentType
-                                ? l10n.supportUploadDocuments
-                                : l10n.supportAcknowledge),
+                            : Text(
+                                isDocumentType
+                                    ? l10n.supportUploadDocuments
+                                    : l10n.supportAcknowledge,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                              ),
                       ),
                     ),
                   ],
@@ -688,7 +726,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
           const SizedBox(width: 12),
           Expanded(
             child: chip
-                ? Align(
+                ? Container(
                     alignment: AlignmentDirectional.centerEnd,
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
@@ -698,6 +736,9 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                       ),
                       child: Text(
                         value,
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
@@ -708,6 +749,8 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                   )
                 : Text(
                     value,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.start,
                     style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                   ),
@@ -1443,7 +1486,10 @@ class _AdminResponseCard extends StatelessWidget {
     };
     final meta = _RequestDetailScreenState._lastDecisionMeta(detail);
     final rows = _rows(detail, meta, l10n);
-    final comment = _RequestDetailScreenState._adminComment(detail);
+    final comment = adminResponseComment(
+      comment: _RequestDetailScreenState._adminComment(detail),
+      clarifications: detail.clarifications,
+    );
     final amountChanged = detail.requestType == 'loan' &&
         meta['approved_amount'] != null &&
         '${meta['approved_amount']}' != '${detail.request['amount_kwd']}';

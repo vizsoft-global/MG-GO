@@ -704,6 +704,7 @@
   "supportDeclarationAsset": "إقرار: في حال استبدال عهدة مفقودة أو تالفة، أتحمل أي رسوم تفرضها الشركة للحصول على بديل.",
   "supportTemporarilyUnavailable": "غير متاح مؤقتاً",
   "supportSubmitRequest": "إرسال الطلب",
+  "supportChooseSource": "اختر المصدر",
   "supportChooseFromGallery": "الاختيار من المعرض",
   "supportTakeAPhoto": "التقاط صورة",
   "supportResponseSubmitted": "تم إرسال الرد",

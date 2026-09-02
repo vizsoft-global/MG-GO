@@ -4214,6 +4214,12 @@ abstract class AppLocalizations {
   /// **'Submit request'**
   String get supportSubmitRequest;
 
+  /// No description provided for @supportChooseSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Source'**
+  String get supportChooseSource;
+
   /// No description provided for @supportChooseFromGallery.
   ///
   /// In en, this message translates to:

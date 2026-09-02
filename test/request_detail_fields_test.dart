@@ -168,4 +168,25 @@ void main() {
     expect(thread.first['question'], 'First admin note');
     expect(thread.length, 2);
   });
+
+  test('Admin response comment drops a note that is already a clarification question', () {
+    expect(
+      adminResponseComment(
+        comment: 'Please send the medical report',
+        clarifications: [
+          {'question': 'Please send the medical report', 'answer': 'Sent'},
+        ],
+      ),
+      isNull,
+    );
+    expect(
+      adminResponseComment(
+        comment: 'Approved with document request',
+        clarifications: [
+          {'question': 'Please send the medical report', 'answer': 'Sent'},
+        ],
+      ),
+      'Approved with document request',
+    );
+  });
 }

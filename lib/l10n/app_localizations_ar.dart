@@ -2306,6 +2306,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get supportSubmitRequest => 'إرسال الطلب';
 
   @override
+  String get supportChooseSource => 'اختر المصدر';
+
+  @override
   String get supportChooseFromGallery => 'الاختيار من المعرض';
 
   @override
