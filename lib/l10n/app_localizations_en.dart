@@ -2319,6 +2319,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get supportSubmitRequest => 'Submit request';
 
   @override
+  String get supportChooseSource => 'Choose Source';
+
+  @override
   String get supportChooseFromGallery => 'Choose from gallery';
 
   @override

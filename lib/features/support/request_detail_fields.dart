@@ -204,3 +204,17 @@ bool clarificationHasContent(Map<String, dynamic> row) {
   final answer = row['answer']?.toString().trim() ?? '';
   return question.isNotEmpty || answer.isNotEmpty;
 }
+
+/// Clarify writes the question as `decision_note`. After a later approve the
+/// Admin response card must not reprint that same question as a comment.
+String? adminResponseComment({
+  required String? comment,
+  required List<Map<String, dynamic>> clarifications,
+}) {
+  final note = comment?.trim() ?? '';
+  if (note.isEmpty) return null;
+  final isDuplicate = clarifications.any(
+    (row) => (row['question']?.toString().trim() ?? '') == note,
+  );
+  return isDuplicate ? null : note;
+}

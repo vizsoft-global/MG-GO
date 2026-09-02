@@ -117,12 +117,14 @@ class SupportService {
   Future<void> acknowledgeRequest({
     required String requestId,
     String? note,
+    List<String> attachmentKeys = const [],
   }) async {
     final result = await _client.rpc(
       'driver_acknowledge_request',
       params: {
         'p_request_id': requestId,
         'p_note': note,
+        'p_attachment_keys': attachmentKeys,
       },
     );
     final map = _asMap(result);
