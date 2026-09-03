@@ -647,7 +647,7 @@ abstract class AppLocalizations {
   /// No description provided for @enterEmployeeId.
   ///
   /// In en, this message translates to:
-  /// **'Enter your 4–8 digit employee ID.'**
+  /// **'Enter your employee ID.'**
   String get enterEmployeeId;
 
   /// No description provided for @enterPasscode.

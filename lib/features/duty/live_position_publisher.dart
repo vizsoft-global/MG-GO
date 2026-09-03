@@ -163,10 +163,40 @@ class LiveCadence {
     if (buffered == 0) return false;
     if (stateChanged) return true;
     if (status == TrackingStatus.deliverySubmit) return true;
-    if (buffered >= batchSize) return true;
+    // batchSize is a moving-only gate. An idle 1Hz stream would otherwise POST
+    // every ~2s and burn the edge quota on parked phones.
+    if (status == TrackingStatus.moving && buffered >= batchSize) return true;
     if (lastPublishAt == null) return true;
     return now.difference(lastPublishAt) >= flushDeadlineFor(status);
   }
+}
+
+/// How the FGS writes Postgres after an edge `/ingest` failure.
+///
+/// `force` on every failed 2s batch is what turned a Cloudflare outage into a
+/// `driver_report_location` storm on the same project that serves login.
+enum EdgeDurableFallback { skip, report, force }
+
+/// Ceiling for a non-forced durable write when the edge is down. Matches the
+/// FGS watchdog (`ForegroundTaskEventAction.repeat(15000)`).
+const kWatchdogFallbackGap = Duration(seconds: 15);
+
+EdgeDurableFallback edgeDurableFallback({
+  required bool stateChanged,
+  required TrackingStatus status,
+  required DateTime now,
+  required DateTime? lastFallbackAt,
+}) {
+  if (status == TrackingStatus.deliverySubmit || stateChanged) {
+    return EdgeDurableFallback.force;
+  }
+  final minGap = status == TrackingStatus.idle
+      ? LiveCadence.idleInterval
+      : kWatchdogFallbackGap;
+  if (lastFallbackAt == null || now.difference(lastFallbackAt) >= minGap) {
+    return EdgeDurableFallback.report;
+  }
+  return EdgeDurableFallback.skip;
 }
 
 /// POSTs batches of GPS fixes to the `dpd-live` edge rail.

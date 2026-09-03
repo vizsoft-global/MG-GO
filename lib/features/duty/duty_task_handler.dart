@@ -67,6 +67,7 @@ class DutyTaskHandler extends TaskHandler {
   DateTime? _cachedBatteryAt;
   int? _dutyStateVersion;
   bool _streamStateChangePending = false;
+  DateTime? _lastEdgeFallbackAt;
 
   Future<AppLocalizations> _localizations() async {
     return _l10n ??= await loadSavedLocalizations();
@@ -157,9 +158,9 @@ class DutyTaskHandler extends TaskHandler {
     }
   }
 
-  /// Continuous-stream path: classify motion, then publish to the edge on the
-  /// 5s cadence. Deliberately does *not* call `driver_report_location` — that
-  /// stays on the watchdog so a GPS storm cannot turn into a write storm.
+  /// Continuous-stream path: classify motion, then publish to the edge. Does
+  /// *not* call `driver_report_location` on the happy path — that stays on the
+  /// watchdog so a GPS storm cannot turn into a write storm.
   Future<void> _onStreamPosition(Position position) async {
     if (_autoCheckedOut || !_publisher.enabled) return;
 
@@ -218,9 +219,19 @@ class DutyTaskHandler extends TaskHandler {
       dutyStateVersion: _dutyStateVersion,
     );
     if (!ok) {
-      // Edge unreachable — hand this fix to the durable path immediately rather
-      // than waiting for the next watchdog tick to notice.
-      await _tick(now, force: true);
+      // Edge unreachable. Do not force a durable write on every 2s batch —
+      // that is the Postgres storm. State changes and delivery_submit still
+      // force; otherwise fall back at the watchdog cadence without force so
+      // `driver_report_location` can coalesce.
+      final fallback = edgeDurableFallback(
+        stateChanged: stateChanged,
+        status: _scheduler.status,
+        now: now,
+        lastFallbackAt: _lastEdgeFallbackAt,
+      );
+      if (fallback == EdgeDurableFallback.skip) return;
+      _lastEdgeFallbackAt = now;
+      await _tick(now, force: fallback == EdgeDurableFallback.force);
     }
   }
 

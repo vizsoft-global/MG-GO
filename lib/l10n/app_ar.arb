@@ -108,7 +108,7 @@
   "deviceConflictSignInHereButton": "تسجيل الدخول هنا",
   "signedInOnAnotherDeviceToast": "تم تسجيل الدخول على جهاز آخر. يرجى تسجيل الدخول مرة أخرى.",
   "enterDriverId": "أدخل رقم السائق المكوّن من 5 أرقام.",
-  "enterEmployeeId": "أدخل رقم الموظف المكوّن من 4 إلى 8 أرقام.",
+  "enterEmployeeId": "أدخل رقم الموظف.",
   "enterPasscode": "أدخل رمز الدخول المكوّن من 6 أرقام.",
   "authNotConfigured": "التطبيق غير مهيأ. أضف SUPABASE_ANON_KEY عند التشغيل.",
   "authInvalidCredentials": "رقم الموظف أو رمز الدخول غير صحيح. حاول مرة أخرى.",

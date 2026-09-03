@@ -324,7 +324,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterDriverId => 'Enter your 5-digit driver ID.';
 
   @override
-  String get enterEmployeeId => 'Enter your 4–8 digit employee ID.';
+  String get enterEmployeeId => 'Enter your employee ID.';
 
   @override
   String get enterPasscode => 'Enter your 6-digit passcode.';

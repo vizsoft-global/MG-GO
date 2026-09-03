@@ -2,7 +2,7 @@
 
 ## Flow
 
-1. Driver enters **4–8 digit employee ID** and **6-digit passcode** (OTP-style boxes for passcode, shown as `XXX–XXX`) from admin.
+1. Driver enters **employee ID** (letters and digits, 1–100 characters) and **6-digit passcode** (OTP-style boxes for passcode, shown as `XXX–XXX`) from admin.
 2. App calls Edge Function `driver-passcode-login` (deployed from admin repo).
 3. Function validates via RPC `driver_app_lookup_by_passcode`, mints a Supabase session, returns tokens.
 4. App calls `setSession` and navigates to Home.
