@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/ascii_digits.dart';
 
-/// Numeric employee ID field: 4–8 digits, width grows from 4-digit to 8-digit size.
+/// Alphanumeric employee ID field (1–100 letters and digits).
 class EmployeeIdInput extends StatefulWidget {
   const EmployeeIdInput({
     this.onChanged,
@@ -14,8 +14,7 @@ class EmployeeIdInput extends StatefulWidget {
     super.key,
   });
 
-  static const minDigits = 4;
-  static const maxDigits = 8;
+  static const maxLength = 100;
 
   final ValueChanged<String>? onChanged;
   final VoidCallback? onSubmitted;
@@ -29,10 +28,6 @@ class EmployeeIdInput extends StatefulWidget {
 class EmployeeIdInputState extends State<EmployeeIdInput> {
   final _controller = TextEditingController();
   final _focusNode = FocusNode();
-
-  static const _digitWidth = 40.0;
-  static const _minWidth = _digitWidth * EmployeeIdInput.minDigits;
-  static const _maxWidth = _digitWidth * EmployeeIdInput.maxDigits;
 
   @override
   void initState() {
@@ -52,7 +47,7 @@ class EmployeeIdInputState extends State<EmployeeIdInput> {
     super.dispose();
   }
 
-  String get value => toAsciiDigits(_controller.text);
+  String get value => normalizeEmployeeIdInput(_controller.text);
 
   void requestFocus() {
     if (widget.enabled) _focusNode.requestFocus();
@@ -68,46 +63,33 @@ class EmployeeIdInputState extends State<EmployeeIdInput> {
     widget.onChanged?.call(value);
   }
 
-  double _widthForLength(int length) {
-    final visibleDigits = length < EmployeeIdInput.minDigits
-        ? EmployeeIdInput.minDigits
-        : length.clamp(EmployeeIdInput.minDigits, EmployeeIdInput.maxDigits);
-    return _digitWidth * visibleDigits;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final length = value.length;
-    final width = _widthForLength(length);
-    final fontSize = (_digitWidth * 0.48).clamp(18.0, 24.0);
-
     return Align(
       alignment: Alignment.center,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 120),
-        curve: Curves.easeOut,
-        width: width.clamp(_minWidth, _maxWidth),
+      child: SizedBox(
+        width: 280,
         child: TextField(
           controller: _controller,
           focusNode: _focusNode,
           enabled: widget.enabled,
           autofocus: widget.autofocus,
           textAlign: TextAlign.center,
-          keyboardType: TextInputType.number,
-          style: TextStyle(
-            fontSize: fontSize,
+          keyboardType: TextInputType.text,
+          style: const TextStyle(
+            fontSize: 20,
             fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
-            letterSpacing: 4,
+            letterSpacing: 1,
           ),
           inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(EmployeeIdInput.maxDigits),
+            FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9\u0660-\u0669\u06F0-\u06F9]')),
+            LengthLimitingTextInputFormatter(EmployeeIdInput.maxLength),
           ],
           onSubmitted: (_) => widget.onSubmitted?.call(),
           decoration: InputDecoration(
             counterText: '',
-            contentPadding: const EdgeInsets.symmetric(vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
             filled: true,
             fillColor: const Color(0xFFF8F9FB),
             border: OutlineInputBorder(

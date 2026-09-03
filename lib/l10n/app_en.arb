@@ -199,7 +199,7 @@
   "deviceConflictSignInHereButton": "Sign in here",
   "signedInOnAnotherDeviceToast": "Signed in on another device. Please sign in again.",
   "enterDriverId": "Enter your 5-digit driver ID.",
-  "enterEmployeeId": "Enter your 4–8 digit employee ID.",
+  "enterEmployeeId": "Enter your employee ID.",
   "enterPasscode": "Enter your 6-digit passcode.",
   "authNotConfigured": "App is not configured. Add SUPABASE_ANON_KEY when running.",
   "authInvalidCredentials": "Invalid employee ID or passcode. Please try again.",

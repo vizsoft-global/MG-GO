@@ -83,6 +83,28 @@ void main() {
       expect(cadence.flushDeadlineFor(TrackingStatus.idle), LiveCadence.idleInterval);
     });
 
+    test('idle does not publish just because two fixes are buffered', () {
+      expect(
+        cadence.shouldPublish(
+          buffered: 2,
+          status: TrackingStatus.idle,
+          now: now.add(const Duration(seconds: 2)),
+          lastPublishAt: now,
+        ),
+        isFalse,
+        reason: 'batchSize is moving-only; idle waits for the 30s deadline',
+      );
+      expect(
+        cadence.shouldPublish(
+          buffered: 2,
+          status: TrackingStatus.idle,
+          now: now.add(LiveCadence.idleInterval),
+          lastPublishAt: now,
+        ),
+        isTrue,
+      );
+    });
+
     test('a stationary driver still heartbeats every 30s', () {
       expect(
         cadence.shouldPublish(
@@ -132,6 +154,63 @@ void main() {
           lastPublishAt: now,
         ),
         isTrue,
+      );
+    });
+
+    test('edge fallback is forced only for state changes and delivery_submit', () {
+      expect(
+        edgeDurableFallback(
+          stateChanged: false,
+          status: TrackingStatus.moving,
+          now: now.add(const Duration(seconds: 2)),
+          lastFallbackAt: now,
+        ),
+        EdgeDurableFallback.skip,
+      );
+      expect(
+        edgeDurableFallback(
+          stateChanged: false,
+          status: TrackingStatus.moving,
+          now: now.add(kWatchdogFallbackGap),
+          lastFallbackAt: now,
+        ),
+        EdgeDurableFallback.report,
+      );
+      expect(
+        edgeDurableFallback(
+          stateChanged: false,
+          status: TrackingStatus.idle,
+          now: now.add(const Duration(seconds: 15)),
+          lastFallbackAt: now,
+        ),
+        EdgeDurableFallback.skip,
+      );
+      expect(
+        edgeDurableFallback(
+          stateChanged: false,
+          status: TrackingStatus.idle,
+          now: now.add(LiveCadence.idleInterval),
+          lastFallbackAt: now,
+        ),
+        EdgeDurableFallback.report,
+      );
+      expect(
+        edgeDurableFallback(
+          stateChanged: true,
+          status: TrackingStatus.moving,
+          now: now.add(const Duration(seconds: 1)),
+          lastFallbackAt: now,
+        ),
+        EdgeDurableFallback.force,
+      );
+      expect(
+        edgeDurableFallback(
+          stateChanged: false,
+          status: TrackingStatus.deliverySubmit,
+          now: now.add(const Duration(seconds: 1)),
+          lastFallbackAt: now,
+        ),
+        EdgeDurableFallback.force,
       );
     });
 

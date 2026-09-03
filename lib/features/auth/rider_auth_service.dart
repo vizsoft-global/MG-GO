@@ -148,10 +148,10 @@ class RiderAuthService {
     required String passcode,
     bool forceOverride = false,
   }) async {
-    final normalizedId = toAsciiDigits(employeeId);
+    final normalizedId = normalizeEmployeeIdInput(employeeId);
     final normalizedPasscode = toAsciiDigits(passcode);
 
-    if (!RegExp(r'^\d{4,8}$').hasMatch(normalizedId) ||
+    if (!RegExp(r'^[A-Za-z0-9]{1,100}$').hasMatch(normalizedId) ||
         !RegExp(r'^\d{6}$').hasMatch(normalizedPasscode)) {
       throw RiderAuthFailure.invalidCredentials;
     }

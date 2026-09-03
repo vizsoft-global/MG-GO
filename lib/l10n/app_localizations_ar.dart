@@ -327,7 +327,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get enterDriverId => 'أدخل رقم السائق المكوّن من 5 أرقام.';
 
   @override
-  String get enterEmployeeId => 'أدخل رقم الموظف المكوّن من 4 إلى 8 أرقام.';
+  String get enterEmployeeId => 'أدخل رقم الموظف.';
 
   @override
   String get enterPasscode => 'أدخل رمز الدخول المكوّن من 6 أرقام.';

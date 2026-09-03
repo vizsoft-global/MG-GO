@@ -35,7 +35,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   String _employeeId = '';
   String _passcode = '';
 
-  static final _employeeIdPattern = RegExp(r'^\d{4,8}$');
+  static final _employeeIdPattern = RegExp(r'^[A-Za-z0-9]{1,100}$');
   static final _passcodePattern = RegExp(r'^\d{6}$');
 
   Future<void> _submit({bool forceOverride = false}) async {
