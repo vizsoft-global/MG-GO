@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../features/app_update/update_required_screen.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/login_verification_gate.dart';
 import '../../features/auth/login_verification_screen.dart';
@@ -45,6 +46,9 @@ import '../../features/support/request_submitted_screen.dart';
 import '../../features/support/support_hub_screen.dart';
 import '../../features/support/visit_booking_flow_screen.dart';
 import '../../features/vehicle/vehicle_screen.dart';
+import '../app_update/force_update_gate.dart';
+import '../app_update/force_update_state.dart';
+import '../branding/app_branding.dart';
 import '../branding/app_branding_provider.dart';
 
 /// Global navigator key for navigation from non-widget code.
@@ -55,6 +59,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   final settingsListenable = ref.watch(settingsRefreshListenableProvider);
   final loginVerificationListenable =
       ref.watch(loginVerificationRefreshListenableProvider);
+  final forceUpdateDemand = ref.watch(forceUpdateDemandProvider);
 
   // Do NOT watch appBrandingProvider here — that recreates GoRouter on every
   // settings poll and resets navigation to the bootstrap route (/).
@@ -66,11 +71,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       authListenable,
       settingsListenable,
       loginVerificationListenable,
+      forceUpdateDemand,
     ]),
     redirect: (context, state) {
       final settingsAsync = ref.read(appBrandingProvider);
       final settingsLoaded = settingsAsync.hasValue;
       final inMaintenance = settingsAsync.value?.maintenanceMode ?? false;
+      // The gate is decided from app_settings, or from a login the server
+      // refused with update_required (authoritative even if settings are
+      // stale or served from the offline cache).
+      final needsUpdate =
+          forceUpdateDemand.isActive ||
+          (settingsLoaded &&
+              (settingsAsync.value?.requiresUpdate(
+                    InstalledBuild.versionCode,
+                  ) ??
+                  false));
 
       final session = Supabase.instance.client.auth.currentSession;
       final loc = state.matchedLocation;
@@ -78,10 +94,26 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isAuthRoute = authRoutes.contains(loc);
       final onBootstrap = loc == '/';
       final onMaintenance = loc == '/maintenance';
+      final onUpdateRequired = loc == '/update-required';
       final onBlocked = loc == '/blocked';
       final onLoginVerification = loc == '/login-verification';
 
       if (onBootstrap) return null;
+
+      // Update Required outranks every other gate, including maintenance: a
+      // blocked build must not be able to reach a screen that keeps polling.
+      if (onUpdateRequired) {
+        if (needsUpdate) return null;
+        if (!settingsLoaded) return null;
+        if (inMaintenance) return '/maintenance';
+        if (session == null) return '/login';
+        final needs = ref
+            .read(loginVerificationRefreshListenableProvider)
+            .needsCapture;
+        if (needs == true) return '/login-verification';
+        return '/home';
+      }
+      if (needsUpdate) return '/update-required';
 
       if (onMaintenance) {
         if (!settingsLoaded) return null;
@@ -139,6 +171,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/maintenance',
         name: 'maintenance',
         builder: (context, state) => const MaintenanceScreen(),
+      ),
+      GoRoute(
+        path: '/update-required',
+        name: 'update_required',
+        builder: (context, state) => const UpdateRequiredScreen(),
       ),
       GoRoute(
         path: '/login',
@@ -415,20 +452,29 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   );
 });
 
-/// Notifies GoRouter when maintenance mode changes (not every settings poll).
+/// Notifies GoRouter when a routing gate changes (maintenance or force-update),
+/// not on every settings poll.
 final settingsRefreshListenableProvider = Provider<SettingsRefreshListenable>((
   ref,
 ) {
   final listenable = SettingsRefreshListenable();
   ref.listen(appBrandingProvider, (previous, next) {
-    final prevMaintenance = previous?.value?.maintenanceMode;
-    final nextMaintenance = next.value?.maintenanceMode;
-    if (prevMaintenance != nextMaintenance) {
+    if (_gateSignature(previous?.value) != _gateSignature(next.value)) {
       listenable.notify();
     }
   });
   return listenable;
 });
+
+/// The subset of settings the router's redirect actually reads.
+(bool, bool, int?)? _gateSignature(AppBranding? settings) {
+  if (settings == null) return null;
+  return (
+    settings.maintenanceMode,
+    settings.forceUpdate,
+    settings.minVersionCode,
+  );
+}
 
 class SettingsRefreshListenable extends ChangeNotifier {
   void notify() => notifyListeners();

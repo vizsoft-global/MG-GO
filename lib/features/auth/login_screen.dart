@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/app_update/force_update_state.dart';
 import '../../core/branding/app_branding.dart';
 import '../../core/branding/app_branding_provider.dart';
 import '../../core/branding/branding_logo.dart';
@@ -83,6 +84,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } on RiderBlockedException catch (e) {
       if (!mounted) return;
       context.go('/blocked', extra: e.reason);
+    } on UpdateRequiredException catch (e) {
+      // Raising the demand notifies the router, whose redirect sends every
+      // route to /update-required; the explicit go() just makes it immediate.
+      ref.read(forceUpdateDemandProvider).raise(e);
+      if (!mounted) return;
+      context.go('/update-required');
     } catch (e) {
       if (_loginSucceeded) return;
       // Critical: if the session is already set, the user IS authenticated.

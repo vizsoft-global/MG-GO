@@ -782,6 +782,48 @@ abstract class AppLocalizations {
   /// **'Pull down to refresh'**
   String get pullDownToRefresh;
 
+  /// No description provided for @updateRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update required'**
+  String get updateRequiredTitle;
+
+  /// No description provided for @updateRequiredMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'A newer version of the app is required to continue. Please update from the Play Store.'**
+  String get updateRequiredMessage;
+
+  /// No description provided for @updateRequiredMinVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version} or newer is required.'**
+  String updateRequiredMinVersion(String version);
+
+  /// No description provided for @updateRequiredInstalledVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'You have {version}.'**
+  String updateRequiredInstalledVersion(String version);
+
+  /// No description provided for @updateOnPlayStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Update on Play Store'**
+  String get updateOnPlayStore;
+
+  /// No description provided for @checkAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Check again'**
+  String get checkAgain;
+
+  /// No description provided for @couldNotOpenPlayStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the Play Store. Search for the app in the Play Store to update.'**
+  String get couldNotOpenPlayStore;
+
   /// No description provided for @developerModeDetectedTitle.
   ///
   /// In en, this message translates to:
@@ -1417,6 +1459,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'In — sign in again'**
   String get onDutySignInAgain;
+
+  /// No description provided for @onDutyOpenAppToKeepTracking.
+  ///
+  /// In en, this message translates to:
+  /// **'In — open the app to keep tracking'**
+  String get onDutyOpenAppToKeepTracking;
 
   /// No description provided for @onDutyTurnOnGps.
   ///
@@ -3217,12 +3265,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Update available'**
   String get updateAvailableTitle;
-
-  /// No description provided for @updateRequiredTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Update required'**
-  String get updateRequiredTitle;
 
   /// No description provided for @updateAvailableBody.
   ///

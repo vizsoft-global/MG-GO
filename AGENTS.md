@@ -5,15 +5,15 @@
 The canonical source of truth is `pubspec.yaml`:
 
 ```yaml
-version: 1.0.8+37
+version: 1.1.20+83
 ```
 
 Mapping (Android):
 
 | Field           | Value    | Notes                                                       |
 | --------------- | -------- | ----------------------------------------------------------- |
-| `versionName`   | `1.0.8`  | Marketing string. Sent as `versionName` query param.        |
-| `versionCode`   | `37`     | Integer build number. Sent as `versionCode` query param.    |
+| `versionName`   | `1.1.20` | Marketing string. Sent as `versionName` query param.        |
+| `versionCode`   | `83`     | Integer build number. Sent as `versionCode` query param.    |
 
 ### Rules for any new build the user asks me to generate
 
@@ -33,9 +33,9 @@ Mapping (Android):
 
 | Scenario                                  | Before      | After       |
 | ----------------------------------------- | ----------- | ----------- |
-| Routine new build (no version bump asked) | `1.0.8+37`  | `1.0.8+38`  |
-| User asks for "1.0.9" release             | `1.0.8+37`  | `1.0.9+38`  |
-| User asks for "1.1.0" release             | `1.0.8+37`  | `1.1.0+38`  |
+| Routine new build (no version bump asked) | `1.1.20+83` | `1.1.20+84` |
+| User asks for "1.1.21" release            | `1.1.20+83` | `1.1.21+84` |
+| User asks for "1.2.0" release             | `1.1.20+83` | `1.2.0+84`  |
 
 ## Release — CRITICAL rules
 

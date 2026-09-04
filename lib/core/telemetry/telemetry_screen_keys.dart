@@ -11,6 +11,7 @@ const String kUnknownScreenKey = 'unknown';
 const List<(String, String)> _screenPatterns = [
   ('/', 'bootstrap'),
   ('/maintenance', 'maintenance'),
+  ('/update-required', 'update_required'),
   ('/login', 'login'),
   ('/login-verification', 'login_verification'),
   ('/blocked', 'blocked'),

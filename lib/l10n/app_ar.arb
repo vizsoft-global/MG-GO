@@ -131,6 +131,23 @@
   "backToSignIn": "العودة لتسجيل الدخول",
   "underMaintenance": "تحت الصيانة",
   "pullDownToRefresh": "اسحب للأسفل للتحديث",
+  "updateRequiredTitle": "التحديث مطلوب",
+  "updateRequiredMessage": "يلزم تحديث التطبيق إلى إصدار أحدث للمتابعة. يرجى التحديث من متجر Play.",
+  "updateRequiredMinVersion": "يلزم الإصدار {version} أو أحدث.",
+  "@updateRequiredMinVersion": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "updateRequiredInstalledVersion": "إصدارك الحالي {version}.",
+  "@updateRequiredInstalledVersion": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "updateOnPlayStore": "التحديث من متجر Play",
+  "checkAgain": "تحقق مرة أخرى",
+  "couldNotOpenPlayStore": "تعذر فتح متجر Play. ابحث عن التطبيق في متجر Play للتحديث.",
   "developerModeDetectedTitle": "يجب إيقاف خيارات المطوّر",
   "closeApp": "إغلاق التطبيق",
   "developerModeDetectedMessage": "لا يمكن تشغيل هذا التطبيق أثناء تفعيل خيارات المطوّر. أوقفها من إعدادات الهاتف ثم افتح التطبيق مرة أخرى. تم إزالة التحديث عبر التثبيت الجانبي — حدّث التطبيق فقط من Google Play.",
@@ -237,6 +254,7 @@
   "goOffline": "تسجيل الخروج",
   "onDutyTapToOpen": "داخل — اضغط للفتح",
   "onDutySignInAgain": "داخل — سجّل الدخول مجدداً",
+  "onDutyOpenAppToKeepTracking": "داخل — افتح التطبيق لمواصلة التتبع",
   "onDutyTurnOnGps": "داخل — فعّل GPS",
   "onDutyLocationPermissionNeeded": "داخل — صلاحية الموقع مطلوبة",
   "onDutyBatteryRestricted": "داخل — قيود البطارية مفعّلة. اضغط Allow لتتبع أدق",

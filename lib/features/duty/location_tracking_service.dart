@@ -20,6 +20,27 @@ class LocationTrackingException implements Exception {
   String toString() => message;
 }
 
+/// A non-2xx answer from the direct REST path, keeping the status the
+/// foreground service needs to decide *whether retrying can ever help*.
+///
+/// A 401 means PostgREST refused the JWT — the token on disk has expired and
+/// no amount of retrying with it will succeed. `driver_off_duty` means the
+/// server has already clocked this rider out, so the service posting the fix
+/// has outlived its session. Both used to be caught as a bare exception and
+/// retried at the watchdog cadence forever; on production that was ~78k
+/// rejected calls in two hours from 57 phones.
+class LocationTrackingHttpException extends LocationTrackingException {
+  LocationTrackingHttpException(super.message, {required this.statusCode});
+
+  final int statusCode;
+
+  /// PostgREST rejected the bearer token itself (expired or invalid).
+  bool get isAuthRejected => statusCode == 401;
+
+  /// `driver_report_location` raised because `drivers.is_on_duty` is false.
+  bool get isOffDuty => message.toLowerCase().contains('driver_off_duty');
+}
+
 Future<int?> readBatteryPct() async {
   try {
     return await Battery().batteryLevel;
@@ -229,7 +250,10 @@ Future<LocationReportResult> reportLocationViaHttp({
   );
 
   if (response.statusCode < 200 || response.statusCode >= 300) {
-    throw LocationTrackingException(await decodeRpcError(response.body));
+    throw LocationTrackingHttpException(
+      await decodeRpcError(response.body),
+      statusCode: response.statusCode,
+    );
   }
 
   final map = jsonDecode(response.body) as Map<String, dynamic>;

@@ -401,6 +401,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pullDownToRefresh => 'Pull down to refresh';
 
   @override
+  String get updateRequiredTitle => 'Update required';
+
+  @override
+  String get updateRequiredMessage =>
+      'A newer version of the app is required to continue. Please update from the Play Store.';
+
+  @override
+  String updateRequiredMinVersion(String version) {
+    return 'Version $version or newer is required.';
+  }
+
+  @override
+  String updateRequiredInstalledVersion(String version) {
+    return 'You have $version.';
+  }
+
+  @override
+  String get updateOnPlayStore => 'Update on Play Store';
+
+  @override
+  String get checkAgain => 'Check again';
+
+  @override
+  String get couldNotOpenPlayStore =>
+      'Could not open the Play Store. Search for the app in the Play Store to update.';
+
+  @override
   String get developerModeDetectedTitle => 'Developer options must be off';
 
   @override
@@ -772,6 +799,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onDutySignInAgain => 'In — sign in again';
+
+  @override
+  String get onDutyOpenAppToKeepTracking =>
+      'In — open the app to keep tracking';
 
   @override
   String get onDutyTurnOnGps => 'In — turn on GPS';
@@ -1772,9 +1803,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateAvailableTitle => 'Update available';
-
-  @override
-  String get updateRequiredTitle => 'Update required';
 
   @override
   String updateAvailableBody(String version) {

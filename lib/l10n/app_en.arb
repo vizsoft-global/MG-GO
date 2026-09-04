@@ -222,6 +222,23 @@
   "backToSignIn": "Back to sign in",
   "underMaintenance": "Under maintenance",
   "pullDownToRefresh": "Pull down to refresh",
+  "updateRequiredTitle": "Update required",
+  "updateRequiredMessage": "A newer version of the app is required to continue. Please update from the Play Store.",
+  "updateRequiredMinVersion": "Version {version} or newer is required.",
+  "@updateRequiredMinVersion": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "updateRequiredInstalledVersion": "You have {version}.",
+  "@updateRequiredInstalledVersion": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "updateOnPlayStore": "Update on Play Store",
+  "checkAgain": "Check again",
+  "couldNotOpenPlayStore": "Could not open the Play Store. Search for the app in the Play Store to update.",
   "developerModeDetectedTitle": "Developer options must be off",
   "closeApp": "Close app",
   "developerModeDetectedMessage": "This app cannot run while Developer options are enabled. Turn them off in your phone Settings (Developer options), then open the app again. For security and Play Store policy, sideloading and in-app APK updates have been removed — install updates only from Google Play.",
@@ -430,6 +447,7 @@
   "goOffline": "Clock out",
   "onDutyTapToOpen": "In — tap to open",
   "onDutySignInAgain": "In — sign in again",
+  "onDutyOpenAppToKeepTracking": "In — open the app to keep tracking",
   "onDutyTurnOnGps": "In — turn on GPS",
   "onDutyLocationPermissionNeeded": "In — location permission needed",
   "onDutyBatteryRestricted": "In — battery restriction is on. Allow to keep tracking reliable",

@@ -402,6 +402,33 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pullDownToRefresh => 'اسحب للأسفل للتحديث';
 
   @override
+  String get updateRequiredTitle => 'التحديث مطلوب';
+
+  @override
+  String get updateRequiredMessage =>
+      'يلزم تحديث التطبيق إلى إصدار أحدث للمتابعة. يرجى التحديث من متجر Play.';
+
+  @override
+  String updateRequiredMinVersion(String version) {
+    return 'يلزم الإصدار $version أو أحدث.';
+  }
+
+  @override
+  String updateRequiredInstalledVersion(String version) {
+    return 'إصدارك الحالي $version.';
+  }
+
+  @override
+  String get updateOnPlayStore => 'التحديث من متجر Play';
+
+  @override
+  String get checkAgain => 'تحقق مرة أخرى';
+
+  @override
+  String get couldNotOpenPlayStore =>
+      'تعذر فتح متجر Play. ابحث عن التطبيق في متجر Play للتحديث.';
+
+  @override
   String get developerModeDetectedTitle => 'يجب إيقاف خيارات المطوّر';
 
   @override
@@ -768,6 +795,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get onDutySignInAgain => 'داخل — سجّل الدخول مجدداً';
+
+  @override
+  String get onDutyOpenAppToKeepTracking =>
+      'داخل — افتح التطبيق لمواصلة التتبع';
 
   @override
   String get onDutyTurnOnGps => 'داخل — فعّل GPS';
@@ -1762,9 +1793,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get updateAvailableTitle => 'يتوفر تحديث';
-
-  @override
-  String get updateRequiredTitle => 'التحديث مطلوب';
 
   @override
   String updateAvailableBody(String version) {

@@ -5,6 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Keeps driver-facing DB settings fresh via Supabase Realtime + polling.
+///
+/// Realtime is the primary signal: an UPDATE on `app_settings`, `zones`,
+/// `restaurants`, `driver_restaurants` or `drivers` notifies every listener
+/// within a second. Polling is the fallback for a phone whose socket has
+/// silently died, and nothing more — it must not be the mechanism that keeps
+/// settings fresh, because every tick fans out to every listener (branding,
+/// login-verification gate, access monitor, duty monitor, proximity context),
+/// each of which is at least one request against Postgres.
 class LiveDbRefreshCoordinator {
   LiveDbRefreshCoordinator(this._client);
 
@@ -15,7 +23,12 @@ class LiveDbRefreshCoordinator {
   RealtimeChannel? _channel;
   bool _started = false;
 
-  static const pollInterval = Duration(seconds: 5);
+  /// Was 5s. Across the fleet that was ~2.7M `GET app_settings` and ~1.25M
+  /// `GET drivers` a day from phones that were mostly parked, and it was the
+  /// largest single source of the request storm that took the database down.
+  /// 60s is the fallback cadence; anything an operator changes still lands
+  /// immediately through the Realtime subscription below.
+  static const pollInterval = Duration(seconds: 60);
 
   void addListener(VoidCallback listener) => _listeners.add(listener);
 

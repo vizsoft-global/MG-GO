@@ -84,6 +84,25 @@ class DutyLifecycleController with WidgetsBindingObserver {
     }
   }
 
+  /// The foreground service reported that the token it holds was refused.
+  /// Only this isolate may refresh (refresh tokens rotate; two refreshers
+  /// would sign the rider out), so refresh here if our own copy has expired
+  /// too, then hand the service whatever is current. A failed refresh is left
+  /// to supabase_flutter's own retry — the service stays parked meanwhile.
+  Future<void> _refreshAndPersistDutyAccessToken() async {
+    final auth = Supabase.instance.client.auth;
+    final session = auth.currentSession;
+    if (session == null) return;
+    try {
+      if (session.isExpired) {
+        await auth.refreshSession();
+      }
+    } catch (_) {
+      return;
+    }
+    await _persistDutyAccessToken();
+  }
+
   Future<void> _bootstrap() async {
     await DutyBackgroundService.init();
     unawaited(_ref.read(syncControllerProvider.notifier).drain());
@@ -98,8 +117,13 @@ class DutyLifecycleController with WidgetsBindingObserver {
     try {
       final map = jsonDecode(data) as Map<String, dynamic>;
       final event = map['event'] as String?;
+      if (event == 'token_expired') {
+        unawaited(_refreshAndPersistDutyAccessToken());
+        return;
+      }
       if (event == 'auto_checkout_inactive' ||
-          event == 'manual_offline_from_notification') {
+          event == 'manual_offline_from_notification' ||
+          event == 'remote_off_duty') {
         _ref.read(homeDashboardProvider.notifier).patchDutyState(
               isOnDuty: false,
               isOnline: false,

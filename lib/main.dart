@@ -13,6 +13,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
 import 'core/app_update/app_upgrade_reset.dart';
+import 'core/app_update/force_update_gate.dart';
 import 'core/config/env.dart';
 import 'core/l10n/localizations_loader.dart';
 import 'core/l10n/locale_provider.dart';
@@ -89,6 +90,8 @@ Future<void> _bootstrapServices() async {
     await OfflineDb.instance.initialize();
     await AppUpgradeReset.runIfUpgraded();
   }
+  // Read once so the router's synchronous redirect can compare versionCode.
+  await InstalledBuild.load();
   // SecurityBypassStore already loaded in main() for the hard-block check.
 
   try {

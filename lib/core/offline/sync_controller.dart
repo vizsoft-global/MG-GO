@@ -317,13 +317,21 @@ class SyncController extends Notifier<SyncState> {
         }
         synced++;
       } catch (e) {
-        if (id != null) {
-          await OfflineDb.instance.markPendingFailure(
+        if (id == null) continue;
+        if (e is LocationTrackingHttpException && e.isOffDuty) {
+          // The server has clocked this rider out; a heartbeat from before that
+          // will be refused on every drain until the attempt cap drops it.
+          await OfflineDb.instance.deletePendingById(
             table: 'pending_location_reports',
             id: id,
-            error: e.toString(),
           );
+          continue;
         }
+        await OfflineDb.instance.markPendingFailure(
+          table: 'pending_location_reports',
+          id: id,
+          error: e.toString(),
+        );
       }
     }
     return synced;

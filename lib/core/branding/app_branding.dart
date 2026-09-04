@@ -1,3 +1,5 @@
+import '../app_update/force_update_gate.dart';
+
 /// Driver app public settings from `app_settings` (id = 1), per handoff §9.
 class AppBranding {
   const AppBranding({
@@ -10,6 +12,10 @@ class AppBranding {
     this.logoUrl,
     this.splashUrl,
     this.iconUrl,
+    this.forceUpdate = false,
+    this.minVersionCode,
+    this.minVersionName,
+    this.updateMessage,
   });
 
   /// `driver_app_title` — mobile app display name.
@@ -46,6 +52,26 @@ class AppBranding {
   /// `driver_app_login_verification_exempt_all` — fleet-wide login selfie skip.
   final bool loginVerificationExemptAll;
 
+  /// `driver_app_force_update` — admin master toggle for the update gate.
+  final bool forceUpdate;
+
+  /// `driver_app_min_version_code` — installs below this `versionCode` are
+  /// blocked while [forceUpdate] is on.
+  final int? minVersionCode;
+
+  /// `driver_app_min_version_name` — display only (`1.1.21`).
+  final String? minVersionName;
+
+  /// `driver_app_update_message` — optional operator copy for the gate screen.
+  final String? updateMessage;
+
+  /// Whether this install is blocked by the force-update gate.
+  bool requiresUpdate(int? installedVersionCode) => forceUpdateBlocks(
+    forceUpdate: forceUpdate,
+    minVersionCode: minVersionCode,
+    installedVersionCode: installedVersionCode,
+  );
+
   bool get isSvgLogo => _looksLikeSvg(logoUrl);
   bool get isSvgIcon => _looksLikeSvg(iconUrl);
 
@@ -65,6 +91,10 @@ class AppBranding {
     logoUrl: null,
     splashUrl: null,
     iconUrl: null,
+    forceUpdate: false,
+    minVersionCode: null,
+    minVersionName: null,
+    updateMessage: null,
   );
 
   @override
@@ -79,7 +109,11 @@ class AppBranding {
             iconUrl == other.iconUrl &&
             maintenanceMode == other.maintenanceMode &&
             maintenanceMessage == other.maintenanceMessage &&
-            loginVerificationExemptAll == other.loginVerificationExemptAll;
+            loginVerificationExemptAll == other.loginVerificationExemptAll &&
+            forceUpdate == other.forceUpdate &&
+            minVersionCode == other.minVersionCode &&
+            minVersionName == other.minVersionName &&
+            updateMessage == other.updateMessage;
   }
 
   @override
@@ -93,5 +127,9 @@ class AppBranding {
     maintenanceMode,
     maintenanceMessage,
     loginVerificationExemptAll,
+    forceUpdate,
+    minVersionCode,
+    minVersionName,
+    updateMessage,
   );
 }

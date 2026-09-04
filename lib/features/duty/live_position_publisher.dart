@@ -229,6 +229,7 @@ class LivePositionPublisher {
   final List<LiveFix> _buffer = <LiveFix>[];
   DateTime? _lastPublishAt;
   DateTime? _lastSuccessAt;
+  int? _lastStatusCode;
   bool _inFlight = false;
 
   /// Largest batch the Worker accepts is 200; replays are chunked well below it
@@ -245,6 +246,16 @@ class LivePositionPublisher {
   int get buffered => _buffer.length;
   DateTime? get lastSuccessAt => _lastSuccessAt;
 
+  /// HTTP status of the most recent POST, `null` when it never got a response
+  /// (timeout, socket error). Lets the caller tell "edge unreachable" — fall
+  /// back to the durable RPC — from "edge refused our token" — where the
+  /// durable RPC would be refused too and must not be attempted.
+  int? get lastStatusCode => _lastStatusCode;
+
+  /// The Worker rejected the bearer token on the last publish. It validates
+  /// the same Supabase JWT PostgREST does, so this is the same expired token.
+  bool get lastPublishAuthRejected => _lastStatusCode == 401;
+
   void add(LiveFix fix) {
     if (!enabled) return;
     _buffer.add(fix);
@@ -259,6 +270,7 @@ class LivePositionPublisher {
     _buffer.clear();
     _lastPublishAt = null;
     _lastSuccessAt = null;
+    _lastStatusCode = null;
   }
 
   void dispose() {
@@ -342,6 +354,7 @@ class LivePositionPublisher {
     if (dutyStateVersion != null) {
       body['duty_state_version'] = dutyStateVersion;
     }
+    _lastStatusCode = null;
     try {
       final response = await _client
           .post(
@@ -353,6 +366,7 @@ class LivePositionPublisher {
             body: jsonEncode(body),
           )
           .timeout(timeout);
+      _lastStatusCode = response.statusCode;
       return response.statusCode >= 200 && response.statusCode < 300;
     } catch (_) {
       return false;

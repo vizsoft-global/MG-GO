@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/app_update/force_update_state.dart';
 import '../../core/config/env.dart';
 import '../../core/delivery/delivery_proximity_cache.dart';
 import '../../core/device/device_identity_service.dart';
@@ -46,6 +47,37 @@ class RiderBlockedException implements Exception {
 
   @override
   String toString() => reason ?? 'Driver account blocked';
+}
+
+/// Reads an `update_required` refusal out of an edge-function body. Accepts
+/// the decoded map or the raw JSON string `FunctionException.details` carries.
+UpdateRequiredException? parseUpdateRequired(dynamic details) {
+  Map<String, dynamic>? payload;
+  if (details is Map) {
+    payload = Map<String, dynamic>.from(details);
+  } else if (details is String && details.isNotEmpty) {
+    try {
+      final parsed = jsonDecode(details);
+      if (parsed is Map) payload = Map<String, dynamic>.from(parsed);
+    } catch (_) {}
+  }
+  if (payload == null || payload['error'] != 'update_required') return null;
+
+  final rawCode = payload['min_version_code'];
+  final minCode = rawCode is int
+      ? rawCode
+      : rawCode is num
+      ? rawCode.toInt()
+      : rawCode is String
+      ? int.tryParse(rawCode)
+      : null;
+  final minName = (payload['min_version_name'] as String?)?.trim();
+  final message = (payload['message'] as String?)?.trim();
+  return UpdateRequiredException(
+    minVersionCode: minCode,
+    minVersionName: minName == null || minName.isEmpty ? null : minName,
+    message: message == null || message.isEmpty ? null : message,
+  );
 }
 
 class RiderProfile {
@@ -180,6 +212,8 @@ class RiderAuthService {
         },
       );
     } on FunctionException catch (e) {
+      final updateRequired = parseUpdateRequired(e.details);
+      if (updateRequired != null) throw updateRequired;
       final conflict = _parseDeviceConflict(e);
       if (conflict != null) throw conflict;
       final blockedReason = _parseBlockedReason(e.details);
@@ -196,6 +230,9 @@ class RiderAuthService {
 
     final error = payload['error'] as String?;
     if (error != null) {
+      if (error == 'update_required') {
+        throw parseUpdateRequired(payload) ?? const UpdateRequiredException();
+      }
       if (error == 'device_conflict') {
         final activeRaw = payload['active_device'];
         throw DeviceConflictException(

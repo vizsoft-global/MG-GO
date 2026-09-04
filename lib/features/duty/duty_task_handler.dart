@@ -18,6 +18,7 @@ import '../../core/security/security_event_repository.dart';
 import '../../core/security/security_event_types.dart';
 import '../../l10n/app_localizations.dart';
 import 'adaptive_location_scheduler.dart';
+import 'duty_auth_backoff.dart';
 import 'heading_fuser.dart';
 import 'live_map_heartbeat.dart';
 import 'live_position_publisher.dart';
@@ -34,6 +35,7 @@ class DutyTaskHandler extends TaskHandler {
   final _battery = Battery();
   final _publisher = LivePositionPublisher();
   final _heading = HeadingFuser();
+  final _authBackoff = DutyAuthBackoff();
   static const _mockLogCooldown = Duration(minutes: 2);
 
   /// Time-based GPS cadence while on duty. `distanceFilter: 0` on purpose — the
@@ -92,6 +94,7 @@ class DutyTaskHandler extends TaskHandler {
     _cachedBatteryAt = null;
     _streamStateChangePending = false;
     _heading.reset();
+    _authBackoff.clear();
     // This isolate may be a reused one whose preferences cache predates the clock-out
     // and clock-in that just happened. Read through disk before trusting either the
     // token or the duty version. See DutySessionStorage.
@@ -213,12 +216,19 @@ class DutyTaskHandler extends TaskHandler {
 
     final token = await readDutyAccessToken();
     if (token == null || token.isEmpty) return;
+    if (_authBackoff.shouldSkip(token, now)) return;
     final ok = await _publisher.flush(
       accessToken: token,
       now: now,
       dutyStateVersion: _dutyStateVersion,
     );
     if (!ok) {
+      if (_publisher.lastPublishAuthRejected) {
+        // The Worker validates the same JWT PostgREST does. Falling back to the
+        // durable RPC here would only be refused again — park instead.
+        await _onAuthRejected(token, now);
+        return;
+      }
       // Edge unreachable. Do not force a durable write on every 2s batch —
       // that is the Postgres storm. State changes and delivery_submit still
       // force; otherwise fall back at the watchdog cadence without force so
@@ -282,6 +292,10 @@ class DutyTaskHandler extends TaskHandler {
       final token = await readDutyAccessToken();
       if (token == null || token.isEmpty) {
         await _updateNotification(l10n.onDutySignInAgain);
+        return;
+      }
+      if (_authBackoff.shouldSkip(token, now)) {
+        await _updateNotification(l10n.onDutyOpenAppToKeepTracking);
         return;
       }
 
@@ -394,31 +408,42 @@ class DutyTaskHandler extends TaskHandler {
           forceHistory: reportStatus == TrackingStatus.deliverySubmit,
           extras: extras,
         );
+      } on LocationTrackingHttpException catch (e) {
+        // Two refusals that retrying cannot turn into a success. Neither is
+        // queued: the queue exists for fixes the server *would* accept once
+        // the network is back, and these are refused on their merits.
+        if (e.isAuthRejected) {
+          await _onAuthRejected(token, now);
+          return;
+        }
+        if (e.isOffDuty) {
+          await _stopForRemoteOffDuty();
+          return;
+        }
+        await _queueFailedReport(
+          reportPosition: reportPosition,
+          speed: speed,
+          batteryPct: batteryPct,
+          reportStatus: reportStatus,
+          deliveryId: deliveryId,
+          extras: extras,
+        );
+        await _updateNotification(l10n.onDutyLocationUpdateFailed);
+        return;
       } catch (_) {
-        FlutterForegroundTask.sendDataToMain(
-          jsonEncode({
-            'event': 'queue_location',
-            'lat': reportPosition.latitude,
-            'lng': reportPosition.longitude,
-            'speed_mps': speed,
-            'accuracy_meters': reportPosition.accuracy,
-            'battery_pct': batteryPct,
-            'tracking_status': reportStatus.apiValue,
-            'delivery_id': deliveryId,
-            'force_history': reportStatus == TrackingStatus.deliverySubmit,
-            'heading_deg': extras.headingDeg,
-            'altitude_m': extras.altitudeM,
-            'network_type': extras.networkType,
-            'charging_state': extras.chargingState,
-            'is_mocked': extras.isMocked,
-            'location_provider': extras.locationProvider,
-            'active_delivery_id': extras.activeDeliveryId,
-          }),
+        await _queueFailedReport(
+          reportPosition: reportPosition,
+          speed: speed,
+          batteryPct: batteryPct,
+          reportStatus: reportStatus,
+          deliveryId: deliveryId,
+          extras: extras,
         );
         await _updateNotification(l10n.onDutyLocationUpdateFailed);
         return;
       }
 
+      _authBackoff.clear();
       _scheduler.markSampled(now);
 
       final zoneLabel = switch (report.zoneStatus) {
@@ -504,6 +529,77 @@ class DutyTaskHandler extends TaskHandler {
       notificationText: text,
       notificationButtons: _notificationButtons(l10n),
     );
+  }
+
+  /// Hands a fix the network refused to the UI isolate's offline queue, which
+  /// replays it once the connection is back.
+  Future<void> _queueFailedReport({
+    required Position reportPosition,
+    required double? speed,
+    required int? batteryPct,
+    required TrackingStatus reportStatus,
+    required String? deliveryId,
+    required LocationReportExtras extras,
+  }) async {
+    FlutterForegroundTask.sendDataToMain(
+      jsonEncode({
+        'event': 'queue_location',
+        'lat': reportPosition.latitude,
+        'lng': reportPosition.longitude,
+        'speed_mps': speed,
+        'accuracy_meters': reportPosition.accuracy,
+        'battery_pct': batteryPct,
+        'tracking_status': reportStatus.apiValue,
+        'delivery_id': deliveryId,
+        'force_history': reportStatus == TrackingStatus.deliverySubmit,
+        'heading_deg': extras.headingDeg,
+        'altitude_m': extras.altitudeM,
+        'network_type': extras.networkType,
+        'charging_state': extras.chargingState,
+        'is_mocked': extras.isMocked,
+        'location_provider': extras.locationProvider,
+        'active_delivery_id': extras.activeDeliveryId,
+      }),
+    );
+  }
+
+  /// The bearer on disk was refused. Park network activity (see
+  /// [DutyAuthBackoff]) and ask the UI isolate — if it is alive — to refresh
+  /// the session and persist a new token; the next tick sees a different
+  /// token and resumes at once. If the UI isolate is gone, the notification
+  /// tells the rider what will bring tracking back.
+  Future<void> _onAuthRejected(String token, DateTime now) async {
+    _authBackoff.recordRejection(token, now);
+    FlutterForegroundTask.sendDataToMain(jsonEncode({'event': 'token_expired'}));
+    final l10n = await _localizations();
+    await _updateNotification(l10n.onDutyOpenAppToKeepTracking);
+  }
+
+  /// The server says this rider is off duty (shift-end auto checkout, admin
+  /// action, a clock-out this isolate never heard about). A service that keeps
+  /// posting after that is the zombie the `duty_state_version` exists to
+  /// retire — so retire it here, the same way the notification button does,
+  /// minus the clock-out RPC the server has already performed.
+  Future<void> _stopForRemoteOffDuty() async {
+    if (_autoCheckedOut) return;
+    _autoCheckedOut = true;
+    try {
+      await clearDutyAccessToken();
+      await bumpDutyStateVersion();
+      await _positionSub?.cancel();
+      _positionSub = null;
+      await _compassSub?.cancel();
+      _compassSub = null;
+      _publisher.reset();
+      _scheduler.reset();
+      _heading.reset();
+      _authBackoff.clear();
+    } finally {
+      FlutterForegroundTask.sendDataToMain(
+        jsonEncode({'event': 'remote_off_duty'}),
+      );
+      await FlutterForegroundTask.stopService();
+    }
   }
 
   Future<void> _handleGoOfflineFromNotification() async {

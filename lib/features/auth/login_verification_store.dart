@@ -69,22 +69,33 @@ class LoginVerificationStore {
   static Future<dynamic> _bounded(Future<dynamic> Function() run) =>
       Future<dynamic>.sync(run).timeout(_syncTimeout);
 
-  static Future<void> syncExemptFlagsFromNetwork(String userId) async {
+  /// Refreshes the cached exempt flags from the network.
+  ///
+  /// [includeGlobal] controls the `app_settings` read. The branding provider
+  /// fetches that same row on every refresh and writes the global flag through
+  /// [setGlobalExemptCached], so callers driven by the live coordinator pass
+  /// `false` — otherwise each tick read `app_settings` twice for one flag.
+  static Future<void> syncExemptFlagsFromNetwork(
+    String userId, {
+    bool includeGlobal = true,
+  }) async {
     final client = Supabase.instance.client;
-    try {
-      final settings = await _bounded(
-        () async => await client
-            .from('app_settings')
-            .select('driver_app_login_verification_exempt_all')
-            .eq('id', 1)
-            .maybeSingle(),
-      );
-      if (settings != null) {
-        await setGlobalExemptCached(
-          settings['driver_app_login_verification_exempt_all'] == true,
+    if (includeGlobal) {
+      try {
+        final settings = await _bounded(
+          () async => await client
+              .from('app_settings')
+              .select('driver_app_login_verification_exempt_all')
+              .eq('id', 1)
+              .maybeSingle(),
         );
-      }
-    } catch (_) {}
+        if (settings != null) {
+          await setGlobalExemptCached(
+            settings['driver_app_login_verification_exempt_all'] == true,
+          );
+        }
+      } catch (_) {}
+    }
 
     try {
       final row = await _bounded(
