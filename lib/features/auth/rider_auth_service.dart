@@ -6,11 +6,14 @@ import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/app_update/force_update_gate.dart';
 import '../../core/app_update/force_update_state.dart';
 import '../../core/config/env.dart';
 import '../../core/delivery/delivery_proximity_cache.dart';
 import '../../core/device/device_identity_service.dart';
+import '../../core/device/device_profile_service.dart';
 import '../../core/geo/device_location_resolver.dart';
+import '../../core/observability/sentry_config.dart';
 import '../../core/utils/ascii_digits.dart';
 import '../profile/avatar_disk_cache.dart';
 import 'device_session_models.dart';
@@ -125,10 +128,15 @@ String? appendAvatarCacheBuster(String? url, DateTime? updatedAt) {
 String unsignedAvatarUrl(String url) => url.split('#').first;
 
 class RiderAuthService {
-  RiderAuthService(this._client, this._deviceIdentity);
+  RiderAuthService(
+    this._client,
+    this._deviceIdentity, {
+    DeviceProfileService? deviceProfile,
+  }) : _deviceProfile = deviceProfile ?? DeviceProfileService();
 
   final SupabaseClient _client;
   final DeviceIdentityService _deviceIdentity;
+  final DeviceProfileService _deviceProfile;
 
   Session? get currentSession => _client.auth.currentSession;
   User? get currentUser => _client.auth.currentUser;
@@ -144,7 +152,8 @@ class RiderAuthService {
       final row = await _client
           .from('drivers')
           .select(
-            'is_blocked, blocked_reason, login_verification_exempt, archived_at',
+            'is_blocked, blocked_reason, login_verification_exempt, archived_at, '
+            'force_app_update_at, force_app_update_min_code',
           )
           .eq('id', user.id)
           .maybeSingle();
@@ -161,13 +170,21 @@ class RiderAuthService {
         return const DriverAccessStatus.archived();
       }
 
+      final forceUpdate = perDriverForceUpdateFrom(
+        row,
+        installedVersionCode: InstalledBuild.versionCode,
+      );
+
       final blocked = row['is_blocked'] == true;
-      if (!blocked) return const DriverAccessStatus.allowed();
+      if (!blocked) {
+        return DriverAccessStatus(blocked: false, forceUpdate: forceUpdate);
+      }
 
       final reason = (row['blocked_reason'] as String?)?.trim();
       return DriverAccessStatus(
         blocked: true,
         reason: reason == null || reason.isEmpty ? null : reason,
+        forceUpdate: forceUpdate,
       );
     } catch (_) {
       return const DriverAccessStatus.allowed();
@@ -189,10 +206,23 @@ class RiderAuthService {
     }
 
     final device = await _deviceIdentity.current();
-    PackageInfo? packageInfo;
+    // Full device profile (RAM, SoC, battery health, …) rides with the login so
+    // the admin Driver devices list is populated from the first sign-in.
+    Map<String, dynamic> deviceMeta;
     try {
-      packageInfo = await PackageInfo.fromPlatform();
-    } catch (_) {}
+      deviceMeta = await _deviceProfile.loginMeta(device);
+    } catch (_) {
+      PackageInfo? packageInfo;
+      try {
+        packageInfo = await PackageInfo.fromPlatform();
+      } catch (_) {}
+      deviceMeta = device.toMetaJson(
+        appVersionName: packageInfo?.version,
+        appVersionCode: packageInfo != null
+            ? int.tryParse(packageInfo.buildNumber)
+            : null,
+      );
+    }
 
     final FunctionResponse response;
     try {
@@ -202,12 +232,7 @@ class RiderAuthService {
           'employee_id': normalizedId,
           'passcode': normalizedPasscode,
           'device_id': device.deviceId,
-          'device_meta': device.toMetaJson(
-            appVersionName: packageInfo?.version,
-            appVersionCode: packageInfo != null
-                ? int.tryParse(packageInfo.buildNumber)
-                : null,
-          ),
+          'device_meta': deviceMeta,
           'force_override': forceOverride,
         },
       );
@@ -622,7 +647,12 @@ final riderProfileProvider = FutureProvider<RiderProfile?>((ref) async {
   if (session == null) return null;
   final auth = ref.read(riderAuthServiceProvider);
   try {
-    return await auth.fetchProfile();
+    final profile = await auth.fetchProfile();
+    bindSentryDriverIdentity(
+      driverCode: profile.driverCode,
+      employeeId: profile.employeeId,
+    );
+    return profile;
   } on RiderAuthFailure catch (e) {
     if (e == RiderAuthFailure.staffNotAllowed) return null;
     return auth.fallbackProfileForCurrentUser();

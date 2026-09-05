@@ -157,6 +157,8 @@ class HomeDashboard {
     this.deliveryRules = const [],
     this.shiftAdherence,
     this.banner,
+    this.forceAppUpdate = false,
+    this.forceAppUpdateMinCode,
   });
 
   final HomeDriverInfo driver;
@@ -166,6 +168,8 @@ class HomeDashboard {
   final List<HomeDeliveryRuleSummary> deliveryRules;
   final ShiftAdherence? shiftAdherence;
   final HomeBanner? banner;
+  final bool forceAppUpdate;
+  final int? forceAppUpdateMinCode;
 
   bool get isOnline => session.isOnline;
   bool get isOnDuty => driver.isOnDuty;
@@ -226,6 +230,14 @@ class HomeDashboard {
           Map<String, dynamic>.from(json['banner'] as Map),
         );
         return parsed.imageUrl.trim().isEmpty ? null : parsed;
+      }(),
+      forceAppUpdate: json['force_app_update'] == true,
+      forceAppUpdateMinCode: () {
+        final raw = json['force_app_update_min_code'];
+        if (raw is int) return raw;
+        if (raw is num) return raw.toInt();
+        if (raw is String) return int.tryParse(raw);
+        return null;
       }(),
     );
   }

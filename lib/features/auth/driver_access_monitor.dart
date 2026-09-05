@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/app_update/force_update_state.dart';
+import '../../core/branding/app_branding_provider.dart';
 import '../../core/router/app_router.dart';
 import '../../core/settings/live_db_refresh.dart';
 import '../home/home_providers.dart';
@@ -152,6 +154,7 @@ class _DriverAccessMonitor with WidgetsBindingObserver {
     try {
       final status =
           await _ref.read(riderAuthServiceProvider).fetchAppAccessStatus();
+      applyPerDriverForceUpdate(_ref, status);
       if (!status.blocked) return;
       await _ref.read(driverAccessEnforcerProvider).enforce(
             reason: status.reason,
@@ -160,6 +163,31 @@ class _DriverAccessMonitor with WidgetsBindingObserver {
       _checking = false;
     }
   }
+}
+
+/// Raises or drops the per-driver update demand from a fresh driver-row read.
+/// The same `drivers` realtime channel that carries `is_blocked` carries
+/// `force_app_update_at`, so an admin forcing one rider lands within seconds.
+void applyPerDriverForceUpdate(Ref ref, DriverAccessStatus status) {
+  final notifier = ref.read(forceUpdateDemandProvider);
+  final demand = status.forceUpdate;
+  if (demand == null) {
+    notifier.clearPerDriver();
+    return;
+  }
+  final message = demand.message ??
+      ref.read(appBrandingProvider).value?.updateMessage;
+  final branding = ref.read(appBrandingProvider).value;
+  notifier.raise(
+    UpdateRequiredException(
+      minVersionCode: demand.minVersionCode,
+      minVersionName: branding?.minVersionCode == demand.minVersionCode
+          ? branding?.minVersionName
+          : null,
+      message: message,
+      perDriver: true,
+    ),
+  );
 }
 
 /// Call from RPC error handlers when a response indicates the driver was blocked.

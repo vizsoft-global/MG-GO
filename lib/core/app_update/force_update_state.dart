@@ -8,14 +8,22 @@ class UpdateRequiredException implements Exception {
     this.minVersionCode,
     this.minVersionName,
     this.message,
+    this.perDriver = false,
   });
 
   final int? minVersionCode;
   final String? minVersionName;
   final String? message;
 
+  /// Raised from `drivers.force_app_update_*` for this rider alone, not from
+  /// the fleet-wide `app_settings` gate. Only the driver-row read may clear it;
+  /// a fresh `app_settings` read says nothing about it.
+  final bool perDriver;
+
   @override
-  String toString() => 'update_required (min versionCode $minVersionCode)';
+  String toString() =>
+      'update_required (min versionCode $minVersionCode'
+      '${perDriver ? ', per driver' : ''})';
 }
 
 /// Server-issued demand to update, held for the life of the process.
@@ -37,8 +45,18 @@ class ForceUpdateDemand extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Drops a fleet-wide demand after a fresh `app_settings` read said this
+  /// build passes. A per-driver demand survives, since that read cannot see
+  /// the driver row.
   void clear() {
-    if (_demand == null) return;
+    if (_demand == null || _demand!.perDriver) return;
+    _demand = null;
+    notifyListeners();
+  }
+
+  /// Drops a per-driver demand after the driver row said the flag is off.
+  void clearPerDriver() {
+    if (_demand == null || !_demand!.perDriver) return;
     _demand = null;
     notifyListeners();
   }

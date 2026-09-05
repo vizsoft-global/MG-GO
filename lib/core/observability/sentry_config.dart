@@ -45,7 +45,11 @@ Future<void> configureSentryOptions(SentryFlutterOptions options) async {
 
 void bindSentryUserFromSession(Session? session) {
   if (session?.user == null) {
-    Sentry.configureScope((scope) => scope.setUser(null));
+    Sentry.configureScope((scope) {
+      scope.setUser(null);
+      scope.removeTag('driver_code');
+      scope.removeTag('employee_id');
+    });
     return;
   }
 
@@ -58,6 +62,23 @@ void bindSentryUserFromSession(Session? session) {
         username: user.userMetadata?['full_name']?.toString(),
       ),
     );
+  });
+}
+
+/// Once the driver row is known, put the code the admin panel shows on the
+/// scope, so a Sentry issue can be searched by `driver_code:10042` and the
+/// user pill reads as the rider rather than a UUID. `user.id` stays the auth
+/// uid, which is what the admin Driver devices module joins on.
+void bindSentryDriverIdentity({String? driverCode, String? employeeId}) {
+  final code = driverCode?.trim();
+  Sentry.configureScope((scope) {
+    final existing = scope.user;
+    if (existing != null && code != null && code.isNotEmpty) {
+      scope.setUser(existing.copyWith(username: code));
+    }
+    if (code != null && code.isNotEmpty) scope.setTag('driver_code', code);
+    final emp = employeeId?.trim();
+    if (emp != null && emp.isNotEmpty) scope.setTag('employee_id', emp);
   });
 }
 

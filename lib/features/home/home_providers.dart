@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/app_update/force_update_state.dart';
+import '../../core/branding/app_branding_provider.dart';
 import '../../core/offline/network_status_provider.dart';
 import '../../core/offline/offline_repo.dart';
 import '../../features/duty/duty_session_storage.dart';
@@ -155,8 +157,25 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboard> {
   Future<HomeDashboard> build() async {
     final dashboard = await _fetchWithRetry();
     await _ensureAccessAllowed();
+    _applyForceUpdateDemand(dashboard);
     _valueRiderId = Supabase.instance.client.auth.currentUser?.id;
     return dashboard;
+  }
+
+  void _applyForceUpdateDemand(HomeDashboard dashboard) {
+    final notifier = ref.read(forceUpdateDemandProvider);
+    if (!dashboard.forceAppUpdate) {
+      notifier.clearPerDriver();
+      return;
+    }
+    final message = ref.read(appBrandingProvider).value?.updateMessage;
+    notifier.raise(
+      UpdateRequiredException(
+        minVersionCode: dashboard.forceAppUpdateMinCode,
+        message: message,
+        perDriver: true,
+      ),
+    );
   }
 
   Future<void> _ensureAccessAllowed() async {
@@ -208,6 +227,7 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboard> {
         final dashboard =
             await ref.read(homeServiceProvider).fetchDashboard();
         await _ensureAccessAllowed();
+        _applyForceUpdateDemand(dashboard);
         _valueRiderId = Supabase.instance.client.auth.currentUser?.id;
         return dashboard;
       },

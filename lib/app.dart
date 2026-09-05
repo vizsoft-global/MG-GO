@@ -12,6 +12,7 @@ import 'features/home/shift_end_duty_monitor.dart';
 import 'features/profile/avatar_upload_controller.dart';
 import 'core/branding/app_branding.dart';
 import 'core/branding/app_branding_provider.dart';
+import 'core/device/device_profile_reporter.dart';
 import 'core/l10n/locale_provider.dart';
 import 'core/offline/network_status_provider.dart';
 import 'core/offline/sync_controller.dart';
@@ -42,6 +43,7 @@ class DpdApp extends ConsumerWidget {
     ref.watch(avatarWarmUpProvider);
     ref.watch(deviceSessionMonitorControllerProvider);
     ref.watch(driverAccessMonitorProvider);
+    ref.watch(deviceProfileReporterProvider);
     ref.watch(remoteDutyMonitorProvider);
     ref.watch(shiftEndDutyMonitorProvider);
     ref.watch(localZoneMonitorControllerProvider);

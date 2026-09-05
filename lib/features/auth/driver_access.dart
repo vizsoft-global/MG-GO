@@ -2,27 +2,64 @@ import 'dart:convert';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/app_update/force_update_state.dart';
+
 /// Current app-access state for the signed-in driver row.
 class DriverAccessStatus {
   const DriverAccessStatus({
     required this.blocked,
     this.archived = false,
     this.reason,
+    this.forceUpdate,
   });
 
   const DriverAccessStatus.allowed()
       : blocked = false,
         archived = false,
-        reason = null;
+        reason = null,
+        forceUpdate = null;
 
   const DriverAccessStatus.archived()
       : blocked = true,
         archived = true,
-        reason = 'driver_archived';
+        reason = 'driver_archived',
+        forceUpdate = null;
 
   final bool blocked;
   final bool archived;
   final String? reason;
+
+  /// Set when the admin forced this rider onto a newer build and the installed
+  /// one is still below it. Null when the flag is off or already satisfied.
+  final UpdateRequiredException? forceUpdate;
+}
+
+/// Decides the per-driver force-update demand from the driver row. Mirrors the
+/// server: a missing installed build counts as below any minimum, and a flag
+/// whose minimum is already met (server has not cleared it yet) is no demand.
+UpdateRequiredException? perDriverForceUpdateFrom(
+  Map<String, dynamic> row, {
+  required int? installedVersionCode,
+  String? fallbackMessage,
+}) {
+  if (row['force_app_update_at'] == null) return null;
+  final rawMin = row['force_app_update_min_code'];
+  final minCode = rawMin is int
+      ? rawMin
+      : rawMin is num
+      ? rawMin.toInt()
+      : rawMin is String
+      ? int.tryParse(rawMin)
+      : null;
+  if (minCode == null) return null;
+  if (installedVersionCode != null && installedVersionCode >= minCode) {
+    return null;
+  }
+  return UpdateRequiredException(
+    minVersionCode: minCode,
+    message: fallbackMessage,
+    perDriver: true,
+  );
 }
 
 /// Parses admin block signals from RPC / edge payloads and PostgREST errors.

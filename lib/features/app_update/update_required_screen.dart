@@ -9,7 +9,9 @@ import '../../core/app_update/force_update_state.dart';
 import '../../core/branding/app_branding_provider.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
+import '../auth/driver_access_monitor.dart';
 import '../auth/login_verification_gate.dart';
+import '../auth/rider_auth_service.dart';
 
 /// Non-dismissible gate shown when the admin force-update toggle is on and this
 /// install's `versionCode` is below the configured minimum.
@@ -190,7 +192,19 @@ class _UpdateRequiredScreenState extends ConsumerState<UpdateRequiredScreen> {
       if (!mounted || settings == null) return;
       if (settings.requiresUpdate(InstalledBuild.versionCode)) return;
 
-      ref.read(forceUpdateDemandProvider).clear();
+      final demandNotifier = ref.read(forceUpdateDemandProvider);
+      demandNotifier.clear();
+      // A per-driver demand is decided by the driver row, not app_settings:
+      // re-read it, and stay on the gate while the admin's flag still holds.
+      if (Supabase.instance.client.auth.currentSession != null) {
+        final status =
+            await ref.read(riderAuthServiceProvider).fetchAppAccessStatus();
+        if (!mounted) return;
+        applyPerDriverForceUpdate(ref, status);
+      } else {
+        demandNotifier.clearPerDriver();
+      }
+      if (demandNotifier.isActive) return;
       if (settings.maintenanceMode) {
         context.go('/maintenance');
         return;
