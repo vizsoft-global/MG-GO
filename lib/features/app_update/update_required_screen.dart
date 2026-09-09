@@ -200,7 +200,11 @@ class _UpdateRequiredScreenState extends ConsumerState<UpdateRequiredScreen> {
         final status =
             await ref.read(riderAuthServiceProvider).fetchAppAccessStatus();
         if (!mounted) return;
-        applyPerDriverForceUpdate(ref, status);
+        applyPerDriverForceUpdate(
+          status,
+          notifier: demandNotifier,
+          branding: settings,
+        );
       } else {
         demandNotifier.clearPerDriver();
       }
