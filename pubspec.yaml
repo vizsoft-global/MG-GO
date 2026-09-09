@@ -75,7 +75,7 @@ dependencies:
   crypto: ^3.0.6
   device_info_plus: ^11.5.0
   qr_flutter: ^4.1.0
-  pdfrx: ^2.2.18
+  pdfrx: 2.4.8
 
 dev_dependencies:
   flutter_test:
