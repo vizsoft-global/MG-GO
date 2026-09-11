@@ -22,6 +22,7 @@ class RequestAcknowledgedScreen extends StatelessWidget {
       'sick_leave' => l10n.supportRequestTypeSickLeave,
       'asset' => l10n.supportRequestTypeAsset,
       'fuel' => l10n.supportRequestTypeFuel,
+      'fuel_refund' => l10n.supportRequestTypeFuelRefund,
       'document' => l10n.supportRequestTypeDocument,
       'complaint' => l10n.supportRequestTypeComplaint,
       'salary_justification' => l10n.supportRequestTypeSalaryJustification,

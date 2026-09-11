@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'create_attachment.dart';
 import 'request_form_submit.dart';
 import 'request_type_definition.dart';
 import 'support_models.dart';
@@ -102,11 +103,11 @@ class SupportService {
   }) async {
     final result = await _client.rpc(
       'driver_submit_clarification',
-      params: {
-        'p_request_id': requestId,
-        'p_answer': answer,
-        'p_attachment_keys': attachmentKeys,
-      },
+      params: clarifyRpcParams(
+        requestId: requestId,
+        answer: answer,
+        attachmentKeys: attachmentKeys,
+      ),
     );
     final map = _asMap(result);
     if (map['ok'] == false) {
@@ -121,11 +122,11 @@ class SupportService {
   }) async {
     final result = await _client.rpc(
       'driver_acknowledge_request',
-      params: {
-        'p_request_id': requestId,
-        'p_note': note,
-        'p_attachment_keys': attachmentKeys,
-      },
+      params: acknowledgeRpcParams(
+        requestId: requestId,
+        note: note,
+        attachmentKeys: attachmentKeys,
+      ),
     );
     final map = _asMap(result);
     if (map['ok'] == false) {

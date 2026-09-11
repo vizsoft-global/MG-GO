@@ -149,9 +149,11 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    expect(find.textContaining('Clear fuel invoice'), findsOneWidget);
+    expect(find.textContaining('Vehicle plate'), findsOneWidget);
     await tester.tap(find.text('Submit request'));
     await tester.pump();
-    expect(find.textContaining('Attach at least 1'), findsOneWidget);
+    expect(find.textContaining('Attach at least 2'), findsOneWidget);
   });
 
   testWidgets('required fields are enforced before anything is sent',

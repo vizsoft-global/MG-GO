@@ -861,6 +861,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
         rows.add((l10n.supportFieldAttachment, firstAttachmentName(), true));
         return rows;
       case 'fuel':
+      case 'fuel_refund':
         final rows = <(String, String, bool)>[];
         final amount = firstAmount(req, payload);
         if (amount != null) {
@@ -872,6 +873,10 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
         }
         if (payload['distance_km'] != null) {
           rows.add((l10n.supportFieldDistanceKm, '${payload['distance_km']}', false));
+        }
+        final reason = payload['reason']?.toString().trim();
+        if (reason != null && reason.isNotEmpty) {
+          rows.add((l10n.supportFieldPurpose, reason, false));
         }
         final transfer = fuelTransferTypeLabel(
           raw: req['fuel_transfer_type'],
@@ -1019,6 +1024,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
       'sick_leave' => l10n.supportRequestTypeSickLeave,
       'asset' => l10n.supportRequestTypeAsset,
       'fuel' => l10n.supportRequestTypeFuel,
+      'fuel_refund' => l10n.supportRequestTypeFuelRefund,
       'document' => l10n.supportRequestTypeDocumentReupload,
       'complaint' => l10n.supportRequestTypeComplaint,
       'salary_justification' => l10n.supportRequestTypeSalaryJustification,

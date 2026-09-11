@@ -177,6 +177,9 @@ IconData requestTypeIcon(String? key) {
       return Icons.payments_outlined;
     case 'account_balance_wallet_outlined':
       return Icons.account_balance_wallet_outlined;
+    case 'receipt_long':
+    case 'receipt_long_outlined':
+      return Icons.receipt_long_outlined;
     case 'badge_outlined':
       return Icons.badge_outlined;
     case 'directions_bike_outlined':
@@ -198,6 +201,7 @@ const kBuiltInRequestTypes = <String>{
   'loan',
   'asset',
   'fuel',
+  'fuel_refund',
   'document',
   'complaint',
   'salary_justification',
@@ -212,6 +216,7 @@ String? builtInRequestFormTitle(AppLocalizations l10n, String key) {
     'loan' => l10n.supportFormTitleLoan,
     'asset' => l10n.supportRequestTypeAsset,
     'fuel' => l10n.supportFormTitleFuel,
+    'fuel_refund' => l10n.supportFormTitleFuelRefund,
     'document' => l10n.supportRequestTypeDocument,
     'complaint' => l10n.supportRequestTypeComplaint,
     'salary_justification' => l10n.supportRequestTypeSalaryJustification,

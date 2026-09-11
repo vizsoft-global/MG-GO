@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -188,6 +188,7 @@ class ActionRequiredScreen extends ConsumerWidget {
       'sick_leave' => l10n.supportRequestTypeSickLeave,
       'asset' => l10n.supportRequestTypeAsset,
       'fuel' => l10n.supportRequestTypeFuel,
+      'fuel_refund' => l10n.supportRequestTypeFuelRefund,
       'document' => l10n.supportRequestTypeDocument,
       'complaint' => l10n.supportRequestTypeComplaint,
       'salary_justification' => l10n.supportRequestTypeSalaryJustification,
