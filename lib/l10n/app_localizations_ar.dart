@@ -1573,7 +1573,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get attachClearFuelInvoice => 'فاتورة وقود واضحة';
 
   @override
-  String get attachVehiclePlate => 'لوحة المركبة';
+  String get attachVehiclePlate => 'صورة لوحة المركبة';
 
   @override
   String get attachRejectedFuelInvoice => 'فاتورة وقود مرفوضة';
