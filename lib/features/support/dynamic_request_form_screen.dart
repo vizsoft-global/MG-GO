@@ -11,6 +11,7 @@ import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../deliveries/capture_order_proof.dart';
 import '../profile/avatar_picker_errors.dart';
+import '../vehicle/fuel_fill_rules.dart';
 import 'create_attachment.dart';
 import 'request_detail_fields.dart';
 import 'request_form_submit.dart';
@@ -287,6 +288,17 @@ class _DynamicRequestFormScreenState
           RequestDateRangeIssue.toBeforeFrom => l10n.supportErrorToDateBeforeFrom,
         });
       }
+      if (widget.type == 'fuel_refund') {
+        final refundBlock = fuelRefundFormBlockReason(
+          amount: amount,
+          reason: payload['reason']?.toString(),
+          kinds: _kindFiles.keys,
+        );
+        if (refundBlock != null) {
+          throw Exception(fleetRpcUserMessage(refundBlock, refundBlock));
+        }
+      }
+
       final titledKinds = requiredCreateAttachmentSpecs(widget.type);
       if (titledKinds.isNotEmpty) {
         final missing = missingRequiredCreateKind(widget.type, _kindFiles.keys);

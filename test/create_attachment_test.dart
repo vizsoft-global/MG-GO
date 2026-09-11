@@ -124,6 +124,34 @@ void main() {
     expect(row?.fuelMonthlyLimitKwd, 30);
   });
 
+  test('clarify and ack stay keys-only', () {
+    final clarify = clarifyRpcParams(
+      requestId: 'req-1',
+      answer: 'here is the file',
+      attachmentKeys: const ['uid/clarify.jpg'],
+    );
+    expect(clarify.keys.toSet(), {
+      'p_request_id',
+      'p_answer',
+      'p_attachment_keys',
+    });
+    expect(clarify.containsKey('p_attachments'), isFalse);
+    expect(clarify['p_attachment_keys'], ['uid/clarify.jpg']);
+
+    final ack = acknowledgeRpcParams(
+      requestId: 'req-1',
+      note: 'signed',
+      attachmentKeys: const ['uid/ack.jpg'],
+    );
+    expect(ack.keys.toSet(), {
+      'p_request_id',
+      'p_note',
+      'p_attachment_keys',
+    });
+    expect(ack.containsKey('p_attachments'), isFalse);
+    expect(ack['p_attachment_keys'], ['uid/ack.jpg']);
+  });
+
   test('needsUpdate sends /vehicle/fuel-fill to Update Required', () {
     expect(
       forceUpdateRedirectsLocation('/vehicle/fuel-fill', true),

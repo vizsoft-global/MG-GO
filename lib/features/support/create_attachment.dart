@@ -85,3 +85,28 @@ Map<String, dynamic> createAttachmentPayload({
     'source': source,
   };
 }
+
+/// Clarify / ack wire. Keys only — never titled create maps.
+Map<String, dynamic> clarifyRpcParams({
+  required String requestId,
+  required String answer,
+  required List<String> attachmentKeys,
+}) {
+  return {
+    'p_request_id': requestId,
+    'p_answer': answer,
+    'p_attachment_keys': List<String>.from(attachmentKeys),
+  };
+}
+
+Map<String, dynamic> acknowledgeRpcParams({
+  required String requestId,
+  String? note,
+  required List<String> attachmentKeys,
+}) {
+  return {
+    'p_request_id': requestId,
+    'p_note': note,
+    'p_attachment_keys': List<String>.from(attachmentKeys),
+  };
+}

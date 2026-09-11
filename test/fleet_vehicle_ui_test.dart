@@ -141,6 +141,44 @@ void main() {
     );
   });
 
+  testWidgets('fuel request form shows two rear-camera slots', (tester) async {
+    await _phone(tester);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          requestTypesProvider.overrideWith(
+            (ref) async => [
+              RequestTypeDefinition.fromJson(const {
+                'key': 'fuel',
+                'label_en': 'Fuel reimbursement',
+                'is_system': true,
+                'sort_order': 4,
+                'date_range_required': false,
+                'min_attachments': 2,
+              }),
+            ],
+          ),
+          requestFieldsProvider('fuel').overrideWith(
+            (ref) async => [
+              RequestFieldDefinition.fromJson(const {
+                'field_key': 'amount_kwd',
+                'label_en': 'Amount (KWD)',
+                'kind': 'number',
+                'target': 'amount_kwd',
+                'is_required': true,
+                'sort_order': 1,
+              }),
+            ],
+          ),
+        ],
+        child: _localize(const DynamicRequestFormScreen(type: 'fuel')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Clear fuel invoice *'), findsOneWidget);
+    expect(find.text('Vehicle plate *'), findsOneWidget);
+  });
+
   testWidgets('fuel refund form shows four rear-camera slots', (tester) async {
     await _phone(tester);
     await tester.pumpWidget(
