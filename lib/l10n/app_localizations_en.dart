@@ -1516,6 +1516,107 @@ class AppLocalizationsEn extends AppLocalizations {
       'Assigned vehicle and maintenance info. Coming soon.';
 
   @override
+  String get vehicleNoneAssigned => 'No vehicle is assigned to you yet.';
+
+  @override
+  String get vehicleLoadFailed => 'Could not load your assigned vehicle.';
+
+  @override
+  String get vehicleRetry => 'Try again';
+
+  @override
+  String get vehiclePlate => 'Plate';
+
+  @override
+  String get vehicleModel => 'Model';
+
+  @override
+  String get vehicleKind => 'Type';
+
+  @override
+  String get vehicleKindBike => 'Bike';
+
+  @override
+  String get vehicleKindCar => 'Car';
+
+  @override
+  String get vehicleFuelType => 'Fuel type';
+
+  @override
+  String get vehicleFuelChip => 'Chip';
+
+  @override
+  String get vehicleFuelCard => 'Card';
+
+  @override
+  String get vehicleChipNo => 'Chip no.';
+
+  @override
+  String get vehicleMonthlyLimit => 'Monthly limit';
+
+  @override
+  String vehicleLimitKwd(String amount) {
+    return 'KWD $amount';
+  }
+
+  @override
+  String get vehicleLogFuel => 'Log fuel';
+
+  @override
+  String get vehicleFuelFillTitle => 'Log fuel';
+
+  @override
+  String get vehicleLitres => 'Litres';
+
+  @override
+  String get vehicleCostKwd => 'Cost (KWD)';
+
+  @override
+  String get vehicleStation => 'Station';
+
+  @override
+  String get vehicleFillPhotosHint => 'Three rear-camera stills are required.';
+
+  @override
+  String get vehicleFillSubmitted => 'Fuel fill logged';
+
+  @override
+  String get attachClearFuelInvoice => 'Clear fuel invoice';
+
+  @override
+  String get attachVehiclePlate => 'Vehicle plate';
+
+  @override
+  String get attachRejectedFuelInvoice => 'Rejected fuel invoice';
+
+  @override
+  String get attachCashInvoice => 'Cash invoice';
+
+  @override
+  String get attachVehiclePhoto => 'Vehicle photo';
+
+  @override
+  String get attachOdometer => 'Odometer reading';
+
+  @override
+  String get attachHandoverForm => 'Handover form';
+
+  @override
+  String get attachSignedAcknowledgment => 'Signed acknowledgment';
+
+  @override
+  String get attachFuelReceipt => 'Fuel receipt';
+
+  @override
+  String get attachFuelPump => 'Fuel pump';
+
+  @override
+  String get supportCaptureRequired => 'Take a photo';
+
+  @override
+  String get supportFormTitleFuelRefund => 'Fuel refund';
+
+  @override
   String get am => 'AM';
 
   @override
@@ -1856,6 +1957,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get supportRequestTypeFuel => 'Fuel reimbursement';
+
+  @override
+  String get supportRequestTypeFuelRefund => 'Fuel refund';
 
   @override
   String get supportRequestTypeDocument => 'Document request';

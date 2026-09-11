@@ -3,6 +3,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dpd_userapp/features/support/request_detail_fields.dart';
 
 void main() {
+  test('fuel refund reuses firstAmount and transfer labels', () {
+    expect(
+      firstAmount({'amount_kwd': 6.25}, {'reason': 'pump error'}),
+      6.25,
+    );
+    expect(
+      fuelTransferTypeLabel(raw: 'salary', cash: 'Cash', salary: 'Salary'),
+      'Salary',
+    );
+  });
+
   test('fuel amount is read from the column, not only the payload', () {
     expect(
       firstAmount({'amount_kwd': 12.5}, {}),

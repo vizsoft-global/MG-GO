@@ -16,6 +16,15 @@ const kDriverAppPlayWebUri =
 /// only builds that fail to report it predate the gate entirely. Both sides
 /// have to agree, or a rider could pass the router and then be refused at
 /// login with no screen that explains why.
+/// Bootstrap and the Update Required screen itself. `/vehicle/fuel-fill`
+/// is not here — a blocked build must not open Log fuel.
+const kForceUpdateExemptLocations = {'/', '/update-required'};
+
+bool forceUpdateRedirectsLocation(String loc, bool needsUpdate) {
+  if (!needsUpdate) return false;
+  return !kForceUpdateExemptLocations.contains(loc);
+}
+
 bool forceUpdateBlocks({
   required bool forceUpdate,
   required int? minVersionCode,

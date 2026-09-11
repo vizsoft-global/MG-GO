@@ -1505,6 +1505,107 @@ class AppLocalizationsAr extends AppLocalizations {
   String get vehicleComingSoon => 'معلومات المركبة والصيانة. قريباً.';
 
   @override
+  String get vehicleNoneAssigned => 'لم تُعيَّن لك مركبة بعد.';
+
+  @override
+  String get vehicleLoadFailed => 'تعذّر تحميل المركبة المعيّنة.';
+
+  @override
+  String get vehicleRetry => 'حاول مرة أخرى';
+
+  @override
+  String get vehiclePlate => 'اللوحة';
+
+  @override
+  String get vehicleModel => 'الطراز';
+
+  @override
+  String get vehicleKind => 'النوع';
+
+  @override
+  String get vehicleKindBike => 'دراجة';
+
+  @override
+  String get vehicleKindCar => 'سيارة';
+
+  @override
+  String get vehicleFuelType => 'نوع الوقود';
+
+  @override
+  String get vehicleFuelChip => 'شريحة';
+
+  @override
+  String get vehicleFuelCard => 'بطاقة';
+
+  @override
+  String get vehicleChipNo => 'رقم الشريحة';
+
+  @override
+  String get vehicleMonthlyLimit => 'الحد الشهري';
+
+  @override
+  String vehicleLimitKwd(String amount) {
+    return 'د.ك $amount';
+  }
+
+  @override
+  String get vehicleLogFuel => 'تسجيل تعبئة';
+
+  @override
+  String get vehicleFuelFillTitle => 'تسجيل تعبئة';
+
+  @override
+  String get vehicleLitres => 'اللترات';
+
+  @override
+  String get vehicleCostKwd => 'التكلفة (د.ك)';
+
+  @override
+  String get vehicleStation => 'المحطة';
+
+  @override
+  String get vehicleFillPhotosHint => 'ثلاث صور من الكاميرا الخلفية مطلوبة.';
+
+  @override
+  String get vehicleFillSubmitted => 'تم تسجيل التعبئة';
+
+  @override
+  String get attachClearFuelInvoice => 'فاتورة وقود واضحة';
+
+  @override
+  String get attachVehiclePlate => 'لوحة المركبة';
+
+  @override
+  String get attachRejectedFuelInvoice => 'فاتورة وقود مرفوضة';
+
+  @override
+  String get attachCashInvoice => 'فاتورة نقدية';
+
+  @override
+  String get attachVehiclePhoto => 'صورة المركبة';
+
+  @override
+  String get attachOdometer => 'قراءة العداد';
+
+  @override
+  String get attachHandoverForm => 'نموذج التسليم';
+
+  @override
+  String get attachSignedAcknowledgment => 'إقرار موقّع';
+
+  @override
+  String get attachFuelReceipt => 'إيصال الوقود';
+
+  @override
+  String get attachFuelPump => 'مضخة الوقود';
+
+  @override
+  String get supportCaptureRequired => 'التقط صورة';
+
+  @override
+  String get supportFormTitleFuelRefund => 'استرداد الوقود';
+
+  @override
   String get am => 'ص';
 
   @override
@@ -1845,6 +1946,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get supportRequestTypeFuel => 'استرداد قيمة الوقود';
+
+  @override
+  String get supportRequestTypeFuelRefund => 'استرداد الوقود';
 
   @override
   String get supportRequestTypeDocument => 'طلب مستند';

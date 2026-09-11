@@ -2732,6 +2732,204 @@ abstract class AppLocalizations {
   /// **'Assigned vehicle and maintenance info. Coming soon.'**
   String get vehicleComingSoon;
 
+  /// No description provided for @vehicleNoneAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'No vehicle is assigned to you yet.'**
+  String get vehicleNoneAssigned;
+
+  /// No description provided for @vehicleLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load your assigned vehicle.'**
+  String get vehicleLoadFailed;
+
+  /// No description provided for @vehicleRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get vehicleRetry;
+
+  /// No description provided for @vehiclePlate.
+  ///
+  /// In en, this message translates to:
+  /// **'Plate'**
+  String get vehiclePlate;
+
+  /// No description provided for @vehicleModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get vehicleModel;
+
+  /// No description provided for @vehicleKind.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get vehicleKind;
+
+  /// No description provided for @vehicleKindBike.
+  ///
+  /// In en, this message translates to:
+  /// **'Bike'**
+  String get vehicleKindBike;
+
+  /// No description provided for @vehicleKindCar.
+  ///
+  /// In en, this message translates to:
+  /// **'Car'**
+  String get vehicleKindCar;
+
+  /// No description provided for @vehicleFuelType.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuel type'**
+  String get vehicleFuelType;
+
+  /// No description provided for @vehicleFuelChip.
+  ///
+  /// In en, this message translates to:
+  /// **'Chip'**
+  String get vehicleFuelChip;
+
+  /// No description provided for @vehicleFuelCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Card'**
+  String get vehicleFuelCard;
+
+  /// No description provided for @vehicleChipNo.
+  ///
+  /// In en, this message translates to:
+  /// **'Chip no.'**
+  String get vehicleChipNo;
+
+  /// No description provided for @vehicleMonthlyLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly limit'**
+  String get vehicleMonthlyLimit;
+
+  /// No description provided for @vehicleLimitKwd.
+  ///
+  /// In en, this message translates to:
+  /// **'KWD {amount}'**
+  String vehicleLimitKwd(String amount);
+
+  /// No description provided for @vehicleLogFuel.
+  ///
+  /// In en, this message translates to:
+  /// **'Log fuel'**
+  String get vehicleLogFuel;
+
+  /// No description provided for @vehicleFuelFillTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Log fuel'**
+  String get vehicleFuelFillTitle;
+
+  /// No description provided for @vehicleLitres.
+  ///
+  /// In en, this message translates to:
+  /// **'Litres'**
+  String get vehicleLitres;
+
+  /// No description provided for @vehicleCostKwd.
+  ///
+  /// In en, this message translates to:
+  /// **'Cost (KWD)'**
+  String get vehicleCostKwd;
+
+  /// No description provided for @vehicleStation.
+  ///
+  /// In en, this message translates to:
+  /// **'Station'**
+  String get vehicleStation;
+
+  /// No description provided for @vehicleFillPhotosHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Three rear-camera stills are required.'**
+  String get vehicleFillPhotosHint;
+
+  /// No description provided for @vehicleFillSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuel fill logged'**
+  String get vehicleFillSubmitted;
+
+  /// No description provided for @attachClearFuelInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear fuel invoice'**
+  String get attachClearFuelInvoice;
+
+  /// No description provided for @attachVehiclePlate.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle plate'**
+  String get attachVehiclePlate;
+
+  /// No description provided for @attachRejectedFuelInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected fuel invoice'**
+  String get attachRejectedFuelInvoice;
+
+  /// No description provided for @attachCashInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash invoice'**
+  String get attachCashInvoice;
+
+  /// No description provided for @attachVehiclePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle photo'**
+  String get attachVehiclePhoto;
+
+  /// No description provided for @attachOdometer.
+  ///
+  /// In en, this message translates to:
+  /// **'Odometer reading'**
+  String get attachOdometer;
+
+  /// No description provided for @attachHandoverForm.
+  ///
+  /// In en, this message translates to:
+  /// **'Handover form'**
+  String get attachHandoverForm;
+
+  /// No description provided for @attachSignedAcknowledgment.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed acknowledgment'**
+  String get attachSignedAcknowledgment;
+
+  /// No description provided for @attachFuelReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuel receipt'**
+  String get attachFuelReceipt;
+
+  /// No description provided for @attachFuelPump.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuel pump'**
+  String get attachFuelPump;
+
+  /// No description provided for @supportCaptureRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get supportCaptureRequired;
+
+  /// No description provided for @supportFormTitleFuelRefund.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuel refund'**
+  String get supportFormTitleFuelRefund;
+
   /// No description provided for @am.
   ///
   /// In en, this message translates to:
@@ -3355,6 +3553,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Fuel reimbursement'**
   String get supportRequestTypeFuel;
+
+  /// No description provided for @supportRequestTypeFuelRefund.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuel refund'**
+  String get supportRequestTypeFuelRefund;
 
   /// No description provided for @supportRequestTypeDocument.
   ///

@@ -45,6 +45,7 @@ import '../../features/support/request_detail_screen.dart';
 import '../../features/support/request_submitted_screen.dart';
 import '../../features/support/support_hub_screen.dart';
 import '../../features/support/visit_booking_flow_screen.dart';
+import '../../features/vehicle/fuel_fill_screen.dart';
 import '../../features/vehicle/vehicle_screen.dart';
 import '../app_update/force_update_gate.dart';
 import '../app_update/force_update_state.dart';
@@ -113,7 +114,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         if (needs == true) return '/login-verification';
         return '/home';
       }
-      if (needsUpdate) return '/update-required';
+      if (forceUpdateRedirectsLocation(loc, needsUpdate)) {
+        return '/update-required';
+      }
 
       if (onMaintenance) {
         if (!settingsLoaded) return null;
@@ -266,6 +269,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'notifications',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const NotificationsInboxScreen(),
+      ),
+      GoRoute(
+        path: '/vehicle/fuel-fill',
+        name: 'vehicle_fuel_fill',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const FuelFillScreen(),
       ),
       GoRoute(
         path: '/profile/support',

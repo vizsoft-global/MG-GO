@@ -8,6 +8,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
+import '../../l10n/app_localizations.dart';
+import '../deliveries/capture_order_proof.dart';
+import '../profile/avatar_picker_errors.dart';
+import 'create_attachment.dart';
 import 'request_detail_fields.dart';
 import 'request_form_submit.dart';
 import 'request_type_definition.dart';
@@ -32,6 +36,7 @@ class _DynamicRequestFormScreenState
   final _controllers = <String, TextEditingController>{};
   final _values = <String, dynamic>{};
   final List<({String name, Uint8List bytes, String contentType})> _files = [];
+  final _kindFiles = <String, _KindCapture>{};
   bool _submitting = false;
 
   @override
@@ -81,10 +86,38 @@ class _DynamicRequestFormScreenState
     });
   }
 
+  Future<void> _captureKind(CreateAttachmentSpec spec) async {
+    try {
+      final picked = await captureOrderProof(context);
+      if (picked == null || !mounted) return;
+      final bytes = await picked.readAsBytes();
+      setState(() {
+        _kindFiles[spec.kind] = _KindCapture(
+          spec: spec,
+          name: picked.name.isNotEmpty ? picked.name : '${spec.kind}.jpg',
+          bytes: bytes,
+          contentType: picked.mimeType ?? 'image/jpeg',
+          capturedAt: DateTime.now(),
+        );
+      });
+    } catch (e) {
+      if (!mounted) return;
+      final message = userMessageIfCameraPermissionDenied(e, context.l10n);
+      if (message != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+        return;
+      }
+      rethrow;
+    }
+  }
+
   Future<List<Map<String, dynamic>>> _uploadFiles() async {
     final uid = Supabase.instance.client.auth.currentUser?.id;
     if (uid == null) throw Exception('not_authenticated');
     final out = <Map<String, dynamic>>[];
+    final capturedAt = DateTime.now();
     for (final file in _files) {
       final key = '$uid/${DateTime.now().millisecondsSinceEpoch}_${file.name}';
       await Supabase.instance.client.storage
@@ -95,12 +128,48 @@ class _DynamicRequestFormScreenState
             fileOptions:
                 FileOptions(contentType: file.contentType, upsert: false),
           );
-      out.add({
-        'storage_key': key,
-        'file_name': file.name,
-        'content_type': file.contentType,
-        'byte_size': file.bytes.length,
-      });
+      out.add(
+        createAttachmentPayload(
+          storageKey: key,
+          fileName: file.name,
+          contentType: file.contentType,
+          byteSize: file.bytes.length,
+          title: file.name,
+          kind: 'attachment',
+          capturedAt: capturedAt,
+          source: 'gallery',
+        ),
+      );
+    }
+    return out;
+  }
+
+  Future<List<Map<String, dynamic>>> _uploadKindFiles() async {
+    final uid = Supabase.instance.client.auth.currentUser?.id;
+    if (uid == null) throw Exception('not_authenticated');
+    final out = <Map<String, dynamic>>[];
+    for (final file in _kindFiles.values) {
+      final key =
+          '$uid/${DateTime.now().millisecondsSinceEpoch}_${file.spec.kind}.jpg';
+      await Supabase.instance.client.storage
+          .from('request-attachments')
+          .uploadBinary(
+            key,
+            file.bytes,
+            fileOptions:
+                FileOptions(contentType: file.contentType, upsert: false),
+          );
+      out.add(
+        createAttachmentPayload(
+          storageKey: key,
+          fileName: file.name,
+          contentType: file.contentType,
+          byteSize: file.bytes.length,
+          title: file.spec.titleEn,
+          kind: file.spec.kind,
+          capturedAt: file.capturedAt,
+        ),
+      );
     }
     return out;
   }
@@ -218,15 +287,26 @@ class _DynamicRequestFormScreenState
           RequestDateRangeIssue.toBeforeFrom => l10n.supportErrorToDateBeforeFrom,
         });
       }
-      final minFiles = requiresRequestAttachment(fields)
-          ? (def.minAttachments < 1 ? 1 : def.minAttachments)
-          : def.minAttachments;
-      if (_files.length < minFiles) {
-        throw Exception(l10n.supportErrorAttachmentsMin(minFiles));
+      final titledKinds = requiredCreateAttachmentSpecs(widget.type);
+      if (titledKinds.isNotEmpty) {
+        final missing = missingRequiredCreateKind(widget.type, _kindFiles.keys);
+        if (missing != null) {
+          throw Exception(l10n.supportErrorAttachmentsMin(titledKinds.length));
+        }
+      } else {
+        final minFiles = requiresRequestAttachment(fields)
+            ? (def.minAttachments < 1 ? 1 : def.minAttachments)
+            : def.minAttachments;
+        if (_files.length < minFiles) {
+          throw Exception(l10n.supportErrorAttachmentsMin(minFiles));
+        }
       }
 
-      final attachments =
-          _files.isEmpty ? <Map<String, dynamic>>[] : await _uploadFiles();
+      final attachments = titledKinds.isNotEmpty
+          ? await _uploadKindFiles()
+          : _files.isEmpty
+              ? <Map<String, dynamic>>[]
+              : await _uploadFiles();
 
       final created = await ref.read(supportServiceProvider).createRequest(
             type: widget.type,
@@ -318,7 +398,9 @@ class _DynamicRequestFormScreenState
           ),
           const SizedBox(height: 12),
         ],
-        if (def.minAttachments > 0 &&
+        if (usesCreateAttachmentKinds(widget.type))
+          _kindSlots()
+        else if (def.minAttachments > 0 &&
             !fields.any((f) => f.kind == 'file' || f.target == 'attachments'))
           _uploadButton(required: true),
       ],
@@ -383,6 +465,9 @@ class _DynamicRequestFormScreenState
           controlAffinity: ListTileControlAffinity.leading,
         );
       case 'file':
+        if (usesCreateAttachmentKinds(widget.type)) {
+          return const SizedBox.shrink();
+        }
         control = _uploadButton(required: field.isRequired);
       default:
         control = TextField(
@@ -495,6 +580,32 @@ class _DynamicRequestFormScreenState
     );
   }
 
+  Widget _kindSlots() {
+    final l10n = context.l10n;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final spec in requiredCreateAttachmentSpecs(widget.type))
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(
+              _kindFiles.containsKey(spec.kind)
+                  ? Icons.check_circle
+                  : Icons.photo_camera_outlined,
+              color: _kindFiles.containsKey(spec.kind)
+                  ? AppColors.progressGreen
+                  : AppColors.textSecondary,
+            ),
+            title: Text('${createAttachmentLabel(l10n, spec.kind)} *'),
+            subtitle: Text(
+              _kindFiles[spec.kind]?.name ?? l10n.supportCaptureRequired,
+            ),
+            onTap: _submitting ? null : () => _captureKind(spec),
+          ),
+      ],
+    );
+  }
+
   Widget _uploadButton({required bool required}) {
     final l10n = context.l10n;
     return OutlinedButton.icon(
@@ -542,6 +653,38 @@ class _DynamicRequestFormScreenState
       ),
     );
   }
+}
+
+class _KindCapture {
+  const _KindCapture({
+    required this.spec,
+    required this.name,
+    required this.bytes,
+    required this.contentType,
+    required this.capturedAt,
+  });
+
+  final CreateAttachmentSpec spec;
+  final String name;
+  final Uint8List bytes;
+  final String contentType;
+  final DateTime capturedAt;
+}
+
+String createAttachmentLabel(AppLocalizations l10n, String kind) {
+  return switch (kind) {
+    'clear_fuel_invoice' => l10n.attachClearFuelInvoice,
+    'vehicle_plate' => l10n.attachVehiclePlate,
+    'rejected_fuel_invoice' => l10n.attachRejectedFuelInvoice,
+    'cash_invoice' => l10n.attachCashInvoice,
+    'vehicle_photo' => l10n.attachVehiclePhoto,
+    'odometer' => l10n.attachOdometer,
+    'handover_form' => l10n.attachHandoverForm,
+    'signed_acknowledgment' => l10n.attachSignedAcknowledgment,
+    'fuel_receipt' => l10n.attachFuelReceipt,
+    'fuel_pump' => l10n.attachFuelPump,
+    _ => kind,
+  };
 }
 
 class _Message extends StatelessWidget {
