@@ -86,8 +86,7 @@ void main() {
     expect(find.byIcon(Icons.add), findsNothing);
   });
 
-  testWidgets('shell keeps five tabs and a raised center action',
-      (tester) async {
+  testWidgets('shell floats add above a five-tab bar', (tester) async {
     var opened = false;
     await tester.pumpWidget(
       ProviderScope(
@@ -97,15 +96,16 @@ void main() {
         child: _app(
           Scaffold(
             body: const SizedBox.shrink(),
+            floatingActionButton: AddDeliveryDockedButton(
+              onOpen: (context, ref) async {
+                opened = true;
+              },
+            ),
+            floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
             bottomNavigationBar: MainShellTabBar(
               selectedIndex: 0,
               tabs: _tabs,
               onDestinationSelected: (_) {},
-              centerAction: AddDeliveryDockedButton(
-                onOpen: (context, ref) async {
-                  opened = true;
-                },
-              ),
             ),
           ),
         ),
@@ -123,6 +123,32 @@ void main() {
     await tester.tap(find.byIcon(Icons.add));
     await tester.pump();
     expect(opened, isTrue);
+
+    final fab = tester.getCenter(find.byIcon(Icons.add));
+    final profile = tester.getCenter(find.text('Profile'));
+    expect(fab.dy, lessThan(profile.dy - 8));
+  });
+
+  testWidgets('earnings and vehicle tabs keep their shell branches',
+      (tester) async {
+    var selected = -1;
+    await tester.pumpWidget(
+      _app(
+        Scaffold(
+          body: const SizedBox.shrink(),
+          bottomNavigationBar: MainShellTabBar(
+            selectedIndex: 0,
+            tabs: _tabs,
+            onDestinationSelected: (i) => selected = i,
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Earnings'));
+    expect(selected, 2);
+    await tester.tap(find.text('Vehicle'));
+    expect(selected, 3);
   });
 }
 
