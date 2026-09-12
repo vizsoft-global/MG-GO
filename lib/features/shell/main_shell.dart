@@ -108,28 +108,29 @@ class _MainShellState extends ConsumerState<MainShell>
         AppLifecycleActions.moveTaskToBack();
       },
       child: Scaffold(
-      // `navigationShell` is itself an IndexedStack of the active branches —
-      // letting it render the body preserves per-tab navigation state and
-      // sub-route history.
-      body: Column(
-        children: [
-          const OfflineBanner(),
-          Expanded(child: widget.navigationShell),
-        ],
+        // `navigationShell` is itself an IndexedStack of the active branches —
+        // letting it render the body preserves per-tab navigation state and
+        // sub-route history.
+        body: Column(
+          children: [
+            const OfflineBanner(),
+            Expanded(child: widget.navigationShell),
+          ],
+        ),
+        floatingActionButton: const AddDeliveryDockedButton(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        bottomNavigationBar: MainShellTabBar(
+          selectedIndex: widget.navigationShell.currentIndex,
+          tabs: tabs,
+          onDestinationSelected: (i) {
+            if (i == 4) refreshRiderAvatar(ref);
+            widget.navigationShell.goBranch(
+              i,
+              initialLocation: i == widget.navigationShell.currentIndex,
+            );
+          },
+        ),
       ),
-      bottomNavigationBar: MainShellTabBar(
-        selectedIndex: widget.navigationShell.currentIndex,
-        tabs: tabs,
-        onDestinationSelected: (i) {
-          if (i == 4) refreshRiderAvatar(ref);
-          widget.navigationShell.goBranch(
-            i,
-            initialLocation: i == widget.navigationShell.currentIndex,
-          );
-        },
-        centerAction: const AddDeliveryDockedButton(),
-      ),
-    ),
     );
   }
 }
@@ -146,25 +147,20 @@ class MainShellTabItem {
   final IconData activeIcon;
 }
 
-/// Five-tab bar with a raised center Add Delivery action in a middle gap
-/// so the FAB does not cover the Earnings label.
+/// Equal-width five-tab bar. Add Delivery is a Scaffold FAB, not in this bar.
 class MainShellTabBar extends StatelessWidget {
   const MainShellTabBar({
     required this.selectedIndex,
     required this.tabs,
     required this.onDestinationSelected,
-    required this.centerAction,
     super.key,
   });
 
   final int selectedIndex;
   final List<MainShellTabItem> tabs;
   final ValueChanged<int> onDestinationSelected;
-  final Widget centerAction;
 
   static const _barHeight = 64.0;
-  static const _fabSize = 56.0;
-  static const _gapWidth = 72.0;
 
   @override
   Widget build(BuildContext context) {
@@ -175,46 +171,20 @@ class MainShellTabBar extends StatelessWidget {
       shadowColor: Colors.black.withValues(alpha: 0.08),
       child: Padding(
         padding: EdgeInsets.only(bottom: bottomInset),
-        child: SizedBox(
-          height: _barHeight + 16,
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                height: _barHeight,
-                child: const DecoratedBox(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      top: BorderSide(color: AppColors.border),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                height: _barHeight,
-                child: Row(
-                  children: [
-                    for (var i = 0; i < 2; i++)
-                      Expanded(child: _buildTab(context, i)),
-                    const SizedBox(width: _gapWidth),
-                    for (var i = 2; i < tabs.length; i++)
-                      Expanded(child: _buildTab(context, i)),
-                  ],
-                ),
-              ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: (_barHeight - _fabSize) / 2 + 10,
-                child: Center(child: centerAction),
-              ),
-            ],
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            border: Border(
+              top: BorderSide(color: AppColors.border),
+            ),
+          ),
+          child: SizedBox(
+            height: _barHeight,
+            child: Row(
+              children: [
+                for (var i = 0; i < tabs.length; i++)
+                  Expanded(child: _buildTab(context, i)),
+              ],
+            ),
           ),
         ),
       ),
