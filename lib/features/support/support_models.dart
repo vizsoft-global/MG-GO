@@ -419,6 +419,10 @@ class EsignRequestSummary {
   bool get isDeclined => status == 'declined';
   bool get isCancelled => status == 'cancelled';
 
+  /// Overdue pending rows are remapped to `expired` in
+  /// `driver_list_esign_requests`. They are no longer signable.
+  bool get isExpired => status == 'expired';
+
   factory EsignRequestSummary.fromJson(Map<String, dynamic> json) {
     return EsignRequestSummary(
       id: json['id'] as String,
@@ -433,6 +437,44 @@ class EsignRequestSummary {
       createdAt: _parseDateTime(json['created_at']),
     );
   }
+}
+
+class EsignInboxSections {
+  const EsignInboxSections({
+    required this.pending,
+    required this.signed,
+    required this.declined,
+    required this.expired,
+  });
+
+  final List<EsignRequestSummary> pending;
+  final List<EsignRequestSummary> signed;
+  final List<EsignRequestSummary> declined;
+  final List<EsignRequestSummary> expired;
+}
+
+EsignInboxSections partitionEsignInbox(Iterable<EsignRequestSummary> rows) {
+  final pending = <EsignRequestSummary>[];
+  final signed = <EsignRequestSummary>[];
+  final declined = <EsignRequestSummary>[];
+  final expired = <EsignRequestSummary>[];
+  for (final row in rows) {
+    if (row.isPending) {
+      pending.add(row);
+    } else if (row.isSigned) {
+      signed.add(row);
+    } else if (row.isDeclined || row.isCancelled) {
+      declined.add(row);
+    } else if (row.isExpired) {
+      expired.add(row);
+    }
+  }
+  return EsignInboxSections(
+    pending: pending,
+    signed: signed,
+    declined: declined,
+    expired: expired,
+  );
 }
 
 class EsignRequestDetail {
@@ -483,6 +525,7 @@ class EsignRequestDetail {
   bool get isSigned => status == 'signed';
   bool get isDeclined => status == 'declined';
   bool get isCancelled => status == 'cancelled';
+  bool get isExpired => status == 'expired';
   DateTime? get declinedAt => _parseDateTime(signerMeta['declined_at']);
   String? get declinedReason => signerMeta['declined_reason'] as String?;
 }

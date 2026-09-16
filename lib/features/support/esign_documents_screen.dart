@@ -51,36 +51,40 @@ class EsignDocumentsScreen extends ConsumerWidget {
                 ],
               );
             }
-            final pending = rows.where((r) => r.isPending).toList();
-            final signed = rows.where((r) => r.isSigned).toList();
-            // An admin withdrawal is not a decline, but for the rider both are
-            // simply no longer actionable, so they share the closing section.
-            final declined =
-                rows.where((r) => r.isDeclined || r.isCancelled).toList();
+            final sections = partitionEsignInbox(rows);
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               children: [
-                if (pending.isNotEmpty) ...[
+                if (sections.pending.isNotEmpty) ...[
                   _SectionLabel(title: l10n.esignSectionPending),
-                  ...pending.map((row) => _EsignCard(
+                  ...sections.pending.map((row) => _EsignCard(
                         row: row,
                         dueLabel: _formatDate(row.dueAt, l10n),
                         onTap: () => context.push('/profile/support/sign/${row.id}'),
                       )),
                 ],
-                if (signed.isNotEmpty) ...[
+                if (sections.expired.isNotEmpty) ...[
+                  if (sections.pending.isNotEmpty) const SizedBox(height: 12),
+                  _SectionLabel(title: l10n.esignSectionExpired),
+                  ...sections.expired.map((row) => _EsignCard(
+                        row: row,
+                        dueLabel: _formatDate(row.dueAt, l10n),
+                        onTap: () => context.push('/profile/support/sign/${row.id}'),
+                      )),
+                ],
+                if (sections.signed.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   _SectionLabel(title: l10n.esignSectionSigned),
-                  ...signed.map((row) => _EsignCard(
+                  ...sections.signed.map((row) => _EsignCard(
                         row: row,
                         dueLabel: _formatDate(row.signedAt ?? row.dueAt, l10n),
                         onTap: () => context.push('/profile/support/sign/${row.id}'),
                       )),
                 ],
-                if (declined.isNotEmpty) ...[
+                if (sections.declined.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   _SectionLabel(title: l10n.esignSectionDeclined),
-                  ...declined.map((row) => _EsignCard(
+                  ...sections.declined.map((row) => _EsignCard(
                         row: row,
                         dueLabel: _formatDate(row.dueAt, l10n),
                         onTap: () => context.push('/profile/support/sign/${row.id}'),
@@ -131,20 +135,25 @@ class _EsignCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final pending = row.isPending;
+    final expired = row.isExpired;
     final statusColor = pending
         ? AppColors.underReviewAmber
-        : row.isDeclined
-            ? AppColors.rejectedRed
-            : row.isCancelled
-                ? AppColors.textSecondary
-                : AppColors.progressGreen;
+        : expired
+            ? AppColors.textSecondary
+            : row.isDeclined
+                ? AppColors.rejectedRed
+                : row.isCancelled
+                    ? AppColors.textSecondary
+                    : AppColors.progressGreen;
     final statusLabel = pending
         ? l10n.esignSectionPending
-        : row.isDeclined
-            ? l10n.esignSectionDeclined
-            : row.isCancelled
-                ? l10n.statusCancelled
-                : l10n.esignSectionSigned;
+        : expired
+            ? l10n.esignSectionExpired
+            : row.isDeclined
+                ? l10n.esignSectionDeclined
+                : row.isCancelled
+                    ? l10n.statusCancelled
+                    : l10n.esignSectionSigned;
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: InkWell(
@@ -201,11 +210,13 @@ class _EsignCard extends StatelessWidget {
               Text(
                 pending
                     ? l10n.esignDueOn(dueLabel)
-                    : row.isDeclined
-                        ? l10n.esignSectionDeclined
-                        : row.isCancelled
-                            ? l10n.statusCancelled
-                            : l10n.esignSignedOn(dueLabel),
+                    : expired
+                        ? l10n.esignExpiredOn(dueLabel)
+                        : row.isDeclined
+                            ? l10n.esignSectionDeclined
+                            : row.isCancelled
+                                ? l10n.statusCancelled
+                                : l10n.esignSignedOn(dueLabel),
                 style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary,

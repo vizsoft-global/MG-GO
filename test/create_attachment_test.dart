@@ -35,11 +35,18 @@ void main() {
     );
     expect(
       missingRequiredCreateKind('fuel_refund', [
-        'rejected_fuel_invoice',
         'cash_invoice',
         'vehicle_photo',
       ]),
       'odometer',
+    );
+    expect(
+      missingRequiredCreateKind('fuel_refund', [
+        'cash_invoice',
+        'vehicle_photo',
+        'odometer',
+      ]),
+      isNull,
     );
     expect(
       missingRequiredCreateKind('asset', ['handover_form', 'signed_acknowledgment']),
@@ -84,7 +91,7 @@ void main() {
     );
   });
 
-  test('fuel refund form needs amount, reason, and four kinds', () {
+  test('fuel refund form needs amount, reason, and three required kinds', () {
     expect(
       fuelRefundFormBlockReason(amount: null, reason: 'pump error', kinds: const []),
       'amount_required',
@@ -97,14 +104,25 @@ void main() {
       fuelRefundFormBlockReason(
         amount: 4,
         reason: 'pump error',
-        kinds: [
-          'rejected_fuel_invoice',
-          'cash_invoice',
-          'vehicle_photo',
-          'odometer',
-        ],
+        kinds: ['cash_invoice', 'vehicle_photo'],
+      ),
+      'odometer',
+    );
+    expect(
+      fuelRefundFormBlockReason(
+        amount: 4,
+        reason: 'pump error',
+        kinds: ['cash_invoice', 'vehicle_photo', 'odometer'],
       ),
       isNull,
+    );
+    expect(
+      fleetRpcUserMessage('vehicle_photo', 'vehicle_photo'),
+      'vehicle_photo',
+    );
+    expect(
+      fleetRpcUserMessage('fuel_refund_attachments_required', 'x'),
+      'Please upload the required refund photos',
     );
   });
 

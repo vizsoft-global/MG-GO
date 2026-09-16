@@ -10,6 +10,7 @@ import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../deliveries/capture_order_proof.dart';
+import '../deliveries/widgets/delivery_proof_widgets.dart';
 import '../profile/avatar_picker_errors.dart';
 import '../vehicle/fuel_fill_rules.dart';
 import 'create_attachment.dart';
@@ -89,16 +90,42 @@ class _DynamicRequestFormScreenState
 
   Future<void> _captureKind(CreateAttachmentSpec spec) async {
     try {
-      final picked = await captureOrderProof(context);
-      if (picked == null || !mounted) return;
-      final bytes = await picked.readAsBytes();
+      final source = await showProofSourceSheet(context);
+      if (source == null || !mounted) return;
+
+      late final String name;
+      late final Uint8List bytes;
+      late final String contentType;
+      late final String wireSource;
+
+      switch (source) {
+        case ImageSource.camera:
+          final picked = await captureOrderProof(context);
+          if (picked == null || !mounted) return;
+          bytes = await picked.readAsBytes();
+          name = picked.name.isNotEmpty ? picked.name : '${spec.kind}.jpg';
+          contentType = picked.mimeType ?? 'image/jpeg';
+          wireSource = 'mobile_camera';
+        case ImageSource.gallery:
+          final picked = await ImagePicker().pickImage(
+            source: ImageSource.gallery,
+            imageQuality: 85,
+          );
+          if (picked == null || !mounted) return;
+          bytes = await picked.readAsBytes();
+          name = picked.name;
+          contentType = 'image/jpeg';
+          wireSource = 'gallery';
+      }
+
       setState(() {
         _kindFiles[spec.kind] = _KindCapture(
           spec: spec,
-          name: picked.name.isNotEmpty ? picked.name : '${spec.kind}.jpg',
+          name: name,
           bytes: bytes,
-          contentType: picked.mimeType ?? 'image/jpeg',
+          contentType: contentType,
           capturedAt: DateTime.now(),
+          source: wireSource,
         );
       });
     } catch (e) {
@@ -169,6 +196,7 @@ class _DynamicRequestFormScreenState
           title: file.spec.titleEn,
           kind: file.spec.kind,
           capturedAt: file.capturedAt,
+          source: file.source,
         ),
       );
     }
@@ -295,7 +323,7 @@ class _DynamicRequestFormScreenState
           kinds: _kindFiles.keys,
         );
         if (refundBlock != null) {
-          throw Exception(fleetRpcUserMessage(refundBlock, refundBlock));
+          throw Exception(_kindBlockMessage(l10n, refundBlock));
         }
       }
 
@@ -303,7 +331,7 @@ class _DynamicRequestFormScreenState
       if (titledKinds.isNotEmpty) {
         final missing = missingRequiredCreateKind(widget.type, _kindFiles.keys);
         if (missing != null) {
-          throw Exception(l10n.supportErrorAttachmentsMin(titledKinds.length));
+          throw Exception(_kindBlockMessage(l10n, missing));
         }
       } else {
         final minFiles = requiresRequestAttachment(fields)
@@ -603,14 +631,18 @@ class _DynamicRequestFormScreenState
             leading: Icon(
               _kindFiles.containsKey(spec.kind)
                   ? Icons.check_circle
-                  : Icons.photo_camera_outlined,
+                  : Icons.add_photo_alternate_outlined,
               color: _kindFiles.containsKey(spec.kind)
                   ? AppColors.progressGreen
                   : AppColors.textSecondary,
             ),
-            title: Text('${createAttachmentLabel(l10n, spec.kind)} *'),
+            title: Text(
+              spec.required
+                  ? '${createAttachmentLabel(l10n, spec.kind)} *'
+                  : createAttachmentLabel(l10n, spec.kind),
+            ),
             subtitle: Text(
-              _kindFiles[spec.kind]?.name ?? l10n.supportCaptureRequired,
+              _kindFiles[spec.kind]?.name ?? l10n.supportCaptureOrGallery,
             ),
             onTap: _submitting ? null : () => _captureKind(spec),
           ),
@@ -674,6 +706,7 @@ class _KindCapture {
     required this.bytes,
     required this.contentType,
     required this.capturedAt,
+    required this.source,
   });
 
   final CreateAttachmentSpec spec;
@@ -681,6 +714,20 @@ class _KindCapture {
   final Uint8List bytes;
   final String contentType;
   final DateTime capturedAt;
+  final String source;
+}
+
+String _kindBlockMessage(AppLocalizations l10n, String code) {
+  switch (code) {
+    case 'amount_required':
+    case 'reason_required':
+    case 'fuel_refund_attachments_required':
+      return fleetRpcUserMessage(code, code);
+    default:
+      return l10n.supportPleaseUploadAttachment(
+        createAttachmentLabel(l10n, code),
+      );
+  }
 }
 
 String createAttachmentLabel(AppLocalizations l10n, String kind) {
