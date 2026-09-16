@@ -896,6 +896,15 @@
   "attachFuelReceipt": "Fuel receipt",
   "attachFuelPump": "Fuel pump",
   "supportCaptureRequired": "Take a photo",
+  "supportCaptureOrGallery": "Take a photo or choose from gallery",
+  "supportPleaseUploadAttachment": "Please upload {field}.",
+  "@supportPleaseUploadAttachment": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
   "supportFormTitleFuelRefund": "Fuel refund",
   "am": "AM",
   "pm": "PM",
@@ -1513,6 +1522,15 @@
   "esignSectionPending": "Pending",
   "esignSectionSigned": "Signed",
   "esignSectionDeclined": "Declined",
+  "esignSectionExpired": "Expired",
+  "esignExpiredOn": "Expired {date}",
+  "@esignExpiredOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "esignDueOn": "Due {date}",
   "@esignDueOn": {
     "placeholders": {

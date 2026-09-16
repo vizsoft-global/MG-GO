@@ -179,7 +179,7 @@ void main() {
     expect(find.text('Vehicle plate *'), findsOneWidget);
   });
 
-  testWidgets('fuel refund form shows four rear-camera slots', (tester) async {
+  testWidgets('fuel refund form shows four slots and camera/gallery sheet', (tester) async {
     await _phone(tester);
     await tester.pumpWidget(
       ProviderScope(
@@ -221,13 +221,28 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Rejected fuel invoice *'), findsOneWidget);
+    expect(find.text('Rejected fuel invoice'), findsOneWidget);
+    expect(find.text('Rejected fuel invoice *'), findsNothing);
     expect(find.text('Cash invoice *'), findsOneWidget);
     expect(find.text('Vehicle photo *'), findsOneWidget);
     expect(find.text('Odometer reading *'), findsOneWidget);
+    expect(find.text('Take a photo or choose from gallery'), findsNWidgets(4));
     await expectLater(
       find.byType(DynamicRequestFormScreen),
       matchesGoldenFile('goldens/fleet_refund_form.png'),
     );
+    await tester.tap(find.text('Vehicle photo *'));
+    await tester.pumpAndSettle();
+    expect(find.text('Choose Image Source'), findsOneWidget);
+    expect(find.text('Take photo'), findsOneWidget);
+    expect(find.text('Choose from gallery'), findsOneWidget);
+    await tester.tapAt(const Offset(8, 8));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField).at(0), '4');
+    await tester.enterText(find.byType(TextField).at(1), 'pump error');
+    await tester.tap(find.text('Submit request'));
+    await tester.pump();
+    expect(find.text('Please upload Cash invoice.'), findsOneWidget);
   });
 }

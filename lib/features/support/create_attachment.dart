@@ -2,10 +2,15 @@
 // Clarify / ack stay keys-only — do not reuse this map there.
 
 class CreateAttachmentSpec {
-  const CreateAttachmentSpec({required this.kind, required this.titleEn});
+  const CreateAttachmentSpec({
+    required this.kind,
+    required this.titleEn,
+    this.required = true,
+  });
 
   final String kind;
   final String titleEn;
+  final bool required;
 }
 
 const fuelCreateAttachmentSpecs = <CreateAttachmentSpec>[
@@ -20,6 +25,7 @@ const fuelRefundCreateAttachmentSpecs = <CreateAttachmentSpec>[
   CreateAttachmentSpec(
     kind: 'rejected_fuel_invoice',
     titleEn: 'Rejected fuel invoice',
+    required: false,
   ),
   CreateAttachmentSpec(kind: 'cash_invoice', titleEn: 'Cash invoice'),
   CreateAttachmentSpec(kind: 'vehicle_photo', titleEn: 'Vehicle photo'),
@@ -59,6 +65,7 @@ bool usesCreateAttachmentKinds(String type) =>
 String? missingRequiredCreateKind(String type, Iterable<String> kinds) {
   final have = kinds.toSet();
   for (final spec in requiredCreateAttachmentSpecs(type)) {
+    if (!spec.required) continue;
     if (!have.contains(spec.kind)) return spec.kind;
   }
   return null;

@@ -2924,6 +2924,18 @@ abstract class AppLocalizations {
   /// **'Take a photo'**
   String get supportCaptureRequired;
 
+  /// No description provided for @supportCaptureOrGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo or choose from gallery'**
+  String get supportCaptureOrGallery;
+
+  /// No description provided for @supportPleaseUploadAttachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Please upload {field}.'**
+  String supportPleaseUploadAttachment(String field);
+
   /// No description provided for @supportFormTitleFuelRefund.
   ///
   /// In en, this message translates to:
@@ -5353,6 +5365,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Declined'**
   String get esignSectionDeclined;
+
+  /// No description provided for @esignSectionExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get esignSectionExpired;
+
+  /// No description provided for @esignExpiredOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired {date}'**
+  String esignExpiredOn(String date);
 
   /// No description provided for @esignDueOn.
   ///

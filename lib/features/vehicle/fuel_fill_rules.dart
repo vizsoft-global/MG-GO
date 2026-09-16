@@ -56,7 +56,7 @@ String fleetRpcUserMessage(String code, String fallback) {
     case 'reason_required':
       return 'Enter the refund reason';
     case 'fuel_refund_attachments_required':
-      return 'Capture all four refund photos';
+      return 'Please upload the required refund photos';
     default:
       return fallback;
   }

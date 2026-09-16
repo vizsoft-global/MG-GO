@@ -1614,6 +1614,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get supportCaptureRequired => 'Take a photo';
 
   @override
+  String get supportCaptureOrGallery => 'Take a photo or choose from gallery';
+
+  @override
+  String supportPleaseUploadAttachment(String field) {
+    return 'Please upload $field.';
+  }
+
+  @override
   String get supportFormTitleFuelRefund => 'Fuel refund';
 
   @override
@@ -2933,6 +2941,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get esignSectionDeclined => 'Declined';
+
+  @override
+  String get esignSectionExpired => 'Expired';
+
+  @override
+  String esignExpiredOn(String date) {
+    return 'Expired $date';
+  }
 
   @override
   String esignDueOn(String date) {

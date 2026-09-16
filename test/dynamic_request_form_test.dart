@@ -153,7 +153,7 @@ void main() {
     expect(find.textContaining('Vehicle plate'), findsOneWidget);
     await tester.tap(find.text('Submit request'));
     await tester.pump();
-    expect(find.textContaining('Attach at least 2'), findsOneWidget);
+    expect(find.text('Please upload Clear fuel invoice.'), findsOneWidget);
   });
 
   testWidgets('required fields are enforced before anything is sent',

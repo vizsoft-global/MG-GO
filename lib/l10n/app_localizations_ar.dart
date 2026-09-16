@@ -1603,6 +1603,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get supportCaptureRequired => 'التقط صورة';
 
   @override
+  String get supportCaptureOrGallery => 'التقط صورة أو اختر من المعرض';
+
+  @override
+  String supportPleaseUploadAttachment(String field) {
+    return 'يرجى رفع $field.';
+  }
+
+  @override
   String get supportFormTitleFuelRefund => 'استرداد الوقود';
 
   @override
@@ -2921,6 +2929,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get esignSectionDeclined => 'مرفوضة';
+
+  @override
+  String get esignSectionExpired => 'منتهية';
+
+  @override
+  String esignExpiredOn(String date) {
+    return 'انتهت في $date';
+  }
 
   @override
   String esignDueOn(String date) {
