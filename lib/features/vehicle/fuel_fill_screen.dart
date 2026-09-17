@@ -1,6 +1,5 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -148,7 +147,9 @@ class _FuelFillScreenState extends ConsumerState<FuelFillScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            fleetRpcUserMessage(code ?? '', supportUserMessage(e)),
+            code == 'station_invalid'
+                ? l10n.vehicleStationInvalid
+                : fleetRpcUserMessage(code ?? '', supportUserMessage(e)),
           ),
         ),
       );
@@ -174,12 +175,14 @@ class _FuelFillScreenState extends ConsumerState<FuelFillScreen> {
           TextField(
             controller: _litres,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: const [_FuelDecimalFormatter()],
             decoration: InputDecoration(labelText: '${l10n.vehicleLitres} *'),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _cost,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: const [_FuelDecimalFormatter()],
             decoration: InputDecoration(labelText: '${l10n.vehicleCostKwd} *'),
           ),
           const SizedBox(height: 12),
@@ -259,6 +262,22 @@ class _FillPhotoTile extends StatelessWidget {
         captured == null ? l10n.supportCaptureRequired : captured!.name,
       ),
       onTap: onTap,
+    );
+  }
+}
+
+class _FuelDecimalFormatter extends TextInputFormatter {
+  const _FuelDecimalFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final next = filterFuelDecimal(newValue.text);
+    return TextEditingValue(
+      text: next,
+      selection: TextSelection.collapsed(offset: next.length),
     );
   }
 }

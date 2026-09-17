@@ -2846,6 +2846,12 @@ abstract class AppLocalizations {
   /// **'Station'**
   String get vehicleStation;
 
+  /// No description provided for @vehicleStationInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Station name must include a letter or number'**
+  String get vehicleStationInvalid;
+
   /// No description provided for @vehicleFillPhotosHint.
   ///
   /// In en, this message translates to:
@@ -4669,6 +4675,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Attached file'**
   String get supportAttachedFile;
+
+  /// No description provided for @supportAttachments.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachments'**
+  String get supportAttachments;
 
   /// No description provided for @supportNoneAttached.
   ///

@@ -89,6 +89,23 @@ void main() {
       ),
       isNull,
     );
+    expect(
+      fuelFillBlockReason(
+        litres: 10,
+        costKwd: 3,
+        stationName: '⛽',
+        lat: 29.3,
+        lng: 47.9,
+        kinds: ['fuel_receipt', 'fuel_pump', 'odometer'],
+      ),
+      'station_invalid',
+    );
+    expect(filterFuelDecimal('....'), '');
+    expect(filterFuelDecimal('12,3'), '123');
+    expect(filterFuelDecimal('12.3456'), '12.345');
+    expect(filterFuelDecimal('-5.2'), '5.2');
+    expect(stationHasLetterOrDigit('Al-Ahmadi'), isTrue);
+    expect(stationHasLetterOrDigit('⛽'), isFalse);
   });
 
   test('fuel refund form needs amount, reason, and three required kinds', () {
