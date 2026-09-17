@@ -4238,6 +4238,18 @@ abstract class AppLocalizations {
   /// **'{field} is required'**
   String supportFieldRequiredNamed(String field);
 
+  /// No description provided for @supportErrorValidAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid amount'**
+  String get supportErrorValidAmount;
+
+  /// No description provided for @supportErrorValidDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid distance'**
+  String get supportErrorValidDistance;
+
   /// No description provided for @supportErrorAttachmentsMin.
   ///
   /// In en, this message translates to:

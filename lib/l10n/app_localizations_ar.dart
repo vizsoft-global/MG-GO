@@ -2319,6 +2319,12 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get supportErrorValidAmount => 'يرجى إدخال مبلغ صالح';
+
+  @override
+  String get supportErrorValidDistance => 'يرجى إدخال مسافة صالحة';
+
+  @override
   String supportErrorAttachmentsMin(int count) {
     return 'أرفق $count ملف على الأقل';
   }

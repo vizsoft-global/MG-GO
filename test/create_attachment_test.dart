@@ -104,6 +104,12 @@ void main() {
     expect(filterFuelDecimal('12,3'), '123');
     expect(filterFuelDecimal('12.3456'), '12.345');
     expect(filterFuelDecimal('-5.2'), '5.2');
+    expect(filterFuelDecimal('---'), '');
+    expect(filterDistanceKm('848466'), '848466');
+    expect(filterDistanceKm('848466-664.,--'), '8484666.');
+    expect(filterDistanceKm('12,5'), '125');
+    expect(filterDistanceKm('848466.1234'), '848466.123');
+    expect(filterDistanceKm('---'), '');
     expect(stationHasLetterOrDigit('Al-Ahmadi'), isTrue);
     expect(stationHasLetterOrDigit('⛽'), isFalse);
   });

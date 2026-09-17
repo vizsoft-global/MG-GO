@@ -2332,6 +2332,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get supportErrorValidAmount => 'Please enter a valid amount';
+
+  @override
+  String get supportErrorValidDistance => 'Please enter a valid distance';
+
+  @override
   String supportErrorAttachmentsMin(int count) {
     return 'Attach at least $count file(s)';
   }

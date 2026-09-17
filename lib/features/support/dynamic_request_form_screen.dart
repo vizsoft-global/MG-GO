@@ -1,6 +1,5 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -263,7 +262,24 @@ class _DynamicRequestFormScreenState
         }
         final value = _wireValue(field);
 
-        if (field.isRequired && _isEmpty(field, value)) {
+        if (field.kind == 'number') {
+          final issue = numberFieldSubmitIssue(
+            raw: _controllerFor(field.fieldKey).text,
+            isRequired: field.isRequired || isAmountNumberField(field),
+          );
+          if (issue == NumberFieldSubmitIssue.required) {
+            throw Exception(
+              l10n.supportFieldRequiredNamed(field.label(locale)),
+            );
+          }
+          if (issue == NumberFieldSubmitIssue.invalid) {
+            throw Exception(
+              isDistanceNumberField(field)
+                  ? l10n.supportErrorValidDistance
+                  : l10n.supportErrorValidAmount,
+            );
+          }
+        } else if (field.isRequired && _isEmpty(field, value)) {
           throw Exception(
             l10n.supportFieldRequiredNamed(field.label(locale)),
           );
@@ -457,7 +473,10 @@ class _DynamicRequestFormScreenState
             : field.fieldKey == 'leave_subtype_other'
                 ? l10n.supportFieldLeaveSubtypeOther
                 : field.label(locale);
-    final label = field.isRequired ? '$rawLabel *' : rawLabel;
+    final showStar = field.isRequired ||
+        (field.fieldKey == 'leave_subtype_other' &&
+            isOtherLeaveSubtype(_values['leave_subtype']));
+    final label = showStar ? '$rawLabel *' : rawLabel;
     final help = field.help(locale);
 
     Widget control;
@@ -472,6 +491,12 @@ class _DynamicRequestFormScreenState
         control = TextField(
           controller: _controllerFor(field.fieldKey),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: <TextInputFormatter>[
+            if (isDistanceNumberField(field))
+              const DistanceKmFormatter()
+            else if (isAmountNumberField(field))
+              const FuelDecimalFormatter(),
+          ],
           decoration: InputDecoration(labelText: label, helperText: help),
         );
       case 'date':
