@@ -1575,6 +1575,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get vehicleStation => 'Station';
 
   @override
+  String get vehicleStationInvalid =>
+      'Station name must include a letter or number';
+
+  @override
   String get vehicleFillPhotosHint => 'Three rear-camera stills are required.';
 
   @override
@@ -2560,6 +2564,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get supportAttachedFile => 'Attached file';
+
+  @override
+  String get supportAttachments => 'Attachments';
 
   @override
   String get supportNoneAttached => 'None attached';

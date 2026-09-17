@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/l10n/locale_formatters.dart';
@@ -148,7 +149,8 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     if (uid == null) throw Exception('not_authenticated');
     final keys = <String>[];
     for (final file in _files) {
-      final key = '$uid/${DateTime.now().millisecondsSinceEpoch}_${file.name}';
+      final key =
+          '$uid/${widget.requestId}/${DateTime.now().millisecondsSinceEpoch}_${_fileBasename(file.name)}';
       await Supabase.instance.client.storage.from('request-attachments').uploadBinary(
             key,
             file.bytes,
@@ -341,18 +343,54 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     }
   }
 
+  void _leave() {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/profile/support/requests');
+    }
+  }
+
+  String _fileBasename(String name) {
+    final normalized = name.replaceAll('\\', '/');
+    final base = normalized.split('/').last.trim();
+    return base.isEmpty ? 'attachment' : base;
+  }
+
+  Future<void> _openAttachment(Map<String, dynamic> row) async {
+    final key = row['storage_key']?.toString().trim() ?? '';
+    if (key.isEmpty) return;
+    try {
+      final url = await Supabase.instance.client.storage
+          .from('request-attachments')
+          .createSignedUrl(key, 3600);
+      final uri = Uri.tryParse(url);
+      if (uri == null) return;
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(supportUserMessage(e))),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final async = ref.watch(requestDetailProvider(widget.requestId));
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop || !context.mounted) return;
+        _leave();
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: Text(l10n.supportRequestDetailsTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.canPop()
-              ? context.pop()
-              : context.go('/profile/support/requests'),
+          onPressed: _leave,
         ),
       ),
       body: async.when(
@@ -444,6 +482,41 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                         ),
                       if (detail.currentStepLabel != null)
                         _kv(l10n.status, detail.currentStepLabel!, chip: true),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+              if (detail.attachments.isNotEmpty) ...[
+                _Card(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.supportAttachments,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 8),
+                      ...detail.attachments.map((raw) {
+                        final row = Map<String, dynamic>.from(raw);
+                        final name = _fileBasename(
+                          (row['file_name']?.toString().trim().isNotEmpty ==
+                                  true
+                              ? row['file_name'].toString()
+                              : row['storage_key']?.toString() ?? 'attachment'),
+                        );
+                        return ListTile(
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.attach_file_rounded),
+                          title: Text(
+                            name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          onTap: () => _openAttachment(row),
+                        );
+                      }),
                     ],
                   ),
                 ),
@@ -705,6 +778,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
           );
         },
       ),
+    ),
     );
   }
 

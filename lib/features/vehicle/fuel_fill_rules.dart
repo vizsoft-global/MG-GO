@@ -1,5 +1,35 @@
 import '../support/create_attachment.dart';
 
+final _letterOrDigit = RegExp(r'[\p{L}\p{N}]', unicode: true);
+
+bool stationHasLetterOrDigit(String name) {
+  return _letterOrDigit.hasMatch(name.trim());
+}
+
+/// Single `.`, max 3 decimals. Blocks comma, dash, and extra dots.
+String filterFuelDecimal(String raw) {
+  var out = '';
+  var dot = false;
+  var intDigits = 0;
+  var frac = 0;
+  for (final rune in raw.runes) {
+    final ch = String.fromCharCode(rune);
+    if (ch.compareTo('0') >= 0 && ch.compareTo('9') <= 0) {
+      if (!dot && intDigits < 5) {
+        out += ch;
+        intDigits += 1;
+      } else if (dot && frac < 3) {
+        out += ch;
+        frac += 1;
+      }
+    } else if (ch == '.' && !dot && intDigits > 0) {
+      out += '.';
+      dot = true;
+    }
+  }
+  return out;
+}
+
 String? fuelFillBlockReason({
   required num? litres,
   required num? costKwd,
@@ -12,6 +42,9 @@ String? fuelFillBlockReason({
   if (costKwd == null || costKwd < 0) return 'cost_required';
   if (stationName == null || stationName.trim().isEmpty) {
     return 'station_required';
+  }
+  if (!stationHasLetterOrDigit(stationName)) {
+    return 'station_invalid';
   }
   if (lat == null || lng == null) return 'location_required';
   final have = kinds.toSet();
@@ -47,6 +80,8 @@ String fleetRpcUserMessage(String code, String fallback) {
       return 'Enter the fuel cost';
     case 'station_required':
       return 'Enter the station name';
+    case 'station_invalid':
+      return 'Station name must include a letter or number';
     case 'location_required':
       return 'Location is required to log fuel';
     case 'attachment_required':

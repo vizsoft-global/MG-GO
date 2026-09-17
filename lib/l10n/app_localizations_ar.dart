@@ -1564,6 +1564,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get vehicleStation => 'المحطة';
 
   @override
+  String get vehicleStationInvalid => 'اسم المحطة يجب أن يحتوي على حرف أو رقم';
+
+  @override
   String get vehicleFillPhotosHint => 'ثلاث صور من الكاميرا الخلفية مطلوبة.';
 
   @override
@@ -2546,6 +2549,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get supportAttachedFile => 'ملف مرفق';
+
+  @override
+  String get supportAttachments => 'المرفقات';
 
   @override
   String get supportNoneAttached => 'لا يوجد مرفق';
