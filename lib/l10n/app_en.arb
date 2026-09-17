@@ -1228,6 +1228,8 @@
       }
     }
   },
+  "supportErrorValidAmount": "Please enter a valid amount",
+  "supportErrorValidDistance": "Please enter a valid distance",
   "supportErrorAttachmentsMin": "Attach at least {count} file(s)",
   "@supportErrorAttachmentsMin": {
     "placeholders": {

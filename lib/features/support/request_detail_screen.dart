@@ -800,8 +800,8 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
           const SizedBox(width: 12),
           Expanded(
             child: chip
-                ? Container(
-                    alignment: AlignmentDirectional.centerEnd,
+                ? Align(
+                    alignment: AlignmentDirectional.centerStart,
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                       decoration: BoxDecoration(
@@ -810,9 +810,10 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                       ),
                       child: Text(
                         value,
-                        maxLines: 1,
-                        softWrap: false,
-                        overflow: TextOverflow.ellipsis,
+                        maxLines: 3,
+                        softWrap: true,
+                        overflow: TextOverflow.visible,
+                        textAlign: TextAlign.start,
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
@@ -823,8 +824,8 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                   )
                 : Text(
                     value,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    softWrap: true,
+                    overflow: TextOverflow.visible,
                     textAlign: TextAlign.start,
                     style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                   ),

@@ -139,6 +139,36 @@ void main() {
     );
   });
 
+  test('amount and distance split empty required from invalid', () {
+    final amount = _field(
+      key: 'amount_kwd',
+      kind: 'number',
+      target: 'amount_kwd',
+      required: true,
+    );
+    final distance = _field(
+      key: 'distance_km',
+      kind: 'number',
+      target: 'distance_km',
+    );
+    expect(isAmountNumberField(amount), isTrue);
+    expect(isDistanceNumberField(distance), isTrue);
+    expect(
+      numberFieldSubmitIssue(raw: '', isRequired: true),
+      NumberFieldSubmitIssue.required,
+    );
+    expect(numberFieldSubmitIssue(raw: '   ', isRequired: true), NumberFieldSubmitIssue.required);
+    expect(numberFieldSubmitIssue(raw: '', isRequired: false), isNull);
+    expect(numberFieldSubmitIssue(raw: 'abc', isRequired: true), NumberFieldSubmitIssue.invalid);
+    expect(numberFieldSubmitIssue(raw: '0', isRequired: true), NumberFieldSubmitIssue.invalid);
+    expect(numberFieldSubmitIssue(raw: '12.5', isRequired: true), isNull);
+    expect(numberFieldSubmitIssue(raw: '848466', isRequired: false), isNull);
+    for (final _ in ['fuel', 'fuel_refund']) {
+      expect(isAmountNumberField(amount), isTrue);
+      expect(isDistanceNumberField(distance), isTrue);
+    }
+  });
+
   test('Other leave subtype is recognized in both locales', () {
     expect(isOtherLeaveSubtype('Other'), isTrue);
     expect(isOtherLeaveSubtype('أخرى'), isTrue);

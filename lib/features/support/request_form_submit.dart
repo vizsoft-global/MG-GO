@@ -151,6 +151,30 @@ String? isoDateOnly(DateTime? value) {
   return '$year-$month-$day';
 }
 
+enum NumberFieldSubmitIssue { required, invalid }
+
+bool isAmountNumberField(RequestFieldDefinition field) {
+  return field.fieldKey == 'amount_kwd' || field.target == 'amount_kwd';
+}
+
+bool isDistanceNumberField(RequestFieldDefinition field) {
+  return field.fieldKey == 'distance_km' || field.target == 'distance_km';
+}
+
+/// Empty required → required. Non-empty junk / ≤0 → invalid. Optional empty → none.
+NumberFieldSubmitIssue? numberFieldSubmitIssue({
+  required String raw,
+  required bool isRequired,
+}) {
+  final trimmed = raw.trim();
+  if (trimmed.isEmpty) {
+    return isRequired ? NumberFieldSubmitIssue.required : null;
+  }
+  final parsed = double.tryParse(trimmed);
+  if (parsed == null || parsed <= 0) return NumberFieldSubmitIssue.invalid;
+  return null;
+}
+
 String supportUserMessage(Object error) {
   final raw = error is Exception
       ? error.toString().replaceFirst(RegExp(r'^Exception:\s*'), '')

@@ -1,5 +1,6 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -175,14 +176,14 @@ class _FuelFillScreenState extends ConsumerState<FuelFillScreen> {
           TextField(
             controller: _litres,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: const [_FuelDecimalFormatter()],
+            inputFormatters: const [FuelDecimalFormatter()],
             decoration: InputDecoration(labelText: '${l10n.vehicleLitres} *'),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _cost,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: const [_FuelDecimalFormatter()],
+            inputFormatters: const [FuelDecimalFormatter()],
             decoration: InputDecoration(labelText: '${l10n.vehicleCostKwd} *'),
           ),
           const SizedBox(height: 12),
@@ -266,18 +267,3 @@ class _FillPhotoTile extends StatelessWidget {
   }
 }
 
-class _FuelDecimalFormatter extends TextInputFormatter {
-  const _FuelDecimalFormatter();
-
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    final next = filterFuelDecimal(newValue.text);
-    return TextEditingValue(
-      text: next,
-      selection: TextSelection.collapsed(offset: next.length),
-    );
-  }
-}

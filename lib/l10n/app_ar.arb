@@ -719,6 +719,8 @@
   "supportHintMentionHere": "اكتب هنا",
   "supportFieldJustificationRequired": "المبرر *",
   "supportFieldRequiredNamed": "{field} مطلوب",
+  "supportErrorValidAmount": "يرجى إدخال مبلغ صالح",
+  "supportErrorValidDistance": "يرجى إدخال مسافة صالحة",
   "supportErrorAttachmentsMin": "أرفق {count} ملف على الأقل",
   "supportAttachmentRequired": "مرفق *",
   "supportRequestTypeUnknown": "نوع الطلب هذا غير متاح.",

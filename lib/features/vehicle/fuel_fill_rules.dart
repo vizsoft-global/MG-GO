@@ -1,3 +1,5 @@
+import 'package:flutter/services.dart';
+
 import '../support/create_attachment.dart';
 
 final _letterOrDigit = RegExp(r'[\p{L}\p{N}]', unicode: true);
@@ -28,6 +30,62 @@ String filterFuelDecimal(String raw) {
     }
   }
   return out;
+}
+
+/// Same rules as [filterFuelDecimal], but 7 integer digits so `848466` is not clipped.
+String filterDistanceKm(String raw) {
+  var out = '';
+  var dot = false;
+  var intDigits = 0;
+  var frac = 0;
+  for (final rune in raw.runes) {
+    final ch = String.fromCharCode(rune);
+    if (ch.compareTo('0') >= 0 && ch.compareTo('9') <= 0) {
+      if (!dot && intDigits < 7) {
+        out += ch;
+        intDigits += 1;
+      } else if (dot && frac < 3) {
+        out += ch;
+        frac += 1;
+      }
+    } else if (ch == '.' && !dot && intDigits > 0) {
+      out += '.';
+      dot = true;
+    }
+  }
+  return out;
+}
+
+class FuelDecimalFormatter extends TextInputFormatter {
+  const FuelDecimalFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final next = filterFuelDecimal(newValue.text);
+    return TextEditingValue(
+      text: next,
+      selection: TextSelection.collapsed(offset: next.length),
+    );
+  }
+}
+
+class DistanceKmFormatter extends TextInputFormatter {
+  const DistanceKmFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final next = filterDistanceKm(newValue.text);
+    return TextEditingValue(
+      text: next,
+      selection: TextSelection.collapsed(offset: next.length),
+    );
+  }
 }
 
 String? fuelFillBlockReason({
