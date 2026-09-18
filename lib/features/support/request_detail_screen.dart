@@ -537,7 +537,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                 _RejectionReasonCard(reason: _adminComment(detail)),
                 const SizedBox(height: 12),
               ],
-              if (awaitingReschedule) ...[
+              if (reschedule.isNotEmpty) ...[
                 _ReschedulePropositionCard(reschedule: reschedule),
                 const SizedBox(height: 12),
               ],
@@ -648,6 +648,14 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                   children: [
                     Expanded(
                       child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.rejectedRed,
+                          side: BorderSide(
+                            color: AppColors.rejectedRed.withValues(alpha: 0.4),
+                          ),
+                          backgroundColor:
+                              AppColors.rejectedRed.withValues(alpha: 0.06),
+                        ),
                         onPressed: _submitting
                             ? null
                             : () {
@@ -918,6 +926,34 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
         }
         rows.add((l10n.supportFieldEvidence, firstAttachmentName(), true));
         return rows;
+      case 'leave':
+        final leaveRows = <(String, String, bool)>[];
+        final leaveType = payload['leave_type']?.toString().trim();
+        if (leaveType != null && leaveType.isNotEmpty) {
+          leaveRows.add((
+            l10n.supportFieldLeaveType,
+            humanizeFieldKey(leaveType),
+            false,
+          ));
+        }
+        leaveRows.add((l10n.supportFieldDates, dateRange(), false));
+        final leaveDuration = durationDays();
+        if (leaveDuration != null) {
+          leaveRows.add((
+            l10n.supportFieldDuration,
+            l10n.supportDaysCount(leaveDuration),
+            false,
+          ));
+        }
+        final justification = payload['justification']?.toString().trim();
+        if (justification != null && justification.isNotEmpty) {
+          leaveRows.add((
+            humanizeFieldKey('justification'),
+            humanizeFieldKey(justification),
+            false,
+          ));
+        }
+        return leaveRows;
       case 'sick_leave':
         final rows = <(String, String, bool)>[];
         final subtype = payload['leave_subtype']?.toString();
@@ -1365,10 +1401,16 @@ class _ReschedulePropositionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final start = reschedule['proposed_start_date']?.toString();
-    final end = reschedule['proposed_end_date']?.toString();
+    final start = (reschedule['proposed_start_date'] ??
+            reschedule['proposed_start'])
+        ?.toString();
+    final end =
+        (reschedule['proposed_end_date'] ?? reschedule['proposed_end'])
+            ?.toString();
     final note = reschedule['note']?.toString().trim();
     final by = reschedule['proposed_by']?.toString().trim();
+    final driverNote = reschedule['driver_note']?.toString().trim();
+    final accepted = reschedule['accepted'];
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -1396,6 +1438,14 @@ class _ReschedulePropositionCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(note, style: const TextStyle(color: Color(0xFFB5470A))),
           ],
+          if (accepted == true)
+            _row(l10n.supportRescheduleAccepted, driverNote ?? '—'),
+          if (accepted == false)
+            _row(l10n.supportRescheduleDeclined, driverNote ?? '—'),
+          if (driverNote != null &&
+              driverNote.isNotEmpty &&
+              accepted == null)
+            _row(humanizeFieldKey('driver_note'), driverNote),
         ],
       ),
     );

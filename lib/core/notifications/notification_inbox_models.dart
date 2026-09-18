@@ -51,7 +51,7 @@ class NotificationInboxItem {
       dispatchItemId: json['dispatch_item_id']?.toString() ?? '',
       campaignId: json['campaign_id']?.toString() ?? '',
       title: (json['title'] ?? '').toString(),
-      body: (json['body'] ?? '').toString(),
+      body: inboxBodyFromJson(json, params),
       category: (json['category'] ?? 'announcement').toString(),
       priority: (json['priority'] ?? 'normal').toString(),
       actionType: (json['action_type'] ?? 'open_screen').toString(),
@@ -150,6 +150,17 @@ class NotificationInboxItem {
     }
     return null;
   }
+}
+
+String inboxBodyFromJson(
+  Map<String, dynamic> json,
+  Map<String, dynamic> params,
+) {
+  final raw = (json['body'] ?? '').toString().trim();
+  if (raw.isNotEmpty) return raw;
+  final note = params['note_to_rider']?.toString().trim();
+  if (note != null && note.isNotEmpty) return note;
+  return (json['body'] ?? '').toString();
 }
 
 /// Snapshot returned by `driver_list_notifications`.

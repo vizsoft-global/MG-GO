@@ -63,7 +63,13 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen>
         title: Text(l10n.supportMyVisitsTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/profile/support');
+            }
+          },
         ),
         bottom: TabBar(
           controller: _tabs,
@@ -231,6 +237,16 @@ class _VisitList extends StatelessWidget {
                   _StatusPill(status: row.status),
                 ],
               ),
+              if ((row.noteToRider ?? '').trim().isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  row.noteToRider!.trim(),
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
               if (canManage) ...[
                 const Divider(height: 20),
                 Row(

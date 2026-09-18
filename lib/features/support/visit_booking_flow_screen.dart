@@ -427,8 +427,18 @@ class _DateSlotStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final morning = slots.where((s) => _hour(s.startTime) < 12).toList();
-    final afternoon = slots.where((s) => _hour(s.startTime) >= 12).toList();
+    final bookable = selectedDate == null
+        ? slots
+        : slots
+            .where(
+              (s) => visitSlotStillBookable(
+                startTime: s.startTime,
+                selectedDate: selectedDate!,
+              ),
+            )
+            .toList();
+    final morning = bookable.where((s) => _hour(s.startTime) < 12).toList();
+    final afternoon = bookable.where((s) => _hour(s.startTime) >= 12).toList();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
@@ -607,51 +617,62 @@ class _SlotGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: slots.map((s) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: slots.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        mainAxisExtent: 56,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+      ),
+      itemBuilder: (context, index) {
+        final s = slots[index];
         final isSelected = selected?.id == s.id;
         final color = s.full
             ? AppColors.textSecondary
             : isSelected
                 ? AppColors.accentOrange
                 : AppColors.textPrimary;
-        return SizedBox(
-          width: (MediaQuery.sizeOf(context).width - 32 - 16) / 3,
-          child: InkWell(
-            onTap: s.full ? null : () => onSelect(s),
-            borderRadius: BorderRadius.circular(10),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: s.full
-                    ? AppColors.pageBackground
-                    : isSelected
-                        ? AppColors.accentOrange.withValues(alpha: 0.1)
-                        : Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: isSelected ? AppColors.accentOrange : AppColors.border,
-                ),
+        return InkWell(
+          onTap: s.full ? null : () => onSelect(s),
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: s.full
+                  ? AppColors.pageBackground
+                  : isSelected
+                      ? AppColors.accentOrange.withValues(alpha: 0.1)
+                      : Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isSelected ? AppColors.accentOrange : AppColors.border,
               ),
-              child: Column(
-                children: [
-                  Text(context.l10n.visitSlotRange(s.startTime, s.endTime),
-                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: color)),
-                  Text(
-                    s.full
-                        ? context.l10n.visitSlotFull
-                        : context.l10n.visitSlotRemaining(s.remaining),
-                    style: TextStyle(fontSize: 10.5, color: color),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  context.l10n.visitSlotRange(s.startTime, s.endTime),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                    color: color,
                   ),
-                ],
-              ),
+                ),
+                Text(
+                  s.full
+                      ? context.l10n.visitSlotFull
+                      : context.l10n.visitSlotRemaining(s.remaining),
+                  style: TextStyle(fontSize: 10.5, color: color),
+                ),
+              ],
             ),
           ),
         );
-      }).toList(),
+      },
     );
   }
 }
@@ -734,10 +755,16 @@ class _ReviewRow extends StatelessWidget {
               border: Border(bottom: BorderSide(color: AppColors.border)),
             ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(color: AppColors.textSecondary)),
-          const Spacer(),
-          Flexible(
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: const TextStyle(color: AppColors.textSecondary),
+            ),
+          ),
+          Expanded(
             child: Text(
               value,
               textAlign: TextAlign.end,
