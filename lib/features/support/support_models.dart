@@ -202,6 +202,7 @@ class VisitBooking {
     required this.scheduledDate,
     required this.status,
     this.note,
+    this.noteToRider,
   });
 
   final String id;
@@ -210,6 +211,7 @@ class VisitBooking {
   final String scheduledDate;
   final String status;
   final String? note;
+  final String? noteToRider;
 
   factory VisitBooking.fromJson(Map<String, dynamic> json) {
     return VisitBooking(
@@ -219,11 +221,41 @@ class VisitBooking {
       scheduledDate: json['scheduled_date']?.toString() ?? '',
       status: json['status'] as String? ?? '',
       note: json['note'] as String?,
+      noteToRider: json['note_to_rider'] as String?,
     );
   }
 
-  bool get isUpcoming =>
-      status == 'confirmed' || status == 'checked_in';
+  bool get isUpcoming => visitBookingIsUpcoming(this);
+}
+
+String kuwaitCalendarYmd([DateTime? kuwaitNow]) {
+  final now = kuwaitNow ?? DateTime.now().toUtc().add(const Duration(hours: 3));
+  final y = now.year.toString().padLeft(4, '0');
+  final m = now.month.toString().padLeft(2, '0');
+  final d = now.day.toString().padLeft(2, '0');
+  return '$y-$m-$d';
+}
+
+bool visitBookingIsUpcoming(VisitBooking row, {DateTime? kuwaitNow}) {
+  if (row.status != 'confirmed' && row.status != 'checked_in') return false;
+  return row.scheduledDate.compareTo(kuwaitCalendarYmd(kuwaitNow)) >= 0;
+}
+
+bool visitSlotStillBookable({
+  required String startTime,
+  required DateTime selectedDate,
+  DateTime? kuwaitNow,
+}) {
+  final now = kuwaitNow ?? DateTime.now().toUtc().add(const Duration(hours: 3));
+  final today = DateTime(now.year, now.month, now.day);
+  final selected = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+  if (selected.isAfter(today)) return true;
+  if (selected.isBefore(today)) return false;
+  final parts = startTime.split(':');
+  if (parts.length < 2) return true;
+  final startMinutes =
+      (int.tryParse(parts[0]) ?? 0) * 60 + (int.tryParse(parts[1]) ?? 0);
+  return startMinutes > now.hour * 60 + now.minute;
 }
 
 class LoanTenureOption {

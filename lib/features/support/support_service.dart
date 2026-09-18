@@ -300,7 +300,7 @@ class SupportService {
     final rows = await _client
         .from('visit_bookings')
         .select(
-          'id, booking_code, department_key, scheduled_date, status, note',
+          'id, booking_code, department_key, scheduled_date, status, note, note_to_rider',
         )
         .order('scheduled_date', ascending: false);
     return (rows as List)

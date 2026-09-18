@@ -163,7 +163,7 @@ List<MapEntry<String, String>> visiblePayloadEntries({
       rows.add(MapEntry(key, formatDateTime(parsed)));
       return;
     }
-    rows.add(MapEntry(key, raw));
+    rows.add(MapEntry(key, humanizeFieldKey(raw)));
   });
   return rows;
 }
