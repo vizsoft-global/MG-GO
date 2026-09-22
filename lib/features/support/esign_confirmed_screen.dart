@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/l10n/locale_formatters.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
+import 'esign_full_document_screen.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
 
@@ -62,7 +62,8 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
     });
   }
 
-  Future<void> _openStoredFile(String? storageKey) async {
+  Future<void> _openStoredFile(EsignRequestDetail detail) async {
+    final storageKey = detail.downloadStorageKey;
     if (storageKey == null || storageKey.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.l10n.esignNoDocumentToDownload)),
@@ -74,8 +75,17 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
       final url =
           await ref.read(supportServiceProvider).signedEsignDocumentUrl(storageKey);
       if (url == null) throw Exception('download_unavailable');
-      final uri = Uri.parse(url);
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => EsignFullDocumentScreen(
+            url: url,
+            title: detail.title,
+            isImage: _isImageKey(storageKey),
+            restricted: detail.screenshotRestricted,
+          ),
+        ),
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
@@ -83,6 +93,14 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
     } finally {
       if (mounted) setState(() => _downloading = false);
     }
+  }
+
+  bool _isImageKey(String key) {
+    final lower = key.toLowerCase();
+    return lower.endsWith('.png') ||
+        lower.endsWith('.jpg') ||
+        lower.endsWith('.jpeg') ||
+        lower.endsWith('.webp');
   }
 
   @override
@@ -197,7 +215,7 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
                 child: OutlinedButton.icon(
                   onPressed: _downloading
                       ? null
-                      : () => _openStoredFile(detail.downloadStorageKey),
+                      : () => _openStoredFile(detail),
                   icon: _downloading
                       ? const SizedBox(
                           height: 16, width: 16,

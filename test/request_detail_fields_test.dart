@@ -99,7 +99,7 @@ void main() {
   test('screenshot_restricted parses false from JSON bool and string', () {
     expect(parseScreenshotRestricted(false), isFalse);
     expect(parseScreenshotRestricted('false'), isFalse);
-    expect(parseScreenshotRestricted(null), isTrue);
+    expect(parseScreenshotRestricted(null), isFalse);
   });
 
   test('admin response stays after ack on an approved loan', () {

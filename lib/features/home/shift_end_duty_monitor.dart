@@ -24,6 +24,7 @@ class _ShiftEndDutyMonitor {
   ProviderSubscription<AsyncValue<dynamic>>? _shiftSub;
   Timer? _debounce;
   bool _inFlight = false;
+  DateTime? _lastKnownEnd;
 
   void start() {
     _dutySub = _ref.listen(homeDashboardProvider, (_, _) => _schedule());
@@ -53,9 +54,13 @@ class _ShiftEndDutyMonitor {
     if (shiftAsync.isLoading) return;
 
     final shift = shiftAsync.asData?.value;
+    final scheduledEnd = dashboard.shiftAdherence?.scheduledEndAt;
+    final knownEnd = shift?.shiftEndAt ?? scheduledEnd;
+    if (knownEnd != null) _lastKnownEnd = knownEnd;
     final should = shouldAutoClockOutForShift(
       isOnDuty: true,
       shiftEndAt: shift?.shiftEndAt,
+      scheduledEndAt: scheduledEnd ?? _lastKnownEnd,
       now: DateTime.now(),
     );
     if (!should) return;

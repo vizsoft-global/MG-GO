@@ -17,6 +17,7 @@ import '../deliveries/delivery_proximity_service.dart';
 import '../deliveries/widgets/add_delivery_docked_button.dart';
 import '../home/home_providers.dart';
 import '../profile/avatar_upload_controller.dart';
+import '../support/support_providers.dart';
 
 class MainShell extends ConsumerStatefulWidget {
   const MainShell({required this.navigationShell, super.key});
@@ -50,6 +51,7 @@ class _MainShellState extends ConsumerState<MainShell>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       unawaited(_enforceLoginVerificationGate());
+      ref.invalidate(esignRequestsProvider);
     }
   }
 

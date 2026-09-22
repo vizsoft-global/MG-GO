@@ -4,23 +4,27 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../features/home/home_providers.dart';
+import '../../features/support/support_providers.dart';
 import '../router/app_router.dart';
 import 'notification_payload.dart';
 
 class NotificationRouter {
-  NotificationRouter._(this._invalidateDashboard);
+  NotificationRouter._(this._invalidateDashboard, this._invalidateEsign);
 
   final VoidCallback _invalidateDashboard;
+  final VoidCallback _invalidateEsign;
 
   factory NotificationRouter(Ref ref) {
     return NotificationRouter._(
       () => ref.invalidate(homeDashboardProvider),
+      () => ref.invalidate(esignRequestsProvider),
     );
   }
 
   factory NotificationRouter.fromWidgetRef(WidgetRef ref) {
     return NotificationRouter._(
       () => ref.invalidate(homeDashboardProvider),
+      () => ref.invalidate(esignRequestsProvider),
     );
   }
 
@@ -297,6 +301,9 @@ class NotificationRouter {
 
   void _navigateToRoute(String route) {
     if (_isHomeRoute(route)) return;
+    if (route.contains('/profile/support/sign')) {
+      _invalidateEsign();
+    }
     final context = rootNavigatorKey.currentContext;
     if (context == null || !context.mounted) return;
     context.go(route);

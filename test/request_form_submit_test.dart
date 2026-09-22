@@ -92,6 +92,39 @@ void main() {
     );
   });
 
+  test('RPC date errors name From then To', () {
+    const from = 'From date is required';
+    const to = 'To date is required';
+    const order = 'To date cannot be before From date';
+    expect(
+      requestFormErrorMessage(
+        Exception('invalid_date_range'),
+        fromRequired: from,
+        toRequired: to,
+        toBeforeFrom: order,
+      ),
+      order,
+    );
+    expect(
+      requestFormErrorMessage(
+        Exception('field_required:start_date'),
+        fromRequired: from,
+        toRequired: to,
+        toBeforeFrom: order,
+      ),
+      from,
+    );
+    expect(
+      requestFormErrorMessage(
+        Exception('field_required:end_date'),
+        fromRequired: from,
+        toRequired: to,
+        toBeforeFrom: order,
+      ),
+      to,
+    );
+  });
+
   test('needed_by cannot open earlier than today', () {
     final now = DateTime(2026, 9, 1);
     final field = _field(key: 'needed_by', kind: 'date', target: 'payload');

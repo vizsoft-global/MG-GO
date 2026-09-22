@@ -46,7 +46,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
   final _noteFocus = FocusNode();
   final List<({String name, Uint8List bytes})> _files = [];
   bool _submitting = false;
-  bool _noteVisible = false;
+  bool _noteVisible = true;
 
   @override
   void dispose() {
@@ -731,10 +731,16 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                         onPressed: _submitting
                             ? null
                             : () {
-                                setState(() => _noteVisible = true);
-                                WidgetsBinding.instance.addPostFrameCallback((_) {
-                                  if (mounted) _noteFocus.requestFocus();
-                                });
+                                if (!_noteVisible) {
+                                  setState(() => _noteVisible = true);
+                                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                                    if (mounted) _noteFocus.requestFocus();
+                                  });
+                                  return;
+                                }
+                                _acknowledge(
+                                  withUpload: isDocumentType && _files.isNotEmpty,
+                                );
                               },
                         child: Text(
                           l10n.supportAddNote,

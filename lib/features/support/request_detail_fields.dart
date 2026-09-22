@@ -50,7 +50,7 @@ bool hideAssetCurrentStatus(String fieldKey, dynamic requestMode) {
   return fieldKey == 'asset_current_status' && isAssetFirstTime(requestMode);
 }
 
-bool parseScreenshotRestricted(dynamic raw, {bool fallback = true}) {
+bool parseScreenshotRestricted(dynamic raw, {bool fallback = false}) {
   if (raw == null) return fallback;
   if (raw is bool) return raw;
   if (raw is num) return raw != 0;
