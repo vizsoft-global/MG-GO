@@ -3,12 +3,14 @@ import 'dart:convert';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/app_update/force_update_state.dart';
+import 'driver_freeze.dart';
 
 /// Current app-access state for the signed-in driver row.
 class DriverAccessStatus {
   const DriverAccessStatus({
     required this.blocked,
     this.archived = false,
+    this.frozen = false,
     this.reason,
     this.forceUpdate,
   });
@@ -16,18 +18,54 @@ class DriverAccessStatus {
   const DriverAccessStatus.allowed()
       : blocked = false,
         archived = false,
+        frozen = false,
         reason = null,
         forceUpdate = null;
 
   const DriverAccessStatus.archived()
       : blocked = true,
         archived = true,
+        frozen = false,
         reason = 'driver_archived',
         forceUpdate = null;
 
   final bool blocked;
   final bool archived;
+  final bool frozen;
   final String? reason;
+
+  /// Archive → block → active freeze. Block wins when both flags are on.
+  factory DriverAccessStatus.fromDriverRow(
+    Map<String, dynamic> row,
+    String todayYmd, {
+    UpdateRequiredException? forceUpdate,
+  }) {
+    if (row['archived_at'] != null) {
+      return const DriverAccessStatus.archived();
+    }
+    if (row['is_blocked'] == true) {
+      final raw = (row['blocked_reason'] as String?)?.trim();
+      return DriverAccessStatus(
+        blocked: true,
+        reason: raw == null || raw.isEmpty ? null : raw,
+        forceUpdate: forceUpdate,
+      );
+    }
+    final from = row['frozen_from'] as String?;
+    final until = row['frozen_until'] as String?;
+    if (freezeWindowIsActive(from, until, todayYmd)) {
+      return DriverAccessStatus(
+        blocked: true,
+        frozen: true,
+        reason: formatFreezeLoginReason(
+          row['freeze_reason'] as String?,
+          until ?? todayYmd,
+        ),
+        forceUpdate: forceUpdate,
+      );
+    }
+    return DriverAccessStatus(blocked: false, forceUpdate: forceUpdate);
+  }
 
   /// Set when the admin forced this rider onto a newer build and the installed
   /// one is still below it. Null when the flag is off or already satisfied.

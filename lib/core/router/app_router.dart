@@ -194,7 +194,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/blocked',
         name: 'blocked',
         builder: (context, state) =>
-            BlockedScreen(reason: state.extra as String?),
+            BlockedScreen(
+              reason: BlockedRouteExtra.from(state.extra).reason,
+              frozen: BlockedRouteExtra.from(state.extra).frozen,
+            ),
       ),
       GoRoute(
         path: '/deliveries/add',

@@ -758,11 +758,23 @@ abstract class AppLocalizations {
   /// **'Access blocked'**
   String get accessBlocked;
 
+  /// No description provided for @accessFrozen.
+  ///
+  /// In en, this message translates to:
+  /// **'Account frozen'**
+  String get accessFrozen;
+
   /// No description provided for @accountBlockedDefault.
   ///
   /// In en, this message translates to:
   /// **'Your account has been blocked. Contact your admin for details.'**
   String get accountBlockedDefault;
+
+  /// No description provided for @accountFrozenDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is frozen. Contact your admin.'**
+  String get accountFrozenDefault;
 
   /// No description provided for @backToSignIn.
   ///
