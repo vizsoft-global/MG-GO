@@ -389,8 +389,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get accessBlocked => 'الوصول محظور';
 
   @override
+  String get accessFrozen => 'الحساب مجمّد';
+
+  @override
   String get accountBlockedDefault =>
       'تم حظر حسابك. تواصل مع المسؤول للتفاصيل.';
+
+  @override
+  String get accountFrozenDefault => 'حسابك مجمّد. تواصل مع المسؤول.';
 
   @override
   String get backToSignIn => 'العودة لتسجيل الدخول';

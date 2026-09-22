@@ -9,6 +9,7 @@ import '../../core/branding/app_branding.dart';
 import '../../core/branding/app_branding_provider.dart';
 import '../../core/router/app_router.dart';
 import '../../core/settings/live_db_refresh.dart';
+import '../blocked/blocked_screen.dart';
 import '../home/home_providers.dart';
 import 'driver_access.dart';
 import 'rider_auth_service.dart';
@@ -29,7 +30,7 @@ class DriverAccessEnforcer {
   final Ref _ref;
   bool _inFlight = false;
 
-  Future<void> enforce({String? reason}) async {
+  Future<void> enforce({String? reason, bool frozen = false}) async {
     if (_inFlight) return;
     final session = Supabase.instance.client.auth.currentSession;
     if (session == null) return;
@@ -44,7 +45,10 @@ class DriverAccessEnforcer {
 
     try {
       await _ref.read(riderAuthServiceProvider).signOut(keepRememberMe: true);
-      _ref.read(appRouterProvider).go('/blocked', extra: reason);
+      _ref.read(appRouterProvider).go(
+            '/blocked',
+            extra: BlockedRouteExtra(reason: reason, frozen: frozen),
+          );
     } finally {
       _inFlight = false;
     }
@@ -163,6 +167,7 @@ class _DriverAccessMonitor with WidgetsBindingObserver {
       if (!status.blocked) return;
       await _ref.read(driverAccessEnforcerProvider).enforce(
             reason: status.reason,
+            frozen: status.frozen,
           );
     } finally {
       _checking = false;

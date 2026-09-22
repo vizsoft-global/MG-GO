@@ -388,8 +388,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accessBlocked => 'Access blocked';
 
   @override
+  String get accessFrozen => 'Account frozen';
+
+  @override
   String get accountBlockedDefault =>
       'Your account has been blocked. Contact your admin for details.';
+
+  @override
+  String get accountFrozenDefault =>
+      'Your account is frozen. Contact your admin.';
 
   @override
   String get backToSignIn => 'Back to sign in';

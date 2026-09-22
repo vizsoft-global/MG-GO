@@ -16,8 +16,10 @@ import '../../core/geo/device_location_resolver.dart';
 import '../../core/observability/sentry_config.dart';
 import '../../core/utils/ascii_digits.dart';
 import '../profile/avatar_disk_cache.dart';
+import '../shift/shift_models.dart';
 import 'device_session_models.dart';
 import 'driver_access.dart';
+import 'driver_freeze.dart';
 import 'login_preferences_store.dart';
 import 'login_verification_store.dart';
 import 'sign_out_cleanup.dart';
@@ -153,7 +155,8 @@ class RiderAuthService {
           .from('drivers')
           .select(
             'is_blocked, blocked_reason, login_verification_exempt, archived_at, '
-            'force_app_update_at, force_app_update_min_code',
+            'force_app_update_at, force_app_update_min_code, '
+            'frozen_from, frozen_until, freeze_reason',
           )
           .eq('id', user.id)
           .maybeSingle();
@@ -166,24 +169,14 @@ class RiderAuthService {
         );
       } catch (_) {}
 
-      if (row['archived_at'] != null) {
-        return const DriverAccessStatus.archived();
-      }
-
       final forceUpdate = perDriverForceUpdateFrom(
         row,
         installedVersionCode: InstalledBuild.versionCode,
       );
 
-      final blocked = row['is_blocked'] == true;
-      if (!blocked) {
-        return DriverAccessStatus(blocked: false, forceUpdate: forceUpdate);
-      }
-
-      final reason = (row['blocked_reason'] as String?)?.trim();
-      return DriverAccessStatus(
-        blocked: true,
-        reason: reason == null || reason.isEmpty ? null : reason,
+      return DriverAccessStatus.fromDriverRow(
+        row,
+        kuwaitDateYmd(DailyShift.kuwaitTodayDate()),
         forceUpdate: forceUpdate,
       );
     } catch (_) {
