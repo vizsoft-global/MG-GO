@@ -6,9 +6,11 @@
 bool shouldAutoClockOutForShift({
   required bool isOnDuty,
   required DateTime? shiftEndAt,
+  DateTime? scheduledEndAt,
   required DateTime now,
 }) {
   if (!isOnDuty) return false;
-  if (shiftEndAt == null) return false;
-  return !now.isBefore(shiftEndAt);
+  final end = shiftEndAt ?? scheduledEndAt;
+  if (end == null) return false;
+  return !now.isBefore(end);
 }

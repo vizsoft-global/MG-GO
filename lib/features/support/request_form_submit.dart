@@ -181,3 +181,33 @@ String supportUserMessage(Object error) {
       : error.toString();
   return raw.trim();
 }
+
+/// Maps RPC / form date errors so the snackbar names From then To.
+String requestFormErrorMessage(
+  Object error, {
+  required String fromRequired,
+  required String toRequired,
+  required String toBeforeFrom,
+}) {
+  final raw = supportUserMessage(error);
+  final code = raw.split(':').first.trim().toLowerCase();
+  switch (code) {
+    case 'invalid_date_range':
+    case 'to_before_from':
+      return toBeforeFrom;
+    case 'from_required':
+    case 'start_date_required':
+      return fromRequired;
+    case 'to_required':
+    case 'end_date_required':
+      return toRequired;
+    default:
+      if (raw.contains('field_required') && raw.contains('start_date')) {
+        return fromRequired;
+      }
+      if (raw.contains('field_required') && raw.contains('end_date')) {
+        return toRequired;
+      }
+      return raw;
+  }
+}

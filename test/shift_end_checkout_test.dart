@@ -47,4 +47,28 @@ void main() {
       isFalse,
     );
   });
+
+  test('clocks out from scheduled end when the shift row is gone', () {
+    expect(
+      shouldAutoClockOutForShift(
+        isOnDuty: true,
+        shiftEndAt: null,
+        scheduledEndAt: DateTime.utc(2026, 8, 22, 15, 0),
+        now: now,
+      ),
+      isTrue,
+    );
+  });
+
+  test('does not clock out from a future scheduled end', () {
+    expect(
+      shouldAutoClockOutForShift(
+        isOnDuty: true,
+        shiftEndAt: null,
+        scheduledEndAt: DateTime.utc(2026, 8, 22, 15, 10),
+        now: now,
+      ),
+      isFalse,
+    );
+  });
 }

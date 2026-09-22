@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../app.dart';
 import '../../core/l10n/localizations_loader.dart';
 import '../../core/settings/live_db_refresh.dart';
+import '../duty/duty_session_gate_provider.dart';
 import 'home_providers.dart';
 
 /// Suppress auto-checkout toast after a local/manual duty off (toggle or
@@ -161,6 +162,9 @@ class _RemoteDutyMonitor with WidgetsBindingObserver {
         .maybeSingle();
 
     final reason = log?['check_out_reason'] as String?;
+    if (reason == 'auto_shift_end') {
+      _ref.read(dutySessionGateProvider.notifier).markNeedsFreshClockIn();
+    }
     if (reason != 'auto_offline' &&
         reason != 'auto_out_of_zone' &&
         reason != 'auto_shift_end') {

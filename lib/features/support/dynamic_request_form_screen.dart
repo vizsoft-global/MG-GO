@@ -383,7 +383,16 @@ class _DynamicRequestFormScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(supportUserMessage(e))),
+          SnackBar(
+            content: Text(
+              requestFormErrorMessage(
+                e,
+                fromRequired: context.l10n.supportErrorFromDateRequired,
+                toRequired: context.l10n.supportErrorToDateRequired,
+                toBeforeFrom: context.l10n.supportErrorToDateBeforeFrom,
+              ),
+            ),
+          ),
         );
       }
     } finally {

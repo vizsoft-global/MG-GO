@@ -425,7 +425,7 @@ class EsignRequestSummary {
     required this.status,
     this.dueAt,
     this.signedAt,
-    this.screenshotRestricted = true,
+    this.screenshotRestricted = false,
     this.categoryKey,
     this.categoryLabel,
     this.createdAt,
