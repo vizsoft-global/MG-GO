@@ -208,6 +208,10 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                 if (detail.screenshotRestricted)
                   const ScreenshotRestrictionBanner(),
                 if (detail.screenshotRestricted) const SizedBox(height: 12),
+                if (detail.hasSenderDetails) ...[
+                  _EsignDetailsCard(detail: detail),
+                  const SizedBox(height: 10),
+                ],
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(14),
@@ -362,5 +366,75 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
         lower.endsWith('.jpg') ||
         lower.endsWith('.jpeg') ||
         lower.endsWith('.webp');
+  }
+}
+
+class _EsignDetailsCard extends StatelessWidget {
+  const _EsignDetailsCard({required this.detail});
+
+  final EsignRequestDetail detail;
+
+  @override
+  Widget build(BuildContext context) {
+    final arabic = Localizations.localeOf(context).languageCode == 'ar';
+    final company = detail.snapshotValue('company_name');
+    final name = detail.snapshotValue('employee_name');
+    final employeeId = detail.snapshotValue('employee_id');
+    final description = (detail.description ?? '').trim();
+    final rows = <(String, String)>[
+      if (company.isNotEmpty) (arabic ? 'الشركة' : 'Company', company),
+      if (name.isNotEmpty) (arabic ? 'اسم الموظف' : 'Employee name', name),
+      if (employeeId.isNotEmpty) (arabic ? 'رقم الموظف' : 'Employee ID', employeeId),
+      if (description.isNotEmpty) (arabic ? 'الوصف' : 'Description', description),
+      ...detail.fieldValuesLabeled
+          .where((f) => f.value.trim().isNotEmpty)
+          .map((f) => (f.labelFor(arabic), f.value)),
+    ];
+    final template = arabic
+        ? (detail.templateNameAr ?? detail.templateName)
+        : (detail.templateName ?? detail.templateNameAr);
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              arabic ? 'تفاصيل الطلب' : 'Request details',
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+            ),
+            if (template != null && template.trim().isNotEmpty) ...[
+              const SizedBox(height: 2),
+              Text(
+                template,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+            const SizedBox(height: 10),
+            for (final row in rows) ...[
+              Text(
+                row.$1,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              Text(
+                row.$2,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }
