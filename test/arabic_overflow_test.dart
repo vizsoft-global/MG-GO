@@ -267,6 +267,33 @@ final _viewerFailed = EsignRequestDetail(raw: const {
   'due_at': '2026-08-30',
 });
 
+const _viewerSenderId = 'qa-esign-viewer-sender';
+
+final _viewerSender = EsignRequestDetail(raw: const {
+  'id': _viewerSenderId,
+  'request_code': 'SIG-0145',
+  'title': 'إشعار جزاء تأخير التسليم',
+  'status': 'pending',
+  'screenshot_restricted': false,
+  'category_label': 'جزاء',
+  'template_name': 'Penalty notice',
+  'template_name_ar': 'إشعار جزاء التأخير في تسليم الطلبات',
+  'description': 'تأخير متكرر في التسليم خلال أسبوع العمل الحالي',
+  'employee_snapshot': {
+    'company_name': 'مسلّم للتوصيل',
+    'employee_name': 'عبد الرحمن الشمري',
+    'employee_id': '10421',
+  },
+  'field_values_labeled': [
+    {
+      'key': 'decision',
+      'label_en': 'Decision',
+      'label_ar': 'القرار الإداري الصادر بحق الموظف',
+      'value': 'خصم خمسة دنانير من الراتب',
+    },
+  ],
+});
+
 const _riderProfile = RiderProfile(
   id: 'qa-rider',
   fullName: 'عبد الرحمن الشمري',
@@ -287,6 +314,8 @@ Widget _harness(Widget home, {List<RequestTypeDefinition>? types}) {
           .overrideWith((ref) async => _viewerNoDoc),
       esignRequestDetailProvider(_viewerFailedId)
           .overrideWith((ref) async => _viewerFailed),
+      esignRequestDetailProvider(_viewerSenderId)
+          .overrideWith((ref) async => _viewerSender),
       myRequestsProvider.overrideWith((ref) async => _myRequests),
       requestDetailProvider(_requestId).overrideWith((ref) async => _requestDetail),
       complaintCategoriesProvider.overrideWith((ref) async => const []),
@@ -509,6 +538,18 @@ void main() {
       expect(button.left, greaterThanOrEqualTo(0), reason: label);
       expect(button.right, lessThanOrEqualTo(_pixel9.width), reason: label);
     }
+  });
+
+  testWidgets('e-sign viewer sender details card in Arabic', (tester) async {
+    await _pumpAtPixel9(
+      tester,
+      const EsignViewerScreen(requestId: _viewerSenderId),
+    );
+    expect(find.text('تفاصيل الطلب'), findsOneWidget);
+    expect(find.text('مسلّم للتوصيل'), findsOneWidget);
+    expect(find.text('10421'), findsOneWidget);
+    expect(find.text('القرار الإداري الصادر بحق الموظف'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('e-sign viewer preview failure in Arabic', (tester) async {

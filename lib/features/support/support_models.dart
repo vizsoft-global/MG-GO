@@ -509,6 +509,35 @@ EsignInboxSections partitionEsignInbox(Iterable<EsignRequestSummary> rows) {
   );
 }
 
+class EsignLabeledField {
+  const EsignLabeledField({
+    required this.key,
+    required this.labelEn,
+    this.labelAr,
+    required this.value,
+  });
+
+  final String key;
+  final String labelEn;
+  final String? labelAr;
+  final String value;
+
+  String labelFor(bool arabic) {
+    final ar = labelAr?.trim();
+    if (arabic && ar != null && ar.isNotEmpty) return ar;
+    return labelEn;
+  }
+
+  factory EsignLabeledField.fromJson(Map<String, dynamic> json) {
+    return EsignLabeledField(
+      key: json['key'] as String? ?? '',
+      labelEn: json['label_en'] as String? ?? json['key'] as String? ?? '',
+      labelAr: json['label_ar'] as String?,
+      value: json['value']?.toString() ?? '',
+    );
+  }
+}
+
 class EsignRequestDetail {
   const EsignRequestDetail({required this.raw});
 
@@ -552,6 +581,57 @@ class EsignRequestDetail {
 
   DateTime? get dueAt => _parseDate(raw['due_at']);
   DateTime? get signedAt => _parseDateTime(raw['signed_at']);
+
+  String? get description => raw['description'] as String?;
+  String? get templateName => raw['template_name'] as String?;
+  String? get templateNameAr => raw['template_name_ar'] as String?;
+
+  Map<String, dynamic> get employeeSnapshot {
+    final snap = raw['employee_snapshot'];
+    if (snap is Map<String, dynamic>) return snap;
+    if (snap is Map) return Map<String, dynamic>.from(snap);
+    return {};
+  }
+
+  String snapshotValue(String key) {
+    final v = employeeSnapshot[key];
+    if (v == null) return '';
+    return v.toString().trim();
+  }
+
+  List<EsignLabeledField> get fieldValuesLabeled {
+    final rawFields = raw['field_values_labeled'];
+    if (rawFields is List && rawFields.isNotEmpty) {
+      return rawFields
+          .whereType<Map>()
+          .map((row) => EsignLabeledField.fromJson(Map<String, dynamic>.from(row)))
+          .toList();
+    }
+    final values = raw['field_values'];
+    if (values is! Map) return const [];
+    return values.entries
+        .where((e) => (e.value?.toString() ?? '').trim().isNotEmpty)
+        .map(
+          (e) => EsignLabeledField(
+            key: e.key.toString(),
+            labelEn: e.key.toString(),
+            value: e.value.toString(),
+          ),
+        )
+        .toList();
+  }
+
+  bool get hasSenderDetails {
+    final desc = (description ?? '').trim();
+    final hasTemplate = (templateName ?? '').trim().isNotEmpty ||
+        (templateNameAr ?? '').trim().isNotEmpty;
+    return desc.isNotEmpty ||
+        hasTemplate ||
+        snapshotValue('company_name').isNotEmpty ||
+        snapshotValue('employee_name').isNotEmpty ||
+        snapshotValue('employee_id').isNotEmpty ||
+        fieldValuesLabeled.any((f) => f.value.trim().isNotEmpty);
+  }
 
   bool get isPending => status == 'pending';
   bool get isSigned => status == 'signed';
