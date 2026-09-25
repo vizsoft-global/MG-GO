@@ -33,23 +33,18 @@ class _DeliveriesScreenState extends ConsumerState<DeliveriesScreen> {
 
   List<DriverDelivery> _filterForDay(List<DriverDelivery> all) {
     return all
-        .where(
-          (d) =>
-              d.primaryTimestamp != null &&
-              isSameLocalDay(d.primaryTimestamp!, _selectedDate),
-        )
+        .where((d) => deliveryBelongsToSelectedDay(d, _selectedDate))
         .toList();
   }
 
-  /// Aggregate verified deliveries per local-midnight day for the calendar.
+  /// Aggregate verified deliveries per shift day for the calendar.
   Map<DateTime, int> _verifiedCountsByDate(List<DriverDelivery> all) {
     final counts = <DateTime, int>{};
     for (final d in all) {
       if (d.status != 'verified') continue;
-      final ts = d.deliveredAt;
-      if (ts == null) continue;
-      final local = ts.toLocal();
-      final key = DateTime(local.year, local.month, local.day);
+      final day = deliveryShiftDay(d);
+      if (day == null) continue;
+      final key = DateTime(day.year, day.month, day.day);
       counts[key] = (counts[key] ?? 0) + 1;
     }
     return counts;

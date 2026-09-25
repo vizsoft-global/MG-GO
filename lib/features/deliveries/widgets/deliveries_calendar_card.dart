@@ -17,7 +17,7 @@ class DeliveriesCalendarCard extends StatelessWidget {
   final DateTime selectedDate;
   final ValueChanged<DateTime> onDateSelected;
 
-  /// Number of verified deliveries per local-midnight date. Days not in the
+  /// Number of verified deliveries per shift day. Days not in the
   /// map (or with a value of 0) are rendered without a count badge. The
   /// parent computes this once from the deliveries list so we don't have to
   /// scan the whole list per cell.

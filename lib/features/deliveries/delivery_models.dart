@@ -64,6 +64,7 @@ class DriverDelivery {
     this.rejectionReason,
     this.partnerName,
     this.partnerLogoUrl,
+    this.shiftDate,
   });
 
   final String id;
@@ -85,6 +86,8 @@ class DriverDelivery {
   final String? rejectionReason;
   final String? partnerName;
   final String? partnerLogoUrl;
+  /// Kuwait shift day (`deliveries.shift_date`). Null on old rows / old APKs.
+  final DateTime? shiftDate;
 
   bool get isCancelled => status == 'cancelled';
   bool get isInTransit => status == 'in_transit';
@@ -156,6 +159,20 @@ class DriverDelivery {
       return double.tryParse(raw.toString());
     }
 
+    DateTime? _parseDateOnly(Object? raw) {
+      if (raw is String && raw.isNotEmpty) {
+        final match = RegExp(r'^(\d{4})-(\d{2})-(\d{2})').firstMatch(raw);
+        if (match != null) {
+          return DateTime(
+            int.parse(match.group(1)!),
+            int.parse(match.group(2)!),
+            int.parse(match.group(3)!),
+          );
+        }
+      }
+      return null;
+    }
+
     return DriverDelivery(
       id: json['id'] as String,
       externalOrderId: json['external_order_id'] as String? ?? '—',
@@ -176,6 +193,7 @@ class DriverDelivery {
       rejectionReason: json['rejection_reason'] as String?,
       partnerName: partnerMap?['name'] as String?,
       partnerLogoUrl: partnerMap?['logo_url'] as String?,
+      shiftDate: _parseDateOnly(json['shift_date']),
     );
   }
 }
