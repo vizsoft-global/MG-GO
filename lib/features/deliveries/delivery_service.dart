@@ -57,7 +57,7 @@ class DeliveryService {
     pickup_at, pickup_lat, pickup_lng, pickup_proof_url,
     delivered_at, delivered_lat, delivered_lng, order_proof_url,
     cancelled_at, cancel_lat, cancel_lng, cancel_reason, cancel_proof_url,
-    rejection_reason,
+    rejection_reason, shift_date,
     partners ( name, logo_url )
   ''';
 
