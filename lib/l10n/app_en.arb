@@ -385,6 +385,90 @@
       }
     }
   },
+  "dailyDpdTarget": "Daily DPD Target",
+  "dailyDpdRemaining": "{count} more deliveries to hit today's target",
+  "@dailyDpdRemaining": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dailyDpdAchieved": "Target achieved — incentives unlocked",
+  "incentivesExtraOrders": "Incentives — extra orders",
+  "incentivesStartAfterTarget": "Starts after today's DPD target",
+  "incentivesLivePaidAbove": "Live · paid per order above {target}",
+  "@incentivesLivePaidAbove": {
+    "placeholders": {
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "incentiveLocked": "Locked",
+  "incentiveEarned": "Earned {amount}",
+  "@incentiveEarned": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "incentivePerOrder": "{rate} per order",
+  "@incentivePerOrder": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "incentiveUnlocksAt": "Unlocks once you reach {target} DPD — {count} to go",
+  "@incentiveUnlocksAt": {
+    "placeholders": {
+      "target": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "incentiveExtraOrdersRate": "{count} extra orders × {rate} — {next} more before the rate rises to {nextRate}",
+  "@incentiveExtraOrdersRate": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "rate": {
+        "type": "String"
+      },
+      "next": {
+        "type": "int"
+      },
+      "nextRate": {
+        "type": "String"
+      }
+    }
+  },
+  "incentiveExtraOrdersFinal": "{count} extra orders × {rate}",
+  "@incentiveExtraOrdersFinal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "incentiveAllBandsDone": "All bands complete — {amount} earned",
+  "@incentiveAllBandsDone": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "periodToday": "Today",
   "periodThisWeek": "This week",
   "periodThisMonth": "This month",

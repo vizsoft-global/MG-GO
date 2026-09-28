@@ -1208,6 +1208,89 @@ abstract class AppLocalizations {
   /// **'× {rate} / delivery'**
   String perDeliveryRate(String rate);
 
+  /// No description provided for @dailyDpdTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily DPD Target'**
+  String get dailyDpdTarget;
+
+  /// No description provided for @dailyDpdRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} more deliveries to hit today\'s target'**
+  String dailyDpdRemaining(int count);
+
+  /// No description provided for @dailyDpdAchieved.
+  ///
+  /// In en, this message translates to:
+  /// **'Target achieved — incentives unlocked'**
+  String get dailyDpdAchieved;
+
+  /// No description provided for @incentivesExtraOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Incentives — extra orders'**
+  String get incentivesExtraOrders;
+
+  /// No description provided for @incentivesStartAfterTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts after today\'s DPD target'**
+  String get incentivesStartAfterTarget;
+
+  /// No description provided for @incentivesLivePaidAbove.
+  ///
+  /// In en, this message translates to:
+  /// **'Live · paid per order above {target}'**
+  String incentivesLivePaidAbove(int target);
+
+  /// No description provided for @incentiveLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get incentiveLocked;
+
+  /// No description provided for @incentiveEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'Earned {amount}'**
+  String incentiveEarned(String amount);
+
+  /// No description provided for @incentivePerOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'{rate} per order'**
+  String incentivePerOrder(String rate);
+
+  /// No description provided for @incentiveUnlocksAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocks once you reach {target} DPD — {count} to go'**
+  String incentiveUnlocksAt(int target, int count);
+
+  /// No description provided for @incentiveExtraOrdersRate.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} extra orders × {rate} — {next} more before the rate rises to {nextRate}'**
+  String incentiveExtraOrdersRate(
+    int count,
+    String rate,
+    int next,
+    String nextRate,
+  );
+
+  /// No description provided for @incentiveExtraOrdersFinal.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} extra orders × {rate}'**
+  String incentiveExtraOrdersFinal(int count, String rate);
+
+  /// No description provided for @incentiveAllBandsDone.
+  ///
+  /// In en, this message translates to:
+  /// **'All bands complete — {amount} earned'**
+  String incentiveAllBandsDone(String amount);
+
   /// No description provided for @periodToday.
   ///
   /// In en, this message translates to:

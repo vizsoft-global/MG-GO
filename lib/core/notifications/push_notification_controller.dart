@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../features/earnings/earnings_providers.dart';
 import '../permissions/permission_request_gate.dart';
 import 'fcm_background.dart';
 import 'firebase_app_guard.dart';
@@ -203,6 +204,9 @@ class PushNotificationController extends Notifier<bool> {
     await _cacheScreenshotRestriction(payload);
     await _recordDelivered(payload);
     unawaited(ref.read(notificationInboxProvider.notifier).refresh());
+    if (payload.actionParams['record_type'] == 'dpd_target') {
+      ref.invalidate(extraEarningsProvider);
+    }
 
     if (payload.actionType == NotificationActionType.silentUpdateTrigger) {
       await _router.handlePayload(payload, fromUserTap: false);

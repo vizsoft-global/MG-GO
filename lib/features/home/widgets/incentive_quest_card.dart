@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../earnings/earnings_models.dart';
 import '../../earnings/earnings_providers.dart';
+import 'incentive_band_row.dart';
 import 'kd_note.dart';
 
 /// "Complete more. Earn more." card on the home screen.
@@ -72,9 +73,10 @@ class IncentiveQuestCard extends ConsumerWidget {
 // ---------------------------------------------------------------------------
 
 class _QuestShell extends StatelessWidget {
-  const _QuestShell({required this.child, this.trailingMore = 0});
+  const _QuestShell({required this.child, this.trailingMore = 0, this.subtitle});
 
   final Widget child;
+  final String? subtitle;
 
   /// When > 0 a "+N more" chip appears in the header instead of "View all".
   final int trailingMore;
@@ -126,7 +128,7 @@ class _QuestShell extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        l10n.completeMoreEarnMore,
+                        l10n.incentivesExtraOrders,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 15,
@@ -136,7 +138,7 @@ class _QuestShell extends StatelessWidget {
                       ),
                       const SizedBox(height: 1),
                       Text(
-                        l10n.liveBonusQuestsToday,
+                        subtitle ?? l10n.liveBonusQuestsToday,
                         style: const TextStyle(
                           color: Color(0xFFD9D6F4),
                           fontSize: 11,
@@ -209,10 +211,21 @@ class _QuestList extends StatelessWidget {
   final List<ActiveOffer> offers;
   final int moreCount;
 
+  String? _subtitle(AppLocalizations l10n) {
+    for (final offer in offers) {
+      if (!offer.isBand) continue;
+      return offer.bandLocked
+          ? l10n.incentivesStartAfterTarget
+          : l10n.incentivesLivePaidAbove(offer.bandStart!);
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return _QuestShell(
       trailingMore: moreCount > 0 ? moreCount : 0,
+      subtitle: _subtitle(context.l10n),
       child: Column(
         children: [
           for (var i = 0; i < offers.length; i++) ...[
@@ -273,6 +286,7 @@ class _QuestRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (offer.isBand) return IncentiveBandRow(offer: offer);
     final l10n = context.l10n;
     final completed = offer.completed;
     return Container(

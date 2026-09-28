@@ -663,6 +663,66 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get dailyDpdTarget => 'Daily DPD Target';
+
+  @override
+  String dailyDpdRemaining(int count) {
+    return '$count more deliveries to hit today\'s target';
+  }
+
+  @override
+  String get dailyDpdAchieved => 'Target achieved — incentives unlocked';
+
+  @override
+  String get incentivesExtraOrders => 'Incentives — extra orders';
+
+  @override
+  String get incentivesStartAfterTarget => 'Starts after today\'s DPD target';
+
+  @override
+  String incentivesLivePaidAbove(int target) {
+    return 'Live · paid per order above $target';
+  }
+
+  @override
+  String get incentiveLocked => 'Locked';
+
+  @override
+  String incentiveEarned(String amount) {
+    return 'Earned $amount';
+  }
+
+  @override
+  String incentivePerOrder(String rate) {
+    return '$rate per order';
+  }
+
+  @override
+  String incentiveUnlocksAt(int target, int count) {
+    return 'Unlocks once you reach $target DPD — $count to go';
+  }
+
+  @override
+  String incentiveExtraOrdersRate(
+    int count,
+    String rate,
+    int next,
+    String nextRate,
+  ) {
+    return '$count extra orders × $rate — $next more before the rate rises to $nextRate';
+  }
+
+  @override
+  String incentiveExtraOrdersFinal(int count, String rate) {
+    return '$count extra orders × $rate';
+  }
+
+  @override
+  String incentiveAllBandsDone(String amount) {
+    return 'All bands complete — $amount earned';
+  }
+
+  @override
   String get periodToday => 'Today';
 
   @override
