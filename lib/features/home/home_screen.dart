@@ -25,6 +25,7 @@ import 'widgets/bonus_action_card.dart';
 import 'widgets/current_shift_chip.dart';
 import 'widgets/home_banner_card.dart';
 import 'widgets/home_header.dart';
+import 'widgets/daily_dpd_target_card.dart';
 import 'widgets/incentive_quest_card.dart';
 import 'widgets/home_notifications_card.dart';
 import 'widgets/shift_adherence_card.dart';
@@ -250,6 +251,7 @@ class HomeScreen extends ConsumerWidget {
                           ),
                         ],
                         const SizedBox(height: 10),
+                        const DailyDpdTargetCard(),
                         const IncentiveQuestCard(),
                         const SizedBox(height: 10),
                         WeeklyProgressCard(

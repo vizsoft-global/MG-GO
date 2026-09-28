@@ -2,6 +2,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/offline/offline_db.dart';
+import '../../core/security/security_bypass_store.dart';
 
 /// Local compliance state for once-per-calendar-day login selfie.
 ///
@@ -101,7 +102,7 @@ class LoginVerificationStore {
       final row = await _bounded(
         () async => await client
             .from('drivers')
-            .select('login_verification_exempt')
+            .select('login_verification_exempt, screenshots_allowed')
             .eq('id', userId)
             .maybeSingle(),
       );
@@ -110,6 +111,7 @@ class LoginVerificationStore {
           userId: userId,
           exempt: row['login_verification_exempt'] == true,
         );
+        SecurityBypassStore.setServerAllowed(row['screenshots_allowed'] == true);
       }
     } catch (_) {}
   }

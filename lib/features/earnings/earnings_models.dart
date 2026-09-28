@@ -579,23 +579,73 @@ class PerformanceSummary {
 // ---------------------------------------------------------------------------
 
 class ExtraEarnings {
-  const ExtraEarnings({required this.activeOffers});
+  const ExtraEarnings({required this.activeOffers, this.dailyDpd});
 
   final List<ActiveOffer> activeOffers;
 
+  /// Today's DPD target from the rider's restaurant delivery rule; null when
+  /// no restaurant rule sets one (or the server predates the field).
+  final DailyDpdTarget? dailyDpd;
+
   factory ExtraEarnings.fromJson(Map<String, dynamic> json) {
+    final daily = json['daily_dpd'];
     return ExtraEarnings(
       activeOffers: ((json['active_offers'] as List?) ?? const [])
           .whereType<Map>()
           .map((m) => ActiveOffer.fromJson(Map<String, dynamic>.from(m)))
           .toList(growable: false),
+      dailyDpd: daily is Map
+          ? DailyDpdTarget.tryParse(Map<String, dynamic>.from(daily))
+          : null,
     );
   }
 
   Map<String, dynamic> toJson() => {
     'active_offers': activeOffers.map((e) => e.toJson()).toList(),
+    if (dailyDpd != null) 'daily_dpd': dailyDpd!.toJson(),
   };
 }
+
+class DailyDpdTarget {
+  const DailyDpdTarget({
+    required this.target,
+    required this.completedToday,
+    this.restaurantName,
+  });
+
+  final int target;
+  final int completedToday;
+  final String? restaurantName;
+
+  int get remaining => (target - completedToday).clamp(0, target).toInt();
+  bool get achieved => completedToday >= target;
+  double get fraction =>
+      target <= 0 ? 0 : (completedToday / target).clamp(0.0, 1.0).toDouble();
+
+  static DailyDpdTarget? tryParse(Map<String, dynamic> json) {
+    final target = (json['target'] as num?)?.toInt() ?? 0;
+    if (target <= 0) return null;
+    final name = (json['restaurant_name'] as String?)?.trim();
+    return DailyDpdTarget(
+      target: target,
+      completedToday: (json['completed_today'] as num?)?.toInt() ?? 0,
+      restaurantName: name == null || name.isEmpty ? null : name,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'target': target,
+    'completed_today': completedToday,
+    'restaurant_name': restaurantName,
+  };
+}
+
+final RegExp _trailingIsoDate = RegExp(r'\s+\d{4}-\d{2}-\d{2}$');
+
+/// Offer names from the incentive import end in a start date
+/// ("KFC Jahra 2026-01-08"); riders see the name without it.
+String stripTrailingIsoDate(String name) =>
+    name.trim().replaceFirst(_trailingIsoDate, '');
 
 class ActiveOffer {
   const ActiveOffer({
@@ -618,10 +668,36 @@ class ActiveOffer {
     this.scopeLabel,
     this.startDate,
     this.endDate,
+    this.displayName,
+    this.eligibleCount,
+    this.bandStart,
+    this.currentRateKwd,
+    this.nextRateKwd,
+    this.ordersToNextRate,
   });
 
   final String ruleId;
   final String name;
+
+  /// Server name without the import date suffix.
+  final String? displayName;
+
+  /// Verified deliveries today — the payout basis. [currentCount] also
+  /// counts deliveries still waiting for verification.
+  final int? eligibleCount;
+
+  /// Daily DPD target the per-order bands start at; null for rules that keep
+  /// the milestone / fixed math.
+  final int? bandStart;
+  final double? currentRateKwd;
+  final double? nextRateKwd;
+  final int? ordersToNextRate;
+
+  bool get isBand => bandStart != null;
+  int get verifiedCount => eligibleCount ?? currentCount;
+  bool get bandLocked => isBand && verifiedCount < bandStart!;
+  int get extraOrders =>
+      isBand ? (verifiedCount - bandStart!).clamp(0, 1 << 30).toInt() : 0;
   final String period;
   final String scopeType;
   final int currentCount;
@@ -678,8 +754,12 @@ class ActiveOffer {
 
   String title(AppLocalizations l10n) {
     final emoji = _emojiForPeriod(period);
-    final label = name.trim().isEmpty ? l10n.bonusDefault : name.trim();
-    return '$emoji $label';
+    return '$emoji ${plainName(l10n)}';
+  }
+
+  String plainName(AppLocalizations l10n) {
+    final label = stripTrailingIsoDate(displayName ?? name);
+    return label.isEmpty ? l10n.bonusDefault : label;
   }
 
   String describe(AppLocalizations l10n) {
@@ -734,12 +814,28 @@ class ActiveOffer {
           : null,
       startDate: _parseDate(json['start_date']),
       endDate: _parseDate(json['end_date']),
+      displayName: (json['display_name'] as String?)?.trim().isNotEmpty == true
+          ? (json['display_name'] as String).trim()
+          : null,
+      eligibleCount: (json['eligible_count'] as num?)?.toInt() ??
+          (json['current_count'] as num?)?.toInt(),
+      bandStart: (json['band_start'] as num?)?.toInt(),
+      currentRateKwd: (json['current_rate_kwd'] as num?)?.toDouble(),
+      nextRateKwd: (json['next_rate_kwd'] as num?)?.toDouble(),
+      ordersToNextRate: (json['orders_to_next_rate'] as num?)?.toInt(),
     );
   }
 
   Map<String, dynamic> toJson() => {
     'rule_id': ruleId,
     'name': name,
+    'display_name': displayName,
+    'progress_count': currentCount,
+    'eligible_count': eligibleCount,
+    'band_start': bandStart,
+    'current_rate_kwd': currentRateKwd,
+    'next_rate_kwd': nextRateKwd,
+    'orders_to_next_rate': ordersToNextRate,
     'period': period,
     'scope_type': scopeType,
     'scope_label': scopeLabel,

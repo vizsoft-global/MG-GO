@@ -21,6 +21,7 @@ import 'device_session_models.dart';
 import 'driver_access.dart';
 import 'driver_freeze.dart';
 import 'login_preferences_store.dart';
+import '../../core/security/security_bypass_store.dart';
 import 'login_verification_store.dart';
 import 'sign_out_cleanup.dart';
 
@@ -154,7 +155,7 @@ class RiderAuthService {
       final row = await _client
           .from('drivers')
           .select(
-            'is_blocked, blocked_reason, login_verification_exempt, archived_at, '
+            'is_blocked, blocked_reason, login_verification_exempt, screenshots_allowed, archived_at, '
             'force_app_update_at, force_app_update_min_code, '
             'frozen_from, frozen_until, freeze_reason',
           )
@@ -167,6 +168,7 @@ class RiderAuthService {
           userId: user.id,
           exempt: row['login_verification_exempt'] == true,
         );
+        SecurityBypassStore.setServerAllowed(row['screenshots_allowed'] == true);
       } catch (_) {}
 
       final forceUpdate = perDriverForceUpdateFrom(
