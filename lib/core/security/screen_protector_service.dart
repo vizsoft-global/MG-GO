@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import 'security_bypass_store.dart';
 import 'security_event_types.dart';
 
 typedef CaptureAttemptCallback = Future<void> Function(SecurityEventType type);
@@ -61,6 +62,7 @@ class ScreenProtectorService {
     required CaptureAttemptCallback onCaptureAttempt,
     CaptureStateCallback? onCaptureStateChanged,
   }) async {
+    if (SecurityBypassStore.isEnabled) return;
     _sensitiveSessionDepth += 1;
     _sensitiveCallback = onCaptureAttempt;
     _captureStateCallback = onCaptureStateChanged;
@@ -133,9 +135,14 @@ class ScreenProtectorService {
     return enabled ?? false;
   }
 
-  /// Effective FLAG_SECURE: on when global/sensitive wants it, off during allow.
+  /// Effective FLAG_SECURE: on when global/sensitive wants it, off during allow
+  /// or when Admin / local bypass is on.
   Future<void> _syncSecureFlag() async {
     if (!_isAndroid) return;
+    if (SecurityBypassStore.isEnabled) {
+      await _securityChannel.invokeMethod<void>('setSecureEnabled', false);
+      return;
+    }
     final wantSecure =
         (_enabled || _sensitiveSessionDepth > 0) && _allowSessionDepth == 0;
     await _securityChannel.invokeMethod<void>('setSecureEnabled', wantSecure);
@@ -153,8 +160,8 @@ class ScreenProtectorService {
       final type = _mapCaptureEvent(text);
       if (type == null) return;
 
-      // Temporary allow session: do not show global "capture blocked" UI.
-      if (_allowSessionDepth > 0) return;
+      // Temporary allow session or Admin/local bypass: do not show blocked UI.
+      if (_allowSessionDepth > 0 || SecurityBypassStore.isEnabled) return;
 
       final sensitive = _sensitiveCallback;
       if (sensitive != null) {

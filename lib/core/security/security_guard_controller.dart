@@ -69,6 +69,7 @@ class SecurityGuardController extends Notifier<SecurityGuardState>
         state,
       ) {
         if (state.event == AuthChangeEvent.signedOut) {
+          SecurityBypassStore.clearServerAllowed();
           unawaited(disable());
         } else if (state.session != null) {
           unawaited(enable());
@@ -155,8 +156,28 @@ class SecurityGuardController extends Notifier<SecurityGuardState>
     );
   }
 
+  Future<void> _refreshServerAllow() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+    try {
+      final row = await Supabase.instance.client
+          .from('drivers')
+          .select('screenshots_allowed')
+          .eq('id', user.id)
+          .maybeSingle();
+      SecurityBypassStore.setServerAllowed(row?['screenshots_allowed'] == true);
+    } on PostgrestException catch (e) {
+      if (e.code == '42703') {
+        SecurityBypassStore.setServerAllowed(false);
+      }
+    } catch (_) {}
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_refreshServerAllow());
+    }
     if (SecurityBypassStore.isEnabled) return;
     if (!this.state.active) return;
     if (state == AppLifecycleState.resumed) {
