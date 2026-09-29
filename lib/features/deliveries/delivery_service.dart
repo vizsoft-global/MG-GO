@@ -22,6 +22,19 @@ class DeliveryServiceException implements Exception {
 /// Postgres unique index `deliveries_external_order_id_unique_idx` can fire
 /// when `driver_create_pickup` skipped its own `duplicate_order_id` check
 /// (no resolved restaurant). Map that raw 23505 onto the same code.
+/// PostgREST 42703 when `deliveries.shift_date` is not on the database yet.
+bool isMissingShiftDateColumn(Object error) {
+  if (error is PostgrestException) {
+    if (error.code == '42703') return true;
+    final blob =
+        '${error.message} ${error.details ?? ''} ${error.hint ?? ''}'
+            .toLowerCase();
+    return blob.contains('shift_date') && blob.contains('does not exist');
+  }
+  final blob = error.toString().toLowerCase();
+  return blob.contains('shift_date') && blob.contains('does not exist');
+}
+
 bool isDuplicateOrderIdError({
   required String message,
   String? code,
@@ -52,12 +65,21 @@ class DeliveryService {
     return _deviceIdentity.deviceIdOnly();
   }
 
-  static const _deliverySelect = '''
+  static const deliverySelectWithShiftDate = '''
     id, external_order_id, status,
     pickup_at, pickup_lat, pickup_lng, pickup_proof_url,
     delivered_at, delivered_lat, delivered_lng, order_proof_url,
     cancelled_at, cancel_lat, cancel_lng, cancel_reason, cancel_proof_url,
     rejection_reason, shift_date,
+    partners ( name, logo_url )
+  ''';
+
+  static const deliverySelectWithoutShiftDate = '''
+    id, external_order_id, status,
+    pickup_at, pickup_lat, pickup_lng, pickup_proof_url,
+    delivered_at, delivered_lat, delivered_lng, order_proof_url,
+    cancelled_at, cancel_lat, cancel_lng, cancel_reason, cancel_proof_url,
+    rejection_reason,
     partners ( name, logo_url )
   ''';
 
@@ -371,31 +393,66 @@ class DeliveryService {
   Future<List<DriverDelivery>> listMyDeliveries({int limit = 50}) async {
     final userId = _client.auth.currentUser?.id;
     try {
-      final rows = await _client
-          .from('deliveries')
-          .select(_deliverySelect)
-          .neq('status', 'in_transit')
-          .order('created_at', ascending: false)
-          .limit(limit);
-
-      final mapped = (rows as List)
-          .map((e) => Map<String, dynamic>.from(e as Map))
-          .toList(growable: false);
-      _networkStatus.recordRpcSuccess();
-      if (userId != null) {
-        await _offlineRepo.saveDeliveriesCache(userId, mapped);
-      }
-      return mapped.map(DriverDelivery.fromJson).toList(growable: false);
-    } catch (_) {
-      _networkStatus.recordRpcFailure();
-      if (userId != null) {
-        final cached = await _offlineRepo.loadDeliveriesCache(userId);
-        if (cached.isNotEmpty) {
-          return cached.map(DriverDelivery.fromJson).toList(growable: false);
+      return await _fetchMyDeliveries(
+        userId: userId,
+        select: deliverySelectWithShiftDate,
+        limit: limit,
+      );
+    } catch (error, stack) {
+      if (isMissingShiftDateColumn(error)) {
+        try {
+          return await _fetchMyDeliveries(
+            userId: userId,
+            select: deliverySelectWithoutShiftDate,
+            limit: limit,
+          );
+        } catch (fallbackError, fallbackStack) {
+          return _deliveriesFromCacheOrThrow(
+            userId,
+            fallbackError,
+            fallbackStack,
+          );
         }
       }
-      rethrow;
+      return _deliveriesFromCacheOrThrow(userId, error, stack);
     }
+  }
+
+  Future<List<DriverDelivery>> _fetchMyDeliveries({
+    required String? userId,
+    required String select,
+    required int limit,
+  }) async {
+    final rows = await _client
+        .from('deliveries')
+        .select(select)
+        .neq('status', 'in_transit')
+        .order('created_at', ascending: false)
+        .limit(limit);
+
+    final mapped = (rows as List)
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList(growable: false);
+    _networkStatus.recordRpcSuccess();
+    if (userId != null) {
+      await _offlineRepo.saveDeliveriesCache(userId, mapped);
+    }
+    return mapped.map(DriverDelivery.fromJson).toList(growable: false);
+  }
+
+  Future<List<DriverDelivery>> _deliveriesFromCacheOrThrow(
+    String? userId,
+    Object error,
+    StackTrace stack,
+  ) async {
+    _networkStatus.recordRpcFailure();
+    if (userId != null) {
+      final cached = await _offlineRepo.loadDeliveriesCache(userId);
+      if (cached.isNotEmpty) {
+        return cached.map(DriverDelivery.fromJson).toList(growable: false);
+      }
+    }
+    Error.throwWithStackTrace(error, stack);
   }
 
   DeliveryServiceException _mapPostgrest(PostgrestException e) {
