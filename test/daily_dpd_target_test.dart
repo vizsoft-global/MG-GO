@@ -53,6 +53,8 @@ void main() {
         'daily_dpd': {'target': 10, 'completed_today': 7, 'restaurant_name': 'KFC Jahra'},
       });
       expect(extra.dailyDpd!.target, 10);
+      expect(extra.dailyDpd!.completedToday, 7);
+      expect(extra.dailyDpd!.verifiedToday, 7);
       expect(extra.dailyDpd!.remaining, 3);
       expect(extra.dailyDpd!.achieved, isFalse);
       final offer = extra.activeOffers.single;
@@ -92,6 +94,31 @@ void main() {
     test('zero target is not a DPD target', () {
       expect(DailyDpdTarget.tryParse({'target': 0, 'completed_today': 3}), isNull);
     });
+
+    test('Daily DPD card uses progress_today and keeps verified for payout', () {
+      final daily = DailyDpdTarget.tryParse({
+        'target': 10,
+        'completed_today': 0,
+        'progress_today': 7,
+        'restaurant_name': 'KFC Jahra',
+      })!;
+      expect(daily.completedToday, 7);
+      expect(daily.verifiedToday, 0);
+      expect(daily.remaining, 3);
+      expect(daily.achieved, isFalse);
+      final offer = ActiveOffer.fromJson(_offer(eligible: 0, payout: 0, toNext: 10));
+      expect(offer.bandLocked, isTrue);
+      expect(offer.verifiedCount, 0);
+    });
+
+    test('Daily DPD card falls back to completed_today without progress_today', () {
+      final daily = DailyDpdTarget.tryParse({
+        'target': 10,
+        'completed_today': 4,
+      })!;
+      expect(daily.completedToday, 4);
+      expect(daily.verifiedToday, 4);
+    });
   });
 
   group('widgets', () {
@@ -119,6 +146,7 @@ void main() {
       expect(find.text('Locked'), findsOneWidget);
       expect(find.text('0 / 25'), findsOneWidget);
       expect(find.text('Unlocks once you reach 10 DPD \u2014 3 to go'), findsOneWidget);
+      expect(find.textContaining('PER ORDER'), findsNothing);
       expect(tester.takeException(), isNull);
     });
 
@@ -132,6 +160,7 @@ void main() {
         find.text('3 extra orders \u00D7 0.250 KD \u2014 2 more before the rate rises to 0.350 KD'),
         findsOneWidget,
       );
+      expect(find.textContaining('PER ORDER'), findsNothing);
       expect(tester.takeException(), isNull);
     });
 

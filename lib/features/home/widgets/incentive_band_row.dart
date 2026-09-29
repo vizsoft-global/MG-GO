@@ -200,7 +200,7 @@ class _BandTrack extends StatelessWidget {
     final stops = [start, ...tiers.map((t) => t.threshold)];
 
     return LayoutBuilder(
-      builder: (context, constraints) {
+      builder: (_, constraints) {
         final w = constraints.maxWidth;
         const barTop = 40.0;
         const dot = 10.0;
@@ -249,26 +249,6 @@ class _BandTrack extends StatelessWidget {
                   ),
                 ),
               ),
-              for (var i = 0; i < n; i++)
-                centred(
-                  (x(i) + x(i + 1)) / 2,
-                  14,
-                  Text(
-                    context.l10n
-                        .incentivePerOrder(
-                          formatKwd(tiers[i].rewardPerDeliveryKwd ?? 0),
-                        )
-                        .toUpperCase(),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    style: TextStyle(
-                      fontSize: 9.5,
-                      height: 1.1,
-                      fontWeight: FontWeight.w800,
-                      color: locked ? lockedColor : activeColor,
-                    ),
-                  ),
-                ),
               if (!locked)
                 Positioned(
                   left: (w * fraction - bikeWidth / 2).clamp(0.0, w - bikeWidth),

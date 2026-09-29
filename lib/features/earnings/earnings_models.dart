@@ -610,11 +610,17 @@ class DailyDpdTarget {
   const DailyDpdTarget({
     required this.target,
     required this.completedToday,
+    int? verifiedToday,
     this.restaurantName,
-  });
+  }) : verifiedToday = verifiedToday ?? completedToday;
 
   final int target;
+
+  /// Card numerator: `progress_today` when present, else verified.
   final int completedToday;
+
+  /// Verified count (`completed_today`). Payout / lock / unlock stay on this.
+  final int verifiedToday;
   final String? restaurantName;
 
   int get remaining => (target - completedToday).clamp(0, target).toInt();
@@ -626,16 +632,20 @@ class DailyDpdTarget {
     final target = (json['target'] as num?)?.toInt() ?? 0;
     if (target <= 0) return null;
     final name = (json['restaurant_name'] as String?)?.trim();
+    final verified = (json['completed_today'] as num?)?.toInt() ?? 0;
+    final progress = (json['progress_today'] as num?)?.toInt();
     return DailyDpdTarget(
       target: target,
-      completedToday: (json['completed_today'] as num?)?.toInt() ?? 0,
+      completedToday: progress ?? verified,
+      verifiedToday: verified,
       restaurantName: name == null || name.isEmpty ? null : name,
     );
   }
 
   Map<String, dynamic> toJson() => {
     'target': target,
-    'completed_today': completedToday,
+    'completed_today': verifiedToday,
+    'progress_today': completedToday,
     'restaurant_name': restaurantName,
   };
 }
