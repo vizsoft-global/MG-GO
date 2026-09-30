@@ -1536,6 +1536,26 @@ class AppLocalizationsAr extends AppLocalizations {
       'الفيديو غير متاح. تحقق من اتصالك وحاول مرة أخرى.';
 
   @override
+  String companySchemeTarget(int target) {
+    return 'الهدف اليومي: $target طلبات';
+  }
+
+  @override
+  String companySchemeVerifiedToday(int count) {
+    return 'تم التحقق اليوم: $count';
+  }
+
+  @override
+  String companySchemeAboveRate(String rate) {
+    return '+ $rate د.ك لكل طلب فوق الهدف';
+  }
+
+  @override
+  String companySchemeBelowRate(String rate) {
+    return '- $rate د.ك لكل طلب تحت الهدف';
+  }
+
+  @override
   String get couldNotLoadProfile => 'تعذّر تحميل الملف';
 
   @override

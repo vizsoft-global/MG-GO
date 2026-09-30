@@ -8,6 +8,7 @@ import '../../core/theme/app_colors.dart';
 import 'earnings_models.dart';
 import 'earnings_providers.dart';
 import 'widgets/active_offer_card.dart';
+import 'widgets/company_scheme_card.dart';
 
 /// Driver-app Extra Earnings page.
 ///
@@ -40,7 +41,9 @@ class ExtraEarningsScreen extends ConsumerWidget {
                     message: err.toString(),
                     onRetry: () => ref.invalidate(extraEarningsProvider),
                   ),
-                  data: (data) => _OffersList(extra: data),
+                  data: (data) => data.companyScheme != null
+                      ? _CompanySchemeList(scheme: data.companyScheme!)
+                      : _OffersList(extra: data),
                 ),
               ),
             ),
@@ -97,6 +100,22 @@ class _OffersList extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(10, 10, 10, 24),
       children: [_HeroCard(offers: extra.activeOffers)],
+    );
+  }
+}
+
+/// Extra Earnings for an outsourced rider with an active company scheme: the
+/// flat above/below breakdown replaces the list of restaurant quests.
+class _CompanySchemeList extends StatelessWidget {
+  const _CompanySchemeList({required this.scheme});
+
+  final CompanyIncentiveScheme scheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 24),
+      children: [CompanySchemeCard(scheme: scheme)],
     );
   }
 }

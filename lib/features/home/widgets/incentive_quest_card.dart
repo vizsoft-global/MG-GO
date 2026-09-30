@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../earnings/earnings_models.dart';
 import '../../earnings/earnings_providers.dart';
+import '../../earnings/widgets/company_scheme_card.dart';
 import 'incentive_band_row.dart';
 import 'kd_note.dart';
 
@@ -20,7 +21,9 @@ import 'kd_note.dart';
 ///
 /// Behaviour:
 ///   - Loading -> skeleton placeholder
-///   - Error or no offers -> friendly empty-state CTA pointing to extras
+///   - Error -> friendly empty-state CTA pointing to extras
+///   - Company scheme (outsourced rider) -> flat above/below breakdown
+///   - No offers and no scheme -> hidden (no empty navy shell)
 ///   - Otherwise -> up to 2 most relevant quests inline + a "View all" link
 ///
 /// The whole card is tap-to-extra-earnings so drivers can always drill in.
@@ -43,8 +46,10 @@ class IncentiveQuestCard extends ConsumerWidget {
           loading: () => const _QuestSkeleton(),
           error: (_, _) => const _QuestEmpty(),
           data: (extra) {
+            final scheme = extra.companyScheme;
+            if (scheme != null) return CompanySchemeCard(scheme: scheme);
             final offers = _orderOffers(extra.activeOffers);
-            if (offers.isEmpty) return const _QuestEmpty();
+            if (offers.isEmpty) return const SizedBox.shrink();
             return _QuestList(
               offers: offers.take(_inlineQuestLimit).toList(),
               moreCount: offers.length - _inlineQuestLimit,

@@ -25,6 +25,12 @@ class MonthOverviewCard extends ConsumerWidget {
     final selected = ref.watch(selectedEarningsMonthProvider);
     final canGoForward = !selected.next().isFuture;
 
+    // Hide the Extra Earnings CTA only once we know there is nothing to show
+    // (no restaurant offers and no company scheme). While loading we keep the
+    // pill so it doesn't flash away on every refresh.
+    final extraEarnings = ref.watch(extraEarningsProvider).value;
+    final showExtraEarnings = extraEarnings == null || extraEarnings.hasIncentive;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(15),
@@ -72,10 +78,10 @@ class MonthOverviewCard extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 15),
-          _ExtraEarningsPill(onTap: onTapExtraEarnings),
-        ],
-      ),
-    );
+      if (showExtraEarnings) _ExtraEarningsPill(onTap: onTapExtraEarnings),
+    ],
+  ),
+);
   }
 }
 

@@ -1546,6 +1546,26 @@ class AppLocalizationsEn extends AppLocalizations {
       'Video is unavailable. Check your connection and try again.';
 
   @override
+  String companySchemeTarget(int target) {
+    return 'Daily target: $target orders';
+  }
+
+  @override
+  String companySchemeVerifiedToday(int count) {
+    return 'Verified today: $count';
+  }
+
+  @override
+  String companySchemeAboveRate(String rate) {
+    return '+ $rate KD per order above target';
+  }
+
+  @override
+  String companySchemeBelowRate(String rate) {
+    return '- $rate KD per order below target';
+  }
+
+  @override
   String get couldNotLoadProfile => 'Could not load profile';
 
   @override

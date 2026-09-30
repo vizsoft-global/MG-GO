@@ -579,7 +579,11 @@ class PerformanceSummary {
 // ---------------------------------------------------------------------------
 
 class ExtraEarnings {
-  const ExtraEarnings({required this.activeOffers, this.dailyDpd});
+  const ExtraEarnings({
+    required this.activeOffers,
+    this.dailyDpd,
+    this.companyScheme,
+  });
 
   final List<ActiveOffer> activeOffers;
 
@@ -587,8 +591,17 @@ class ExtraEarnings {
   /// no restaurant rule sets one (or the server predates the field).
   final DailyDpdTarget? dailyDpd;
 
+  /// Flat above/below company scheme (outsourced riders). Null for restaurant
+  /// offers or riders with no active company scheme.
+  final CompanyIncentiveScheme? companyScheme;
+
+  /// Whether Extra Earnings has anything to show: restaurant offers or a
+  /// company scheme. Used to hide the CTA/quest shell when both are absent.
+  bool get hasIncentive => activeOffers.isNotEmpty || companyScheme != null;
+
   factory ExtraEarnings.fromJson(Map<String, dynamic> json) {
     final daily = json['daily_dpd'];
+    final scheme = json['company_scheme'];
     return ExtraEarnings(
       activeOffers: ((json['active_offers'] as List?) ?? const [])
           .whereType<Map>()
@@ -597,12 +610,16 @@ class ExtraEarnings {
       dailyDpd: daily is Map
           ? DailyDpdTarget.tryParse(Map<String, dynamic>.from(daily))
           : null,
+      companyScheme: scheme is Map
+          ? CompanyIncentiveScheme.tryParse(Map<String, dynamic>.from(scheme))
+          : null,
     );
   }
 
   Map<String, dynamic> toJson() => {
     'active_offers': activeOffers.map((e) => e.toJson()).toList(),
     if (dailyDpd != null) 'daily_dpd': dailyDpd!.toJson(),
+    if (companyScheme != null) 'company_scheme': companyScheme!.toJson(),
   };
 }
 
@@ -612,6 +629,7 @@ class DailyDpdTarget {
     required this.completedToday,
     int? verifiedToday,
     this.restaurantName,
+    this.companyName,
   }) : verifiedToday = verifiedToday ?? completedToday;
 
   final int target;
@@ -623,6 +641,10 @@ class DailyDpdTarget {
   final int verifiedToday;
   final String? restaurantName;
 
+  /// Outsourced source-company name when the target came from a company config
+  /// instead of a restaurant delivery rule.
+  final String? companyName;
+
   int get remaining => (target - completedToday).clamp(0, target).toInt();
   bool get achieved => completedToday >= target;
   double get fraction =>
@@ -632,6 +654,7 @@ class DailyDpdTarget {
     final target = (json['target'] as num?)?.toInt() ?? 0;
     if (target <= 0) return null;
     final name = (json['restaurant_name'] as String?)?.trim();
+    final company = (json['company_name'] as String?)?.trim();
     final verified = (json['completed_today'] as num?)?.toInt() ?? 0;
     final progress = (json['progress_today'] as num?)?.toInt();
     return DailyDpdTarget(
@@ -639,6 +662,7 @@ class DailyDpdTarget {
       completedToday: progress ?? verified,
       verifiedToday: verified,
       restaurantName: name == null || name.isEmpty ? null : name,
+      companyName: company == null || company.isEmpty ? null : company,
     );
   }
 
@@ -647,6 +671,82 @@ class DailyDpdTarget {
     'completed_today': verifiedToday,
     'progress_today': completedToday,
     'restaurant_name': restaurantName,
+    'company_name': companyName,
+  };
+}
+
+/// Flat above/below incentive scheme for an outsourced source company
+/// (e.g. Sadeeq). Computed server-side per Kuwait day; mirrors the
+/// `company_scheme` object from `driver_get_extra_earnings`.
+class CompanyIncentiveScheme {
+  const CompanyIncentiveScheme({
+    required this.companyName,
+    required this.target,
+    required this.aboveKwd,
+    required this.belowKwd,
+    required this.completedToday,
+    required this.progressToday,
+    required this.incentiveKwd,
+    required this.deductionKwd,
+    required this.netKwd,
+  });
+
+  final String companyName;
+  final int target;
+  final double aboveKwd;
+  final double belowKwd;
+
+  /// Verified count today — the payout basis (SOP: verified orders only).
+  final int completedToday;
+
+  /// Card numerator (`progress_today`); falls back to [completedToday].
+  final int progressToday;
+
+  final double incentiveKwd;
+  final double deductionKwd;
+  final double netKwd;
+
+  int get remaining => (target - completedToday).clamp(0, target).toInt();
+  bool get achieved => completedToday >= target;
+
+  /// Unsigned rate strings; the l10n template adds the `+` / `-` sign.
+  String get aboveLabel => aboveKwd.toStringAsFixed(3);
+  String get belowLabel => belowKwd.toStringAsFixed(3);
+
+  String get incentiveLabel => formatKwd(incentiveKwd, plus: incentiveKwd > 0);
+  String get deductionLabel => formatKwd(-deductionKwd);
+  String get netLabel => formatKwd(netKwd, plus: netKwd > 0);
+
+  static CompanyIncentiveScheme? tryParse(Map<String, dynamic> json) {
+    final name = (json['company_name'] as String?)?.trim();
+    if (name == null || name.isEmpty) return null;
+    final target = (json['target'] as num?)?.toInt() ?? 0;
+    if (target <= 0) return null;
+    final completed = (json['completed_today'] as num?)?.toInt() ?? 0;
+    final progress = (json['progress_today'] as num?)?.toInt();
+    return CompanyIncentiveScheme(
+      companyName: name,
+      target: target,
+      aboveKwd: (json['above_kwd'] as num?)?.toDouble() ?? 0,
+      belowKwd: (json['below_kwd'] as num?)?.toDouble() ?? 0,
+      completedToday: completed,
+      progressToday: progress ?? completed,
+      incentiveKwd: (json['incentive_kwd'] as num?)?.toDouble() ?? 0,
+      deductionKwd: (json['deduction_kwd'] as num?)?.toDouble() ?? 0,
+      netKwd: (json['net_kwd'] as num?)?.toDouble() ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'company_name': companyName,
+    'target': target,
+    'above_kwd': aboveKwd,
+    'below_kwd': belowKwd,
+    'completed_today': completedToday,
+    'progress_today': progressToday,
+    'incentive_kwd': incentiveKwd,
+    'deduction_kwd': deductionKwd,
+    'net_kwd': netKwd,
   };
 }
 
