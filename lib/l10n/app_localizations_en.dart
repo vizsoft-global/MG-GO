@@ -1657,6 +1657,57 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get vehicleChassis => 'Chassis';
+
+  @override
+  String get vehicleYear => 'Year';
+
+  @override
+  String get vehicleCondition => 'Condition';
+
+  @override
+  String get vehicleCarType => 'Car type';
+
+  @override
+  String get vehicleTypeOfUse => 'Type of use';
+
+  @override
+  String get vehicleStatus => 'Status';
+
+  @override
+  String get vehicleHandover => 'Handover';
+
+  @override
+  String get vehicleHandoverEmpty => 'No handover records yet.';
+
+  @override
+  String get vehicleAccident => 'Accident';
+
+  @override
+  String get vehicleAccidentEmpty => 'No accident records yet.';
+
+  @override
+  String get vehicleDocuments => 'Documents';
+
+  @override
+  String get vehicleDocumentsEmpty => 'No documents yet.';
+
+  @override
+  String get vehicleService => 'Service';
+
+  @override
+  String get vehicleServiceEmpty => 'No service records yet.';
+
+  @override
+  String get vehicleAssets => 'Assets';
+
+  @override
+  String get vehicleAssetsEmpty => 'No assets assigned yet.';
+
+  @override
+  String get vehicleHasFile => 'File';
+
+  @override
   String get vehicleLogFuel => 'Log fuel';
 
   @override

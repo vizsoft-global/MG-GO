@@ -2953,6 +2953,108 @@ abstract class AppLocalizations {
   /// **'KWD {amount}'**
   String vehicleLimitKwd(String amount);
 
+  /// No description provided for @vehicleChassis.
+  ///
+  /// In en, this message translates to:
+  /// **'Chassis'**
+  String get vehicleChassis;
+
+  /// No description provided for @vehicleYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get vehicleYear;
+
+  /// No description provided for @vehicleCondition.
+  ///
+  /// In en, this message translates to:
+  /// **'Condition'**
+  String get vehicleCondition;
+
+  /// No description provided for @vehicleCarType.
+  ///
+  /// In en, this message translates to:
+  /// **'Car type'**
+  String get vehicleCarType;
+
+  /// No description provided for @vehicleTypeOfUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Type of use'**
+  String get vehicleTypeOfUse;
+
+  /// No description provided for @vehicleStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get vehicleStatus;
+
+  /// No description provided for @vehicleHandover.
+  ///
+  /// In en, this message translates to:
+  /// **'Handover'**
+  String get vehicleHandover;
+
+  /// No description provided for @vehicleHandoverEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No handover records yet.'**
+  String get vehicleHandoverEmpty;
+
+  /// No description provided for @vehicleAccident.
+  ///
+  /// In en, this message translates to:
+  /// **'Accident'**
+  String get vehicleAccident;
+
+  /// No description provided for @vehicleAccidentEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No accident records yet.'**
+  String get vehicleAccidentEmpty;
+
+  /// No description provided for @vehicleDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'Documents'**
+  String get vehicleDocuments;
+
+  /// No description provided for @vehicleDocumentsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No documents yet.'**
+  String get vehicleDocumentsEmpty;
+
+  /// No description provided for @vehicleService.
+  ///
+  /// In en, this message translates to:
+  /// **'Service'**
+  String get vehicleService;
+
+  /// No description provided for @vehicleServiceEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No service records yet.'**
+  String get vehicleServiceEmpty;
+
+  /// No description provided for @vehicleAssets.
+  ///
+  /// In en, this message translates to:
+  /// **'Assets'**
+  String get vehicleAssets;
+
+  /// No description provided for @vehicleAssetsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No assets assigned yet.'**
+  String get vehicleAssetsEmpty;
+
+  /// No description provided for @vehicleHasFile.
+  ///
+  /// In en, this message translates to:
+  /// **'File'**
+  String get vehicleHasFile;
+
   /// No description provided for @vehicleLogFuel.
   ///
   /// In en, this message translates to:
