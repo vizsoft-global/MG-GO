@@ -1536,6 +1536,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get video => 'Video';
 
   @override
+  String get userManualVideo => 'User Manual Video';
+
+  @override
+  String get videoFullscreen => 'Full screen';
+
+  @override
+  String get videoUnavailable =>
+      'Video is unavailable. Check your connection and try again.';
+
+  @override
   String get couldNotLoadProfile => 'Could not load profile';
 
   @override

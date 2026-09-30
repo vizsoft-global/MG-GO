@@ -26,6 +26,7 @@ import '../../features/earnings/payout_detail_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/maintenance/maintenance_screen.dart';
 import '../../features/notifications/notifications_inbox_screen.dart';
+import '../../features/profile/manual_video_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/shell/app_exit_scope.dart';
 import '../../features/shell/main_shell.dart';
@@ -272,6 +273,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'notifications',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const NotificationsInboxScreen(),
+      ),
+      GoRoute(
+        path: '/profile/manual',
+        name: 'manual_video',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const ManualVideoScreen(),
       ),
       GoRoute(
         path: '/vehicle/fuel-fill',

@@ -1526,6 +1526,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get video => 'فيديو';
 
   @override
+  String get userManualVideo => 'فيديو دليل الاستخدام';
+
+  @override
+  String get videoFullscreen => 'ملء الشاشة';
+
+  @override
+  String get videoUnavailable =>
+      'الفيديو غير متاح. تحقق من اتصالك وحاول مرة أخرى.';
+
+  @override
   String get couldNotLoadProfile => 'تعذّر تحميل الملف';
 
   @override

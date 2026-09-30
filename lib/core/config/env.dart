@@ -26,6 +26,21 @@ class Env {
     defaultValue: 'https://dpdadmin-prod.vercel.app',
   );
 
+  /// Public Cloudflare R2 URL for the rider user-manual video.
+  ///
+  /// Pass via `--dart-define-from-file` (`RIDER_MANUAL_VIDEO_URL` in
+  /// `env/prod.json`, template in `env/prod.json.example`). The video is
+  /// streamed in-app, never bundled, so the URL can be swapped without an app
+  /// release. Empty (unset) means the Training "User manual video" entry falls
+  /// back to the existing Coming-soon behaviour.
+  static const riderManualVideoUrl = String.fromEnvironment(
+    'RIDER_MANUAL_VIDEO_URL',
+    defaultValue: '',
+  );
+
+  static bool get hasRiderManualVideo =>
+      riderManualVideoUrl.trim().isNotEmpty;
+
   /// Production `dpd-live` edge origin. Deployed Worker for `FLEET_ROOM=fleet-kw`.
   static const prodLiveIngestUrl = 'https://dpd-live.vizsoft.workers.dev';
 

@@ -5,6 +5,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/l10n/locale_provider.dart';
+import '../../core/config/env.dart';
 import '../../core/notifications/notifications_preference_provider.dart';
 import '../../core/storage/driver_upload_messages.dart';
 import '../../core/storage/driver_upload_service.dart';
@@ -284,8 +285,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       ),
                       ProfileMenuRow(
                         icon: Icons.ondemand_video_outlined,
-                        label: l10n.video,
-                        onTap: () => _showComingSoon(l10n.video),
+                        label: l10n.userManualVideo,
+                        onTap: _openUserManualVideo,
                         showDivider: false,
                       ),
                     ],
@@ -327,6 +328,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
   void _showComingSoon(String featureName) {
     showComingSoonDialog(context, featureName: featureName);
+  }
+
+  void _openUserManualVideo() {
+    if (Env.hasRiderManualVideo) {
+      context.push('/profile/manual');
+    } else {
+      _showComingSoon(context.l10n.userManualVideo);
+    }
   }
 
   Future<void> _onAvatarTap(BuildContext context) async {
