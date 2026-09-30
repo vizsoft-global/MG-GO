@@ -2749,6 +2749,48 @@ abstract class AppLocalizations {
   /// **'Video'**
   String get video;
 
+  /// No description provided for @userManualVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'User Manual Video'**
+  String get userManualVideo;
+
+  /// No description provided for @videoFullscreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Full screen'**
+  String get videoFullscreen;
+
+  /// No description provided for @videoUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Video is unavailable. Check your connection and try again.'**
+  String get videoUnavailable;
+
+  /// No description provided for @companySchemeTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily target: {target} orders'**
+  String companySchemeTarget(int target);
+
+  /// No description provided for @companySchemeVerifiedToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified today: {count}'**
+  String companySchemeVerifiedToday(int count);
+
+  /// No description provided for @companySchemeAboveRate.
+  ///
+  /// In en, this message translates to:
+  /// **'+ {rate} KD per order above target'**
+  String companySchemeAboveRate(String rate);
+
+  /// No description provided for @companySchemeBelowRate.
+  ///
+  /// In en, this message translates to:
+  /// **'- {rate} KD per order below target'**
+  String companySchemeBelowRate(String rate);
+
   /// No description provided for @couldNotLoadProfile.
   ///
   /// In en, this message translates to:

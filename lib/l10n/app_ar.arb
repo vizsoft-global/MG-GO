@@ -468,6 +468,41 @@
   "trainingSection": "التدريب",
   "tutorialMaterial": "مواد تعليمية",
   "video": "فيديو",
+  "userManualVideo": "فيديو دليل الاستخدام",
+  "videoFullscreen": "ملء الشاشة",
+  "videoUnavailable": "الفيديو غير متاح. تحقق من اتصالك وحاول مرة أخرى.",
+  "companySchemeTarget": "الهدف اليومي: {target} طلبات",
+  "@companySchemeTarget": {
+    "placeholders": {
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "companySchemeVerifiedToday": "تم التحقق اليوم: {count}",
+  "@companySchemeVerifiedToday": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "companySchemeAboveRate": "+ {rate} د.ك لكل طلب فوق الهدف",
+  "@companySchemeAboveRate": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "companySchemeBelowRate": "- {rate} د.ك لكل طلب تحت الهدف",
+  "@companySchemeBelowRate": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
   "couldNotLoadProfile": "تعذّر تحميل الملف",
   "profileSessionExpiredHint": "ربما انتهت جلستك. حاول مجدداً أو سجّل الخروج والدخول.",
   "profile": "الملف",

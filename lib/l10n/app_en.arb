@@ -916,6 +916,41 @@
   "trainingSection": "Training",
   "tutorialMaterial": "Tutorial Material",
   "video": "Video",
+  "userManualVideo": "User Manual Video",
+  "videoFullscreen": "Full screen",
+  "videoUnavailable": "Video is unavailable. Check your connection and try again.",
+  "companySchemeTarget": "Daily target: {target} orders",
+  "@companySchemeTarget": {
+    "placeholders": {
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "companySchemeVerifiedToday": "Verified today: {count}",
+  "@companySchemeVerifiedToday": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "companySchemeAboveRate": "+ {rate} KD per order above target",
+  "@companySchemeAboveRate": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "companySchemeBelowRate": "- {rate} KD per order below target",
+  "@companySchemeBelowRate": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
   "couldNotLoadProfile": "Could not load profile",
   "profileSessionExpiredHint": "Your session may have expired. Try again or sign out and sign back in.",
   "profile": "Profile",

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dpd_userapp/features/earnings/earnings_models.dart';
 import 'package:dpd_userapp/features/home/widgets/daily_dpd_target_card.dart';

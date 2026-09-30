@@ -1536,6 +1536,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get video => 'Video';
 
   @override
+  String get userManualVideo => 'User Manual Video';
+
+  @override
+  String get videoFullscreen => 'Full screen';
+
+  @override
+  String get videoUnavailable =>
+      'Video is unavailable. Check your connection and try again.';
+
+  @override
+  String companySchemeTarget(int target) {
+    return 'Daily target: $target orders';
+  }
+
+  @override
+  String companySchemeVerifiedToday(int count) {
+    return 'Verified today: $count';
+  }
+
+  @override
+  String companySchemeAboveRate(String rate) {
+    return '+ $rate KD per order above target';
+  }
+
+  @override
+  String companySchemeBelowRate(String rate) {
+    return '- $rate KD per order below target';
+  }
+
+  @override
   String get couldNotLoadProfile => 'Could not load profile';
 
   @override

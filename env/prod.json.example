@@ -3,5 +3,6 @@
   "SUPABASE_ANON_KEY": "<from Supabase dashboard — live project eoksxkdssptgyqyywdju>",
   "ADMIN_API_BASE_URL": "https://dpdadmin-prod.vercel.app",
   "SENTRY_ENVIRONMENT": "production",
-  "LIVE_INGEST_URL": "<dpd-live Worker origin, e.g. https://dpd-live.<subdomain>.workers.dev — leave empty to disable the 5s edge rail>"
+  "LIVE_INGEST_URL": "<dpd-live Worker origin, e.g. https://dpd-live.<subdomain>.workers.dev — leave empty to disable the 5s edge rail>",
+  "RIDER_MANUAL_VIDEO_URL": "https://pub-b6fce4e94d674ae889ad969178a10af6.r2.dev/manuals/musallam-rider-user-manual.mp4"
 }
