@@ -1645,6 +1645,57 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get vehicleChassis => 'رقم الهيكل';
+
+  @override
+  String get vehicleYear => 'السنة';
+
+  @override
+  String get vehicleCondition => 'الحالة';
+
+  @override
+  String get vehicleCarType => 'نوع السيارة';
+
+  @override
+  String get vehicleTypeOfUse => 'نوع الاستخدام';
+
+  @override
+  String get vehicleStatus => 'الحالة التشغيلية';
+
+  @override
+  String get vehicleHandover => 'التسليم';
+
+  @override
+  String get vehicleHandoverEmpty => 'لا توجد سجلات تسليم بعد.';
+
+  @override
+  String get vehicleAccident => 'حادث';
+
+  @override
+  String get vehicleAccidentEmpty => 'لا توجد سجلات حوادث بعد.';
+
+  @override
+  String get vehicleDocuments => 'المستندات';
+
+  @override
+  String get vehicleDocumentsEmpty => 'لا توجد مستندات بعد.';
+
+  @override
+  String get vehicleService => 'الصيانة';
+
+  @override
+  String get vehicleServiceEmpty => 'لا توجد سجلات صيانة بعد.';
+
+  @override
+  String get vehicleAssets => 'الأصول';
+
+  @override
+  String get vehicleAssetsEmpty => 'لا توجد أصول معيّنة بعد.';
+
+  @override
+  String get vehicleHasFile => 'ملف';
+
+  @override
   String get vehicleLogFuel => 'تسجيل تعبئة';
 
   @override

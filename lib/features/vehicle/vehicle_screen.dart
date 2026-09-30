@@ -129,6 +129,21 @@ class _AssignedCard extends StatelessWidget {
                     ? '—'
                     : l10n.vehicleLimitKwd(limit.toStringAsFixed(3)),
               ),
+              if (vehicle.chassisNo != null)
+                _Row(label: l10n.vehicleChassis, value: vehicle.chassisNo!),
+              if (vehicle.modelYear != null)
+                _Row(
+                  label: l10n.vehicleYear,
+                  value: vehicle.modelYear!.toString(),
+                ),
+              if (vehicle.condition != null)
+                _Row(label: l10n.vehicleCondition, value: vehicle.condition!),
+              if (vehicle.carType != null)
+                _Row(label: l10n.vehicleCarType, value: vehicle.carType!),
+              if (vehicle.typeOfUse != null)
+                _Row(label: l10n.vehicleTypeOfUse, value: vehicle.typeOfUse!),
+              if (vehicle.status != null)
+                _Row(label: l10n.vehicleStatus, value: vehicle.status!),
             ],
           ),
         ),
@@ -136,6 +151,36 @@ class _AssignedCard extends StatelessWidget {
         FilledButton(
           onPressed: () => context.push('/vehicle/fuel-fill'),
           child: Text(l10n.vehicleLogFuel),
+        ),
+        const SizedBox(height: 16),
+        _LedgerSection(
+          title: l10n.vehicleHandover,
+          empty: l10n.vehicleHandoverEmpty,
+          entries: vehicle.handovers,
+        ),
+        const SizedBox(height: 12),
+        _LedgerSection(
+          title: l10n.vehicleAccident,
+          empty: l10n.vehicleAccidentEmpty,
+          entries: vehicle.accidents,
+        ),
+        const SizedBox(height: 12),
+        _LedgerSection(
+          title: l10n.vehicleDocuments,
+          empty: l10n.vehicleDocumentsEmpty,
+          entries: vehicle.documents,
+        ),
+        const SizedBox(height: 12),
+        _LedgerSection(
+          title: l10n.vehicleService,
+          empty: l10n.vehicleServiceEmpty,
+          entries: vehicle.services,
+        ),
+        const SizedBox(height: 12),
+        _LedgerSection(
+          title: l10n.vehicleAssets,
+          empty: l10n.vehicleAssetsEmpty,
+          entries: vehicle.assets,
         ),
       ],
     );
@@ -155,6 +200,93 @@ class _AssignedCard extends StatelessWidget {
       'card' => l10n.vehicleFuelCard,
       _ => type ?? '—',
     };
+  }
+}
+
+class _LedgerSection extends StatelessWidget {
+  const _LedgerSection({
+    required this.title,
+    required this.empty,
+    required this.entries,
+  });
+
+  final String title;
+  final String empty;
+  final List<VehicleLedgerEntry> entries;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(15, 14, 15, 10),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.cardBorder, width: 0.7),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          const SizedBox(height: 10),
+          if (entries.isEmpty)
+            Text(
+              empty,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                height: 1.45,
+              ),
+            )
+          else
+            for (final entry in entries) ...[
+              _LedgerRow(entry: entry, fileLabel: l10n.vehicleHasFile),
+              const SizedBox(height: 8),
+            ],
+        ],
+      ),
+    );
+  }
+}
+
+class _LedgerRow extends StatelessWidget {
+  const _LedgerRow({required this.entry, required this.fileLabel});
+
+  final VehicleLedgerEntry entry;
+  final String fileLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final parts = [
+      if (entry.at != null) entry.at!,
+      if (entry.kind != null) entry.kind!,
+      if (entry.notes != null) entry.notes!,
+    ];
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Text(
+            parts.isEmpty ? '—' : parts.join(' · '),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+          ),
+        ),
+        if (entry.hasFile)
+          Text(
+            fileLabel,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+          ),
+      ],
+    );
   }
 }
 

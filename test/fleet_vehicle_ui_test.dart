@@ -102,6 +102,12 @@ void main() {
     expect(find.text('1 ABC'), findsOneWidget);
     expect(find.text('Honda Wave'), findsOneWidget);
     expect(find.text('Log fuel'), findsOneWidget);
+    expect(find.text('Handover'), findsOneWidget);
+    expect(find.text('Accident'), findsOneWidget);
+    expect(find.text('Documents'), findsOneWidget);
+    expect(find.text('Service'), findsOneWidget);
+    expect(find.text('Assets'), findsOneWidget);
+    expect(find.text('No handover records yet.'), findsOneWidget);
     await expectLater(
       find.byType(VehicleScreen),
       matchesGoldenFile('goldens/fleet_vehicle_tab.png'),
@@ -109,6 +115,40 @@ void main() {
     await tester.tap(find.text('Log fuel'));
     await tester.pumpAndSettle();
     expect(find.text('fill-route'), findsOneWidget);
+  });
+
+  testWidgets('vehicle tab lists read-only ledger rows', (tester) async {
+    await _phone(tester);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          assignedVehicleProvider.overrideWith(
+            (ref) async => const AssignedVehicle(
+              vehicleId: 'v1',
+              plate: '1 ABC',
+              kind: 'bike',
+              fuelType: 'chip',
+              model: 'Honda Wave',
+              chassisNo: 'CH-1',
+              handovers: [
+                VehicleLedgerEntry(at: '2026-09-01', notes: 'Issued', hasFile: true),
+              ],
+              assets: [
+                VehicleLedgerEntry(at: '2026-09-02', kind: 'Helmet · H-1'),
+              ],
+            ),
+          ),
+        ],
+        child: _localize(const VehicleScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('CH-1'), findsOneWidget);
+    expect(find.textContaining('2026-09-01'), findsOneWidget);
+    expect(find.textContaining('Issued'), findsOneWidget);
+    expect(find.text('File'), findsOneWidget);
+    expect(find.textContaining('Helmet · H-1'), findsOneWidget);
+    expect(find.text('No accident records yet.'), findsOneWidget);
   });
 
   testWidgets('vehicle tab with no assignment hides Log fuel', (tester) async {
