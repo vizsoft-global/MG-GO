@@ -5,16 +5,12 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/l10n/locale_provider.dart';
-import '../../core/config/env.dart';
 import '../../core/notifications/notifications_preference_provider.dart';
-import '../../core/storage/driver_upload_messages.dart';
-import '../../core/storage/driver_upload_service.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/widgets/coming_soon_dialog.dart';
 import '../auth/rider_auth_service.dart';
-import 'avatar_picker_errors.dart';
 import 'avatar_upload_controller.dart';
-import 'widgets/avatar_source_sheet.dart';
+import 'avatar_upload_feedback.dart';
+import 'rider_contact.dart';
 import 'widgets/language_picker_sheet.dart';
 import 'widgets/profile_header_card.dart';
 import 'notifications_toggle_message.dart';
@@ -80,50 +76,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         ? l10n.arabic
         : l10n.english;
 
-    ref.listen<AsyncValue<AvatarUploadOutcome?>>(
-      avatarUploadControllerProvider,
-      (previous, next) {
-        if (!mounted) return;
-        if (next.hasError) {
-          final error = next.error!;
-          if (isCameraPermissionException(error)) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(l10n.profileCameraPermissionDenied)),
-            );
-            return;
-          }
-          final message = error is DriverUploadException
-              ? messageForDriverUploadException(error, l10n)
-              : l10n.somethingWentWrong;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.profileImageUploadFailed(message))),
-          );
-          return;
-        }
-        if (previous?.isLoading != true || !next.hasValue) return;
-        final outcome = next.value;
-        switch (outcome) {
-          case AvatarUploadOutcome.cameraDenied:
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(l10n.profileCameraPermissionDenied)),
-            );
-          case AvatarUploadOutcome.uploadedAndVisible:
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(l10n.profilePictureUpdated)));
-          case AvatarUploadOutcome.uploadedButPreviewFailed:
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(l10n.uploadedPreviewFailed),
-                duration: const Duration(seconds: 5),
-              ),
-            );
-          case AvatarUploadOutcome.cancelled:
-          case null:
-            break;
-        }
-      },
-    );
+    listenAvatarUploadFeedback(context, ref);
 
     final profile = profileAsync.value;
     switch (profileScreenUi(
@@ -154,7 +107,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       return const SafeArea(child: Center(child: CircularProgressIndicator()));
     }
 
-    final phone = _phoneFromDriverEmail(profile.email);
+    final phone = driverPhoneFromEmail(profile.email);
     final avatarLoading = avatarUpload.isLoading;
     return SafeArea(
       child: RefreshIndicator(
@@ -198,7 +151,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       ProfileMenuRow(
                         icon: Icons.person_outline,
                         label: l10n.myProfile,
-                        onTap: () => _showComingSoon(l10n.myProfile),
+                        onTap: () => context.push('/profile/details'),
                       ),
                       ProfileMenuRow(
                         icon: Icons.fact_check_outlined,
@@ -208,17 +161,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       ProfileMenuRow(
                         icon: Icons.warning_amber_outlined,
                         label: l10n.wrongAction,
-                        onTap: () => _showComingSoon(l10n.wrongAction),
+                        onTap: () => context.push('/profile/wrong-actions'),
                       ),
                       ProfileMenuRow(
                         icon: Icons.account_balance_wallet_outlined,
                         label: l10n.paymentDetails,
-                        onTap: () => _showComingSoon(l10n.paymentDetails),
+                        onTap: () => context.push('/profile/payments'),
                       ),
                       ProfileMenuRow(
                         icon: Icons.sports_motorsports_outlined,
                         label: l10n.assets,
-                        onTap: () => _showComingSoon(l10n.assets),
+                        onTap: () => context.push('/profile/assets'),
                         showDivider: false,
                       ),
                     ],
@@ -269,7 +222,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       ProfileMenuRow(
                         icon: Icons.description_outlined,
                         label: l10n.termsAndConditions,
-                        onTap: () => _showComingSoon(l10n.termsAndConditions),
+                        onTap: () => context.push('/profile/terms'),
                         showDivider: false,
                       ),
                     ],
@@ -280,13 +233,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       ProfileMenuRow(
                         icon: Icons.play_circle_outline,
                         label: l10n.tutorialMaterial,
-                        onTap: () => _showComingSoon(l10n.tutorialMaterial),
-                        showDivider: false,
+                        onTap: () => context.push('/profile/tutorial'),
                       ),
                       ProfileMenuRow(
                         icon: Icons.ondemand_video_outlined,
                         label: l10n.userManualVideo,
-                        onTap: _openUserManualVideo,
+                        onTap: () => context.push('/profile/manual'),
                         showDivider: false,
                       ),
                     ],
@@ -326,25 +278,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
-  void _showComingSoon(String featureName) {
-    showComingSoonDialog(context, featureName: featureName);
-  }
-
-  void _openUserManualVideo() {
-    if (Env.hasRiderManualVideo) {
-      context.push('/profile/manual');
-    } else {
-      _showComingSoon(context.l10n.userManualVideo);
-    }
-  }
-
-  Future<void> _onAvatarTap(BuildContext context) async {
-    final source = await showAvatarSourceSheet(context);
-    if (source == null || !mounted) return;
-    await ref
-        .read(avatarUploadControllerProvider.notifier)
-        .pickAndUpload(source);
-  }
+  Future<void> _onAvatarTap(BuildContext context) =>
+      pickAndUploadAvatar(context, ref);
 
   Future<void> _toggleNotifications() async {
     final next = !ref.read(notificationsEnabledProvider);
@@ -435,11 +370,4 @@ class _ProfileError extends StatelessWidget {
       ),
     );
   }
-}
-
-String? _phoneFromDriverEmail(String? email) {
-  if (email == null) return null;
-  final match = RegExp(r'^driver\+(\d+)@').firstMatch(email.trim());
-  if (match == null) return null;
-  return '+${match.group(1)}';
 }

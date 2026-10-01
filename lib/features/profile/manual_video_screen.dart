@@ -17,11 +17,53 @@ import '../../core/theme/app_colors.dart';
 /// uses HTTP range requests — the file is never downloaded in full before
 /// playback and is never bundled into the app. No storage/camera/microphone
 /// permission is requested or required.
+///
+/// The same screen serves both Profile → Training rows (User Manual Video and
+/// Tutorial Material); [title] only changes the app-bar copy.
 class ManualVideoScreen extends ConsumerStatefulWidget {
-  const ManualVideoScreen({super.key});
+  const ManualVideoScreen({super.key, this.title});
+
+  /// App-bar title override. `null` falls back to `l10n.userManualVideo`.
+  final String? title;
 
   @override
   ConsumerState<ManualVideoScreen> createState() => _ManualVideoScreenState();
+}
+
+/// The frame the video is letterboxed into. The manual is a portrait
+/// screen-recording, so a fixed 9:16 stage keeps the player a predictable
+/// shape on every device and gives landscape or near-square encodes black
+/// bars rather than a reflowing layout.
+const double kVideoStageAspectRatio = 9 / 16;
+
+/// Letterboxes [child] into the fixed [kVideoStageAspectRatio] frame.
+///
+/// The child is laid out at its own intrinsic size and scaled to fit, which is
+/// what letterboxing means here: the video keeps its own proportions and the
+/// frame around it never changes shape. Kept public and free of any player
+/// state so the frame itself can be tested without an initialised controller.
+class VideoLetterboxStage extends StatelessWidget {
+  const VideoLetterboxStage({required this.child, this.onTap, super.key});
+
+  final Widget child;
+
+  /// Toggles playback in the player. Optional so the frame can be laid out
+  /// without a controller behind it.
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return AspectRatio(
+      aspectRatio: kVideoStageAspectRatio,
+      child: onTap == null
+          ? FittedBox(fit: BoxFit.contain, child: child)
+          : GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: onTap,
+              child: FittedBox(fit: BoxFit.contain, child: child),
+            ),
+    );
+  }
 }
 
 class _ManualVideoScreenState extends ConsumerState<ManualVideoScreen> {
@@ -112,7 +154,7 @@ class _ManualVideoScreenState extends ConsumerState<ManualVideoScreen> {
             : AppBar(
                 backgroundColor: Colors.black,
                 foregroundColor: Colors.white,
-                title: Text(l10n.userManualVideo),
+                title: Text(widget.title ?? l10n.userManualVideo),
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back_rounded),
                   onPressed: () =>
@@ -137,22 +179,28 @@ class _ManualVideoScreenState extends ConsumerState<ManualVideoScreen> {
     }
 
     final videoController = controller!;
+    // `size` is populated by `initialize()`. The fallback mirrors the stage
+    // ratio so a controller that reported no dimensions cannot collapse the
+    // video to a zero-size box.
+    final size = videoController.value.size;
+    final videoWidth = size.width > 0 ? size.width : 9.0;
+    final videoHeight = size.height > 0 ? size.height : 16.0;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Expanded(
           child: Center(
-            child: AspectRatio(
-              aspectRatio: videoController.value.aspectRatio,
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  final v = videoController.value;
-                  v.isPlaying
-                      ? unawaited(videoController.pause())
-                      : unawaited(videoController.play());
-                  setState(() {});
-                },
+            child: VideoLetterboxStage(
+              onTap: () {
+                final v = videoController.value;
+                v.isPlaying
+                    ? unawaited(videoController.pause())
+                    : unawaited(videoController.play());
+                setState(() {});
+              },
+              child: SizedBox(
+                width: videoWidth,
+                height: videoHeight,
                 child: VideoPlayer(videoController),
               ),
             ),

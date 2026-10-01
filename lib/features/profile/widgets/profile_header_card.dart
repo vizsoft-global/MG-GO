@@ -12,14 +12,21 @@ class ProfileHeaderCard extends ConsumerWidget {
     required this.profile,
     required this.phone,
     required this.onAvatarTap,
-    required this.onHelpTap,
+    this.onHelpTap,
+    this.showHeaderRow = true,
     super.key,
   });
 
   final RiderProfile profile;
   final String? phone;
   final VoidCallback onAvatarTap;
-  final VoidCallback onHelpTap;
+
+  /// Renders the Help button next to the "Profile" title when provided.
+  final VoidCallback? onHelpTap;
+
+  /// The "Profile" title + Help row. Hidden on the My Profile page, where the
+  /// app bar already carries the title.
+  final bool showHeaderRow;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -37,50 +44,53 @@ class ProfileHeaderCard extends ConsumerWidget {
     final avatarUrl =
         rawUrl == null || rawUrl.isEmpty ? null : unsignedAvatarUrl(rawUrl);
     return Container(
-      padding: const EdgeInsets.fromLTRB(15, 18, 15, 12),
+      padding: EdgeInsets.fromLTRB(15, showHeaderRow ? 18 : 20, 15, 12),
       decoration: const BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(14)),
       ),
       child: Column(
         children: [
-          Row(
-            children: [
-              Text(
-                l10n.profile,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.black,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const Spacer(),
-              OutlinedButton.icon(
-                onPressed: onHelpTap,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.tomatoOrange,
-                  side: const BorderSide(color: Color(0x33000000)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  minimumSize: Size.zero,
-                ),
-                icon: const Icon(Icons.headset_mic_outlined, size: 16),
-                label: Text(
-                  l10n.help,
+          if (showHeaderRow) ...[
+            Row(
+              children: [
+                Text(
+                  l10n.profile,
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 16,
+                    color: Colors.black,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
+                const Spacer(),
+                if (onHelpTap != null)
+                  OutlinedButton.icon(
+                    onPressed: onHelpTap,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.tomatoOrange,
+                      side: const BorderSide(color: Color(0x33000000)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(22),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      minimumSize: Size.zero,
+                    ),
+                    icon: const Icon(Icons.headset_mic_outlined, size: 16),
+                    label: Text(
+                      l10n.help,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+          ],
           ProfileAvatar(
             fullName: profile.fullName,
             photoUrl: avatarUrl,

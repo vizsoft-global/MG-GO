@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/l10n/l10n.dart';
 import '../../features/app_update/update_required_screen.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/login_verification_gate.dart';
@@ -26,8 +27,13 @@ import '../../features/earnings/payout_detail_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/maintenance/maintenance_screen.dart';
 import '../../features/notifications/notifications_inbox_screen.dart';
+import '../../features/profile/assets_screen.dart';
 import '../../features/profile/manual_video_screen.dart';
+import '../../features/profile/my_profile_details_screen.dart';
+import '../../features/profile/payments_screen.dart';
 import '../../features/profile/profile_screen.dart';
+import '../../features/profile/terms_screen.dart';
+import '../../features/profile/wrong_actions_screen.dart';
 import '../../features/shell/app_exit_scope.dart';
 import '../../features/shell/main_shell.dart';
 import '../../features/support/action_required_screen.dart';
@@ -279,6 +285,46 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'manual_video',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const ManualVideoScreen(),
+      ),
+      // Profile → Training → Tutorial Material. The same player and the same
+      // verified R2 URL as the manual, because the two rows are two entrances
+      // to one video; only the app-bar title differs.
+      GoRoute(
+        path: '/profile/tutorial',
+        name: 'tutorial_video',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) =>
+            ManualVideoScreen(title: context.l10n.tutorialMaterial),
+      ),
+      GoRoute(
+        path: '/profile/details',
+        name: 'profile_details',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const MyProfileDetailsScreen(),
+      ),
+      GoRoute(
+        path: '/profile/wrong-actions',
+        name: 'profile_wrong_actions',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const WrongActionsScreen(),
+      ),
+      GoRoute(
+        path: '/profile/payments',
+        name: 'profile_payments',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const PaymentsScreen(),
+      ),
+      GoRoute(
+        path: '/profile/assets',
+        name: 'profile_assets',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const AssetsScreen(),
+      ),
+      GoRoute(
+        path: '/profile/terms',
+        name: 'profile_terms',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const TermsScreen(),
       ),
       GoRoute(
         path: '/vehicle/fuel-fill',

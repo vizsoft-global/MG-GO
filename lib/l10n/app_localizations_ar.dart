@@ -1536,6 +1536,103 @@ class AppLocalizationsAr extends AppLocalizations {
       'الفيديو غير متاح. تحقق من اتصالك وحاول مرة أخرى.';
 
   @override
+  String get profilePersonalInfo => 'المعلومات الشخصية';
+
+  @override
+  String get profileManagedByAdmin => 'تُدار من قِبَل فريق العمليات';
+
+  @override
+  String get wrongActionsEmpty =>
+      'لا توجد مخالفات مسجّلة. إذا سجّل فريق العمليات مخالفة، ستظهر هنا.';
+
+  @override
+  String get wrongActionsLoadFailed => 'تعذّر تحميل المخالفات.';
+
+  @override
+  String get wrongActionTypeDelay => 'تأخير';
+
+  @override
+  String get wrongActionTypeZoneBreach => 'خروج عن النطاق';
+
+  @override
+  String get wrongActionTypeHygiene => 'عدم استيفاء النظافة';
+
+  @override
+  String get wrongActionTypeUniform => 'الزي الرسمي';
+
+  @override
+  String get wrongActionTypeOther => 'أخرى';
+
+  @override
+  String get wrongActionSeverityLow => 'منخفضة';
+
+  @override
+  String get wrongActionSeverityMedium => 'متوسطة';
+
+  @override
+  String get wrongActionSeverityHigh => 'عالية';
+
+  @override
+  String get wrongActionDateUnknown => 'التاريخ غير مسجّل';
+
+  @override
+  String get termsIntro =>
+      'تنطبق هذه الشروط على استخدامك لتطبيق مندوب التوصيل لدى مسلّم. بتسجيل الدخول وتنفيذ التوصيلات فإنك توافق عليها.';
+
+  @override
+  String get termsUseTitle => 'استخدام التطبيق';
+
+  @override
+  String get termsUseBody =>
+      'استخدم التطبيق فقط للعمل المُوكل إليك. لا تشارك حسابك، ولا تثبّت التطبيق على هاتف شخص آخر، ولا تستخدمه لتسجيل توصيلات لم تحدث.';
+
+  @override
+  String get termsAccountTitle => 'حسابك';
+
+  @override
+  String get termsAccountBody =>
+      'رقم المندوب ورمز الدخول خاصان بك وحدك. حافظ على سرية رمز الدخول وأبلغ فريق العمليات فوراً إذا فُقد هاتفك أو إذا احتمل أن شخصاً آخر يعرف الرمز.';
+
+  @override
+  String get termsDeliveryTitle => 'سجلات التوصيل';
+
+  @override
+  String get termsDeliveryBody =>
+      'يجب أن يسجّل كل طلب تستلمه رقم الطلب الصحيح والصور المطلوبة. هذه السجلات هي الدليل المستخدم في مطابقة الطلبات، ولذلك قد لا يُحتسب الطلب أو يُدفع بدونهما.';
+
+  @override
+  String get termsLocationTitle => 'الموقع أثناء الدوام';
+
+  @override
+  String get termsLocationBody =>
+      'أثناء دوامك يُرسل التطبيق موقعك ليتمكن فريق العمليات من متابعة التوصيلات والتأكد من وجودك داخل نطاق التوصيل. يتوقف إرسال الموقع عند تسجيل الخروج.';
+
+  @override
+  String get termsPaymentsTitle => 'الأرباح والمدفوعات';
+
+  @override
+  String get termsPaymentsBody =>
+      'تُحسب أرباحك من التوصيلات المعتمدة والقواعد السارية لمطعمك أو نطاقك أو شركتك. تفاصيل الدفع في التطبيق هي سجل لما تمت الموافقة عليه ودفعه.';
+
+  @override
+  String get termsConductTitle => 'السلوك';
+
+  @override
+  String get termsConductBody =>
+      'تُعرض في التطبيق المخالفات التي يسجّلها فريق العمليات. قد تؤدي المخالفات المتكررة أو الجسيمة إلى الإيقاف أو إنهاء التعاقد.';
+
+  @override
+  String get termsChangesTitle => 'تغييرات على هذه الشروط';
+
+  @override
+  String get termsChangesBody =>
+      'قد تُحدَّث هذه الشروط عند تغيّر طريقة عمل التطبيق. النسخة الحالية تُرفَق دائماً مع التطبيق، لذا ما تقرأه هنا هو ما ينطبق.';
+
+  @override
+  String get termsContact =>
+      'لديك أسئلة حول هذه الشروط؟ تواصل مع فريق العمليات عبر المساعدة والدعم في هذا التطبيق.';
+
+  @override
   String companySchemeTarget(int target) {
     return 'الهدف اليومي: $target طلبات';
   }
