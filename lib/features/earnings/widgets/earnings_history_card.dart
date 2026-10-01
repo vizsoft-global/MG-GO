@@ -68,7 +68,7 @@ class _EarningsHistoryCardState extends ConsumerState<EarningsHistoryCard> {
       case 1:
         return const _DeductionsPlaceholder(key: ValueKey('deductions'));
       case 2:
-        return const _PayslipsTab(key: ValueKey('payslips'));
+        return const PayslipsTab(key: ValueKey('payslips'));
       default:
         return const SizedBox.shrink();
     }
@@ -373,8 +373,13 @@ class _DeductionsPlaceholder extends StatelessWidget {
 // Payslips tab
 // ---------------------------------------------------------------------------
 
-class _PayslipsTab extends ConsumerWidget {
-  const _PayslipsTab({super.key});
+/// Approved/paid payslip rows, newest first.
+///
+/// Public because Profile → Payment Details shows the same list on its own
+/// page. One implementation means a rider cannot see a different history
+/// depending on which entry point they used.
+class PayslipsTab extends ConsumerWidget {
+  const PayslipsTab({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
