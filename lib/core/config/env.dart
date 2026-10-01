@@ -28,14 +28,21 @@ class Env {
 
   /// Public Cloudflare R2 URL for the rider user-manual video.
   ///
-  /// Pass via `--dart-define-from-file` (`RIDER_MANUAL_VIDEO_URL` in
+  /// The default is the production public bucket object, so the Profile →
+  /// Training entries work in any run that does not pass `--dart-define`
+  /// values (a debug run, a bare `flutter build`, an IDE launch). Previously
+  /// this defaulted to `''`, which made [hasRiderManualVideo] false and sent
+  /// the video row to the Coming-soon dialog instead of the player.
+  ///
+  /// Override via `--dart-define-from-file` (`RIDER_MANUAL_VIDEO_URL` in
   /// `env/prod.json`, template in `env/prod.json.example`). The video is
-  /// streamed in-app, never bundled, so the URL can be swapped without an app
-  /// release. Empty (unset) means the Training "User manual video" entry falls
-  /// back to the existing Coming-soon behaviour.
+  /// streamed in-app over HTTP range requests and is never bundled, so the
+  /// URL can be swapped without an app release. An explicit empty value
+  /// remains the kill switch.
   static const riderManualVideoUrl = String.fromEnvironment(
     'RIDER_MANUAL_VIDEO_URL',
-    defaultValue: '',
+    defaultValue:
+        'https://pub-b6fce4e94d674ae889ad969178a10af6.r2.dev/manuals/musallam-rider-user-manual.mp4',
   );
 
   static bool get hasRiderManualVideo =>

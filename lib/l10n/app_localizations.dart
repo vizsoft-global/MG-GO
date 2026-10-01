@@ -2767,6 +2767,180 @@ abstract class AppLocalizations {
   /// **'Video is unavailable. Check your connection and try again.'**
   String get videoUnavailable;
 
+  /// No description provided for @profilePersonalInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal information'**
+  String get profilePersonalInfo;
+
+  /// No description provided for @profileManagedByAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Managed by your operations team'**
+  String get profileManagedByAdmin;
+
+  /// No description provided for @wrongActionsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No wrong actions recorded. If your operations team files one, it will appear here.'**
+  String get wrongActionsEmpty;
+
+  /// No description provided for @wrongActionsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load your wrong actions.'**
+  String get wrongActionsLoadFailed;
+
+  /// No description provided for @wrongActionTypeDelay.
+  ///
+  /// In en, this message translates to:
+  /// **'Delay'**
+  String get wrongActionTypeDelay;
+
+  /// No description provided for @wrongActionTypeZoneBreach.
+  ///
+  /// In en, this message translates to:
+  /// **'Zone breach'**
+  String get wrongActionTypeZoneBreach;
+
+  /// No description provided for @wrongActionTypeHygiene.
+  ///
+  /// In en, this message translates to:
+  /// **'Hygiene failed'**
+  String get wrongActionTypeHygiene;
+
+  /// No description provided for @wrongActionTypeUniform.
+  ///
+  /// In en, this message translates to:
+  /// **'Uniform'**
+  String get wrongActionTypeUniform;
+
+  /// No description provided for @wrongActionTypeOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get wrongActionTypeOther;
+
+  /// No description provided for @wrongActionSeverityLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get wrongActionSeverityLow;
+
+  /// No description provided for @wrongActionSeverityMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get wrongActionSeverityMedium;
+
+  /// No description provided for @wrongActionSeverityHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get wrongActionSeverityHigh;
+
+  /// No description provided for @wrongActionDateUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Date not recorded'**
+  String get wrongActionDateUnknown;
+
+  /// No description provided for @termsIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'These terms apply to your use of the Musallam delivery rider app. By signing in and taking deliveries you accept them.'**
+  String get termsIntro;
+
+  /// No description provided for @termsUseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Using the app'**
+  String get termsUseTitle;
+
+  /// No description provided for @termsUseBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the app only for the work it is given to you for. Do not share your account, install it on someone else\'s phone, or use it to record deliveries that did not happen.'**
+  String get termsUseBody;
+
+  /// No description provided for @termsAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account'**
+  String get termsAccountTitle;
+
+  /// No description provided for @termsAccountBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your driver ID and passcode are yours alone. Keep the passcode private and tell your operations team immediately if your phone is lost or someone else may know it.'**
+  String get termsAccountBody;
+
+  /// No description provided for @termsDeliveryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery records'**
+  String get termsDeliveryTitle;
+
+  /// No description provided for @termsDeliveryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Each order you pick up must record the correct order ID and the required photos. These records are the evidence used for order reconciliation, so an order without them may not be counted or paid.'**
+  String get termsDeliveryBody;
+
+  /// No description provided for @termsLocationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Location while on duty'**
+  String get termsLocationTitle;
+
+  /// No description provided for @termsLocationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'While you are on duty the app reports your location so operations can follow deliveries and confirm you are inside your delivery area. Location reporting stops when you clock out.'**
+  String get termsLocationBody;
+
+  /// No description provided for @termsPaymentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Earnings and payments'**
+  String get termsPaymentsTitle;
+
+  /// No description provided for @termsPaymentsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your earnings are calculated from verified deliveries and the rules active for your restaurant, zone or company. Payment details in the app are a record of what has been approved and paid.'**
+  String get termsPaymentsBody;
+
+  /// No description provided for @termsConductTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Conduct'**
+  String get termsConductTitle;
+
+  /// No description provided for @termsConductBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong actions recorded by your operations team are listed in the app. Repeated or serious wrong actions may lead to suspension or the end of your engagement.'**
+  String get termsConductBody;
+
+  /// No description provided for @termsChangesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes to these terms'**
+  String get termsChangesTitle;
+
+  /// No description provided for @termsChangesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'These terms may be updated when the way the app works changes. The current version always ships with the app, so what you read here is what applies.'**
+  String get termsChangesBody;
+
+  /// No description provided for @termsContact.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions about these terms? Contact your operations team through Help & Support in this app.'**
+  String get termsContact;
+
   /// No description provided for @companySchemeTarget.
   ///
   /// In en, this message translates to:

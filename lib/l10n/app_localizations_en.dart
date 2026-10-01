@@ -1546,6 +1546,103 @@ class AppLocalizationsEn extends AppLocalizations {
       'Video is unavailable. Check your connection and try again.';
 
   @override
+  String get profilePersonalInfo => 'Personal information';
+
+  @override
+  String get profileManagedByAdmin => 'Managed by your operations team';
+
+  @override
+  String get wrongActionsEmpty =>
+      'No wrong actions recorded. If your operations team files one, it will appear here.';
+
+  @override
+  String get wrongActionsLoadFailed => 'Could not load your wrong actions.';
+
+  @override
+  String get wrongActionTypeDelay => 'Delay';
+
+  @override
+  String get wrongActionTypeZoneBreach => 'Zone breach';
+
+  @override
+  String get wrongActionTypeHygiene => 'Hygiene failed';
+
+  @override
+  String get wrongActionTypeUniform => 'Uniform';
+
+  @override
+  String get wrongActionTypeOther => 'Other';
+
+  @override
+  String get wrongActionSeverityLow => 'Low';
+
+  @override
+  String get wrongActionSeverityMedium => 'Medium';
+
+  @override
+  String get wrongActionSeverityHigh => 'High';
+
+  @override
+  String get wrongActionDateUnknown => 'Date not recorded';
+
+  @override
+  String get termsIntro =>
+      'These terms apply to your use of the Musallam delivery rider app. By signing in and taking deliveries you accept them.';
+
+  @override
+  String get termsUseTitle => 'Using the app';
+
+  @override
+  String get termsUseBody =>
+      'Use the app only for the work it is given to you for. Do not share your account, install it on someone else\'s phone, or use it to record deliveries that did not happen.';
+
+  @override
+  String get termsAccountTitle => 'Your account';
+
+  @override
+  String get termsAccountBody =>
+      'Your driver ID and passcode are yours alone. Keep the passcode private and tell your operations team immediately if your phone is lost or someone else may know it.';
+
+  @override
+  String get termsDeliveryTitle => 'Delivery records';
+
+  @override
+  String get termsDeliveryBody =>
+      'Each order you pick up must record the correct order ID and the required photos. These records are the evidence used for order reconciliation, so an order without them may not be counted or paid.';
+
+  @override
+  String get termsLocationTitle => 'Location while on duty';
+
+  @override
+  String get termsLocationBody =>
+      'While you are on duty the app reports your location so operations can follow deliveries and confirm you are inside your delivery area. Location reporting stops when you clock out.';
+
+  @override
+  String get termsPaymentsTitle => 'Earnings and payments';
+
+  @override
+  String get termsPaymentsBody =>
+      'Your earnings are calculated from verified deliveries and the rules active for your restaurant, zone or company. Payment details in the app are a record of what has been approved and paid.';
+
+  @override
+  String get termsConductTitle => 'Conduct';
+
+  @override
+  String get termsConductBody =>
+      'Wrong actions recorded by your operations team are listed in the app. Repeated or serious wrong actions may lead to suspension or the end of your engagement.';
+
+  @override
+  String get termsChangesTitle => 'Changes to these terms';
+
+  @override
+  String get termsChangesBody =>
+      'These terms may be updated when the way the app works changes. The current version always ships with the app, so what you read here is what applies.';
+
+  @override
+  String get termsContact =>
+      'Questions about these terms? Contact your operations team through Help & Support in this app.';
+
+  @override
   String companySchemeTarget(int target) {
     return 'Daily target: $target orders';
   }

@@ -1,0 +1,31 @@
+# Normalize line endings repo-wide.
+#
+# core.autocrlf=true on the Windows dev machines made Git report files as
+# modified while their content was byte-identical: the index stored LF and the
+# working tree held CRLF, so `git status` showed a permanent, unpushable change
+# set that hid a real one (the missing PayslipsTab rename). Pinning the repo to
+# LF removes that class of phantom "modified" file for every clone, on every OS.
+* text=auto eol=lf
+
+# Windows-only scripting formats genuinely want CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Never touch these - a keystore or a font is not text, and normalizing one
+# would corrupt it rather than reformat it.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.jar binary
+*.apk binary
+*.aab binary
+*.jks binary
+*.keystore binary
+*.mp4 binary
