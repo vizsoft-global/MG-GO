@@ -654,18 +654,32 @@ class _SlotGrid extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  context.l10n.visitSlotRange(s.startTime, s.endTime),
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12,
-                    color: color,
+                // One line, never wrapped: a wrapped range pushed the second
+                // line out of the 56px cell and made the first morning slot
+                // ("09:00 - 09:30") look misaligned (QA #53).
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      context.l10n.visitSlotRange(s.startLabel, s.endLabel),
+                      maxLines: 1,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                        color: color,
+                      ),
+                    ),
                   ),
                 ),
                 Text(
                   s.full
                       ? context.l10n.visitSlotFull
                       : context.l10n.visitSlotRemaining(s.remaining),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 10.5, color: color),
                 ),
               ],
@@ -708,7 +722,8 @@ class _ReviewStep extends StatelessWidget {
             children: [
               _ReviewRow(l10n.visitFieldDepartment, dept.label(Localizations.localeOf(context))),
               _ReviewRow(l10n.visitFieldDate, _fmtDate(date, l10n)),
-              _ReviewRow(l10n.visitFieldTime, slot.startTime),
+              _ReviewRow(l10n.visitFieldTime,
+                  '${slot.startLabel} - ${slot.endLabel}'),
               _ReviewRow(l10n.visitFieldLocation, l10n.visitCentralTower),
               if (note.isNotEmpty)
                 _ReviewRow(l10n.visitFieldNote, note, isLast: true),
@@ -853,7 +868,8 @@ class _TicketStep extends StatelessWidget {
                     _ReviewRow(l10n.visitFieldDate,
                         _ReviewStep._fmtDate(date!, l10n)),
                   if (slot != null)
-                    _ReviewRow(l10n.visitFieldTime, slot!.startTime),
+                    _ReviewRow(l10n.visitFieldTime,
+                        '${slot!.startLabel} - ${slot!.endLabel}'),
                   if (dept != null)
                     _ReviewRow(l10n.visitFieldDepartment, dept!.label(Localizations.localeOf(context)),
                         isLast: true),
