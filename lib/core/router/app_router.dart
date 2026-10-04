@@ -38,6 +38,7 @@ import '../../features/shell/app_exit_scope.dart';
 import '../../features/shell/main_shell.dart';
 import '../../features/support/action_required_screen.dart';
 import '../../features/support/appointment_confirmed_screen.dart';
+import '../../features/blocked/blocked_gate.dart';
 import '../../features/support/appointment_detail_screen.dart';
 import '../../features/support/appointments_inbox_screen.dart';
 import '../../features/support/esign_capture_screen.dart';
@@ -68,6 +69,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   final loginVerificationListenable =
       ref.watch(loginVerificationRefreshListenableProvider);
   final forceUpdateDemand = ref.watch(forceUpdateDemandProvider);
+  // The block gate is a refresh listenable (not just a read) because it is
+  // raised from outside navigation: the redirect has to re-run at the instant
+  // it goes up, or the sign-out that follows would win the race to `/login`.
+  final blockedGate = ref.watch(blockedGateProvider);
 
   // Do NOT watch appBrandingProvider here — that recreates GoRouter on every
   // settings poll and resets navigation to the bootstrap route (/).
@@ -80,6 +85,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       settingsListenable,
       loginVerificationListenable,
       forceUpdateDemand,
+      blockedGate,
     ]),
     redirect: (context, state) {
       final settingsAsync = ref.read(appBrandingProvider);
@@ -114,7 +120,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         if (needsUpdate) return null;
         if (!settingsLoaded) return null;
         if (inMaintenance) return '/maintenance';
-        if (session == null) return '/login';
+        if (session == null) {
+          return blockedGate.isActive ? '/blocked' : '/login';
+        }
         final needs = ref
             .read(loginVerificationRefreshListenableProvider)
             .needsCapture;
@@ -138,7 +146,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      if (onBlocked) return null;
+      if (onBlocked) {
+        // Sticky while the gate is up, whatever the session says — the gate is
+        // raised before the sign-out, so `/blocked` has to hold even when the
+        // session has already been released.
+        if (blockedGate.isActive) return null;
+        // Gate cleared: either the rider asked for sign-in, or a fresh
+        // sign-in passed the access check. Either way this screen is stale.
+        return session == null ? '/login' : '/home';
+      }
+
+      // A blocked or frozen account outranks maintenance and the signed-out
+      // redirect: without this the released session would resolve to `/login`
+      // and the reason for the block would never be shown.
+      if (blockedGate.isActive) return '/blocked';
 
       if (settingsLoaded && inMaintenance) {
         return '/maintenance';

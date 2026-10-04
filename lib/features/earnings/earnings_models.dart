@@ -603,9 +603,14 @@ class ExtraEarnings {
     final daily = json['daily_dpd'];
     final scheme = json['company_scheme'];
     return ExtraEarnings(
+      // `overridden` offers are dropped here rather than filtered per screen:
+      // the server flags any offer a higher-priority "overrides others" rule has
+      // taken over, and the Home quest card and the Extra Earnings list must not
+      // be able to disagree about which quests are live.
       activeOffers: ((json['active_offers'] as List?) ?? const [])
           .whereType<Map>()
           .map((m) => ActiveOffer.fromJson(Map<String, dynamic>.from(m)))
+          .where((offer) => !offer.overridden)
           .toList(growable: false),
       dailyDpd: daily is Map
           ? DailyDpdTarget.tryParse(Map<String, dynamic>.from(daily))
@@ -627,18 +632,26 @@ class DailyDpdTarget {
   const DailyDpdTarget({
     required this.target,
     required this.completedToday,
-    int? verifiedToday,
+    int? progressToday,
     this.restaurantName,
     this.companyName,
-  }) : verifiedToday = verifiedToday ?? completedToday;
+  }) : progressToday = progressToday ?? completedToday;
 
   final int target;
 
-  /// Card numerator: `progress_today` when present, else verified.
+  /// Verified orders today (`completed_today`). This is both the payout basis
+  /// and the card numerator (QA #6): the count beside the target must be the
+  /// same count `compute_incentive_amount` pays on, so an order that is still
+  /// pending verification raises the progress bar without inflating this.
   final int completedToday;
 
-  /// Verified count (`completed_today`). Payout / lock / unlock stay on this.
-  final int verifiedToday;
+  /// `progress_today` (pending + in transit + verified). Drives the progress
+  /// bar only, so the rider still sees forward motion before verification.
+  final int progressToday;
+
+  /// Alias for the payout basis, so callers that name `verifiedToday` and the
+  /// numerator cannot drift apart.
+  int get verifiedToday => completedToday;
   final String? restaurantName;
 
   /// Outsourced source-company name when the target came from a company config
@@ -648,7 +661,14 @@ class DailyDpdTarget {
   int get remaining => (target - completedToday).clamp(0, target).toInt();
   bool get achieved => completedToday >= target;
   double get fraction =>
-      target <= 0 ? 0 : (completedToday / target).clamp(0.0, 1.0).toDouble();
+      target <= 0 ? 0 : (progressToday / target).clamp(0.0, 1.0).toDouble();
+
+  /// Numerator for the label and any progress text. A rider who finished 5
+  /// orders against a target of 3 must read "3 / 3", not "5 / 3" — the target
+  /// is the promise, and the bar already caps at 100%.
+  int get displayCount => target > 0
+      ? (completedToday > target ? target : completedToday)
+      : completedToday;
 
   static DailyDpdTarget? tryParse(Map<String, dynamic> json) {
     final target = (json['target'] as num?)?.toInt() ?? 0;
@@ -659,8 +679,8 @@ class DailyDpdTarget {
     final progress = (json['progress_today'] as num?)?.toInt();
     return DailyDpdTarget(
       target: target,
-      completedToday: progress ?? verified,
-      verifiedToday: verified,
+      completedToday: verified,
+      progressToday: progress,
       restaurantName: name == null || name.isEmpty ? null : name,
       companyName: company == null || company.isEmpty ? null : company,
     );
@@ -668,8 +688,8 @@ class DailyDpdTarget {
 
   Map<String, dynamic> toJson() => {
     'target': target,
-    'completed_today': verifiedToday,
-    'progress_today': completedToday,
+    'completed_today': completedToday,
+    'progress_today': progressToday,
     'restaurant_name': restaurantName,
     'company_name': companyName,
   };
@@ -774,6 +794,8 @@ class ActiveOffer {
     required this.payoutMode,
     required this.completed,
     required this.tiers,
+    this.pendingVerification = false,
+    this.overridden = false,
     this.rewardPerDeliveryKwd,
     this.scopeLabel,
     this.startDate,
@@ -805,6 +827,14 @@ class ActiveOffer {
 
   bool get isBand => bandStart != null;
   int get verifiedCount => eligibleCount ?? currentCount;
+
+  /// What every progress label prints. A milestone quest that pays at 3 must
+  /// not read "6 / 3": the extra orders are not a bigger reward, and a label is
+  /// not the place to argue about over-achievement. Bands are the one place the
+  /// raw count matters, and they read [verifiedCount] directly.
+  int get displayCount => target > 0
+      ? (verifiedCount > target ? target : verifiedCount)
+      : verifiedCount;
   bool get bandLocked => isBand && verifiedCount < bandStart!;
   int get extraOrders =>
       isBand ? (verifiedCount - bandStart!).clamp(0, 1 << 30).toInt() : 0;
@@ -820,6 +850,16 @@ class ActiveOffer {
   final String rewardMode;
   final String targetMode;
   final String payoutMode;
+
+  /// True when the rider's *verified* count has reached [target] but the orders
+  /// are still waiting for admin verification, so nothing has paid out yet.
+  final bool pendingVerification;
+
+  /// True when a higher-priority `overrides_others` rule has taken over today's
+  /// incentive, so this offer will never pay. `ExtraEarnings.fromJson` drops
+  /// these before any screen sees them.
+  final bool overridden;
+
   final bool completed;
   final List<ActiveOfferTier> tiers;
   final String? scopeLabel;
@@ -828,9 +868,9 @@ class ActiveOffer {
 
   double get progressFraction {
     if (target <= 0) return completed ? 1 : 0;
-    if (currentCount <= 0) return 0;
-    final raw = currentCount / target;
-    return raw.clamp(0.0, 1.0).toDouble();
+    final verified = verifiedCount;
+    if (verified <= 0) return 0;
+    return (verified / target).clamp(0.0, 1.0).toDouble();
   }
 
   /// Reward text for list cards — uses admin-configured rates, not raw
@@ -860,7 +900,7 @@ class ActiveOffer {
   }
 
   String progressLabel(AppLocalizations l10n) =>
-      '$currentCount / ${target == 0 ? '?' : target}';
+      '$displayCount / ${target == 0 ? '?' : target}';
 
   String title(AppLocalizations l10n) {
     final emoji = _emojiForPeriod(period);
@@ -891,14 +931,22 @@ class ActiveOffer {
     return l10n.earnRewardsScope(scope, base);
   }
 
-  bool get hasProgress => currentCount > 0;
+  /// Verified deliveries only — the count every payout surface agrees on.
+  bool get hasProgress => verifiedCount > 0;
+
+  /// Submitted orders that are still waiting for verification.
+  int get awaitingVerificationCount =>
+      (currentCount - verifiedCount).clamp(0, 1 << 30).toInt();
 
   factory ActiveOffer.fromJson(Map<String, dynamic> json) {
     final progress = (json['progress_count'] as num?)?.toInt() ??
         (json['current_count'] as num?)?.toInt() ??
         0;
     final target = (json['target'] as num?)?.toInt() ?? 0;
-    final leftover = target - progress;
+    final verified = (json['eligible_count'] as num?)?.toInt() ??
+        (json['current_count'] as num?)?.toInt() ??
+        progress;
+    final leftover = target - verified;
     return ActiveOffer(
       ruleId: json['rule_id']?.toString() ?? '',
       name: (json['name'] as String?) ?? '',
@@ -918,6 +966,8 @@ class ActiveOffer {
       targetMode: (json['target_mode'] as String?) ?? 'single',
       payoutMode: (json['payout_mode'] as String?) ?? 'milestone',
       completed: json['completed'] as bool? ?? false,
+      pendingVerification: json['pending_verification'] as bool? ?? false,
+      overridden: json['overridden'] as bool? ?? false,
       tiers: ActiveOfferTier.parseList(json['tiers']),
       scopeLabel: (json['scope_label'] as String?)?.trim().isNotEmpty == true
           ? (json['scope_label'] as String).trim()
@@ -960,6 +1010,8 @@ class ActiveOffer {
     'target_mode': targetMode,
     'payout_mode': payoutMode,
     'completed': completed,
+    'pending_verification': pendingVerification,
+    'overridden': overridden,
     'tiers': tiers.map((tier) => tier.toJson()).toList(growable: false),
     if (startDate != null) 'start_date': _formatDateIso(startDate!),
     if (endDate != null) 'end_date': _formatDateIso(endDate!),

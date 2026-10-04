@@ -40,6 +40,12 @@ class DeliverySuccessScreen extends ConsumerWidget {
     final primaryLabel = isPickup && !queued
         ? l10n.markAsDelivered
         : l10n.pickupOrder;
+    // Matches the label above: after a pickup the next action continues that
+    // order, otherwise it starts a new one. Passing it explicitly keeps the
+    // button and the destination from being decided by two different reads.
+    final primaryIntent = isPickup && !queued
+        ? DeliveryActionIntent.finish
+        : DeliveryActionIntent.pickup;
 
     return PopScope(
       canPop: false,
@@ -91,7 +97,12 @@ class DeliverySuccessScreen extends ConsumerWidget {
                       context.go('/deliveries/active');
                       return;
                     }
-                    openDeliveryAction(context, ref, replace: true);
+                    openDeliveryAction(
+                      context,
+                      ref,
+                      replace: true,
+                      intent: primaryIntent,
+                    );
                   },
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.accentOrange,

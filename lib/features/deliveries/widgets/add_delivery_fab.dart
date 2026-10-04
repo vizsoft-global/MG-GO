@@ -15,6 +15,9 @@ class AddDeliveryButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final activeAsync = ref.watch(activeDeliveryProvider);
+    // Label and intent are read from the same snapshot on purpose: the button
+    // must never promise one thing and open another (see DeliveryActionIntent).
+    final hasActive = activeAsync.value != null;
     final label = activeAsync.maybeWhen(
       data: (active) =>
           active != null ? l10n.markAsDelivered : l10n.pickupOrder,
@@ -30,9 +33,10 @@ class AddDeliveryButton extends ConsumerWidget {
         onTap: () => openDeliveryAction(
           context,
           ref,
-          outcome: activeAsync.value != null
-              ? FinishOutcome.delivered
-              : null,
+          intent: hasActive
+              ? DeliveryActionIntent.finish
+              : DeliveryActionIntent.pickup,
+          outcome: hasActive ? FinishOutcome.delivered : null,
         ),
         borderRadius: BorderRadius.circular(20),
         child: Padding(

@@ -50,6 +50,47 @@ class RequestTypeDefinition {
   }
 }
 
+/// Conditional visibility for a form field, read from
+/// `request_field_definitions.visible_when`.
+///
+/// A field with no condition is always shown. When one is present the field
+/// appears only if the named sibling field currently holds one of [values] —
+/// Asset "Size" is the case this exists for: a raincoat has a size, a SIM card
+/// does not. `requiredWhenVisible` lives in the same object because a field
+/// that can be hidden cannot express "required" as a static flag.
+class RequestFieldVisibility {
+  const RequestFieldVisibility({
+    required this.fieldKey,
+    required this.values,
+    required this.requiredWhenVisible,
+  });
+
+  final String fieldKey;
+  final List<String> values;
+  final bool requiredWhenVisible;
+
+  bool matches(Map<String, dynamic> formValues) {
+    final current = formValues[fieldKey];
+    if (current == null) return false;
+    if (current is List) {
+      return current.any((v) => values.contains('$v'));
+    }
+    return values.contains('$current');
+  }
+
+  static RequestFieldVisibility? fromJson(dynamic raw) {
+    if (raw is! Map) return null;
+    final key = raw['field_key']?.toString();
+    final allowed = raw['in'];
+    if (key == null || key.isEmpty || allowed is! List) return null;
+    return RequestFieldVisibility(
+      fieldKey: key,
+      values: allowed.map((e) => e.toString()).toList(),
+      requiredWhenVisible: raw['required'] == true,
+    );
+  }
+}
+
 /// One field of a request form, as configured in `request_field_definitions`.
 ///
 /// [target] decides where the value goes on the wire: `payload` is a key inside
@@ -67,6 +108,7 @@ class RequestFieldDefinition {
     this.optionsSource,
     this.minValue,
     this.maxValue,
+    this.visibleWhen,
     this.helpEn,
     this.helpAr,
   });
@@ -90,6 +132,7 @@ class RequestFieldDefinition {
   final List<String> options;
   final double? minValue;
   final double? maxValue;
+  final RequestFieldVisibility? visibleWhen;
   final String? helpEn;
   final String? helpAr;
 
@@ -119,6 +162,7 @@ class RequestFieldDefinition {
           : const <String>[],
       minValue: (json['min_value'] as num?)?.toDouble(),
       maxValue: (json['max_value'] as num?)?.toDouble(),
+      visibleWhen: RequestFieldVisibility.fromJson(json['visible_when']),
       helpEn: json['help_en'] as String?,
       helpAr: json['help_ar'] as String?,
     );

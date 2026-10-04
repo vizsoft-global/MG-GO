@@ -271,6 +271,9 @@ class _QuestRow extends StatelessWidget {
           : offer.rewardKwd;
       return l10n.questUnlockedEarned(formatKwd(earned, plus: true));
     }
+    if (offer.target > 0 && offer.awaitingVerificationCount > 0) {
+      return l10n.questPendingVerification(offer.displayCount, offer.target);
+    }
     if (offer.target <= 0) {
       return _isPerDelivery
           ? l10n.keepDeliveringEveryOrderPays
@@ -318,7 +321,7 @@ class _QuestRow extends StatelessWidget {
               _MultiplierChip(
                 label: _multiplierLabel(l10n),
                 active: _isPerDelivery
-                    ? offer.currentCount > offer.baseMinimumDeliveries
+                    ? offer.verifiedCount > offer.baseMinimumDeliveries
                     : completed,
                 completed: completed,
               ),
@@ -327,7 +330,7 @@ class _QuestRow extends StatelessWidget {
                 _CompletedBadge(l10n: l10n)
               else if (offer.target > 0)
                 Text(
-                  '${offer.currentCount} / ${offer.target}',
+                  '${offer.displayCount} / ${offer.target}',
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,

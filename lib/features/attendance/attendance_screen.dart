@@ -117,6 +117,9 @@ class AttendanceScreen extends ConsumerWidget {
                       ),
                     ),
                     const AttendanceLegend(),
+                    // Keep the last legend row clear of the global Add FAB,
+                    // which floats over the bottom-end of every shell screen.
+                    const SizedBox(height: 72),
                   ],
                 ),
               ),

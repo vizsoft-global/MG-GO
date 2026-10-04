@@ -16,7 +16,7 @@ final activeDeliveryProvider = FutureProvider<ActiveDelivery?>((ref) async {
 
   // Offline: the server is unreachable, so local queue state is all we have.
   if (isOffline) {
-    return _loadLocalActiveDelivery(userId);
+    return _loadLocalActiveDelivery(service, userId);
   }
 
   try {
@@ -40,7 +40,7 @@ final activeDeliveryProvider = FutureProvider<ActiveDelivery?>((ref) async {
   } catch (_) {
     // Believed online but the call failed (transient network/server error).
     // Fall back to local state rather than hard-blocking the screen.
-    return _loadLocalActiveDelivery(userId);
+    return _loadLocalActiveDelivery(service, userId);
   }
 });
 
@@ -63,7 +63,10 @@ Future<ActiveDelivery?> _activeFromPendingPickups(String userId) async {
   return null;
 }
 
-Future<ActiveDelivery?> _loadLocalActiveDelivery(String? userId) async {
+Future<ActiveDelivery?> _loadLocalActiveDelivery(
+  DeliveryService service,
+  String? userId,
+) async {
   if (userId == null) return null;
 
   final pending = await _activeFromPendingPickups(userId);
@@ -71,6 +74,26 @@ Future<ActiveDelivery?> _loadLocalActiveDelivery(String? userId) async {
 
   final sessionId = await DutySessionStorage.readActiveDeliveryId();
   if (sessionId == null || sessionId.isEmpty) return null;
+
+  // A persisted id is not by itself proof of an open order. It is written at
+  // pickup and only cleared by a *successful* finish, so a finish whose
+  // response never arrived — or a reinstall over a filled delivery — leaves an
+  // id behind pointing at work that is already done. Routing on it showed a
+  // rider the Mark as Delivered screen for an order they had already closed,
+  // while the button they tapped said "Pickup Order".
+  //
+  // So confirm it against the last thing the server actually told this device:
+  // only a cached `in_transit` row is an open order. Empty cache on a fresh
+  // install is a no, which is the safe direction — the rider can still log a
+  // pickup offline and the queue row above takes over from there.
+  final cached = await service.cachedDeliveries(userId);
+  final stillOpen = cached.any(
+    (delivery) => delivery.id == sessionId && delivery.status == 'in_transit',
+  );
+  if (!stillOpen) {
+    await setActiveDeliverySession(null);
+    return null;
+  }
 
   final orderId = await DutySessionStorage.readActiveDeliveryOrderId();
   final pickupAt = await DutySessionStorage.readActiveDeliveryPickupAt();

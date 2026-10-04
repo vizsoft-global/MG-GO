@@ -32,15 +32,33 @@ class NotificationInboxNotifier
   }
 
   Future<void> refresh() async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(_fetch);
+    final previous = state.value;
+    // Keep the rows the rider already has on screen while we re-ask. Blanking
+    // first turns a slow or failed refetch into "my notifications vanished".
+    if (previous == null) state = const AsyncLoading();
+    final result = await AsyncValue.guard(_fetch);
+    if (result.hasValue || previous == null) {
+      state = result;
+    } else {
+      // A failed refresh must not erase a list the rider was reading; the
+      // error is still recorded so nothing is reported as success.
+      state = AsyncError<NotificationInboxSnapshot>(
+        result.error!,
+        result.stackTrace ?? StackTrace.empty,
+      ).copyWithPrevious(AsyncData(previous));
+    }
   }
 
   /// Mark whatever is already loaded as history *before* the toggle comes back
   /// on. A failed refetch must not hand those rows back as a new banner.
+  ///
+  /// Only runs when a mute period was actually recorded: with no window behind
+  /// the flip there is nothing the toggle could have suppressed, and clearing
+  /// the badge for it would hide notifications the rider never saw.
   Future<void> markLoadedInboxSeenForMuteClose() async {
     final current = state.value;
     if (current == null || current.items.isEmpty) return;
+    if (!await notificationMuteStore.hasRecordedWindow()) return;
     final muted = {
       ...await notificationMuteStore.readMutedIds(),
       ...idsUnreadAtMuteClose(snapshot: current),
@@ -126,7 +144,9 @@ class NotificationInboxNotifier
 
   Future<NotificationInboxSnapshot> _fetch() async {
     final repo = ref.read(notificationInboxRepositoryProvider);
-    final snapshot = await repo.list(limit: 50);
+    // strict: a backend we could not reach must read as an error, never as an
+    // empty inbox. The screen has a retry card for exactly this case.
+    final snapshot = await repo.list(limit: 50, strict: true);
     await screenshotRestrictionStore.saveMany(
       snapshot.items
           .where((item) => item.screenshotRestricted != null)

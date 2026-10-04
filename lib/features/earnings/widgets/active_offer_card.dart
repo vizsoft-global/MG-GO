@@ -103,6 +103,19 @@ class _OfferBody extends StatelessWidget {
             ),
           ),
         ),
+        if (!offer.completed &&
+            offer.target > 0 &&
+            offer.awaitingVerificationCount > 0) ...[
+          const SizedBox(height: 4),
+          Text(
+            l10n.questPendingVerification(offer.displayCount, offer.target),
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppColors.tomatoOrange,
+            ),
+          ),
+        ],
       ],
     );
   }

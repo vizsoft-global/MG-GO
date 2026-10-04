@@ -242,7 +242,13 @@ class HomeScreen extends ConsumerWidget {
                             dashboard: dashboard,
                             turnOn: true,
                           ),
-                          onAddDelivery: () => openDeliveryAction(context, ref),
+                          onAddDelivery: () => openDeliveryAction(
+                            context,
+                            ref,
+                            intent: hasActiveDelivery
+                                ? DeliveryActionIntent.finish
+                                : DeliveryActionIntent.pickup,
+                          ),
                         ),
                         if (dashboard.shiftAdherence?.hasClockedIn == true) ...[
                           const SizedBox(height: 10),

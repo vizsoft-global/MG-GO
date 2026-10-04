@@ -91,6 +91,7 @@ void main() {
         shouldSkipShiftForGoOnDuty(
           isOnlineOnDuty: true,
           needsFreshClockIn: true,
+          hasActiveShift: true,
         ),
         isFalse,
       );
@@ -101,6 +102,7 @@ void main() {
         shouldSkipShiftForGoOnDuty(
           isOnlineOnDuty: true,
           needsFreshClockIn: false,
+          hasActiveShift: true,
         ),
         isTrue,
       );
@@ -122,6 +124,21 @@ void main() {
         shouldSkipShiftForGoOnDuty(
           isOnlineOnDuty: false,
           needsFreshClockIn: true,
+          hasActiveShift: true,
+        ),
+        isFalse,
+      );
+    });
+
+    test('does not skip when today has no unexpired shift', () {
+      // The duty flags can be a stale "In" from a cached dashboard, or from a
+      // window that already ended at 19:00. Without a live shift row the new day
+      // still needs its times, and skipping here re-submits on a stale session.
+      expect(
+        shouldSkipShiftForGoOnDuty(
+          isOnlineOnDuty: true,
+          needsFreshClockIn: false,
+          hasActiveShift: false,
         ),
         isFalse,
       );

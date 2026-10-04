@@ -369,6 +369,17 @@
       }
     }
   },
+  "questPendingVerification": "{verified}/{target} verified — verification pending",
+  "@questPendingVerification": {
+    "placeholders": {
+      "verified": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
   "unlockReward": "Unlock {amount}",
   "@unlockReward": {
     "placeholders": {
@@ -564,6 +575,8 @@
     }
   },
   "couldNotLoadDeliveries": "Could not load deliveries",
+  "deliveriesOfflineNoCache": "You're offline and no saved deliveries were found. They'll load once you reconnect.",
+  "deliveriesOfflineShowingCache": "Offline — showing saved deliveries",
   "pendingDeliveries": "Pending Deliveries",
   "noPendingDeliveries": "No pending deliveries",
   "pendingSyncedSummary": "Pending: {pending} · Synced: {synced}",
@@ -1130,6 +1143,18 @@
   "mustBeOnDutyToAddDelivery": "You must be In to add a delivery",
   "shiftRequiredBeforeDuty": "Submit today's shift before going In",
   "pickupOrder": "Pickup Order",
+  "deliveryAlreadyInProgressTitle": "An order is already in progress",
+  "deliveryAlreadyInProgressTitleWithOrder": "Order {orderId} is already in progress",
+  "@deliveryAlreadyInProgressTitleWithOrder": {
+    "placeholders": {
+      "orderId": {
+        "type": "String"
+      }
+    }
+  },
+  "deliveryAlreadyInProgressBody": "Finish or cancel the current order before logging a new pickup.",
+  "openCurrentOrder": "Open current order",
+  "deliveryNoActiveOrder": "No order is in progress right now.",
   "confirmPickup": "Confirm Pickup",
   "pickedUpAt": "Picked up at",
   "uploadPickupProof": "Upload Pickup Proof",
@@ -1397,6 +1422,22 @@
   },
   "supportErrorValidAmount": "Please enter a valid amount",
   "supportErrorValidDistance": "Please enter a valid distance",
+  "supportErrorNumberTooSmall": "Enter at least {min}",
+  "@supportErrorNumberTooSmall": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "supportErrorNumberTooLarge": "Enter no more than {max}",
+  "@supportErrorNumberTooLarge": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
   "supportErrorAttachmentsMin": "Attach at least {count} file(s)",
   "@supportErrorAttachmentsMin": {
     "placeholders": {
@@ -1756,6 +1797,9 @@
   "esignSignerYou": "You",
   "esignSubmitting": "Submitting…",
   "esignConfirmSignature": "Confirm signature",
+  "esignNetworkError": "Couldn't reach the server. Check your connection and try again.",
+  "esignAlreadyHandled": "This document is no longer waiting for your signature.",
+  "esignRequestUnavailable": "This request is no longer available.",
   "esignSignedTitle": "Signed",
   "esignDocumentSigned": "Document signed",
   "esignDocumentSignedBody": "Your signature has been sent to admin and saved to your records.",

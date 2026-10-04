@@ -12,20 +12,50 @@ final notificationInboxRepositoryProvider =
       return NotificationInboxRepository(Supabase.instance.client);
     });
 
+/// The inbox could not be loaded — which is not the same fact as an inbox with
+/// nothing in it. Carries the underlying causes so a support call can tell an
+/// expired session from a deploy that dropped the RPC.
+class NotificationInboxUnavailable implements Exception {
+  const NotificationInboxUnavailable({this.httpStatus, this.cause, this.rpcCause});
+
+  final int? httpStatus;
+  final Object? cause;
+  final Object? rpcCause;
+
+  @override
+  String toString() {
+    final parts = <String>['notifications_unavailable'];
+    if (httpStatus != null) parts.add('http $httpStatus');
+    if (rpcCause != null) parts.add('rpc: $rpcCause');
+    if (cause != null) parts.add('fallback: $cause');
+    return parts.join(' · ');
+  }
+}
+
 class NotificationInboxRepository {
   NotificationInboxRepository(this._client);
 
   final SupabaseClient _client;
 
+  /// Loads the rider's inbox.
+  ///
+  /// [strict] separates "the server said there is nothing" from "we could not
+  /// ask". Without it both collapse into `empty`, and the screen paints "All
+  /// caught up" over an unreachable backend — which reads to the rider as
+  /// notifications having disappeared. Callers that render the list pass
+  /// `strict: true` so a failure becomes an error state with a retry.
   Future<NotificationInboxSnapshot> list({
     int limit = 50,
     DateTime? before,
     bool unreadOnly = false,
+    bool strict = false,
   }) async {
     if (_client.auth.currentSession == null) {
+      if (strict) throw const NotificationInboxUnavailable();
       return NotificationInboxSnapshot.empty;
     }
 
+    Object? rpcError;
     try {
       final result = await _client.rpc(
         'driver_list_notifications',
@@ -36,8 +66,24 @@ class NotificationInboxRepository {
         },
       );
       return _parseSnapshot(result);
-    } catch (_) {
-      return _listViaAdminApi(limit: limit, before: before, unreadOnly: unreadOnly);
+    } catch (error) {
+      rpcError = error;
+    }
+
+    try {
+      return await _listViaAdminApi(
+        limit: limit,
+        before: before,
+        unreadOnly: unreadOnly,
+      );
+    } catch (fallbackError) {
+      if (strict) {
+        throw NotificationInboxUnavailable(
+          cause: fallbackError,
+          rpcCause: rpcError,
+        );
+      }
+      return NotificationInboxSnapshot.empty;
     }
   }
 
@@ -91,7 +137,7 @@ class NotificationInboxRepository {
     required bool unreadOnly,
   }) async {
     final session = _client.auth.currentSession;
-    if (session == null) return NotificationInboxSnapshot.empty;
+    if (session == null) throw const NotificationInboxUnavailable();
 
     final params = <String, String>{
       'limit': limit.toString(),
@@ -109,12 +155,13 @@ class NotificationInboxRepository {
       },
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      return NotificationInboxSnapshot.empty;
+      throw NotificationInboxUnavailable(httpStatus: response.statusCode);
     }
     final decoded = jsonDecode(response.body);
-    return decoded is Map
-        ? NotificationInboxSnapshot.fromJson(Map<String, dynamic>.from(decoded))
-        : NotificationInboxSnapshot.empty;
+    if (decoded is! Map) throw const NotificationInboxUnavailable();
+    return NotificationInboxSnapshot.fromJson(
+      Map<String, dynamic>.from(decoded),
+    );
   }
 
   Future<int> _markReadViaAdminApi(List<String>? dispatchItemIds) async {

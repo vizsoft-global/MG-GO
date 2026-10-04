@@ -23,6 +23,7 @@ class _ShiftEndDutyMonitor {
   ProviderSubscription<AsyncValue<dynamic>>? _dutySub;
   ProviderSubscription<AsyncValue<dynamic>>? _shiftSub;
   Timer? _debounce;
+  Timer? _endTimer;
   bool _inFlight = false;
   DateTime? _lastKnownEnd;
 
@@ -34,6 +35,7 @@ class _ShiftEndDutyMonitor {
 
   void dispose() {
     _debounce?.cancel();
+    _endTimer?.cancel();
     _dutySub?.close();
     _shiftSub?.close();
   }
@@ -45,18 +47,29 @@ class _ShiftEndDutyMonitor {
     });
   }
 
+  /// Fires once at the known shift end so the clock-out does not depend on some
+  /// other provider happening to change. Re-arming replaces the previous timer,
+  /// so a refreshed shift window can move the deadline forward or drop it.
+  void _armEndTimer(DateTime? end) {
+    _endTimer?.cancel();
+    final delay = shiftEndClockOutDelay(end: end, now: DateTime.now());
+    if (delay == null) return;
+    _endTimer = Timer(delay, () => unawaited(_maybeClockOut()));
+  }
+
   Future<void> _maybeClockOut() async {
     if (_inFlight) return;
     final dashboard = _ref.read(homeDashboardProvider).asData?.value;
-    if (dashboard == null || !dashboard.isOnDuty) return;
+    if (dashboard == null) return;
 
-    final shiftAsync = _ref.read(todayShiftProvider);
-    if (shiftAsync.isLoading) return;
-
-    final shift = shiftAsync.asData?.value;
+    final shift = _ref.read(todayShiftProvider).asData?.value;
     final scheduledEnd = dashboard.shiftAdherence?.scheduledEndAt;
     final knownEnd = shift?.shiftEndAt ?? scheduledEnd;
     if (knownEnd != null) _lastKnownEnd = knownEnd;
+    _armEndTimer(knownEnd ?? _lastKnownEnd);
+
+    if (!dashboard.isOnDuty) return;
+
     final should = shouldAutoClockOutForShift(
       isOnDuty: true,
       shiftEndAt: shift?.shiftEndAt,

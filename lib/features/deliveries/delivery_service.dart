@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -66,7 +69,7 @@ class DeliveryService {
   }
 
   static const deliverySelectWithShiftDate = '''
-    id, external_order_id, status,
+    id, external_order_id, status, created_at,
     pickup_at, pickup_lat, pickup_lng, pickup_proof_url,
     delivered_at, delivered_lat, delivered_lng, order_proof_url,
     cancelled_at, cancel_lat, cancel_lng, cancel_reason, cancel_proof_url,
@@ -75,13 +78,17 @@ class DeliveryService {
   ''';
 
   static const deliverySelectWithoutShiftDate = '''
-    id, external_order_id, status,
+    id, external_order_id, status, created_at,
     pickup_at, pickup_lat, pickup_lng, pickup_proof_url,
     delivered_at, delivered_lat, delivered_lng, order_proof_url,
     cancelled_at, cancel_lat, cancel_lng, cancel_reason, cancel_proof_url,
     rejection_reason,
     partners ( name, logo_url )
   ''';
+
+  /// No network and no cached copy — a different sentence from a failed query,
+  /// and the screen prints it differently.
+  static const codeOfflineNoCache = 'offline_no_cache';
 
   /// Trim and strip leading `#` before sending to the server.
   static String normalizeOrderIdInput(String raw) => OrderId.normalize(raw);
@@ -399,6 +406,8 @@ class DeliveryService {
         limit: limit,
       );
     } catch (error, stack) {
+      // Only a missing `shift_date` column earns a second round trip; every
+      // other failure falls through to the cache rather than being retried.
       if (isMissingShiftDateColumn(error)) {
         try {
           return await _fetchMyDeliveries(
@@ -418,6 +427,24 @@ class DeliveryService {
     }
   }
 
+  /// Locally cached deliveries for [userId] — the rows this device last saw
+  /// from the server. Returns empty when the cache is unreadable, because the
+  /// one caller uses it to *deny* a claim and a disk error must not be read as
+  /// confirmation.
+  ///
+  /// No network: this answers "was this id still in progress the last time the
+  /// server told us anything", which is the only question an offline device
+  /// can honestly answer about a persisted active-delivery session id.
+  Future<List<DriverDelivery>> cachedDeliveries(String userId) async {
+    try {
+      final rows = await _offlineRepo.loadDeliveriesCache(userId);
+      return rows.map(DriverDelivery.fromJson).toList(growable: false);
+    } catch (error, stack) {
+      debugPrint('loadDeliveriesCache failed: $error\n$stack');
+      return const [];
+    }
+  }
+
   Future<List<DriverDelivery>> _fetchMyDeliveries({
     required String? userId,
     required String select,
@@ -426,7 +453,11 @@ class DeliveryService {
     final rows = await _client
         .from('deliveries')
         .select(select)
-        .neq('status', 'in_transit')
+        // `in_transit` is deliberately included: it is the rider's *current*
+        // order, and filtering it out left a rider with an open pickup staring
+        // at an empty list — the one delivery they care about most was the one
+        // missing. Cancelled and completed rows come back too; the day filter
+        // and calendar decide what is worth showing.
         .order('created_at', ascending: false)
         .limit(limit);
 
@@ -434,10 +465,24 @@ class DeliveryService {
         .map((e) => Map<String, dynamic>.from(e as Map))
         .toList(growable: false);
     _networkStatus.recordRpcSuccess();
-    if (userId != null) {
-      await _offlineRepo.saveDeliveriesCache(userId, mapped);
-    }
+    // A cache write is an optimisation, never a precondition. This used to be
+    // awaited inside the fetch, so a locked or full SQLite file threw out of a
+    // perfectly good network read and the screen reported "could not load".
+    unawaited(_saveDeliveriesCacheQuietly(userId, mapped));
     return mapped.map(DriverDelivery.fromJson).toList(growable: false);
+  }
+
+  Future<void> _saveDeliveriesCacheQuietly(
+    String? userId,
+    List<Map<String, dynamic>> rows,
+  ) async {
+    if (userId == null) return;
+    try {
+      await _offlineRepo.saveDeliveriesCache(userId, rows);
+    } catch (error, stack) {
+      // Diagnostics only — a disk problem must never take the list down.
+      debugPrint('saveDeliveriesCache failed: $error\n$stack');
+    }
   }
 
   Future<List<DriverDelivery>> _deliveriesFromCacheOrThrow(
@@ -447,10 +492,21 @@ class DeliveryService {
   ) async {
     _networkStatus.recordRpcFailure();
     if (userId != null) {
-      final cached = await _offlineRepo.loadDeliveriesCache(userId);
-      if (cached.isNotEmpty) {
-        return cached.map(DriverDelivery.fromJson).toList(growable: false);
+      try {
+        final cached = await _offlineRepo.loadDeliveriesCache(userId);
+        if (cached.isNotEmpty) {
+          return cached
+              .map(DriverDelivery.fromJson)
+              .toList(growable: false);
+        }
+      } catch (cacheError, cacheStack) {
+        debugPrint('loadDeliveriesCache failed: $cacheError\n$cacheStack');
       }
+    }
+    // Nothing cached. Offline and "the query failed" are different facts, so
+    // they get different codes and different copy on the screen.
+    if (_networkStatus.isOffline) {
+      throw DeliveryServiceException('', code: codeOfflineNoCache);
     }
     Error.throwWithStackTrace(error, stack);
   }

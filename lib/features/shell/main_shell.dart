@@ -15,6 +15,7 @@ import '../auth/rider_auth_service.dart';
 import '../deliveries/delivery_proximity_preview.dart';
 import '../deliveries/delivery_proximity_service.dart';
 import '../deliveries/widgets/add_delivery_docked_button.dart';
+import '../earnings/earnings_providers.dart';
 import '../home/home_providers.dart';
 import '../profile/avatar_upload_controller.dart';
 import '../support/support_providers.dart';
@@ -52,6 +53,13 @@ class _MainShellState extends ConsumerState<MainShell>
     if (state == AppLifecycleState.resumed) {
       unawaited(_enforceLoginVerificationGate());
       ref.invalidate(esignRequestsProvider);
+      // Delivery-rule / company-scheme edits are made in the admin panel and
+      // are not pushed to the phone, so a cached read kept serving yesterday's
+      // target and rule set until the rider restarted the app (QA #42, #44).
+      // Refreshing the live quest + payout caches on every foreground costs one
+      // RPC and is the only signal the phone gets for those changes.
+      ref.invalidate(extraEarningsProvider);
+      ref.invalidate(homeDashboardProvider);
     }
   }
 

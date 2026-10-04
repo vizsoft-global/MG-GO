@@ -199,18 +199,18 @@ class EarningsService {
   /// rejected; excludes cancelled). Do **not** sum
   /// `driver_earnings_daily.deliveries` — that is verified-only payroll.
   ///
-  /// Working days = distinct Kuwait-local dates with at least one
-  /// non-cancelled delivery. Attendance % comes from
-  /// `driver_get_attendance` for the current month.
+  /// Working days and attendance % are both month-scoped and come from the same
+  /// `driver_get_work_summary` call, so the Earnings card and the Attendance
+  /// screen can never disagree about the same month. Working days are attributed
+  /// by `shift_date`, so a midnight shift's orders count on the shift's day.
   Future<PerformanceSummary> fetchPerformance() async {
     try {
       final totalDeliveries = await _fetchTotalDeliveries();
-      final workingDays = await _fetchWorkingDays();
-      final attendancePct = await _fetchAttendancePctSafe();
+      final work = await _fetchWorkSummarySafe();
       return PerformanceSummary(
         totalDeliveries: totalDeliveries,
-        workingDays: workingDays,
-        attendancePct: attendancePct,
+        workingDays: work.workingDays,
+        attendancePct: work.attendancePct,
       );
     } on PostgrestException catch (e) {
       _networkStatus.recordRpcFailure();
@@ -227,51 +227,27 @@ class EarningsService {
     return (map['total_deliveries'] as num?)?.toInt() ?? 0;
   }
 
-  Future<int> _fetchWorkingDays() async {
-    final raw = await _client
-        .from('deliveries')
-        .select('delivered_at')
-        .neq('status', 'cancelled');
-    _networkStatus.recordRpcSuccess();
-
-    final workingDayKeys = <String>{};
-    for (final row in (raw as List).whereType<Map>()) {
-      final key = _kuwaitDateKey(row['delivered_at']?.toString());
-      if (key != null) workingDayKeys.add(key);
-    }
-    return workingDayKeys.length;
-  }
-
-  String? _kuwaitDateKey(String? raw) {
-    if (raw == null || raw.isEmpty) return null;
-    final dt = DateTime.tryParse(raw);
-    if (dt == null) return null;
-    final kuwait = dt.toUtc().add(const Duration(hours: 3));
-    return '${kuwait.year.toString().padLeft(4, '0')}-'
-        '${kuwait.month.toString().padLeft(2, '0')}-'
-        '${kuwait.day.toString().padLeft(2, '0')}';
-  }
-
-  Future<int> _fetchAttendancePctSafe() async {
-    // Best-effort lifetime attendance %. We try the current month first
-    // (cheap, single RPC), then fall back to 0 if it fails — the card just
-    // shows "0%" instead of breaking.
+  /// Month-scoped working days + attendance %. Best-effort: a failure on this
+  /// one RPC must not blank the whole performance card (total deliveries is
+  /// still valid), so it degrades to zeros rather than throwing. There is no
+  /// "assume 100%" fallback — an unknown attendance is 0, never perfect.
+  Future<({int workingDays, int attendancePct})> _fetchWorkSummarySafe() async {
     try {
-      final now = DateTime.now().toUtc().add(const Duration(hours: 3));
+      final month = EarningsMonth.current();
       final result = await _client.rpc(
-        'driver_get_attendance',
-        params: {'p_year': now.year, 'p_month': now.month},
+        'driver_get_work_summary',
+        params: {'p_year': month.year, 'p_month': month.month},
       );
-      if (result is Map<String, dynamic>) {
-        final summary = result['summary'];
-        if (summary is Map) {
-          final pct = (summary['attendance_pct'] as num?)?.round();
-          if (pct != null) return pct;
-        }
-      }
-      return 100;
+      _networkStatus.recordRpcSuccess();
+      final map = result is Map<String, dynamic>
+          ? result
+          : Map<String, dynamic>.from(result as Map);
+      return (
+        workingDays: (map['working_days'] as num?)?.toInt() ?? 0,
+        attendancePct: (map['attendance_pct'] as num?)?.round() ?? 0,
+      );
     } catch (_) {
-      return 0;
+      return (workingDays: 0, attendancePct: 0);
     }
   }
 

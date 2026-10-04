@@ -124,6 +124,66 @@ final _esignDetail = EsignRequestDetail(raw: const {
 
 const _requestId = 'qa-request';
 
+/// A complaint whose description lives in the `requests.details` **column**,
+/// because `complaint.description` is declared with `target = 'details'`. This
+/// is the shape production actually writes, and reading only
+/// `payload['description']` is what made the description invisible: the typed
+/// rows (category / subject / severity) were non-empty, so the generic payload
+/// fallback was skipped as well.
+const _complaintRequestId = 'qa-complaint';
+
+const _complaintDescription =
+    'لم يتم إبلاغي بتغيير منطقة التوصيل، وتم احتساب الطلب متأخراً عن طريقي. '
+    'أرفقت لقطة شاشة من التطبيق توضح الوقت الفعلي للتسليم المكتمل.';
+
+final _complaintDetail = SupportRequestDetail(
+  request: const {
+    'id': _complaintRequestId,
+    'request_code': 'RCM-0010',
+    'request_type': 'complaint',
+    'status': 'in_review',
+    'severity': 'high',
+    'details': _complaintDescription,
+    'payload': {
+      'category': 'delivery',
+      'subject': 'طلب متأخر تم تحميله عليّ بالخطأ',
+    },
+  },
+  steps: const [],
+  clarifications: const [],
+  attachments: const [],
+);
+
+/// A decline whose reason is a paragraph. The row used `spaceBetween` with an
+/// unbounded value `Text`, so a long reason took the whole width and painted
+/// over its own label instead of wrapping.
+const _rescheduleRequestId = 'qa-reschedule';
+
+final _rescheduleDetail = SupportRequestDetail(
+  request: const {
+    'id': _rescheduleRequestId,
+    'request_code': 'RCM-0011',
+    'request_type': 'leave',
+    'status': 'in_review',
+    'payload': {
+      'awaiting_driver_reschedule': false,
+      'reschedule': {
+        'proposed_start_date': '2026-09-20',
+        'proposed_end_date': '2026-09-22',
+        'proposed_by': 'مدير التشغيل المباشر',
+        'note': 'تمت إعادة الجدولة بسبب ضغط العمل في الفترة المطلوبة.',
+        'accepted': false,
+        'driver_note':
+            'لا أستطيع الحضور في هذه الفترة لأن موعد المستشفى محدد مسبقاً، '
+            'وأحتاج إلى تأجيل الطلب أسبوعاً كاملاً حتى أتمكن من ترتيب البديل.',
+      },
+    },
+  },
+  steps: const [],
+  clarifications: const [],
+  attachments: const [],
+);
+
 /// One row per shape the list can take: a plain sent request, one waiting on a
 /// clarification, one waiting on an acknowledgement, and one waiting on a
 /// reschedule answer. The last three also drive the amber attention banner.
@@ -222,19 +282,27 @@ final _visitDepartments = [
   }),
 ];
 
+/// The upcoming row's date is deliberately far in the future and the past row's
+/// far in the past. `VisitBooking.isUpcoming` compares `scheduled_date` against
+/// the **real** Kuwait calendar day, so a fixed near-future date silently flips
+/// to "Previous" once that day passes — which is exactly what happened here: the
+/// confirmed row carried `2026-08-20`, and from 21 Aug the Upcoming tab was
+/// empty, so the ticket (and its `BookingQr`) never rendered and the golden
+/// failed. The dates stay literal, not `DateTime.now()`-relative, because the
+/// badge renders them and a moving value would make the golden unstable.
 final _myVisits = [
   VisitBooking.fromJson(const {
     'id': 'qa-visit-1',
     'booking_code': 'VIS-99001',
     'department_key': 'call_center',
-    'scheduled_date': '2026-08-20',
+    'scheduled_date': '2099-08-20',
     'status': 'confirmed',
   }),
   VisitBooking.fromJson(const {
     'id': 'qa-visit-2',
     'booking_code': 'VIS-98800',
     'department_key': 'human_resources',
-    'scheduled_date': '2026-07-14',
+    'scheduled_date': '2019-07-14',
     'status': 'completed',
   }),
 ];
@@ -318,6 +386,10 @@ Widget _harness(Widget home, {List<RequestTypeDefinition>? types}) {
           .overrideWith((ref) async => _viewerSender),
       myRequestsProvider.overrideWith((ref) async => _myRequests),
       requestDetailProvider(_requestId).overrideWith((ref) async => _requestDetail),
+      requestDetailProvider(_complaintRequestId)
+          .overrideWith((ref) async => _complaintDetail),
+      requestDetailProvider(_rescheduleRequestId)
+          .overrideWith((ref) async => _rescheduleDetail),
       complaintCategoriesProvider.overrideWith((ref) async => const []),
       myVisitsProvider.overrideWith((ref) async => _myVisits),
       visitDepartmentsProvider.overrideWith((ref) async => _visitDepartments),
@@ -489,6 +561,56 @@ void main() {
     expect(
       tester.getTopLeft(find.text('إضافة مرفق')).dy,
       greaterThan(tester.getTopLeft(find.text('ردك').first).dy),
+    );
+  });
+
+  // The description is written to `requests.details`, not to the payload, and
+  // the typed rows above it are non-empty — so before this it was dropped
+  // twice over: not read from the column, and not reached by the payload
+  // fallback either.
+  testWidgets('a complaint shows the description stored in requests.details',
+      (tester) async {
+    await _pumpAtPixel9(
+      tester,
+      const RequestDetailScreen(requestId: _complaintRequestId),
+    );
+
+    expect(find.text(_complaintDescription), findsOneWidget);
+    // Still the widest single-run string on the card, so it has to fit.
+    final description = tester.getRect(find.text(_complaintDescription));
+    expect(description.left, greaterThanOrEqualTo(0));
+    expect(description.right, lessThanOrEqualTo(_pixel9.width));
+  });
+
+  // A decline reason is free text and can run to a paragraph. The row used
+  // spaceBetween with an unbounded value Text, so the reason took the full
+  // width and painted over its own label; this fails on a RenderFlex overflow
+  // if the wrap regresses.
+  testWidgets('a long decline reason wraps instead of covering its label',
+      (tester) async {
+    await _pumpAtPixel9(
+      tester,
+      const RequestDetailScreen(requestId: _rescheduleRequestId),
+    );
+
+    const label = 'تم رفض المواعيد. طلبك قيد المراجعة مرة أخرى.';
+    expect(find.text(label), findsOneWidget);
+    final note = find.textContaining('موعد المستشفى محدد مسبقاً');
+    expect(note, findsOneWidget);
+
+    final labelRect = tester.getRect(find.text(label));
+    final noteRect = tester.getRect(note);
+    // Inside the viewport...
+    expect(noteRect.left, greaterThanOrEqualTo(0));
+    expect(noteRect.right, lessThanOrEqualTo(_pixel9.width));
+    // ...bounded to its own column rather than sized to the paragraph's
+    // intrinsic width (which is what an unbounded Text would have done)...
+    expect(noteRect.width, lessThan(_pixel9.width * 0.7));
+    // ...and never overlapping the label it used to paint over.
+    expect(
+      noteRect.overlaps(labelRect),
+      isFalse,
+      reason: 'the wrapped value must not paint over its label',
     );
   });
 

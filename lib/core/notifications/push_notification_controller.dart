@@ -10,6 +10,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/earnings/earnings_providers.dart';
+import '../../features/home/home_providers.dart';
 import '../permissions/permission_request_gate.dart';
 import 'fcm_background.dart';
 import 'firebase_app_guard.dart';
@@ -204,8 +205,26 @@ class PushNotificationController extends Notifier<bool> {
     await _cacheScreenshotRestriction(payload);
     await _recordDelivered(payload);
     unawaited(ref.read(notificationInboxProvider.notifier).refresh());
-    if (payload.actionParams['record_type'] == 'dpd_target') {
+    // A target / incentive-rule / company-scheme change on the server can move
+    // a quest, a band payout or the Earnings tab. Invalidate the same cache set
+    // for every such record type rather than only the `dpd_target` that
+    // happened to ship first, so a new rule is not invisible until restart
+    // (QA #42, #44). Rule edits that send no push at all are picked up by
+    // MainShell's resume refresh.
+    const ruleAffectingRecords = {
+      'dpd_target',
+      'company_scheme',
+      'incentive_rule',
+      'delivery_rule',
+    };
+    if (ruleAffectingRecords.contains(payload.actionParams['record_type'])) {
+      // A verify/congrats push means `driver_earnings_daily` may have just been
+      // written. Invalidate the payout caches too, not only the live quest RPC,
+      // or the Earnings tab keeps showing 0 KD for a quest that reads unlocked.
       ref.invalidate(extraEarningsProvider);
+      ref.invalidate(homeDashboardProvider);
+      ref.invalidate(earningsMonthProvider);
+      ref.invalidate(earningsDayDetailProvider);
     }
 
     if (payload.actionType == NotificationActionType.silentUpdateTrigger) {

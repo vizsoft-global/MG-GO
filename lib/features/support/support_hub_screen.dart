@@ -37,7 +37,15 @@ class SupportHubScreen extends ConsumerWidget {
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        // The explicit padding suppresses the automatic bottom inset, so the
+        // system navigation bar would sit on top of the last tiles. Add it back
+        // explicitly instead of relying on the default.
+        padding: EdgeInsets.fromLTRB(
+          16,
+          12,
+          16,
+          24 + MediaQuery.viewPaddingOf(context).bottom,
+        ),
         children: [
           _SectionLabel(theme, l10n.supportSectionRaiseRequest),
           const SizedBox(height: 8),

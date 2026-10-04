@@ -1196,6 +1196,12 @@ abstract class AppLocalizations {
   /// **'{remaining} more to unlock {amount}'**
   String remainingMoreToUnlock(int remaining, String amount);
 
+  /// No description provided for @questPendingVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'{verified}/{target} verified — verification pending'**
+  String questPendingVerification(int verified, int target);
+
   /// No description provided for @unlockReward.
   ///
   /// In en, this message translates to:
@@ -1698,6 +1704,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not load deliveries'**
   String get couldNotLoadDeliveries;
+
+  /// No description provided for @deliveriesOfflineNoCache.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline and no saved deliveries were found. They\'ll load once you reconnect.'**
+  String get deliveriesOfflineNoCache;
+
+  /// No description provided for @deliveriesOfflineShowingCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline — showing saved deliveries'**
+  String get deliveriesOfflineShowingCache;
 
   /// No description provided for @pendingDeliveries.
   ///
@@ -3577,6 +3595,36 @@ abstract class AppLocalizations {
   /// **'Pickup Order'**
   String get pickupOrder;
 
+  /// No description provided for @deliveryAlreadyInProgressTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'An order is already in progress'**
+  String get deliveryAlreadyInProgressTitle;
+
+  /// No description provided for @deliveryAlreadyInProgressTitleWithOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Order {orderId} is already in progress'**
+  String deliveryAlreadyInProgressTitleWithOrder(String orderId);
+
+  /// No description provided for @deliveryAlreadyInProgressBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish or cancel the current order before logging a new pickup.'**
+  String get deliveryAlreadyInProgressBody;
+
+  /// No description provided for @openCurrentOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Open current order'**
+  String get openCurrentOrder;
+
+  /// No description provided for @deliveryNoActiveOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'No order is in progress right now.'**
+  String get deliveryNoActiveOrder;
+
   /// No description provided for @confirmPickup.
   ///
   /// In en, this message translates to:
@@ -4662,6 +4710,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please enter a valid distance'**
   String get supportErrorValidDistance;
+
+  /// No description provided for @supportErrorNumberTooSmall.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter at least {min}'**
+  String supportErrorNumberTooSmall(String min);
+
+  /// No description provided for @supportErrorNumberTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter no more than {max}'**
+  String supportErrorNumberTooLarge(String max);
 
   /// No description provided for @supportErrorAttachmentsMin.
   ///
@@ -5976,6 +6036,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Confirm signature'**
   String get esignConfirmSignature;
+
+  /// No description provided for @esignNetworkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reach the server. Check your connection and try again.'**
+  String get esignNetworkError;
+
+  /// No description provided for @esignAlreadyHandled.
+  ///
+  /// In en, this message translates to:
+  /// **'This document is no longer waiting for your signature.'**
+  String get esignAlreadyHandled;
+
+  /// No description provided for @esignRequestUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This request is no longer available.'**
+  String get esignRequestUnavailable;
 
   /// No description provided for @esignSignedTitle.
   ///

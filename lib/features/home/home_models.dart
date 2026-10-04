@@ -502,15 +502,19 @@ class HomeDeliveryRuleSummary {
   }
 }
 
-/// A cached on-duty dashboard must not light the Clock In toggle after sign-out.
+/// A cached on-duty dashboard must not light the Clock In toggle after sign-out,
+/// or after the shift window it was cached during has already ended.
 ///
 /// Sign-out clears the tracking token; a leftover cache from the previous
-/// session is what flashed "In" until the live RPC landed.
+/// session is what flashed "In" until the live RPC landed. The same is true of a
+/// phone that opened Home before 19:00 and came back after it: the cache still
+/// says In, the shift has ended, and the rider is told they are on duty.
 Map<String, dynamic> dutySafeHomeDashboardCache({
   required Map<String, dynamic> cached,
   required bool hasLiveDutyToken,
+  DateTime? now,
 }) {
-  if (hasLiveDutyToken) return cached;
+  if (hasLiveDutyToken && !_cachedShiftEnded(cached, now)) return cached;
   final driver = Map<String, dynamic>.from(
     cached['driver'] is Map
         ? Map<String, dynamic>.from(cached['driver'] as Map)
@@ -528,4 +532,18 @@ Map<String, dynamic> dutySafeHomeDashboardCache({
     'driver': driver,
     'session': session,
   };
+}
+
+/// True when the cached dashboard carries a scheduled shift end that has passed.
+///
+/// Only `shift_adherence.scheduled_end_at` is consulted — it is the server's own
+/// window, so a missing key means "unknown", never "expired".
+bool _cachedShiftEnded(Map<String, dynamic> cached, DateTime? now) {
+  final adherence = cached['shift_adherence'];
+  if (adherence is! Map) return false;
+  final raw = adherence['scheduled_end_at'];
+  if (raw is! String || raw.isEmpty) return false;
+  final end = DateTime.tryParse(raw);
+  if (end == null) return false;
+  return !(now ?? DateTime.now()).toUtc().isBefore(end.toUtc());
 }

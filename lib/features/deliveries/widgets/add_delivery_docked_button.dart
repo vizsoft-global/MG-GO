@@ -19,7 +19,18 @@ class AddDeliveryDockedButton extends ConsumerWidget {
         ref.watch(activeDeliveryProvider).asData?.value != null;
     return AddDeliveryDockedFab(
       hasActiveDelivery: hasActiveDelivery,
-      onPressed: () => (onOpen ?? openDeliveryAction)(context, ref),
+      // The docked FAB's own tooltip/label is derived from `hasActiveDelivery`,
+      // so the tap passes the matching intent rather than letting the flow
+      // re-decide from a possibly different snapshot.
+      onPressed: () => onOpen != null
+          ? onOpen!(context, ref)
+          : openDeliveryAction(
+              context,
+              ref,
+              intent: hasActiveDelivery
+                  ? DeliveryActionIntent.finish
+                  : DeliveryActionIntent.pickup,
+            ),
     );
   }
 }

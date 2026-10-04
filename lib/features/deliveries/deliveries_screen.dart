@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../l10n/app_localizations.dart';
+import '../../core/offline/network_status_provider.dart';
 import '../../core/theme/app_colors.dart';
 import 'delivery_date_utils.dart';
 import 'delivery_models.dart';
@@ -27,8 +28,11 @@ class _DeliveriesScreenState extends ConsumerState<DeliveriesScreen> {
   @override
   void initState() {
     super.initState();
-    final now = DateTime.now();
-    _selectedDate = DateTime(now.year, now.month, now.day);
+    // Day buckets are keyed by the Kuwait shift day, so the default selection
+    // has to be the Kuwait calendar day as well. A device set to another
+    // timezone used to open on a date nothing was filed under, and a rider with
+    // a full day of deliveries read an empty list.
+    _selectedDate = kuwaitCalendarDate(DateTime.now());
   }
 
   List<DriverDelivery> _filterForDay(List<DriverDelivery> all) {
@@ -204,20 +208,30 @@ class _DeliveriesScreenState extends ConsumerState<DeliveriesScreen> {
                     },
                   ),
                   Expanded(
-                    child: deliveriesAsync.when(
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (_, _) => _ErrorBody(
-                        l10n: l10n,
-                        onRetry: () => ref.invalidate(myDeliveriesProvider),
-                      ),
-                      data: (items) {
-                        final filtered = _filterForDay(items);
-                        if (filtered.isEmpty) {
-                          return const DeliveriesEmptyState();
-                        }
-                        return DeliveriesListCard(deliveries: filtered);
-                      },
+                    child: Column(
+                      children: [
+                        const _OfflineCachedBanner(),
+                        Expanded(
+                          child: deliveriesAsync.when(
+                            loading: () => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                            error: (error, _) => _ErrorBody(
+                              l10n: l10n,
+                              error: error,
+                              onRetry: () =>
+                                  ref.invalidate(myDeliveriesProvider),
+                            ),
+                            data: (items) {
+                              final filtered = _filterForDay(items);
+                              if (filtered.isEmpty) {
+                                return const DeliveriesEmptyState();
+                              }
+                              return DeliveriesListCard(deliveries: filtered);
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -231,10 +245,22 @@ class _DeliveriesScreenState extends ConsumerState<DeliveriesScreen> {
 }
 
 class _ErrorBody extends StatelessWidget {
-  const _ErrorBody({required this.l10n, required this.onRetry});
+  const _ErrorBody({
+    required this.l10n,
+    required this.error,
+    required this.onRetry,
+  });
 
   final AppLocalizations l10n;
+  final Object error;
   final VoidCallback onRetry;
+
+  /// Offline-with-nothing-cached and "the query failed" are different facts and
+  /// get different copy: one is expected and self-healing, the other is not.
+  bool get _isOfflineNoCache =>
+      error is DeliveryServiceException &&
+      (error as DeliveryServiceException).code ==
+          DeliveryService.codeOfflineNoCache;
 
   @override
   Widget build(BuildContext context) {
@@ -244,8 +270,18 @@ class _ErrorBody extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Icon(
+              _isOfflineNoCache
+                  ? Icons.cloud_off_rounded
+                  : Icons.error_outline_rounded,
+              size: 36,
+              color: AppColors.textSecondary,
+            ),
+            const SizedBox(height: 12),
             Text(
-              l10n.couldNotLoadDeliveries,
+              _isOfflineNoCache
+                  ? l10n.deliveriesOfflineNoCache
+                  : l10n.couldNotLoadDeliveries,
               textAlign: TextAlign.center,
               style: Theme.of(
                 context,
@@ -258,6 +294,47 @@ class _ErrorBody extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Shown above the list while the cached copy is on screen and the device has
+/// no reachable network — the rider must know these rows are saved, not live.
+class _OfflineCachedBanner extends ConsumerWidget {
+  const _OfflineCachedBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final offline = ref.watch(
+      networkStatusProvider.select((s) => s.isOffline),
+    );
+    final hasData = ref.watch(
+      myDeliveriesProvider.select((s) => s.hasValue),
+    );
+    if (!offline || !hasData) return const SizedBox.shrink();
+    return Container(
+      width: double.infinity,
+      color: AppColors.cardBlue,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.cloud_off_rounded,
+            size: 16,
+            color: AppColors.primaryBlue,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              context.l10n.deliveriesOfflineShowingCache,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.primaryBlue,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

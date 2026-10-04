@@ -80,7 +80,11 @@ class _DetailBody extends StatelessWidget {
         const SizedBox(height: 10),
         _DeliveriesCard(deliveries: detail.deliveries, l10n: l10n),
         const SizedBox(height: 10),
-        _RulesCard(rules: detail.rules, l10n: l10n),
+        _RulesCard(
+          rules: detail.rules,
+          breakdownLines: EarningBreakdownLine.parseList(daily?['breakdown']),
+          l10n: l10n,
+        ),
       ],
     );
   }
@@ -356,9 +360,18 @@ class _CountsBadge extends StatelessWidget {
 }
 
 class _RulesCard extends StatelessWidget {
-  const _RulesCard({required this.rules, required this.l10n});
+  const _RulesCard({
+    required this.rules,
+    required this.l10n,
+    this.breakdownLines = const [],
+  });
 
   final List<EarningsDetailRule> rules;
+
+  /// Stored `driver_earnings_daily.breakdown` lines. When present these are the
+  /// exact numbers that produced the day's total, so the itemisation and the
+  /// totals card above can never disagree (the RPC `rules` list is a re-derive).
+  final List<EarningBreakdownLine> breakdownLines;
   final AppLocalizations l10n;
 
   @override
@@ -381,7 +394,18 @@ class _RulesCard extends StatelessWidget {
         children: [
           _SectionHeader(title: l10n.incentiveRules, badge: null),
           const SizedBox(height: 12),
-          if (paidRules.isEmpty)
+          if (breakdownLines.isNotEmpty)
+            Column(
+              children: [
+                for (var i = 0; i < breakdownLines.length; i++)
+                  _BreakdownRow(
+                    line: breakdownLines[i],
+                    isLast: i == breakdownLines.length - 1,
+                    l10n: l10n,
+                  ),
+              ],
+            )
+          else if (paidRules.isEmpty)
             _Empty(message: l10n.noIncentiveRulesPaidThisDay)
           else
             Column(
@@ -485,6 +509,71 @@ class _RuleRow extends StatelessWidget {
           ),
           Text(
             formatKwd(rule.amountKwd, plus: rule.amountKwd > 0),
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppColors.tomatoOrange,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One stored breakdown line — the same rows the day total was summed from.
+class _BreakdownRow extends StatelessWidget {
+  const _BreakdownRow({
+    required this.line,
+    required this.isLast,
+    required this.l10n,
+  });
+
+  final EarningBreakdownLine line;
+  final bool isLast;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = line.progressLabel(l10n);
+    return Container(
+      decoration: BoxDecoration(
+        border: isLast
+            ? null
+            : const Border(
+                bottom: BorderSide(color: Color(0x4DCFCFCF), width: 1),
+              ),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  line.ruleName.isEmpty ? l10n.incentiveDefault : line.ruleName,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                  ),
+                ),
+                if (progress.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    progress,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF666666),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          Text(
+            formatKwd(line.amountKwd, plus: line.amountKwd > 0),
             style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w700,
