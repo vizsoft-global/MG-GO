@@ -655,6 +655,11 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                           ),
                           backgroundColor:
                               AppColors.rejectedRed.withValues(alpha: 0.06),
+                          minimumSize: const Size.fromHeight(48),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         onPressed: _submitting
                             ? null
@@ -668,14 +673,25 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                                 }
                                 _respondToReschedule(accept: false);
                               },
-                        child: Text(l10n.supportRescheduleDecline),
+                        child: Text(
+                          l10n.supportRescheduleDecline,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: FilledButton(
                         style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.progressGreen),
+                          backgroundColor: AppColors.progressGreen,
+                          minimumSize: const Size.fromHeight(48),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                         onPressed:
                             _submitting ? null : () => _respondToReschedule(accept: true),
                         child: _submitting
@@ -684,7 +700,12 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                                 child: CircularProgressIndicator(
                                     strokeWidth: 2, color: Colors.white),
                               )
-                            : Text(l10n.supportRescheduleAccept),
+                            : Text(
+                                l10n.supportRescheduleAccept,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                              ),
                       ),
                     ),
                   ],
