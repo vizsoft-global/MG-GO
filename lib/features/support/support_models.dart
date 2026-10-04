@@ -181,6 +181,21 @@ class VisitSlotOption {
   final int remaining;
   final bool full;
 
+  /// `start_time` / `end_time` arrive as Postgres `time` strings
+  /// (`09:00:00`). The seconds are noise in a booking slot and they made the
+  /// first morning slot ("09:00:00 - 09:30:00") wider than a 3-column cell, so
+  /// every display trims them to `HH:mm` (QA #53).
+  String get startLabel => _hhmm(startTime);
+  String get endLabel => _hhmm(endTime);
+
+  static String _hhmm(String raw) {
+    final parts = raw.split(':');
+    if (parts.length >= 2) {
+      return '${parts[0].padLeft(2, '0')}:${parts[1].padLeft(2, '0')}';
+    }
+    return raw;
+  }
+
   factory VisitSlotOption.fromJson(Map<String, dynamic> json) {
     return VisitSlotOption(
       id: json['id'] as String,

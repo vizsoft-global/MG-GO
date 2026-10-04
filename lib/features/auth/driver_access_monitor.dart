@@ -9,6 +9,7 @@ import '../../core/branding/app_branding.dart';
 import '../../core/branding/app_branding_provider.dart';
 import '../../core/router/app_router.dart';
 import '../../core/settings/live_db_refresh.dart';
+import '../blocked/blocked_gate.dart';
 import '../blocked/blocked_screen.dart';
 import '../home/home_providers.dart';
 import 'driver_access.dart';
@@ -28,14 +29,10 @@ class DriverAccessEnforcer {
   DriverAccessEnforcer(this._ref);
 
   final Ref _ref;
-  bool _inFlight = false;
 
   Future<void> enforce({String? reason, bool frozen = false}) async {
-    if (_inFlight) return;
-    final session = Supabase.instance.client.auth.currentSession;
-    if (session == null) return;
+    final extra = BlockedRouteExtra(reason: reason, frozen: frozen);
 
-    _inFlight = true;
     try {
       _ref.read(homeDashboardProvider.notifier).patchDutyState(
             isOnDuty: false,
@@ -43,15 +40,26 @@ class DriverAccessEnforcer {
           );
     } catch (_) {}
 
-    try {
-      await _ref.read(riderAuthServiceProvider).signOut(keepRememberMe: true);
-      _ref.read(appRouterProvider).go(
-            '/blocked',
-            extra: BlockedRouteExtra(reason: reason, frozen: frozen),
-          );
-    } finally {
-      _inFlight = false;
-    }
+    // Raise the gate and navigate first, and only then release the session.
+    //
+    // The previous order awaited `signOut()` before `go('/blocked')`, so the
+    // auth listener fired while the rider was still on `/home`, found no
+    // session, and redirected to `/login` — the frozen rider saw the sign-in
+    // form first. The gate makes `/blocked` sticky in the router (see
+    // `app_router.dart`), so it now holds whether or not a session exists.
+    _ref.read(blockedGateProvider).raise(extra);
+    _ref.read(appRouterProvider).go('/blocked', extra: extra);
+
+    // The server-side revocation does not need to finish before the rider is
+    // told why they were stopped. Awaiting it was also what let the redirect
+    // above lose the race; `runSignOutSessionCleanup` caps its own RPCs, so a
+    // hung call cannot leave the device signed in either.
+    unawaited(
+      _ref
+          .read(riderAuthServiceProvider)
+          .signOut(keepRememberMe: true)
+          .catchError((Object _) {}),
+    );
   }
 }
 
@@ -77,6 +85,11 @@ class _DriverAccessMonitor with WidgetsBindingObserver {
 
     _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((event) {
       if (event.event == AuthChangeEvent.signedIn) {
+        // A sign-in is a new question. Drop the previous rider's gate before
+        // the access check decides whether this one is allowed — otherwise the
+        // router would bounce the just-signed-in rider straight back to
+        // `/blocked` and it would look like the session did not take.
+        _ref.read(blockedGateProvider).clear();
         _resubscribeDriverChannel();
         _scheduleCheck();
       } else if (event.event == AuthChangeEvent.signedOut) {
@@ -164,7 +177,13 @@ class _DriverAccessMonitor with WidgetsBindingObserver {
         notifier: _ref.read(forceUpdateDemandProvider),
         branding: _ref.read(appBrandingProvider).value,
       );
-      if (!status.blocked) return;
+      if (!status.blocked) {
+        // An admin clearing the block while a session is still held must
+        // release the sticky gate; otherwise the rider would sit on `/blocked`
+        // until they signed in again for no reason.
+        _ref.read(blockedGateProvider).clear();
+        return;
+      }
       await _ref.read(driverAccessEnforcerProvider).enforce(
             reason: status.reason,
             frozen: status.frozen,

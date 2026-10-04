@@ -655,6 +655,11 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                           ),
                           backgroundColor:
                               AppColors.rejectedRed.withValues(alpha: 0.06),
+                          minimumSize: const Size.fromHeight(48),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         onPressed: _submitting
                             ? null
@@ -668,14 +673,25 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                                 }
                                 _respondToReschedule(accept: false);
                               },
-                        child: Text(l10n.supportRescheduleDecline),
+                        child: Text(
+                          l10n.supportRescheduleDecline,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: FilledButton(
                         style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.progressGreen),
+                          backgroundColor: AppColors.progressGreen,
+                          minimumSize: const Size.fromHeight(48),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                         onPressed:
                             _submitting ? null : () => _respondToReschedule(accept: true),
                         child: _submitting
@@ -684,7 +700,12 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
                                 child: CircularProgressIndicator(
                                     strokeWidth: 2, color: Colors.white),
                               )
-                            : Text(l10n.supportRescheduleAccept),
+                            : Text(
+                                l10n.supportRescheduleAccept,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                              ),
                       ),
                     ),
                   ],
@@ -1021,7 +1042,14 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
         if (subject != null && subject.isNotEmpty) {
           rows.add((l10n.supportFieldSubject, subject, false));
         }
-        final description = payload['description']?.toString().trim();
+        // The description is written to `requests.details`, not to the payload:
+        // `complaint.description` has `target = 'details'` in
+        // `request_field_definitions`, so `DynamicRequestFormScreen` routes it to
+        // the column. Reading `payload['description']` alone left this row out
+        // and, because the typed rows are non-empty, the generic payload
+        // fallback below was skipped too — so the description was invisible.
+        final description =
+            (req['details'] ?? payload['description'])?.toString().trim();
         if (description != null && description.isNotEmpty) {
           rows.add((l10n.supportFieldDescription, description, false));
         }
@@ -1457,15 +1485,35 @@ class _ReschedulePropositionCard extends StatelessWidget {
     );
   }
 
+  /// One label/value line, in the same shape as the detail card's `_kv` rows: a
+  /// fixed label column and an `Expanded` value that wraps.
+  ///
+  /// This replaced a `Row` with `spaceBetween` and an unbounded value `Text`,
+  /// which is what let a paragraph-length decline reason take the full width
+  /// and paint over its own label. A short value now sits at the start of its
+  /// column rather than flush right, which is a deliberate match to every other
+  /// row on the screen.
   static Widget _row(String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+          SizedBox(
+            width: 148,
+            child: Text(
+              label,
+              style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              value,
+              softWrap: true,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
         ],
       ),
     );

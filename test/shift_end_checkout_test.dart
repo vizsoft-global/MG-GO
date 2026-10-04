@@ -71,4 +71,30 @@ void main() {
       isFalse,
     );
   });
+
+  group('shiftEndClockOutDelay', () {
+    test('waits until the end instant plus a second of slack', () {
+      expect(
+        shiftEndClockOutDelay(
+          end: DateTime.utc(2026, 8, 22, 15, 0),
+          now: DateTime.utc(2026, 8, 22, 14, 0),
+        ),
+        const Duration(hours: 1, seconds: 1),
+      );
+    });
+
+    test('arms nothing for a past end, which the debounced pass already handles', () {
+      expect(
+        shiftEndClockOutDelay(
+          end: DateTime.utc(2026, 8, 22, 15, 0),
+          now: DateTime.utc(2026, 8, 22, 15, 5),
+        ),
+        isNull,
+      );
+    });
+
+    test('arms nothing when the shift end is unknown', () {
+      expect(shiftEndClockOutDelay(end: null, now: now), isNull);
+    });
+  });
 }

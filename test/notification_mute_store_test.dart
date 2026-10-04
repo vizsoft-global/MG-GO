@@ -57,4 +57,20 @@ void main() {
     await store.saveMutedIds(<String>{});
     expect(await store.readMutedIds(), isEmpty);
   });
+
+  test('hasRecordedWindow is false until a mute period is opened', () async {
+    // Re-enabling a toggle that was never off must not treat the inbox as
+    // history — that is how an unread badge disappears without a read.
+    expect(await store.hasRecordedWindow(), isFalse);
+
+    await store.openWindow(DateTime.utc(2026, 8, 13, 9));
+    expect(await store.hasRecordedWindow(), isTrue);
+
+    // Still true once closed, because the window has not been applied yet.
+    await store.closeWindow(DateTime.utc(2026, 8, 13, 17));
+    expect(await store.hasRecordedWindow(), isTrue);
+
+    await store.clearWindow();
+    expect(await store.hasRecordedWindow(), isFalse);
+  });
 }

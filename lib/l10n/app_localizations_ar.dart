@@ -649,6 +649,11 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String questPendingVerification(int verified, int target) {
+    return '$verified/$target موثّقة — التحقق معلّق';
+  }
+
+  @override
   String unlockReward(String amount) {
     return 'افتح $amount';
   }
@@ -937,6 +942,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get couldNotLoadDeliveries => 'تعذّر تحميل التوصيلات';
+
+  @override
+  String get deliveriesOfflineNoCache =>
+      'لا يوجد اتصال ولا توجد توصيلات محفوظة. ستظهر عند عودة الاتصال.';
+
+  @override
+  String get deliveriesOfflineShowingCache =>
+      'غير متصل — يتم عرض التوصيلات المحفوظة';
 
   @override
   String get pendingDeliveries => 'توصيلات معلّقة';
@@ -1979,6 +1992,24 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pickupOrder => 'استلام الطلب';
 
   @override
+  String get deliveryAlreadyInProgressTitle => 'الطلب قيد التنفيذ بالفعل';
+
+  @override
+  String deliveryAlreadyInProgressTitleWithOrder(String orderId) {
+    return 'الطلب $orderId قيد التنفيذ بالفعل';
+  }
+
+  @override
+  String get deliveryAlreadyInProgressBody =>
+      'أكمل أو ألغِ الطلب الحالي قبل تسجيل استلام جديد.';
+
+  @override
+  String get openCurrentOrder => 'فتح الطلب الحالي';
+
+  @override
+  String get deliveryNoActiveOrder => 'لا يوجد طلب قيد التنفيذ حالياً.';
+
+  @override
   String get confirmPickup => 'تأكيد الاستلام';
 
   @override
@@ -2567,6 +2598,16 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get supportErrorValidDistance => 'يرجى إدخال مسافة صالحة';
+
+  @override
+  String supportErrorNumberTooSmall(String min) {
+    return 'أدخل $min على الأقل';
+  }
+
+  @override
+  String supportErrorNumberTooLarge(String max) {
+    return 'أدخل $max أو أقل';
+  }
 
   @override
   String supportErrorAttachmentsMin(int count) {
@@ -3283,6 +3324,16 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get esignConfirmSignature => 'تأكيد التوقيع';
+
+  @override
+  String get esignNetworkError =>
+      'تعذّر الوصول إلى الخادم. تحقّق من اتصالك وحاول مرة أخرى.';
+
+  @override
+  String get esignAlreadyHandled => 'لم يعد هذا المستند في انتظار توقيعك.';
+
+  @override
+  String get esignRequestUnavailable => 'لم يعد هذا الطلب متاحاً.';
 
   @override
   String get esignSignedTitle => 'موقّع';

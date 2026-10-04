@@ -653,6 +653,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String questPendingVerification(int verified, int target) {
+    return '$verified/$target verified — verification pending';
+  }
+
+  @override
   String unlockReward(String amount) {
     return 'Unlock $amount';
   }
@@ -945,6 +950,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get couldNotLoadDeliveries => 'Could not load deliveries';
+
+  @override
+  String get deliveriesOfflineNoCache =>
+      'You\'re offline and no saved deliveries were found. They\'ll load once you reconnect.';
+
+  @override
+  String get deliveriesOfflineShowingCache =>
+      'Offline — showing saved deliveries';
 
   @override
   String get pendingDeliveries => 'Pending Deliveries';
@@ -1991,6 +2004,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pickupOrder => 'Pickup Order';
 
   @override
+  String get deliveryAlreadyInProgressTitle =>
+      'An order is already in progress';
+
+  @override
+  String deliveryAlreadyInProgressTitleWithOrder(String orderId) {
+    return 'Order $orderId is already in progress';
+  }
+
+  @override
+  String get deliveryAlreadyInProgressBody =>
+      'Finish or cancel the current order before logging a new pickup.';
+
+  @override
+  String get openCurrentOrder => 'Open current order';
+
+  @override
+  String get deliveryNoActiveOrder => 'No order is in progress right now.';
+
+  @override
   String get confirmPickup => 'Confirm Pickup';
 
   @override
@@ -2581,6 +2613,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get supportErrorValidDistance => 'Please enter a valid distance';
+
+  @override
+  String supportErrorNumberTooSmall(String min) {
+    return 'Enter at least $min';
+  }
+
+  @override
+  String supportErrorNumberTooLarge(String max) {
+    return 'Enter no more than $max';
+  }
 
   @override
   String supportErrorAttachmentsMin(int count) {
@@ -3297,6 +3339,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get esignConfirmSignature => 'Confirm signature';
+
+  @override
+  String get esignNetworkError =>
+      'Couldn\'t reach the server. Check your connection and try again.';
+
+  @override
+  String get esignAlreadyHandled =>
+      'This document is no longer waiting for your signature.';
+
+  @override
+  String get esignRequestUnavailable => 'This request is no longer available.';
 
   @override
   String get esignSignedTitle => 'Signed';

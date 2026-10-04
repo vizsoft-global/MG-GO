@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'create_attachment.dart';
+import 'esign_failure.dart';
 import 'request_form_submit.dart';
 import 'request_type_definition.dart';
 import 'support_models.dart';
@@ -339,16 +340,18 @@ class SupportService {
     required Uint8List pngBytes,
   }) async {
     final uid = _client.auth.currentUser?.id;
-    if (uid == null) throw Exception('not_authenticated');
+    if (uid == null) throw const EsignFailure('not_authenticated');
     final key = '$uid/$requestId/signature.png';
-    await _client.storage.from('esign-documents').uploadBinary(
-          key,
-          pngBytes,
-          fileOptions: const FileOptions(
-            contentType: 'image/png',
-            upsert: true,
+    await withEsignTimeout(
+      () => _client.storage.from('esign-documents').uploadBinary(
+            key,
+            pngBytes,
+            fileOptions: const FileOptions(
+              contentType: 'image/png',
+              upsert: true,
+            ),
           ),
-        );
+    );
     return key;
   }
 
@@ -360,18 +363,26 @@ class SupportService {
   /// deterministic object key rather than stamping again.
   Future<String?> composeSignedEsignDocument(String requestId) async {
     try {
-      final response = await _client.functions.invoke(
-        'esign-compose-signed-document',
-        body: {'request_id': requestId},
+      final response = await withEsignTimeout(
+        () => _client.functions.invoke(
+          'esign-compose-signed-document',
+          body: {'request_id': requestId},
+        ),
       );
       final map = _asMap(response.data);
       if (map['ok'] != true) {
-        throw Exception(map['error']?.toString() ?? 'compose_failed');
+        throw EsignFailure(
+          'compose_failed',
+          detail: map['error']?.toString(),
+        );
       }
       return map['storage_key'] as String?;
     } on FunctionException catch (e) {
       final map = _asMap(e.details);
-      throw Exception(map['error']?.toString() ?? 'compose_failed');
+      throw EsignFailure(
+        'compose_failed',
+        detail: map['error']?.toString(),
+      );
     }
   }
 
@@ -388,18 +399,23 @@ class SupportService {
     String? signerDisplayName,
     Map<String, dynamic> signerMeta = const {},
   }) async {
-    final result = await _client.rpc(
-      'driver_submit_esignature',
-      params: {
-        'p_id': requestId,
-        'p_signature_storage_key': signatureStorageKey,
-        'p_signer_display_name': signerDisplayName,
-        'p_signer_meta': signerMeta,
-      },
+    final result = await withEsignTimeout(
+      () => _client.rpc(
+        'driver_submit_esignature',
+        params: {
+          'p_id': requestId,
+          'p_signature_storage_key': signatureStorageKey,
+          'p_signer_display_name': signerDisplayName,
+          'p_signer_meta': signerMeta,
+        },
+      ),
     );
     final map = _asMap(result);
     if (map['ok'] == false) {
-      throw Exception(map['error']?.toString() ?? 'sign_failed');
+      throw EsignFailure(
+        map['error']?.toString() ?? 'sign_failed',
+        detail: map['message']?.toString(),
+      );
     }
   }
 
@@ -413,13 +429,18 @@ class SupportService {
     required String requestId,
     String? reason,
   }) async {
-    final result = await _client.rpc(
-      'driver_decline_esignature',
-      params: {'p_id': requestId, 'p_reason': reason},
+    final result = await withEsignTimeout(
+      () => _client.rpc(
+        'driver_decline_esignature',
+        params: {'p_id': requestId, 'p_reason': reason},
+      ),
     );
     final map = _asMap(result);
     if (map['ok'] == false) {
-      throw Exception(map['error']?.toString() ?? 'decline_failed');
+      throw EsignFailure(
+        map['error']?.toString() ?? 'decline_failed',
+        detail: map['message']?.toString(),
+      );
     }
   }
 

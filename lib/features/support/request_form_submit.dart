@@ -1,3 +1,5 @@
+import 'package:flutter/services.dart';
+
 import 'request_detail_fields.dart';
 import 'request_type_definition.dart';
 
@@ -31,10 +33,28 @@ bool shouldShowRequestFormField(
   if (hideAssetCurrentStatus(field.fieldKey, values['request_mode'])) {
     return false;
   }
+  // `visible_when` is the server-declared condition (Asset Size appears only
+  // for apparel). It is checked before the leave special case so either can
+  // hide a field.
+  final condition = field.visibleWhen;
+  if (condition != null && !condition.matches(values)) return false;
   if (field.fieldKey == 'leave_subtype_other') {
     return isOtherLeaveSubtype(values['leave_subtype']);
   }
   return true;
+}
+
+/// A field is required when it says so, or when it is visible and its own
+/// condition declares it required. A hidden field is never required — this is
+/// what `required_when_visible` exists for, since a static `is_required` flag
+/// cannot describe a field that only some assets show.
+bool isRequestFormFieldRequired(
+  RequestFieldDefinition field,
+  Map<String, dynamic> values,
+) {
+  if (!shouldShowRequestFormField(field, values)) return false;
+  if (field.isRequired) return true;
+  return field.visibleWhen?.requiredWhenVisible == true;
 }
 
 /// From always sits before To, even if production sort_order was swapped.
@@ -151,7 +171,7 @@ String? isoDateOnly(DateTime? value) {
   return '$year-$month-$day';
 }
 
-enum NumberFieldSubmitIssue { required, invalid }
+enum NumberFieldSubmitIssue { required, invalid, tooSmall, tooLarge }
 
 bool isAmountNumberField(RequestFieldDefinition field) {
   return field.fieldKey == 'amount_kwd' || field.target == 'amount_kwd';
@@ -161,18 +181,159 @@ bool isDistanceNumberField(RequestFieldDefinition field) {
   return field.fieldKey == 'distance_km' || field.target == 'distance_km';
 }
 
-/// Empty required → required. Non-empty junk / ≤0 → invalid. Optional empty → none.
+/// What a `number` field is measuring. The keyboard can only be filtered well
+/// once the app knows whether it is looking at a length, an amount of money, or
+/// a count of things.
+enum RequestNumberFormat { distance, money, count }
+
+/// Keys that read as money.
+///
+/// Matching on the key rather than on a hardcoded list is deliberate:
+/// `expected_amount` and `received_amount` arrived after `amount_kwd` did and
+/// carried no formatter at all, so a salary request accepted `1.2.3` and `---`.
+/// A future `*_cost` / `*_salary` field is covered without another change here.
+bool isMoneyNumberKey(String fieldKey) {
+  final key = fieldKey.toLowerCase();
+  return key.contains('amount') ||
+      key.contains('cost') ||
+      key.contains('salary') ||
+      key.contains('price') ||
+      key.contains('kwd') ||
+      key.contains('fee') ||
+      key.contains('penalty');
+}
+
+RequestNumberFormat requestNumberFormat(RequestFieldDefinition field) {
+  if (isDistanceNumberField(field) ||
+      field.fieldKey.toLowerCase().contains('distance')) {
+    return RequestNumberFormat.distance;
+  }
+  if (isAmountNumberField(field) || isMoneyNumberKey(field.fieldKey)) {
+    return RequestNumberFormat.money;
+  }
+  return RequestNumberFormat.count;
+}
+
+/// Money: one `.`, at most three decimals, bounded integer part.
+String filterMoney(String raw, {int maxIntDigits = 6}) {
+  var out = '';
+  var dot = false;
+  var intDigits = 0;
+  var frac = 0;
+  for (final rune in raw.runes) {
+    final ch = String.fromCharCode(rune);
+    if (ch.compareTo('0') >= 0 && ch.compareTo('9') <= 0) {
+      if (!dot && intDigits < maxIntDigits) {
+        out += ch;
+        intDigits += 1;
+      } else if (dot && frac < 3) {
+        out += ch;
+        frac += 1;
+      }
+    } else if (ch == '.' && !dot && intDigits > 0) {
+      out += '.';
+      dot = true;
+    }
+  }
+  return out;
+}
+
+/// A count is a whole number: no decimal point, no sign, no separators. Asset
+/// quantity used to accept ten digits and a decimal point.
+String filterCount(String raw, {int maxDigits = 5}) {
+  var out = '';
+  for (final rune in raw.runes) {
+    final ch = String.fromCharCode(rune);
+    if (ch.compareTo('0') >= 0 &&
+        ch.compareTo('9') <= 0 &&
+        out.length < maxDigits) {
+      out += ch;
+    }
+  }
+  return out;
+}
+
+/// Money field filter — the `TextInputFormatter` half of [filterMoney].
+class MoneyFormatter extends TextInputFormatter {
+  const MoneyFormatter({this.maxIntDigits = 6});
+
+  final int maxIntDigits;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final next = filterMoney(newValue.text, maxIntDigits: maxIntDigits);
+    return TextEditingValue(
+      text: next,
+      selection: TextSelection.collapsed(offset: next.length),
+    );
+  }
+}
+
+/// Count field filter — the `TextInputFormatter` half of [filterCount].
+class CountFormatter extends TextInputFormatter {
+  const CountFormatter({this.maxDigits = 5});
+
+  final int maxDigits;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final next = filterCount(newValue.text, maxDigits: maxDigits);
+    return TextEditingValue(
+      text: next,
+      selection: TextSelection.collapsed(offset: next.length),
+    );
+  }
+}
+
+/// Empty required → required. Non-empty junk / negative → invalid. Below
+/// `minValue` or above `maxValue` → tooSmall / tooLarge. Optional empty → none.
+///
+/// Zero is judged against the seeded bound rather than banned outright: a
+/// `received_amount` of 0 is a real answer ("I was paid nothing"), so its
+/// `min_value` is 0 and it passes, while `quantity` keeps min 1 and a bare 0 is
+/// still refused. A field with no bound at all is treated as "a positive
+/// number", which is what every existing number field means today.
+///
+/// The bounds have been seeded on `request_field_definitions` since the Asset
+/// form shipped and nothing ever read them, so `quantity = 0` and
+/// `expected_amount = 999999999` both reached the RPC. The server re-checks
+/// them; this is the half that can name the field.
 NumberFieldSubmitIssue? numberFieldSubmitIssue({
   required String raw,
   required bool isRequired,
+  double? minValue,
+  double? maxValue,
 }) {
   final trimmed = raw.trim();
   if (trimmed.isEmpty) {
     return isRequired ? NumberFieldSubmitIssue.required : null;
   }
   final parsed = double.tryParse(trimmed);
-  if (parsed == null || parsed <= 0) return NumberFieldSubmitIssue.invalid;
+  if (parsed == null || !parsed.isFinite || parsed < 0) {
+    return NumberFieldSubmitIssue.invalid;
+  }
+  if (parsed == 0 && (minValue == null || minValue > 0)) {
+    return NumberFieldSubmitIssue.invalid;
+  }
+  if (minValue != null && parsed < minValue) {
+    return NumberFieldSubmitIssue.tooSmall;
+  }
+  if (maxValue != null && parsed > maxValue) {
+    return NumberFieldSubmitIssue.tooLarge;
+  }
   return null;
+}
+
+/// Trim a seeded bound for display: `1.0` reads as `1`, `100.5` stays.
+String formatNumberBound(double value) {
+  if (value == value.roundToDouble()) return value.toInt().toString();
+  return value.toString();
 }
 
 String supportUserMessage(Object error) {
@@ -183,14 +344,23 @@ String supportUserMessage(Object error) {
 }
 
 /// Maps RPC / form date errors so the snackbar names From then To.
+///
+/// The server is the second line of defence for numeric fields (the form
+/// checks first), so its `number_too_small:quantity` / `field_required:size`
+/// codes still have to read as a sentence rather than a code — [fieldRequired]
+/// and [numberInvalid] let the caller supply the localised wording.
 String requestFormErrorMessage(
   Object error, {
   required String fromRequired,
   required String toRequired,
   required String toBeforeFrom,
+  String Function(String fieldKey)? fieldRequired,
+  String? numberInvalid,
 }) {
   final raw = supportUserMessage(error);
   final code = raw.split(':').first.trim().toLowerCase();
+  final detail =
+      raw.contains(':') ? raw.substring(raw.indexOf(':') + 1).trim() : '';
   switch (code) {
     case 'invalid_date_range':
     case 'to_before_from':
@@ -201,6 +371,14 @@ String requestFormErrorMessage(
     case 'to_required':
     case 'end_date_required':
       return toRequired;
+    case 'field_required':
+      if (detail == 'start_date') return fromRequired;
+      if (detail == 'end_date') return toRequired;
+      return fieldRequired?.call(detail) ?? raw;
+    case 'invalid_number':
+    case 'number_too_small':
+    case 'number_too_large':
+      return numberInvalid ?? raw;
     default:
       if (raw.contains('field_required') && raw.contains('start_date')) {
         return fromRequired;

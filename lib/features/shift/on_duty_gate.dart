@@ -56,15 +56,20 @@ Future<bool?> ensureOnDutyForAction(
     return ensureDutyPermissionsForOnDutySession(context);
   }
 
+  // Load the shift *before* deciding to skip. The duty flags alone can be a
+  // stale "In" (offline cache, or a window that already ended), and skipping
+  // here would send the rider on duty with no shift for the new day.
+  var shift = await _loadActiveShift(ref);
+
   if (shouldSkipShiftForGoOnDuty(
     isOnlineOnDuty: fullyClockedIn,
     needsFreshClockIn: sessionGate.needsFreshClockIn,
+    hasActiveShift: _hasActiveShift(shift),
   )) {
     if (!context.mounted) return false;
     return ensureDutyPermissionsForOnDutySession(context);
   }
 
-  var shift = await _loadActiveShift(ref);
   if (shouldPromptShiftOnClockIn(
     hasActiveShift: _hasActiveShift(shift),
     needsFreshClockIn: sessionGate.needsFreshClockIn,

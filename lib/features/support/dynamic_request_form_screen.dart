@@ -265,7 +265,11 @@ class _DynamicRequestFormScreenState
         if (field.kind == 'number') {
           final issue = numberFieldSubmitIssue(
             raw: _controllerFor(field.fieldKey).text,
-            isRequired: field.isRequired || isAmountNumberField(field),
+            isRequired:
+                isRequestFormFieldRequired(field, _values) ||
+                    isAmountNumberField(field),
+            minValue: field.minValue,
+            maxValue: field.maxValue,
           );
           if (issue == NumberFieldSubmitIssue.required) {
             throw Exception(
@@ -279,7 +283,22 @@ class _DynamicRequestFormScreenState
                   : l10n.supportErrorValidAmount,
             );
           }
-        } else if (field.isRequired && _isEmpty(field, value)) {
+          if (issue == NumberFieldSubmitIssue.tooSmall) {
+            throw Exception(
+              l10n.supportErrorNumberTooSmall(
+                formatNumberBound(field.minValue ?? 0),
+              ),
+            );
+          }
+          if (issue == NumberFieldSubmitIssue.tooLarge) {
+            throw Exception(
+              l10n.supportErrorNumberTooLarge(
+                formatNumberBound(field.maxValue ?? 0),
+              ),
+            );
+          }
+        } else if (isRequestFormFieldRequired(field, _values) &&
+            _isEmpty(field, value)) {
           throw Exception(
             l10n.supportFieldRequiredNamed(field.label(locale)),
           );
@@ -390,6 +409,9 @@ class _DynamicRequestFormScreenState
                 fromRequired: context.l10n.supportErrorFromDateRequired,
                 toRequired: context.l10n.supportErrorToDateRequired,
                 toBeforeFrom: context.l10n.supportErrorToDateBeforeFrom,
+                fieldRequired: (key) => context.l10n
+                    .supportFieldRequiredNamed(humanizeFieldKey(key)),
+                numberInvalid: context.l10n.supportErrorValidAmount,
               ),
             ),
           ),
@@ -482,7 +504,7 @@ class _DynamicRequestFormScreenState
             : field.fieldKey == 'leave_subtype_other'
                 ? l10n.supportFieldLeaveSubtypeOther
                 : field.label(locale);
-    final showStar = field.isRequired ||
+    final showStar = isRequestFormFieldRequired(field, _values) ||
         (field.fieldKey == 'leave_subtype_other' &&
             isOtherLeaveSubtype(_values['leave_subtype']));
     final label = showStar ? '$rawLabel *' : rawLabel;
@@ -497,14 +519,21 @@ class _DynamicRequestFormScreenState
           decoration: InputDecoration(labelText: label, helperText: help),
         );
       case 'number':
+        // Every numeric field is filtered now, not only `amount_kwd` and
+        // `distance_km`. A salary amount gets the money filter (one `.`, three
+        // decimals) and an Asset quantity gets digits only, which is what
+        // stopped `1000000000` and `1.2.3` from ever being typed.
         control = TextField(
           controller: _controllerFor(field.fieldKey),
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          keyboardType: TextInputType.numberWithOptions(
+            decimal: requestNumberFormat(field) != RequestNumberFormat.count,
+          ),
           inputFormatters: <TextInputFormatter>[
-            if (isDistanceNumberField(field))
-              const DistanceKmFormatter()
-            else if (isAmountNumberField(field))
-              const FuelDecimalFormatter(),
+            switch (requestNumberFormat(field)) {
+              RequestNumberFormat.distance => const DistanceKmFormatter(),
+              RequestNumberFormat.money => const MoneyFormatter(),
+              RequestNumberFormat.count => const CountFormatter(),
+            },
           ],
           decoration: InputDecoration(labelText: label, helperText: help),
         );

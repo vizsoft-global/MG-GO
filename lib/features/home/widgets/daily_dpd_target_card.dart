@@ -65,7 +65,7 @@ class DailyDpdTargetView extends StatelessWidget {
                 ),
               ),
               Text(
-                '${daily.completedToday} / ${daily.target}',
+                '${daily.displayCount} / ${daily.target}',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,

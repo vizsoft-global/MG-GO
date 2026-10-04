@@ -9,6 +9,7 @@ import '../../core/l10n/locale_formatters.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/rider_auth_service.dart';
+import 'esign_failure.dart';
 import 'support_providers.dart';
 import 'widgets/esign_sensitive_scope.dart';
 import 'widgets/signature_pad.dart';
@@ -68,14 +69,14 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
     try {
       final padSize = _padController.padSize;
       if (padSize == null) {
-        throw Exception('signature_empty');
+        throw const EsignFailure('signature_empty');
       }
       final pngBytes = await _padController.toPngBytes(
         size: padSize,
         pixelRatio: devicePixelRatio,
       );
       if (pngBytes == null) {
-        throw Exception('signature_empty');
+        throw const EsignFailure('signature_empty');
       }
       final service = ref.read(supportServiceProvider);
       final device = await ref.read(deviceIdentityProvider.future);
@@ -107,11 +108,20 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
       if (!mounted) return;
       context.go('/profile/support/sign/${widget.requestId}/confirmed');
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$e')),
-        );
-      }
+      if (!mounted) return;
+      // The signature is still on the pad, so the recovery is a named message
+      // and a retry rather than a raw exception the rider cannot act on. The
+      // upload is idempotent (same object key, upsert), so retrying costs only
+      // the round trip.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(messageForEsignFailure(e, l10n)),
+          action: SnackBarAction(
+            label: l10n.tryAgain,
+            onPressed: () => _submit(profile),
+          ),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

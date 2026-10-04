@@ -53,6 +53,16 @@ class NotificationMuteStore {
     await prefs.remove(kNotificationsMutedUntilPrefKey);
   }
 
+  /// Whether a mute period was recorded at all — open (still off) or closed.
+  ///
+  /// Re-enabling must only reconcile a period the toggle really spent off. A
+  /// toggle flipped back on with no window behind it has nothing to suppress,
+  /// and treating every unread row as history would silently clear the badge.
+  Future<bool> hasRecordedWindow() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.containsKey(kNotificationsMutedFromPrefKey);
+  }
+
   Future<Set<String>> readMutedIds() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getStringList(kNotificationsMutedIdsPrefKey)?.toSet() ??

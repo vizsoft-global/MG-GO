@@ -174,9 +174,12 @@ class DriverDelivery {
     }
 
     return DriverDelivery(
-      id: json['id'] as String,
-      externalOrderId: json['external_order_id'] as String? ?? '—',
-      status: json['status'] as String? ?? 'pending',
+      // `id` is the primary key so it is always present in practice, but this
+      // list is mapped row-by-row inside one `map()`: a single unexpected shape
+      // used to throw and blank the whole screen. Coerce rather than cast.
+      id: json['id']?.toString() ?? '',
+      externalOrderId: json['external_order_id']?.toString() ?? '—',
+      status: json['status']?.toString() ?? 'pending',
       deliveredAt: parseTs(json['delivered_at'] as String?),
       pickupAt: parseTs(json['pickup_at'] as String?),
       pickupLat: parseDouble(json['pickup_lat']),
@@ -191,8 +194,8 @@ class DriverDelivery {
       cancelReason: json['cancel_reason'] as String?,
       cancelProofUrl: json['cancel_proof_url'] as String?,
       rejectionReason: json['rejection_reason'] as String?,
-      partnerName: partnerMap?['name'] as String?,
-      partnerLogoUrl: partnerMap?['logo_url'] as String?,
+      partnerName: partnerMap?['name']?.toString(),
+      partnerLogoUrl: partnerMap?['logo_url']?.toString(),
       shiftDate: _parseDateOnly(json['shift_date']),
     );
   }

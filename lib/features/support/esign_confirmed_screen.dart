@@ -7,6 +7,7 @@ import '../../core/l10n/l10n.dart';
 import '../../core/l10n/locale_formatters.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
+import 'esign_failure.dart';
 import 'esign_full_document_screen.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
@@ -88,7 +89,9 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(messageForEsignFailure(e, context.l10n))),
+        );
       }
     } finally {
       if (mounted) setState(() => _downloading = false);
@@ -117,7 +120,11 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('$e')),
+        error: (e, _) => _LoadErrorBody(
+          message: messageForEsignFailure(e, l10n),
+          onRetry: () =>
+              ref.invalidate(esignRequestDetailProvider(widget.requestId)),
+        ),
         data: (detail) {
           _ensureSignedCopy(detail);
           final model = detail.signerMeta['device_model'] as String?;
@@ -253,6 +260,53 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+/// Failure state for the detail read.
+///
+/// The raw exception used to be printed here (`Text('$e')`) — a screen whose
+/// whole job is to confirm a signature, showing a Dart exception instead.
+/// Carries the mapped copy and a retry, since a transient read failure is
+/// recoverable without leaving the screen.
+class _LoadErrorBody extends StatelessWidget {
+  const _LoadErrorBody({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.error_outline_rounded,
+              size: 40,
+              color: AppColors.textSecondary,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton(
+              onPressed: onRetry,
+              child: Text(l10n.tryAgain),
+            ),
+          ],
+        ),
       ),
     );
   }

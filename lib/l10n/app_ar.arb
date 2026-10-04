@@ -210,6 +210,7 @@
   "keepDeliveringToEarnBonus": "استمر في التوصيل لربح هذه المكافأة",
   "remainingMoreToMaxEarnedSoFar": "{remaining} متبقية للحد الأقصى — ربحت حتى الآن {amount}",
   "remainingMoreToUnlock": "{remaining} متبقية لفتح {amount}",
+  "questPendingVerification": "{verified}/{target} موثّقة — التحقق معلّق",
   "unlockReward": "افتح {amount}",
   "perDeliveryRate": "× {rate} / توصيل",
   "dailyDpdTarget": "هدف DPD اليومي",
@@ -293,6 +294,8 @@
   "locationReportFailed": "فشل تقرير الموقع",
   "pendingDeliveriesWaitingToSync": "{count} توصيلات معلّقة بانتظار المزامنة",
   "couldNotLoadDeliveries": "تعذّر تحميل التوصيلات",
+  "deliveriesOfflineNoCache": "لا يوجد اتصال ولا توجد توصيلات محفوظة. ستظهر عند عودة الاتصال.",
+  "deliveriesOfflineShowingCache": "غير متصل — يتم عرض التوصيلات المحفوظة",
   "pendingDeliveries": "توصيلات معلّقة",
   "noPendingDeliveries": "لا توصيلات معلّقة",
   "pendingSyncedSummary": "معلّق: {pending} · مُزامَن: {synced}",
@@ -634,6 +637,18 @@
   "mustBeOnDutyToAddDelivery": "يجب أن تكون داخل لإضافة توصيل",
   "shiftRequiredBeforeDuty": "قدّم وردية اليوم قبل الدخول",
   "pickupOrder": "استلام الطلب",
+  "deliveryAlreadyInProgressTitle": "الطلب قيد التنفيذ بالفعل",
+  "deliveryAlreadyInProgressTitleWithOrder": "الطلب {orderId} قيد التنفيذ بالفعل",
+  "@deliveryAlreadyInProgressTitleWithOrder": {
+    "placeholders": {
+      "orderId": {
+        "type": "String"
+      }
+    }
+  },
+  "deliveryAlreadyInProgressBody": "أكمل أو ألغِ الطلب الحالي قبل تسجيل استلام جديد.",
+  "openCurrentOrder": "فتح الطلب الحالي",
+  "deliveryNoActiveOrder": "لا يوجد طلب قيد التنفيذ حالياً.",
   "confirmPickup": "تأكيد الاستلام",
   "pickedUpAt": "تم الاستلام في",
   "uploadPickupProof": "رفع صورة الاستلام",
@@ -817,6 +832,22 @@
   "supportFieldRequiredNamed": "{field} مطلوب",
   "supportErrorValidAmount": "يرجى إدخال مبلغ صالح",
   "supportErrorValidDistance": "يرجى إدخال مسافة صالحة",
+  "supportErrorNumberTooSmall": "أدخل {min} على الأقل",
+  "@supportErrorNumberTooSmall": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "supportErrorNumberTooLarge": "أدخل {max} أو أقل",
+  "@supportErrorNumberTooLarge": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
   "supportErrorAttachmentsMin": "أرفق {count} ملف على الأقل",
   "supportAttachmentRequired": "مرفق *",
   "supportRequestTypeUnknown": "نوع الطلب هذا غير متاح.",
@@ -1036,6 +1067,9 @@
   "esignSignerYou": "أنت",
   "esignSubmitting": "جارٍ الإرسال…",
   "esignConfirmSignature": "تأكيد التوقيع",
+  "esignNetworkError": "تعذّر الوصول إلى الخادم. تحقّق من اتصالك وحاول مرة أخرى.",
+  "esignAlreadyHandled": "لم يعد هذا المستند في انتظار توقيعك.",
+  "esignRequestUnavailable": "لم يعد هذا الطلب متاحاً.",
   "esignSignedTitle": "موقّع",
   "esignDocumentSigned": "تم توقيع المستند",
   "esignDocumentSignedBody": "تم إرسال توقيعك إلى الإدارة وحفظه في سجلاتك.",

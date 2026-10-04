@@ -95,20 +95,40 @@ void main() {
       expect(DailyDpdTarget.tryParse({'target': 0, 'completed_today': 3}), isNull);
     });
 
-    test('Daily DPD card uses progress_today and keeps verified for payout', () {
+    test('Daily DPD numerator is verified; progress_today only drives the bar',
+        () {
       final daily = DailyDpdTarget.tryParse({
         'target': 10,
         'completed_today': 0,
         'progress_today': 7,
         'restaurant_name': 'KFC Jahra',
       })!;
-      expect(daily.completedToday, 7);
+      // QA #6: the payout basis is the numerator. Seven orders are in flight but
+      // none is verified yet, so the card reads 0 / 10 and the bar alone shows
+      // that work is happening.
+      expect(daily.completedToday, 0);
       expect(daily.verifiedToday, 0);
-      expect(daily.remaining, 3);
+      expect(daily.displayCount, 0);
+      expect(daily.fraction, 0.7);
+      expect(daily.remaining, 10);
       expect(daily.achieved, isFalse);
       final offer = ActiveOffer.fromJson(_offer(eligible: 0, payout: 0, toNext: 10));
       expect(offer.bandLocked, isTrue);
       expect(offer.verifiedCount, 0);
+    });
+
+    test('Daily DPD numerator counts verified even when progress is ahead', () {
+      final daily = DailyDpdTarget.tryParse({
+        'target': 10,
+        'completed_today': 9,
+        'progress_today': 12,
+      })!;
+      // Progress may exceed the target; the numerator still stops at the count
+      // payroll will pay for.
+      expect(daily.displayCount, 9);
+      expect(daily.fraction, 1.0);
+      expect(daily.achieved, isFalse);
+      expect(daily.remaining, 1);
     });
 
     test('Daily DPD card falls back to completed_today without progress_today', () {
@@ -118,6 +138,7 @@ void main() {
       })!;
       expect(daily.completedToday, 4);
       expect(daily.verifiedToday, 4);
+      expect(daily.fraction, 0.4);
     });
   });
 
@@ -135,7 +156,11 @@ void main() {
       await tester.pumpWidget(_host(const DailyDpdTargetView(
         daily: DailyDpdTarget(target: 10, completedToday: 12),
       )));
-      expect(find.text('12 / 10'), findsOneWidget);
+      // Clamped at the target: progress is a bar against a target, so a
+      // numerator above the denominator ("12 / 10") reads as a bug to the
+      // rider. The verified count that actually pays out is reported
+      // separately, never by overflowing this label.
+      expect(find.text('10 / 10'), findsOneWidget);
       expect(find.text('Target achieved \u2014 incentives unlocked'), findsOneWidget);
     });
 

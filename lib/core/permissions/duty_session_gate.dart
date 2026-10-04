@@ -22,12 +22,18 @@ bool shouldMarkNeedsFreshClockIn({
   return isOnDuty && !permissionsReady;
 }
 
-/// Skip the shift sheet only when this session is already fully clocked in.
+/// Skip the shift sheet only when this session is already fully clocked in
+/// **and** today's shift row is still unexpired.
+///
+/// The old form trusted the duty flags alone, so a stale "In" — an offline
+/// cache, or a shift that ended at 19:00 while the toggle still read In — skipped
+/// the sheet and sent the rider on duty with no window for the new day.
 bool shouldSkipShiftForGoOnDuty({
   required bool isOnlineOnDuty,
   required bool needsFreshClockIn,
+  required bool hasActiveShift,
 }) {
-  return isOnlineOnDuty && !needsFreshClockIn;
+  return isOnlineOnDuty && !needsFreshClockIn && hasActiveShift;
 }
 
 /// After install / revoked-permission re-login, still skip the sheet when
