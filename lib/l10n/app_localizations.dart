@@ -5869,6 +5869,42 @@ abstract class AppLocalizations {
   /// **'Expired'**
   String get esignSectionExpired;
 
+  /// No description provided for @esignFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get esignFilterAll;
+
+  /// No description provided for @esignFilterNotOpened.
+  ///
+  /// In en, this message translates to:
+  /// **'Not opened'**
+  String get esignFilterNotOpened;
+
+  /// No description provided for @esignFilterOpened.
+  ///
+  /// In en, this message translates to:
+  /// **'Opened, not signed'**
+  String get esignFilterOpened;
+
+  /// No description provided for @esignStageOpened.
+  ///
+  /// In en, this message translates to:
+  /// **'Opened'**
+  String get esignStageOpened;
+
+  /// No description provided for @esignNoDocumentsInFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'No documents match this filter.'**
+  String get esignNoDocumentsInFilter;
+
+  /// No description provided for @esignOpenedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Opened {date}'**
+  String esignOpenedOn(String date);
+
   /// No description provided for @esignExpiredOn.
   ///
   /// In en, this message translates to:
