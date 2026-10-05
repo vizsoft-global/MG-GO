@@ -513,6 +513,7 @@ class EsignRequestSummary {
     this.viewedAt,
     this.recipientStageRaw,
     this.screenshotRestricted = false,
+    this.awaitingCounterSignature = false,
     this.categoryKey,
     this.categoryLabel,
     this.createdAt,
@@ -537,6 +538,11 @@ class EsignRequestSummary {
   final String? recipientStageRaw;
 
   final bool screenshotRestricted;
+
+  /// The employee has signed and a staff countersigner is still pending.
+  /// `esign_requests.status` stays `signed` — this flag is the second fact.
+  final bool awaitingCounterSignature;
+
   final String? categoryKey;
   final String? categoryLabel;
   final DateTime? createdAt;
@@ -553,6 +559,9 @@ class EsignRequestSummary {
   /// Overdue pending rows are remapped to `expired` in
   /// `driver_list_esign_requests`. They are no longer signable.
   bool get isExpired => status == 'expired';
+
+  bool get isAwaitingCounterSignature =>
+      isSigned && awaitingCounterSignature;
 
   /// Opened but not yet signed — the rider has seen it and is stalling, which
   /// is a different follow-up from a document nobody has looked at.
@@ -587,6 +596,7 @@ class EsignRequestSummary {
       viewedAt: _parseDateTime(json['viewed_at']),
       recipientStageRaw: json['recipient_stage'] as String?,
       screenshotRestricted: parseScreenshotRestricted(json['screenshot_restricted']),
+      awaitingCounterSignature: _asBool(json['awaiting_counter_signature']),
       categoryKey: json['category_key'] as String?,
       categoryLabel: json['category_label'] as String?,
       createdAt: _parseDateTime(json['created_at']),
@@ -617,6 +627,14 @@ class EsignInboxSections {
   /// the other is a decision the rider has already started.
   List<EsignRequestSummary> get pendingOpened =>
       pending.where((row) => row.isOpened).toList();
+
+  /// Signed by the rider, still waiting on a staff countersignature.
+  List<EsignRequestSummary> get signedAwaiting =>
+      signed.where((row) => row.isAwaitingCounterSignature).toList();
+
+  /// Signed and not waiting on staff — the inbox's finished set.
+  List<EsignRequestSummary> get signedComplete =>
+      signed.where((row) => !row.isAwaitingCounterSignature).toList();
 }
 
 EsignInboxSections partitionEsignInbox(Iterable<EsignRequestSummary> rows) {
@@ -780,7 +798,18 @@ class EsignRequestDetail {
   bool get isCancelled => status == 'cancelled';
   bool get isExpired => status == 'expired';
   DateTime? get declinedAt => _parseDateTime(signerMeta['declined_at']);
-  String? get declinedReason => signerMeta['declined_reason'] as String?;
+  String? get declinedReason {
+    final value = signerMeta['declined_reason'];
+    if (value == null) return null;
+    final text = value.toString().trim();
+    return text.isEmpty ? null : text;
+  }
+
+  bool get awaitingCounterSignature => _asBool(raw['awaiting_counter_signature']);
+
+  /// Same rule as the list: signed + a still-pending staff row.
+  bool get isAwaitingCounterSignature =>
+      isSigned && awaitingCounterSignature;
 }
 
 class DriverAppointment {
@@ -844,6 +873,15 @@ class DriverAppointment {
       createdAt: _parseDateTime(json['created_at']),
     );
   }
+}
+
+bool _asBool(dynamic value) {
+  if (value == true || value == 1) return true;
+  if (value is String) {
+    final trimmed = value.trim().toLowerCase();
+    return trimmed == 'true' || trimmed == '1';
+  }
+  return false;
 }
 
 DateTime? _parseDate(dynamic value) {

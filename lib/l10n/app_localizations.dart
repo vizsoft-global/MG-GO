@@ -5857,6 +5857,30 @@ abstract class AppLocalizations {
   /// **'Signed'**
   String get esignSectionSigned;
 
+  /// No description provided for @esignSectionAwaitingCounter.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting counter-signature'**
+  String get esignSectionAwaitingCounter;
+
+  /// No description provided for @esignAwaitingCounterOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for staff signature'**
+  String get esignAwaitingCounterOn;
+
+  /// No description provided for @esignDeclinedReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get esignDeclinedReason;
+
+  /// No description provided for @esignAwaitingCounterSignatureBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your signature is recorded. A staff member still has to countersign before the final copy is ready.'**
+  String get esignAwaitingCounterSignatureBody;
+
   /// No description provided for @esignSectionDeclined.
   ///
   /// In en, this message translates to:

@@ -8,9 +8,11 @@ EsignRequestSummary _row(
   String status, {
   DateTime? viewedAt,
   String? recipientStage,
+  bool awaitingCounterSignature = false,
+  String? id,
 }) {
   return EsignRequestSummary(
-    id: 'id-$status',
+    id: id ?? 'id-$status',
     requestCode: 'SIG-1',
     title: 'Policy',
     status: status,
@@ -19,6 +21,7 @@ EsignRequestSummary _row(
     viewedAt: viewedAt,
     recipientStageRaw: recipientStage,
     screenshotRestricted: false,
+    awaitingCounterSignature: awaitingCounterSignature,
     categoryKey: null,
     categoryLabel: null,
     createdAt: DateTime.utc(2026, 8, 25),
@@ -141,6 +144,19 @@ void main() {
       expect(row.viewedAt!.toUtc(), DateTime.utc(2026, 8, 26, 9, 30));
       expect(row.recipientStageRaw, 'opened');
       expect(row.isOpened, isTrue);
+      expect(row.isAwaitingCounterSignature, isFalse);
+    });
+
+    test('fromJson reads awaiting_counter_signature on a signed row', () {
+      final row = EsignRequestSummary.fromJson({
+        'id': 'abc',
+        'request_code': 'SIG-4',
+        'title': 'Payslip',
+        'status': 'signed',
+        'awaiting_counter_signature': true,
+      });
+      expect(row.isSigned, isTrue);
+      expect(row.isAwaitingCounterSignature, isTrue);
     });
   });
 
@@ -157,6 +173,16 @@ void main() {
         sections.pendingOpened.map((r) => r.viewedAt).whereType<DateTime>(),
         hasLength(1),
       );
+    });
+
+    test('signed rows split on awaiting_counter_signature', () {
+      final sections = partitionEsignInbox([
+        _row('signed', id: 'done'),
+        _row('signed', awaitingCounterSignature: true, id: 'waiting'),
+      ]);
+      expect(sections.signed.map((r) => r.id), ['done', 'waiting']);
+      expect(sections.signedAwaiting.map((r) => r.id), ['waiting']);
+      expect(sections.signedComplete.map((r) => r.id), ['done']);
     });
 
     test('the two buckets partition pending exactly, with no row in both', () {

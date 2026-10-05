@@ -58,6 +58,45 @@ void main() {
     expect(detail.hasSenderDetails, isFalse);
   });
 
+  test('declinedReason ignores blank signer_meta text', () {
+    final empty = EsignRequestDetail(raw: const {
+      'id': 'a',
+      'request_code': 'SIG-5',
+      'title': 'Policy',
+      'status': 'declined',
+      'signer_meta': {'declined_reason': '  '},
+    });
+    expect(empty.declinedReason, isNull);
+    final present = EsignRequestDetail(raw: const {
+      'id': 'b',
+      'request_code': 'SIG-6',
+      'title': 'Policy',
+      'status': 'declined',
+      'signer_meta': {'declined_reason': 'Wrong employee'},
+    });
+    expect(present.declinedReason, 'Wrong employee');
+  });
+
+  test('awaiting_counter_signature is only true on a signed row', () {
+    final pending = EsignRequestDetail(raw: const {
+      'id': 'a',
+      'request_code': 'SIG-7',
+      'title': 'Policy',
+      'status': 'pending',
+      'awaiting_counter_signature': true,
+    });
+    expect(pending.awaitingCounterSignature, isTrue);
+    expect(pending.isAwaitingCounterSignature, isFalse);
+    final signed = EsignRequestDetail(raw: const {
+      'id': 'b',
+      'request_code': 'SIG-8',
+      'title': 'Policy',
+      'status': 'signed',
+      'awaiting_counter_signature': true,
+    });
+    expect(signed.isAwaitingCounterSignature, isTrue);
+  });
+
   test('falls back to field_values when labeled list is empty', () {
     final detail = EsignRequestDetail(raw: const {
       'id': 'a',
