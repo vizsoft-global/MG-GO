@@ -3246,6 +3246,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get esignSectionExpired => 'Expired';
 
   @override
+  String get esignFilterAll => 'All';
+
+  @override
+  String get esignFilterNotOpened => 'Not opened';
+
+  @override
+  String get esignFilterOpened => 'Opened, not signed';
+
+  @override
+  String get esignStageOpened => 'Opened';
+
+  @override
+  String get esignNoDocumentsInFilter => 'No documents match this filter.';
+
+  @override
+  String esignOpenedOn(String date) {
+    return 'Opened $date';
+  }
+
+  @override
   String esignExpiredOn(String date) {
     return 'Expired $date';
   }

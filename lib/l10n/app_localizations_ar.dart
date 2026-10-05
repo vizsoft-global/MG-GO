@@ -3231,6 +3231,26 @@ class AppLocalizationsAr extends AppLocalizations {
   String get esignSectionExpired => 'منتهية';
 
   @override
+  String get esignFilterAll => 'الكل';
+
+  @override
+  String get esignFilterNotOpened => 'لم يُفتح';
+
+  @override
+  String get esignFilterOpened => 'فُتح، لم يُوقّع';
+
+  @override
+  String get esignStageOpened => 'فُتح';
+
+  @override
+  String get esignNoDocumentsInFilter => 'لا توجد مستندات مطابقة لهذا التصفية.';
+
+  @override
+  String esignOpenedOn(String date) {
+    return 'فُتح $date';
+  }
+
+  @override
   String esignExpiredOn(String date) {
     return 'انتهت في $date';
   }

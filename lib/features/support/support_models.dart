@@ -432,6 +432,76 @@ const kDocumentTypes = [
   'Salary certification',
 ];
 
+/// The recipient vocabulary the admin tracker and this inbox share.
+///
+/// `esign_requests.status` alone cannot answer the question the rider's inbox
+/// and the operator's reminder list both ask. The server derives the stage on
+/// read in `admin_list_esign_requests` / `driver_list_esign_requests`
+/// (migration `20261116000400`) and the admin panel derives it again in
+/// `esign-recipient-stage.ts`; this is the third copy, and it follows the same
+/// precedence so a row narrowed here and the same row counted there cannot
+/// disagree.
+enum EsignRecipientStage {
+  signed,
+  declined,
+  opened,
+
+  /// Sent and never opened — the rider has not seen it at all.
+  notOpened,
+  expired,
+  cancelled,
+}
+
+/// A terminal status outranks expiry, and expiry outranks the `viewed_at`
+/// test: an overdue document that was never opened is no longer outstanding
+/// work, so it lands in `expired` rather than inflating the "not opened"
+/// bucket the rider is being asked to act on.
+///
+/// Anything unrecognised falls to the `viewed_at` test rather than to a
+/// default, because a status this build has not heard of is far more likely to
+/// be a new in-flight state than a finished one.
+EsignRecipientStage esignRecipientStage({
+  required String status,
+  required DateTime? viewedAt,
+}) {
+  switch (status.trim().toLowerCase()) {
+    case 'signed':
+      return EsignRecipientStage.signed;
+    case 'declined':
+      return EsignRecipientStage.declined;
+    case 'cancelled':
+      return EsignRecipientStage.cancelled;
+    case 'expired':
+      return EsignRecipientStage.expired;
+    default:
+      return viewedAt != null
+          ? EsignRecipientStage.opened
+          : EsignRecipientStage.notOpened;
+  }
+}
+
+/// Narrowing guard for a wire value. Returns null for a string this build does
+/// not know, so a newly added server stage is dropped and the caller falls back
+/// to deriving from the row instead of casting an unknown into the enum.
+EsignRecipientStage? esignRecipientStageFromWire(String value) {
+  switch (value.trim().toLowerCase()) {
+    case 'signed':
+      return EsignRecipientStage.signed;
+    case 'declined':
+      return EsignRecipientStage.declined;
+    case 'opened':
+      return EsignRecipientStage.opened;
+    case 'not_opened':
+      return EsignRecipientStage.notOpened;
+    case 'expired':
+      return EsignRecipientStage.expired;
+    case 'cancelled':
+      return EsignRecipientStage.cancelled;
+    default:
+      return null;
+  }
+}
+
 class EsignRequestSummary {
   const EsignRequestSummary({
     required this.id,
@@ -440,6 +510,8 @@ class EsignRequestSummary {
     required this.status,
     this.dueAt,
     this.signedAt,
+    this.viewedAt,
+    this.recipientStageRaw,
     this.screenshotRestricted = false,
     this.categoryKey,
     this.categoryLabel,
@@ -452,6 +524,18 @@ class EsignRequestSummary {
   final String status;
   final DateTime? dueAt;
   final DateTime? signedAt;
+
+  /// When the rider first resolved the document — stamped server-side by
+  /// `driver_mark_esign_viewed` only once the signed URL actually resolved, so
+  /// a failed preview cannot make an unread document look read.
+  final DateTime? viewedAt;
+
+  /// The stage the list RPC derived, when it sent one. Kept as the raw wire
+  /// string so a value this build has not heard of is dropped rather than
+  /// cast into the enum — the same guard `isEsignRecipientStage` performs in
+  /// the admin panel.
+  final String? recipientStageRaw;
+
   final bool screenshotRestricted;
   final String? categoryKey;
   final String? categoryLabel;
@@ -470,6 +554,28 @@ class EsignRequestSummary {
   /// `driver_list_esign_requests`. They are no longer signable.
   bool get isExpired => status == 'expired';
 
+  /// Opened but not yet signed — the rider has seen it and is stalling, which
+  /// is a different follow-up from a document nobody has looked at.
+  bool get isOpened => recipientStage == EsignRecipientStage.opened;
+
+  /// Sent and never opened.
+  bool get isNotOpened => recipientStage == EsignRecipientStage.notOpened;
+
+  /// The server's `recipient_stage` when it is one this build understands,
+  /// otherwise derived locally from `status` + `viewedAt`.
+  ///
+  /// The fallback is not a nicety: an older backend, or a row served from an
+  /// offline cache written before the field existed, would otherwise leave
+  /// every document in the "not opened" bucket.
+  EsignRecipientStage get recipientStage {
+    final raw = recipientStageRaw;
+    if (raw != null) {
+      final parsed = esignRecipientStageFromWire(raw);
+      if (parsed != null) return parsed;
+    }
+    return esignRecipientStage(status: status, viewedAt: viewedAt);
+  }
+
   factory EsignRequestSummary.fromJson(Map<String, dynamic> json) {
     return EsignRequestSummary(
       id: json['id'] as String,
@@ -478,6 +584,8 @@ class EsignRequestSummary {
       status: json['status'] as String? ?? '',
       dueAt: _parseDate(json['due_at']),
       signedAt: _parseDateTime(json['signed_at']),
+      viewedAt: _parseDateTime(json['viewed_at']),
+      recipientStageRaw: json['recipient_stage'] as String?,
       screenshotRestricted: parseScreenshotRestricted(json['screenshot_restricted']),
       categoryKey: json['category_key'] as String?,
       categoryLabel: json['category_label'] as String?,
@@ -498,6 +606,17 @@ class EsignInboxSections {
   final List<EsignRequestSummary> signed;
   final List<EsignRequestSummary> declined;
   final List<EsignRequestSummary> expired;
+
+  /// The pending rows the rider has never opened — the set a fresh push can
+  /// still reach, and the one that reads as "you have not seen this yet".
+  List<EsignRequestSummary> get pendingNotOpened =>
+      pending.where((row) => row.isNotOpened).toList();
+
+  /// The pending rows the rider opened and did not sign. Kept separate from
+  /// [pendingNotOpened] because the two need different copy: one is a nudge,
+  /// the other is a decision the rider has already started.
+  List<EsignRequestSummary> get pendingOpened =>
+      pending.where((row) => row.isOpened).toList();
 }
 
 EsignInboxSections partitionEsignInbox(Iterable<EsignRequestSummary> rows) {
@@ -596,6 +715,13 @@ class EsignRequestDetail {
 
   DateTime? get dueAt => _parseDate(raw['due_at']);
   DateTime? get signedAt => _parseDateTime(raw['signed_at']);
+
+  /// First-open timestamp. The row column is authoritative and
+  /// `driver_get_esign_request` returns the whole row, so this is the plain
+  /// value in practice; `signer_meta` is read as the fallback because older
+  /// builds only ever mirrored it there.
+  DateTime? get viewedAt =>
+      _parseDateTime(raw['viewed_at'] ?? signerMeta['viewed_at']);
 
   String? get description => raw['description'] as String?;
   String? get templateName => raw['template_name'] as String?;

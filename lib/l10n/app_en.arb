@@ -1735,6 +1735,19 @@
   "esignSectionSigned": "Signed",
   "esignSectionDeclined": "Declined",
   "esignSectionExpired": "Expired",
+  "esignFilterAll": "All",
+  "esignFilterNotOpened": "Not opened",
+  "esignFilterOpened": "Opened, not signed",
+  "esignStageOpened": "Opened",
+  "esignNoDocumentsInFilter": "No documents match this filter.",
+  "esignOpenedOn": "Opened {date}",
+  "@esignOpenedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "esignExpiredOn": "Expired {date}",
   "@esignExpiredOn": {
     "placeholders": {
