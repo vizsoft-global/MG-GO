@@ -212,6 +212,44 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                   _EsignDetailsCard(detail: detail),
                   const SizedBox(height: 10),
                 ],
+                if (detail.isDeclined) ...[
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.esignSectionDeclined,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.rejectedRed,
+                            ),
+                          ),
+                          if (detail.declinedReason != null) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              l10n.esignDeclinedReason,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            Text(
+                              detail.declinedReason!,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(14),

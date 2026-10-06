@@ -126,7 +126,9 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
               ref.invalidate(esignRequestDetailProvider(widget.requestId)),
         ),
         data: (detail) {
-          _ensureSignedCopy(detail);
+          if (!detail.isAwaitingCounterSignature) {
+            _ensureSignedCopy(detail);
+          }
           final model = detail.signerMeta['device_model'] as String?;
           final manufacturer = detail.signerMeta['device_manufacturer'] as String?;
           final device = [manufacturer, model]
@@ -159,7 +161,9 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                l10n.esignDocumentSignedBody,
+                detail.isAwaitingCounterSignature
+                    ? l10n.esignAwaitingCounterSignatureBody
+                    : l10n.esignDocumentSignedBody,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                     color: AppColors.textSecondary, fontSize: 14),
@@ -238,11 +242,13 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                detail.signedDocumentReady
-                    ? l10n.esignSignedCopyReady
-                    : detail.signedDocumentPending
-                        ? l10n.esignSignedCopyPending
-                        : l10n.esignSignedCopyUnavailable,
+                detail.isAwaitingCounterSignature
+                    ? l10n.esignAwaitingCounterSignatureBody
+                    : detail.signedDocumentReady
+                        ? l10n.esignSignedCopyReady
+                        : detail.signedDocumentPending
+                            ? l10n.esignSignedCopyPending
+                            : l10n.esignSignedCopyUnavailable,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 11.5,

@@ -102,10 +102,19 @@ class _EsignDocumentsScreenState extends ConsumerState<EsignDocumentsScreen> {
                         onTap: () => context.push('/profile/support/sign/${row.id}'),
                       )),
                 ],
-                if (sections.signed.isNotEmpty) ...[
+                if (sections.signedAwaiting.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  _SectionLabel(title: l10n.esignSectionAwaitingCounter),
+                  ...sections.signedAwaiting.map((row) => _EsignCard(
+                        row: row,
+                        dueLabel: l10n.esignAwaitingCounterOn,
+                        onTap: () => context.push('/profile/support/sign/${row.id}'),
+                      )),
+                ],
+                if (sections.signedComplete.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   _SectionLabel(title: l10n.esignSectionSigned),
-                  ...sections.signed.map((row) => _EsignCard(
+                  ...sections.signedComplete.map((row) => _EsignCard(
                         row: row,
                         dueLabel: _formatDate(row.signedAt ?? row.dueAt, l10n),
                         onTap: () => context.push('/profile/support/sign/${row.id}'),
@@ -304,7 +313,9 @@ class _EsignCard extends StatelessWidget {
                 ? AppColors.rejectedRed
                 : row.isCancelled
                     ? AppColors.textSecondary
-                    : AppColors.progressGreen;
+                    : row.isAwaitingCounterSignature
+                        ? AppColors.underReviewAmber
+                        : AppColors.progressGreen;
     final statusLabel = pending
         ? (row.isOpened ? l10n.esignStageOpened : l10n.esignSectionPending)
         : expired
@@ -313,7 +324,9 @@ class _EsignCard extends StatelessWidget {
                 ? l10n.esignSectionDeclined
                 : row.isCancelled
                     ? l10n.statusCancelled
-                    : l10n.esignSectionSigned;
+                    : row.isAwaitingCounterSignature
+                        ? l10n.esignSectionAwaitingCounter
+                        : l10n.esignSectionSigned;
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: InkWell(
@@ -376,7 +389,9 @@ class _EsignCard extends StatelessWidget {
                             ? l10n.esignSectionDeclined
                             : row.isCancelled
                                 ? l10n.statusCancelled
-                                : l10n.esignSignedOn(dueLabel),
+                                : row.isAwaitingCounterSignature
+                                    ? dueLabel
+                                    : l10n.esignSignedOn(dueLabel),
                 style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary,

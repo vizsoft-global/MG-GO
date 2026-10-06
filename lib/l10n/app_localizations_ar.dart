@@ -3225,6 +3225,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get esignSectionSigned => 'موقّعة';
 
   @override
+  String get esignSectionAwaitingCounter => 'بانتظار التوقيع المضاد';
+
+  @override
+  String get esignAwaitingCounterOn => 'بانتظار توقيع الموظف';
+
+  @override
+  String get esignDeclinedReason => 'السبب';
+
+  @override
+  String get esignAwaitingCounterSignatureBody =>
+      'تم تسجيل توقيعك. ما زال أحد الموظفين بحاجة إلى التوقيع المضاد قبل أن تكون النسخة النهائية جاهزة.';
+
+  @override
   String get esignSectionDeclined => 'مرفوضة';
 
   @override

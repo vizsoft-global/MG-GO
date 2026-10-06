@@ -3240,6 +3240,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get esignSectionSigned => 'Signed';
 
   @override
+  String get esignSectionAwaitingCounter => 'Awaiting counter-signature';
+
+  @override
+  String get esignAwaitingCounterOn => 'Waiting for staff signature';
+
+  @override
+  String get esignDeclinedReason => 'Reason';
+
+  @override
+  String get esignAwaitingCounterSignatureBody =>
+      'Your signature is recorded. A staff member still has to countersign before the final copy is ready.';
+
+  @override
   String get esignSectionDeclined => 'Declined';
 
   @override
