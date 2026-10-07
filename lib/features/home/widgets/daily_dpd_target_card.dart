@@ -14,7 +14,25 @@ class DailyDpdTargetCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final daily = ref.watch(extraEarningsProvider).value?.dailyDpd;
+    final extra = ref.watch(extraEarningsProvider).value;
+    if (extra == null) return const SizedBox.shrink();
+    final named = extra.dailyDpdTargets;
+    if (named != null) {
+      if (named.isEmpty) return const SizedBox.shrink();
+      return Column(
+        children: [
+          for (final card in named)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: DailyDpdTargetView(
+                daily: card.toDaily(),
+                title: context.l10n.namedDpdTarget(card.name),
+              ),
+            ),
+        ],
+      );
+    }
+    final daily = extra.dailyDpd;
     if (daily == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -24,9 +42,10 @@ class DailyDpdTargetCard extends ConsumerWidget {
 }
 
 class DailyDpdTargetView extends StatelessWidget {
-  const DailyDpdTargetView({super.key, required this.daily});
+  const DailyDpdTargetView({super.key, required this.daily, this.title});
 
   final DailyDpdTarget daily;
+  final String? title;
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +75,7 @@ class DailyDpdTargetView extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  l10n.dailyDpdTarget,
+                  title ?? l10n.dailyDpdTarget,
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,

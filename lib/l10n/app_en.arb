@@ -397,6 +397,39 @@
     }
   },
   "dailyDpdTarget": "Daily DPD Target",
+  "namedDpdTarget": "{name} Target",
+  "@namedDpdTarget": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "offerVerifiedToday": "Verified orders today: {count}",
+  "@offerVerifiedToday": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "offerBonusStartsAfter": "Bonus starts after {count} orders",
+  "@offerBonusStartsAfter": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "offerBonusSoFar": "Bonus so far: {amount}",
+  "@offerBonusSoFar": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "offerTierStep": "{from}+ orders · {rate} / order",
+  "@offerTierStep": {
+    "placeholders": {
+      "from": { "type": "int" },
+      "rate": { "type": "String" }
+    }
+  },
+  "riderCategoryMg": "MG",
+  "riderCategoryOutsource": "Outsource",
   "dailyDpdRemaining": "{count} more deliveries to hit today's target",
   "@dailyDpdRemaining": {
     "placeholders": {

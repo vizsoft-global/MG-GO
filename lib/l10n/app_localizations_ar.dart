@@ -667,6 +667,37 @@ class AppLocalizationsAr extends AppLocalizations {
   String get dailyDpdTarget => 'هدف DPD اليومي';
 
   @override
+  String namedDpdTarget(String name) {
+    return 'هدف $name';
+  }
+
+  @override
+  String offerVerifiedToday(int count) {
+    return 'الطلبات الموثّقة اليوم: $count';
+  }
+
+  @override
+  String offerBonusStartsAfter(int count) {
+    return 'تبدأ المكافأة بعد $count طلبات';
+  }
+
+  @override
+  String offerBonusSoFar(String amount) {
+    return 'المكافأة حتى الآن: $amount';
+  }
+
+  @override
+  String offerTierStep(int from, String rate) {
+    return '$from+ طلبات · $rate / طلب';
+  }
+
+  @override
+  String get riderCategoryMg => 'MG';
+
+  @override
+  String get riderCategoryOutsource => 'الاستعانة بمصادر خارجية';
+
+  @override
   String dailyDpdRemaining(int count) {
     return '$count توصيلات أخرى لتحقيق هدف اليوم';
   }

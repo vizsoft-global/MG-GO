@@ -99,7 +99,9 @@ class _OffersList extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.fromLTRB(10, 10, 10, 24),
-      children: [_HeroCard(offers: extra.activeOffers)],
+      children: [
+        _HeroCard(offers: extra.activeOffers, setup: extra.riderSetup),
+      ],
     );
   }
 }
@@ -121,9 +123,10 @@ class _CompanySchemeList extends StatelessWidget {
 }
 
 class _HeroCard extends StatelessWidget {
-  const _HeroCard({required this.offers});
+  const _HeroCard({required this.offers, this.setup});
 
   final List<ActiveOffer> offers;
+  final RiderIncentiveSetup? setup;
 
   @override
   Widget build(BuildContext context) {
@@ -177,7 +180,7 @@ class _HeroCard extends StatelessWidget {
             Column(
               children: [
                 for (final offer in offers) ...[
-                  ActiveOfferCard(offer: offer),
+                  ActiveOfferCard(offer: offer, setup: setup),
                   const SizedBox(height: 10),
                 ],
               ],
