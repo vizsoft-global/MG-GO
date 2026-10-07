@@ -71,7 +71,54 @@ void main() {
         ],
       });
       expect(extra.dailyDpd, isNull);
+      expect(extra.dailyDpdTargets, isNull);
+      expect(extra.riderSetup, isNull);
       expect(extra.activeOffers.single.isBand, isFalse);
+    });
+
+    test('named targets keep restaurant and zone and drop a company kind', () {
+      final extra = ExtraEarnings.fromJson({
+        'active_offers': const [],
+        'daily_dpd': {
+          'target': 15,
+          'completed_today': 4,
+          'company_name': 'Sadeeq',
+        },
+        'daily_dpd_targets': [
+          {
+            'kind': 'restaurant',
+            'name': 'KFC Jahra',
+            'target': 10,
+            'completed_today': 4,
+            'progress_today': 6,
+          },
+          {
+            'kind': 'zone',
+            'name': 'Jahra',
+            'target': 12,
+            'completed_today': 2,
+          },
+          {'kind': 'company', 'name': 'Sadeeq', 'target': 15, 'completed_today': 4},
+        ],
+        'rider_setup': {
+          'project_key': 'keeta',
+          'rider_category': 'in_house',
+          'company_name': 'MG',
+        },
+      });
+      expect(extra.dailyDpdTargets, hasLength(2));
+      expect(extra.dailyDpdTargets!.map((card) => card.kind), ['restaurant', 'zone']);
+      expect(extra.dailyDpdTargets!.first.name, 'KFC Jahra');
+      expect(extra.riderSetup!.projectKey, 'keeta');
+      expect(extra.riderSetup!.riderCategory, 'in_house');
+    });
+
+    test('an empty targets array is an answer, not a missing key', () {
+      final extra = ExtraEarnings.fromJson({
+        'active_offers': const [],
+        'daily_dpd_targets': const [],
+      });
+      expect(extra.dailyDpdTargets, isEmpty);
     });
 
     test('cache round-trip keeps band fields and verified count', () {
@@ -143,6 +190,16 @@ void main() {
   });
 
   group('widgets', () {
+    testWidgets('named DPD card uses the restaurant or zone name', (tester) async {
+      await tester.pumpWidget(_host(DailyDpdTargetView(
+        daily: const DailyDpdTarget(target: 10, completedToday: 4),
+        title: 'KFC Jahra Target',
+      )));
+      expect(find.text('KFC Jahra Target'), findsOneWidget);
+      expect(find.text('Daily DPD Target'), findsNothing);
+      expect(find.text('4 / 10'), findsOneWidget);
+    });
+
     testWidgets('DPD card progress state', (tester) async {
       await tester.pumpWidget(_host(const DailyDpdTargetView(
         daily: DailyDpdTarget(target: 10, completedToday: 7),

@@ -582,6 +582,8 @@ class ExtraEarnings {
   const ExtraEarnings({
     required this.activeOffers,
     this.dailyDpd,
+    this.dailyDpdTargets,
+    this.riderSetup,
     this.companyScheme,
   });
 
@@ -590,6 +592,15 @@ class ExtraEarnings {
   /// Today's DPD target from the rider's restaurant delivery rule; null when
   /// no restaurant rule sets one (or the server predates the field).
   final DailyDpdTarget? dailyDpd;
+
+  /// One card per restaurant or zone target. Null when the server predates
+  /// `daily_dpd_targets` (keep [dailyDpd]). An empty list means the server
+  /// answered and there is no restaurant or zone card — including when only a
+  /// company scheme exists.
+  final List<NamedDpdTarget>? dailyDpdTargets;
+
+  /// Project, MG/Outsource category and company name for the bonus-start line.
+  final RiderIncentiveSetup? riderSetup;
 
   /// Flat above/below company scheme (outsourced riders). Null for restaurant
   /// offers or riders with no active company scheme.
@@ -602,6 +613,8 @@ class ExtraEarnings {
   factory ExtraEarnings.fromJson(Map<String, dynamic> json) {
     final daily = json['daily_dpd'];
     final scheme = json['company_scheme'];
+    final rawTargets = json['daily_dpd_targets'];
+    final setup = json['rider_setup'];
     return ExtraEarnings(
       // `overridden` offers are dropped here rather than filtered per screen:
       // the server flags any offer a higher-priority "overrides others" rule has
@@ -615,6 +628,12 @@ class ExtraEarnings {
       dailyDpd: daily is Map
           ? DailyDpdTarget.tryParse(Map<String, dynamic>.from(daily))
           : null,
+      dailyDpdTargets: rawTargets is List
+          ? NamedDpdTarget.parseList(rawTargets)
+          : null,
+      riderSetup: setup is Map
+          ? RiderIncentiveSetup.tryParse(Map<String, dynamic>.from(setup))
+          : null,
       companyScheme: scheme is Map
           ? CompanyIncentiveScheme.tryParse(Map<String, dynamic>.from(scheme))
           : null,
@@ -624,6 +643,9 @@ class ExtraEarnings {
   Map<String, dynamic> toJson() => {
     'active_offers': activeOffers.map((e) => e.toJson()).toList(),
     if (dailyDpd != null) 'daily_dpd': dailyDpd!.toJson(),
+    if (dailyDpdTargets != null)
+      'daily_dpd_targets': dailyDpdTargets!.map((e) => e.toJson()).toList(),
+    if (riderSetup != null) 'rider_setup': riderSetup!.toJson(),
     if (companyScheme != null) 'company_scheme': companyScheme!.toJson(),
   };
 }
@@ -691,6 +713,95 @@ class DailyDpdTarget {
     'completed_today': completedToday,
     'progress_today': progressToday,
     'restaurant_name': restaurantName,
+    'company_name': companyName,
+  };
+}
+
+/// One Home card. `kind` is only `restaurant` or `zone`. A company scheme is
+/// never a card here.
+class NamedDpdTarget {
+  const NamedDpdTarget({
+    required this.kind,
+    required this.name,
+    required this.target,
+    required this.completedToday,
+    int? progressToday,
+  }) : progressToday = progressToday ?? completedToday;
+
+  final String kind;
+  final String name;
+  final int target;
+  final int completedToday;
+  final int progressToday;
+
+  DailyDpdTarget toDaily() => DailyDpdTarget(
+    target: target,
+    completedToday: completedToday,
+    progressToday: progressToday,
+    restaurantName: kind == 'restaurant' ? name : null,
+  );
+
+  static List<NamedDpdTarget> parseList(List<dynamic> raw) {
+    return raw.whereType<Map>().map((item) {
+      final json = Map<String, dynamic>.from(item);
+      final kind = (json['kind'] as String?)?.trim();
+      final name = (json['name'] as String?)?.trim();
+      final target = (json['target'] as num?)?.toInt() ?? 0;
+      if (kind != 'restaurant' && kind != 'zone') return null;
+      if (name == null || name.isEmpty || target <= 0) return null;
+      return NamedDpdTarget(
+        kind: kind!,
+        name: name,
+        target: target,
+        completedToday: (json['completed_today'] as num?)?.toInt() ?? 0,
+        progressToday: (json['progress_today'] as num?)?.toInt(),
+      );
+    }).whereType<NamedDpdTarget>().toList(growable: false);
+  }
+
+  Map<String, dynamic> toJson() => {
+    'kind': kind,
+    'name': name,
+    'target': target,
+    'completed_today': completedToday,
+    'progress_today': progressToday,
+  };
+}
+
+class RiderIncentiveSetup {
+  const RiderIncentiveSetup({
+    this.projectKey,
+    this.riderCategory,
+    this.companyName,
+  });
+
+  final String? projectKey;
+  final String? riderCategory;
+  final String? companyName;
+
+  static RiderIncentiveSetup? tryParse(Map<String, dynamic> json) {
+    String? text(Object? raw) {
+      final value = (raw as String?)?.trim();
+      if (value == null || value.isEmpty) return null;
+      return value;
+    }
+
+    final setup = RiderIncentiveSetup(
+      projectKey: text(json['project_key']),
+      riderCategory: text(json['rider_category']),
+      companyName: text(json['company_name']),
+    );
+    if (setup.projectKey == null &&
+        setup.riderCategory == null &&
+        setup.companyName == null) {
+      return null;
+    }
+    return setup;
+  }
+
+  Map<String, dynamic> toJson() => {
+    'project_key': projectKey,
+    'rider_category': riderCategory,
     'company_name': companyName,
   };
 }

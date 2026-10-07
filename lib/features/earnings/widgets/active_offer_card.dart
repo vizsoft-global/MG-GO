@@ -7,9 +7,10 @@ import '../earnings_models.dart';
 
 /// One incentive-rule progress card on the Extra Earnings screen.
 class ActiveOfferCard extends StatelessWidget {
-  const ActiveOfferCard({required this.offer, super.key});
+  const ActiveOfferCard({required this.offer, this.setup, super.key});
 
   final ActiveOffer offer;
+  final RiderIncentiveSetup? setup;
 
   @override
   Widget build(BuildContext context) {
@@ -22,19 +23,26 @@ class ActiveOfferCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE1DBFF), width: 0.7),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(child: _OfferBody(offer: offer, l10n: l10n)),
-          const SizedBox(width: 16),
-          Text(
-            offer.rewardLabel(l10n),
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: AppColors.tomatoOrange,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(child: _OfferBody(offer: offer, l10n: l10n)),
+              const SizedBox(width: 16),
+              Text(
+                offer.rewardLabel(l10n),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.tomatoOrange,
+                ),
+              ),
+            ],
           ),
+          const SizedBox(height: 8),
+          _OfferBreakdown(offer: offer, setup: setup, l10n: l10n),
         ],
       ),
     );
@@ -119,4 +127,66 @@ class _OfferBody extends StatelessWidget {
       ],
     );
   }
+}
+
+class _OfferBreakdown extends StatelessWidget {
+  const _OfferBreakdown({
+    required this.offer,
+    required this.setup,
+    required this.l10n,
+  });
+
+  final ActiveOffer offer;
+  final RiderIncentiveSetup? setup;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final lines = <String>[
+      l10n.offerVerifiedToday(offer.verifiedCount),
+    ];
+    if (offer.bandStart != null) {
+      lines.add(l10n.offerBonusStartsAfter(offer.bandStart!));
+    }
+    final setupLine = _setupLine(setup, l10n);
+    if (setupLine != null) lines.add(setupLine);
+    for (final tier in offer.tiers) {
+      final rate = tier.rewardPerDeliveryKwd;
+      if (rate == null || rate <= 0) continue;
+      lines.add(l10n.offerTierStep(tier.threshold, formatKwd(rate)));
+    }
+    if (offer.currentPayoutKwd > 0) {
+      lines.add(l10n.offerBonusSoFar(formatKwd(offer.currentPayoutKwd)));
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final line in lines)
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(
+              line,
+              style: const TextStyle(fontSize: 11, color: Color(0xFF666666)),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+String? _setupLine(RiderIncentiveSetup? setup, AppLocalizations l10n) {
+  if (setup == null) return null;
+  final parts = <String>[];
+  final project = setup.projectKey?.trim();
+  if (project != null && project.isNotEmpty) parts.add(project);
+  final category = switch (setup.riderCategory) {
+    'in_house' => l10n.riderCategoryMg,
+    'outsourced' => l10n.riderCategoryOutsource,
+    _ => null,
+  };
+  if (category != null) parts.add(category);
+  final company = setup.companyName?.trim();
+  if (company != null && company.isNotEmpty) parts.add(company);
+  if (parts.isEmpty) return null;
+  return parts.join(' · ');
 }

@@ -1220,6 +1220,48 @@ abstract class AppLocalizations {
   /// **'Daily DPD Target'**
   String get dailyDpdTarget;
 
+  /// No description provided for @namedDpdTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} Target'**
+  String namedDpdTarget(String name);
+
+  /// No description provided for @offerVerifiedToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified orders today: {count}'**
+  String offerVerifiedToday(int count);
+
+  /// No description provided for @offerBonusStartsAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'Bonus starts after {count} orders'**
+  String offerBonusStartsAfter(int count);
+
+  /// No description provided for @offerBonusSoFar.
+  ///
+  /// In en, this message translates to:
+  /// **'Bonus so far: {amount}'**
+  String offerBonusSoFar(String amount);
+
+  /// No description provided for @offerTierStep.
+  ///
+  /// In en, this message translates to:
+  /// **'{from}+ orders · {rate} / order'**
+  String offerTierStep(int from, String rate);
+
+  /// No description provided for @riderCategoryMg.
+  ///
+  /// In en, this message translates to:
+  /// **'MG'**
+  String get riderCategoryMg;
+
+  /// No description provided for @riderCategoryOutsource.
+  ///
+  /// In en, this message translates to:
+  /// **'Outsource'**
+  String get riderCategoryOutsource;
+
   /// No description provided for @dailyDpdRemaining.
   ///
   /// In en, this message translates to:

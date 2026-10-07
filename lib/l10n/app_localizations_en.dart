@@ -671,6 +671,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dailyDpdTarget => 'Daily DPD Target';
 
   @override
+  String namedDpdTarget(String name) {
+    return '$name Target';
+  }
+
+  @override
+  String offerVerifiedToday(int count) {
+    return 'Verified orders today: $count';
+  }
+
+  @override
+  String offerBonusStartsAfter(int count) {
+    return 'Bonus starts after $count orders';
+  }
+
+  @override
+  String offerBonusSoFar(String amount) {
+    return 'Bonus so far: $amount';
+  }
+
+  @override
+  String offerTierStep(int from, String rate) {
+    return '$from+ orders · $rate / order';
+  }
+
+  @override
+  String get riderCategoryMg => 'MG';
+
+  @override
+  String get riderCategoryOutsource => 'Outsource';
+
+  @override
   String dailyDpdRemaining(int count) {
     return '$count more deliveries to hit today\'s target';
   }
