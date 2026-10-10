@@ -8,8 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:path/path.dart' as p;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/l10n/l10n.dart';
@@ -442,7 +442,7 @@ class _LoginVerificationScreenState
 
   Future<void> _confirm() async {
     if (_busy || _localPath == null || _previewBytes == null) return;
-    final userId = Supabase.instance.client.auth.currentUser?.id;
+    final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) {
       if (mounted) context.go('/login');
       return;

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +10,6 @@ import 'package:image_picker_android/image_picker_android.dart';
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
 import 'core/app_update/app_upgrade_reset.dart';
@@ -84,7 +84,12 @@ Future<void> main() async {
 
 Future<void> _bootstrapServices() async {
   await pdfrxFlutterInitialize();
-  await Supabase.initialize(url: Env.supabaseUrl, anonKey: Env.supabaseAnonKey);
+  try {
+    await ensureFirebaseApp();
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  } catch (e) {
+    debugPrint('[notifications] Firebase init skipped: $e');
+  }
   // Offline SQLite + path_provider are mobile-only; skip on web (Chrome debug).
   if (!kIsWeb) {
     await OfflineDb.instance.initialize();
@@ -93,13 +98,6 @@ Future<void> _bootstrapServices() async {
   // Read once so the router's synchronous redirect can compare versionCode.
   await InstalledBuild.load();
   // SecurityBypassStore already loaded in main() for the hard-block check.
-
-  try {
-    await ensureFirebaseApp();
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-  } catch (e) {
-    debugPrint('[notifications] Firebase init skipped: $e');
-  }
 }
 
 /// Redirects to login when the user signs out.
@@ -116,8 +114,8 @@ class _AuthListenerState extends ConsumerState<_AuthListener> {
   @override
   void initState() {
     super.initState();
-    Supabase.instance.client.auth.onAuthStateChange.listen((state) {
-      if (state.event != AuthChangeEvent.signedOut) return;
+    FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user != null) return;
       _go('/login');
     });
   }

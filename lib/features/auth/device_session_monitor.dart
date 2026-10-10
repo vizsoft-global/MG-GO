@@ -1,15 +1,18 @@
 import 'dart:async';
 
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../app.dart';
 import '../../core/device/device_identity_service.dart';
+import '../../core/firebase/rider_backend.dart';
 import '../../core/l10n/localizations_loader.dart';
 import '../../core/offline/network_status_provider.dart';
 import '../../core/offline/offline_db.dart';
 import '../../core/offline/sync_controller.dart';
+import '../duty/duty_session_storage.dart';
 import 'device_session_models.dart';
 import 'driver_access.dart';
 import 'driver_access_monitor.dart';
@@ -29,15 +32,13 @@ class _DeviceSessionMonitor with WidgetsBindingObserver {
 
   final Ref _ref;
   Timer? _heartbeatTimer;
-  StreamSubscription<AuthState>? _authSub;
+  StreamSubscription<User?>? _authSub;
   bool _kickInFlight = false;
   bool _heartbeatInFlight = false;
 
   void start() {
     WidgetsBinding.instance.addObserver(this);
-    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen(
-      _onAuthState,
-    );
+    _authSub = FirebaseAuth.instance.authStateChanges().listen(_onAuthState);
     _ref.listen(networkStatusProvider, (previous, next) {
       final offlineToOnline =
           (previous?.isOffline ?? false) && !next.isOffline;
@@ -65,43 +66,35 @@ class _DeviceSessionMonitor with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _onAuthState(AuthState event) async {
-    if (event.event == AuthChangeEvent.tokenRefreshed) {
-      await _checkMetadataDeviceMismatch();
-    }
-    if (event.event == AuthChangeEvent.signedIn) {
+  Future<void> _onAuthState(User? user) async {
+    if (user != null) {
       unawaited(_runHeartbeat());
     }
   }
 
-  Future<void> _checkMetadataDeviceMismatch() async {
-    final user = Supabase.instance.client.auth.currentUser;
-    if (user == null) return;
-    final remoteDeviceId = user.userMetadata?['device_id'] as String?;
-    if (remoteDeviceId == null || remoteDeviceId.isEmpty) return;
-    final local = await _ref.read(deviceIdentityServiceProvider).deviceIdOnly();
-    if (remoteDeviceId != local) {
-      // Defer to grace-aware heartbeat instead of an immediate metadata kick.
-      unawaited(_runHeartbeat());
-    }
+  Future<void> _persistFirebaseIdToken() async {
+    try {
+      final token = await FirebaseAuth.instance.currentUser?.getIdToken();
+      if (token != null && token.isNotEmpty) {
+        await DutySessionStorage.saveIdToken(token);
+      }
+    } catch (_) {}
   }
 
   Future<void> _runHeartbeat() async {
     if (_kickInFlight || _heartbeatInFlight) return;
-    final session = Supabase.instance.client.auth.currentSession;
-    if (session == null) return;
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
     if (_ref.read(networkStatusProvider).isOffline) return;
 
     _heartbeatInFlight = true;
     try {
-      final deviceId = await _ref.read(deviceIdentityServiceProvider).deviceIdOnly();
-      final raw = await Supabase.instance.client.rpc(
-        'driver_heartbeat',
-        params: {'p_device_id': deviceId},
-      );
-      final map = raw is Map<String, dynamic>
-          ? raw
-          : Map<String, dynamic>.from(raw as Map);
+      await _persistFirebaseIdToken();
+      final deviceId =
+          await _ref.read(deviceIdentityServiceProvider).deviceIdOnly();
+      final map = await callRiderFunction('driverHeartbeat', {
+        'device_id': deviceId,
+      });
       final result = DeviceHeartbeatResult.fromJson(map);
       if (result.blocked) {
         await _ref.read(driverAccessEnforcerProvider).enforce(
@@ -120,17 +113,21 @@ class _DeviceSessionMonitor with WidgetsBindingObserver {
         }
         await _handleKick(result);
       }
-    } on PostgrestException catch (e) {
-      final blockedReason = DriverAccessParser.reasonFromPostgrest(e);
+    } on FirebaseFunctionsException catch (e) {
+      final code = riderErrorCode(e);
+      final details = riderErrorDetails(e);
+      final blockedReason = details != null
+          ? DriverAccessParser.reasonFromMap(details)
+          : DriverAccessParser.reasonFromMessage(code);
       if (blockedReason != null ||
-          e.message.toLowerCase().contains('driver_blocked') ||
-          e.message.toLowerCase().contains('driver_archived')) {
+          code.toLowerCase().contains('driver_blocked') ||
+          code.toLowerCase().contains('driver_archived')) {
         await _ref.read(driverAccessEnforcerProvider).enforce(
               reason: blockedReason,
             );
         return;
       }
-      final msg = e.message.toLowerCase();
+      final msg = code.toLowerCase();
       if (msg.contains('device_revoked') || msg.contains('device_id_required')) {
         await _handleKick(
           const DeviceHeartbeatResult(
@@ -151,23 +148,12 @@ class _DeviceSessionMonitor with WidgetsBindingObserver {
     if (_kickInFlight) return;
     _kickInFlight = true;
     try {
-      final userId = Supabase.instance.client.auth.currentUser?.id;
+      final userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId == null) return;
 
       final hasPending = await _hasReconciliationPending(userId);
       if (hasPending && result.flushGraceActive) {
         await _ref.read(syncControllerProvider.notifier).drain();
-      }
-
-      if (hasPending && result.flushGraceActive) {
-        try {
-          final deviceId =
-              await _ref.read(deviceIdentityServiceProvider).deviceIdOnly();
-          await Supabase.instance.client.rpc(
-            'driver_finalize_reconciliation',
-            params: {'p_device_id': deviceId},
-          );
-        } catch (_) {}
       }
 
       await _ref.read(riderAuthServiceProvider).signOut(keepRememberMe: true);

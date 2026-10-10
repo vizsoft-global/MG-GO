@@ -1,5 +1,7 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../core/firebase/rider_backend.dart';
 import '../../core/offline/network_status_provider.dart';
 import '../../core/offline/offline_repo.dart';
 import 'earnings_models.dart';
@@ -70,53 +72,44 @@ class EarningsServiceException implements Exception {
 }
 
 /// Reads earnings, payouts and per-day drilldowns for the signed-in driver.
-///
-/// All earnings data flows through this single service so caching and error
-/// handling stay consistent. We do *not* go through the `driver_get_*` umbrella
-/// RPCs for earnings/payouts anymore — the driver-app permission model now
-/// exposes the underlying tables directly via RLS:
-///
-///   - `driver_earnings_daily` (driver_id = auth.uid())
-///   - `driver_payouts` (driver_id = auth.uid() AND status in approved|paid)
-///
-/// Per-day drilldown still uses the `get_driver_earnings_detail` SECURITY
-/// DEFINER RPC because it batches deliveries + rule matches + override notes
-/// in one transaction (much faster than client-side joins).
 class EarningsService {
-  EarningsService(this._client, this._offlineRepo, this._networkStatus);
+  EarningsService(this._offlineRepo, this._networkStatus);
 
-  final SupabaseClient _client;
   final OfflineRepo _offlineRepo;
   final NetworkStatusController _networkStatus;
 
-  static const _earningsColumns =
-      'earn_date, deliveries, base_kwd, incentive_kwd, '
-      'loan_deduction_kwd, penalty_kwd, reimbursement_kwd, net_kwd, '
-      'breakdown, calculated_at, updated_at';
+  String? get _uid => FirebaseAuth.instance.currentUser?.uid;
 
-  static const _payoutsColumns =
-      'id, period_start, period_end, base_kwd, incentive_kwd, '
-      'loan_deduction_kwd, penalty_kwd, reimbursement_kwd, adjustment_kwd, '
-      'net_payable_kwd, delivery_count, status, notes, paid_at, '
-      'breakdown_snapshot';
+  List<Map<String, dynamic>> _callableRows(Map<String, dynamic> map) {
+    final raw = map['rows'] ?? map['items'] ?? map['data'];
+    if (raw is! List) return const [];
+    return raw
+        .whereType<Object>()
+        .map((e) => e is Map<String, dynamic>
+            ? e
+            : Map<String, dynamic>.from(e as Map))
+        .toList(growable: false);
+  }
 
   // ---------------------------------------------------------------------
   // Monthly aggregate (Earnings tab on the Earnings screen)
   // ---------------------------------------------------------------------
 
   Future<MonthlyEarningsAggregate> fetchMonth(EarningsMonth month) async {
-    final userId = _client.auth.currentUser?.id;
+    final userId = _uid;
     try {
-      final raw = await _client
-          .from('driver_earnings_daily')
-          .select(_earningsColumns)
-          .gte('earn_date', month.isoStart)
-          .lte('earn_date', month.isoEnd)
-          .order('earn_date', ascending: false);
+      final map = await callRiderFunction('driverListEarningsDaily', {
+        'p_from': month.isoStart,
+        'p_to': month.isoEnd,
+      });
+      if (map['ok'] == false) {
+        throw EarningsServiceException(
+          map['error']?.toString() ?? 'list_failed',
+        );
+      }
       _networkStatus.recordRpcSuccess();
-      final rows = (raw as List)
-          .whereType<Map>()
-          .map((m) => DailyEarning.fromJson(Map<String, dynamic>.from(m)))
+      final rows = _callableRows(map)
+          .map(DailyEarning.fromJson)
           .toList(growable: false);
       final aggregate = MonthlyEarningsAggregate.fromRows(
         year: month.year,
@@ -132,7 +125,7 @@ class EarningsService {
         );
       }
       return aggregate;
-    } on PostgrestException catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       _networkStatus.recordRpcFailure();
       if (userId != null) {
         final cached = await _offlineRepo.loadEarningsMonthCache(
@@ -153,20 +146,19 @@ class EarningsService {
   // ---------------------------------------------------------------------
 
   Future<List<PayoutEntry>> fetchPayouts({int limit = 30}) async {
-    final userId = _client.auth.currentUser?.id;
+    final userId = _uid;
     try {
-      final raw = await _client
-          .from('driver_payouts')
-          .select(_payoutsColumns)
-          // The RLS policy already filters by driver_id+status, but we set
-          // an explicit order + limit so the page loads fast.
-          .inFilter('status', ['approved', 'paid'])
-          .order('period_end', ascending: false)
-          .limit(limit);
+      final map = await callRiderFunction('driverListPayouts', {
+        'p_limit': limit,
+      });
+      if (map['ok'] == false) {
+        throw EarningsServiceException(
+          map['error']?.toString() ?? 'list_failed',
+        );
+      }
       _networkStatus.recordRpcSuccess();
-      final rows = (raw as List)
-          .whereType<Map>()
-          .map((m) => PayoutEntry.fromJson(Map<String, dynamic>.from(m)))
+      final rows = _callableRows(map)
+          .map(PayoutEntry.fromJson)
           .toList(growable: false);
       if (userId != null) {
         await _offlineRepo.savePayoutsCache(
@@ -175,7 +167,7 @@ class EarningsService {
         );
       }
       return rows;
-    } on PostgrestException catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       _networkStatus.recordRpcFailure();
       if (userId != null) {
         final cached = await _offlineRepo.loadPayoutsCache(userId);
@@ -212,18 +204,15 @@ class EarningsService {
         workingDays: work.workingDays,
         attendancePct: work.attendancePct,
       );
-    } on PostgrestException catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       _networkStatus.recordRpcFailure();
       throw EarningsServiceException(_friendly(e));
     }
   }
 
   Future<int> _fetchTotalDeliveries() async {
-    final result = await _client.rpc('driver_get_earnings_summary');
+    final map = await callRiderFunction('driverGetEarningsSummary');
     _networkStatus.recordRpcSuccess();
-    final map = result is Map<String, dynamic>
-        ? result
-        : Map<String, dynamic>.from(result as Map);
     return (map['total_deliveries'] as num?)?.toInt() ?? 0;
   }
 
@@ -234,14 +223,11 @@ class EarningsService {
   Future<({int workingDays, int attendancePct})> _fetchWorkSummarySafe() async {
     try {
       final month = EarningsMonth.current();
-      final result = await _client.rpc(
-        'driver_get_work_summary',
-        params: {'p_year': month.year, 'p_month': month.month},
-      );
+      final map = await callRiderFunction('driverGetWorkSummary', {
+        'p_year': month.year,
+        'p_month': month.month,
+      });
       _networkStatus.recordRpcSuccess();
-      final map = result is Map<String, dynamic>
-          ? result
-          : Map<String, dynamic>.from(result as Map);
       return (
         workingDays: (map['working_days'] as num?)?.toInt() ?? 0,
         attendancePct: (map['attendance_pct'] as num?)?.round() ?? 0,
@@ -256,7 +242,7 @@ class EarningsService {
   // ---------------------------------------------------------------------
 
   Future<EarningsDetail> fetchDayDetail(DateTime earnDate) async {
-    final userId = _client.auth.currentUser?.id;
+    final userId = _uid;
     if (userId == null) {
       throw EarningsServiceException('Not signed in.');
     }
@@ -265,16 +251,15 @@ class EarningsService {
           '${earnDate.year.toString().padLeft(4, '0')}-'
           '${earnDate.month.toString().padLeft(2, '0')}-'
           '${earnDate.day.toString().padLeft(2, '0')}';
-      final result = await _client.rpc(
-        'get_driver_earnings_detail',
-        params: {'p_driver_id': userId, 'p_earn_date': dateIso},
-      );
+      final map = await callRiderFunction('driverGetEarningsDetail', {
+        'p_driver_id': userId,
+        'p_earn_date': dateIso,
+        'driverId': userId,
+        'earnDate': dateIso,
+      });
       _networkStatus.recordRpcSuccess();
-      final map = result is Map<String, dynamic>
-          ? result
-          : Map<String, dynamic>.from(result as Map);
       return EarningsDetail.fromJson(map);
-    } on PostgrestException catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       _networkStatus.recordRpcFailure();
       throw EarningsServiceException(_friendly(e));
     }
@@ -285,18 +270,15 @@ class EarningsService {
   // ---------------------------------------------------------------------
 
   Future<ExtraEarnings> fetchExtraEarnings() async {
-    final userId = _client.auth.currentUser?.id;
+    final userId = _uid;
     try {
-      final result = await _client.rpc('driver_get_extra_earnings');
+      final map = await callRiderFunction('driverGetExtraEarnings');
       _networkStatus.recordRpcSuccess();
-      final map = result is Map<String, dynamic>
-          ? result
-          : Map<String, dynamic>.from(result as Map);
       if (userId != null) {
         await _offlineRepo.saveExtraEarningsCache(userId: userId, payload: map);
       }
       return ExtraEarnings.fromJson(map);
-    } on PostgrestException catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       _networkStatus.recordRpcFailure();
       if (userId != null) {
         final cached = await _offlineRepo.loadExtraEarningsCache(userId);
@@ -306,8 +288,8 @@ class EarningsService {
     }
   }
 
-  String _friendly(PostgrestException e) {
-    final msg = e.message.trim();
+  String _friendly(Object e) {
+    final msg = riderErrorCode(e).trim();
     if (msg.contains('not_authenticated')) {
       return 'Session expired. Please sign in again.';
     }

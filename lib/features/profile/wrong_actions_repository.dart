@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/firebase/rider_backend.dart';
 import '../../l10n/app_localizations.dart';
 
 /// One row of the rider's own conduct ledger.
@@ -24,31 +26,36 @@ class RiderWrongAction {
   final DateTime? occurredAt;
 
   factory RiderWrongAction.fromRow(Map<String, dynamic> row) {
-    final rawOccurredAt = row['occurred_at'];
     return RiderWrongAction(
       id: (row['id'] ?? '').toString(),
       actionType: (row['action_type'] ?? 'other').toString(),
       severity: (row['severity'] ?? 'low').toString(),
-      details: (row['details'] as String?)?.trim().isEmpty ?? true
-          ? null
-          : (row['details'] as String).trim(),
-      occurredAt: rawOccurredAt is String
-          ? DateTime.tryParse(rawOccurredAt)
-          : null,
+      details: _details(row['details']),
+      occurredAt: _occurredAt(row['occurred_at']),
     );
+  }
+
+  static String? _details(Object? raw) {
+    if (raw is! String) return null;
+    final trimmed = raw.trim();
+    return trimmed.isEmpty ? null : trimmed;
+  }
+
+  static DateTime? _occurredAt(Object? raw) {
+    if (raw is DateTime) return raw;
+    if (raw is Timestamp) return raw.toDate();
+    if (raw is String) return DateTime.tryParse(raw);
+    return null;
   }
 }
 
 /// Home for every rider-facing `wrong_actions` read.
 ///
-/// The rider reads the same table the admin panel writes, filtered by RLS to
-/// their own rows (`driver_id = auth.uid()`) — the path the page registry has
-/// documented since the module shipped. There is deliberately no RPC: one
-/// would be a second access path to maintain for a single table.
+/// The rider reads the same table the admin panel writes, filtered to their
+/// own rows (`driver_id == uid`). There is deliberately no callable: one
+/// would be a second access path to maintain for a single collection.
 class RiderWrongActionsRepository {
-  RiderWrongActionsRepository(this._client);
-
-  final SupabaseClient _client;
+  RiderWrongActionsRepository();
 
   /// Exactly the documented driver-visible columns, newest first.
   ///
@@ -56,27 +63,41 @@ class RiderWrongActionsRepository {
   /// registry jsonb, so requesting it would fail the select with `42703`.
   static const selectedColumns = 'id, action_type, severity, details, occurred_at';
 
-  /// [riderId] exists for tests; in the app it is always `auth.uid()`, which is
-  /// the same value the RLS policy compares `driver_id` against.
+  /// [riderId] exists for tests; in the app it is always the Firebase uid.
   Future<List<RiderWrongAction>> listMine({String? riderId}) async {
-    final id = riderId ?? _client.auth.currentUser?.id;
+    final id = riderId ?? FirebaseAuth.instance.currentUser?.uid;
     if (id == null) return const [];
 
-    final rows = await _client
-        .from('wrong_actions')
-        .select(selectedColumns)
-        .eq('driver_id', id)
-        .order('occurred_at', ascending: false);
+    final snap = await riderFirestore()
+        .collection('wrong_actions')
+        .where('driver_id', isEqualTo: id)
+        .get();
 
-    return (rows as List)
-        .whereType<Map<String, dynamic>>()
-        .map(RiderWrongAction.fromRow)
-        .toList(growable: false);
+    final rows = snap.docs.map((doc) {
+      final data = doc.data();
+      return RiderWrongAction.fromRow({
+        'id': data['id'] ?? doc.id,
+        'action_type': data['action_type'],
+        'severity': data['severity'],
+        'details': data['details'],
+        'occurred_at': data['occurred_at'],
+      });
+    }).toList();
+
+    rows.sort((a, b) {
+      final at = a.occurredAt;
+      final bt = b.occurredAt;
+      if (at == null && bt == null) return 0;
+      if (at == null) return 1;
+      if (bt == null) return -1;
+      return bt.compareTo(at);
+    });
+    return List<RiderWrongAction>.unmodifiable(rows);
   }
 }
 
 final wrongActionsRepositoryProvider = Provider<RiderWrongActionsRepository>(
-  (ref) => RiderWrongActionsRepository(Supabase.instance.client),
+  (ref) => RiderWrongActionsRepository(),
 );
 
 /// The rider's own conduct ledger. Empty until the administrator records one,

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/login_verification_store.dart';
 import '../settings/live_db_refresh.dart';
@@ -9,10 +8,10 @@ import 'app_branding.dart';
 import 'app_branding_service.dart';
 
 final appBrandingServiceProvider = Provider<AppBrandingService>((ref) {
-  return AppBrandingService(Supabase.instance.client);
+  return AppBrandingService();
 });
 
-/// Driver app settings with live refresh (realtime + polling fallback).
+/// Driver app settings with live refresh (Firestore snapshots + polling).
 final appBrandingProvider =
     AsyncNotifierProvider<AppBrandingNotifier, AppBranding>(
       AppBrandingNotifier.new,

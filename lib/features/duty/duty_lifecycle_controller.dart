@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/offline/offline_repo.dart';
 import '../../core/offline/sync_controller.dart';
@@ -26,8 +26,8 @@ final dutyLifecycleControllerProvider = Provider<DutyLifecycleController>((
 
 class DutyLifecycleController with WidgetsBindingObserver {
   DutyLifecycleController(this._ref) {
-    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((event) {
-      if (event.event == AuthChangeEvent.tokenRefreshed) {
+    _authSub = FirebaseAuth.instance.idTokenChanges().listen((user) {
+      if (user != null) {
         unawaited(_persistDutyAccessToken());
       }
     });
@@ -65,7 +65,7 @@ class DutyLifecycleController with WidgetsBindingObserver {
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
   final Ref _ref;
-  StreamSubscription<AuthState>? _authSub;
+  StreamSubscription<User?>? _authSub;
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -78,8 +78,9 @@ class DutyLifecycleController with WidgetsBindingObserver {
   }
 
   Future<void> _persistDutyAccessToken() async {
-    final token = Supabase.instance.client.auth.currentSession?.accessToken;
+    final token = await FirebaseAuth.instance.currentUser?.getIdToken();
     if (token != null && token.isNotEmpty) {
+      await DutySessionStorage.saveIdToken(token);
       await DutySessionStorage.saveAccessToken(token);
     }
   }
@@ -88,19 +89,19 @@ class DutyLifecycleController with WidgetsBindingObserver {
   /// Only this isolate may refresh (refresh tokens rotate; two refreshers
   /// would sign the rider out), so refresh here if our own copy has expired
   /// too, then hand the service whatever is current. A failed refresh is left
-  /// to supabase_flutter's own retry — the service stays parked meanwhile.
+  /// to Firebase Auth's next getIdToken — the service stays parked meanwhile.
   Future<void> _refreshAndPersistDutyAccessToken() async {
-    final auth = Supabase.instance.client.auth;
-    final session = auth.currentSession;
-    if (session == null) return;
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
     try {
-      if (session.isExpired) {
-        await auth.refreshSession();
+      final token = await user.getIdToken(true);
+      if (token != null && token.isNotEmpty) {
+        await DutySessionStorage.saveIdToken(token);
+        await DutySessionStorage.saveAccessToken(token);
       }
     } catch (_) {
       return;
     }
-    await _persistDutyAccessToken();
   }
 
   Future<void> _bootstrap() async {
@@ -137,7 +138,7 @@ class DutyLifecycleController with WidgetsBindingObserver {
         return;
       }
       if (event == 'queue_location') {
-        final userId = Supabase.instance.client.auth.currentUser?.id;
+        final userId = FirebaseAuth.instance.currentUser?.uid;
         if (userId == null) return;
         unawaited(
           _ref
@@ -166,7 +167,7 @@ class DutyLifecycleController with WidgetsBindingObserver {
         return;
       }
       if (event == 'queue_duty_state') {
-        final userId = Supabase.instance.client.auth.currentUser?.id;
+        final userId = FirebaseAuth.instance.currentUser?.uid;
         if (userId == null) return;
         unawaited(
           _ref
@@ -189,9 +190,9 @@ class DutyLifecycleController with WidgetsBindingObserver {
     if (!_isAndroid) return;
 
     try {
-      final session = Supabase.instance.client.auth.currentSession;
-      final token = session?.accessToken;
+      final token = await FirebaseAuth.instance.currentUser?.getIdToken();
       if (token != null && token.isNotEmpty) {
+        await DutySessionStorage.saveIdToken(token);
         await DutySessionStorage.saveAccessToken(token);
       }
 

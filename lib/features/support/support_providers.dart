@@ -1,12 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'request_type_definition.dart';
 import 'support_models.dart';
 import 'support_service.dart';
 
 final supportServiceProvider = Provider<SupportService>((ref) {
-  return SupportService(Supabase.instance.client);
+  return SupportService();
 });
 
 final myRequestsProvider =

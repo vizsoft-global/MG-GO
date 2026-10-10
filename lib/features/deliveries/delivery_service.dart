@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/device/device_identity_service.dart';
+import '../../core/firebase/rider_backend.dart';
 import '../../core/offline/offline_db.dart';
 import '../../core/offline/network_status_provider.dart';
 import '../../core/offline/offline_repo.dart';
@@ -25,15 +27,14 @@ class DeliveryServiceException implements Exception {
 /// Postgres unique index `deliveries_external_order_id_unique_idx` can fire
 /// when `driver_create_pickup` skipped its own `duplicate_order_id` check
 /// (no resolved restaurant). Map that raw 23505 onto the same code.
-/// PostgREST 42703 when `deliveries.shift_date` is not on the database yet.
+/// 42703 when `deliveries.shift_date` is not on the database yet.
 bool isMissingShiftDateColumn(Object error) {
-  if (error is PostgrestException) {
-    if (error.code == '42703') return true;
-    final blob =
-        '${error.message} ${error.details ?? ''} ${error.hint ?? ''}'
-            .toLowerCase();
-    return blob.contains('shift_date') && blob.contains('does not exist');
-  }
+  try {
+    final dynamic e = error;
+    if (e.code == '42703') return true;
+  } catch (_) {}
+  final code = error is FirebaseFunctionsException ? riderErrorCode(error) : '';
+  if (code == '42703') return true;
   final blob = error.toString().toLowerCase();
   return blob.contains('shift_date') && blob.contains('does not exist');
 }
@@ -52,16 +53,16 @@ bool isDuplicateOrderIdError({
 
 class DeliveryService {
   DeliveryService(
-    this._client,
     this._offlineRepo,
     this._networkStatus,
     this._deviceIdentity,
   );
 
-  final SupabaseClient _client;
   final OfflineRepo _offlineRepo;
   final NetworkStatusController _networkStatus;
   final DeviceIdentityService _deviceIdentity;
+
+  String? get _uid => FirebaseAuth.instance.currentUser?.uid;
 
   Future<String> _resolveDeviceId({String? override}) async {
     if (override != null && override.trim().isNotEmpty) return override.trim();
@@ -102,27 +103,21 @@ class DeliveryService {
 
   Future<ActiveDelivery?> getActivePickup() async {
     try {
-      final result = await _client.rpc('driver_get_active_pickup');
+      final row = await callRiderFunction('driverGetActivePickup');
       _networkStatus.recordRpcSuccess();
-      if (result == null) return null;
-      // PostgREST serializes a NULL composite row return value as an object
-      // with all-null fields (e.g. `{"id": null, "external_order_id": null,
-      // ...}`) instead of plain `null`. Treat that shape as "no active
-      // pickup" so we don't poison `activeDeliveryProvider` with a cast
-      // error and silently break Add Delivery.
-      final row = result is Map<String, dynamic>
-          ? result
-          : Map<String, dynamic>.from(result as Map);
       if (row['id'] is! String || (row['id'] as String).isEmpty) {
         return null;
       }
       return ActiveDelivery.fromJson(row);
-    } on PostgrestException catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       _networkStatus.recordRpcFailure();
-      if (e.code == 'PGRST116' || e.message.contains('null')) {
+      final code = riderErrorCode(e).toLowerCase();
+      if (code == 'pgrst116' ||
+          code == 'not_found' ||
+          code.contains('null')) {
         return null;
       }
-      throw _mapPostgrest(e);
+      throw _mapCallable(e);
     }
   }
 
@@ -142,7 +137,7 @@ class DeliveryService {
     if (!isValidOrderId(normalized)) {
       throw DeliveryServiceException('', code: 'invalid_order_id');
     }
-    final userId = _client.auth.currentUser?.id;
+    final userId = _uid;
     final deviceId = await _resolveDeviceId(override: deviceIdOverride);
     try {
       if (_networkStatus.isOffline && userId != null) {
@@ -157,24 +152,18 @@ class DeliveryService {
           deviceId: deviceId,
         );
       }
-      final result = await _client.rpc(
-        'driver_create_pickup',
-        params: {
-          'p_external_order_id': normalized.isEmpty ? null : normalized,
-          'p_order_proof_url': proofObjectKey,
-          'p_pickup_lat': latitude,
-          'p_pickup_lng': longitude,
-          'p_device_id': deviceId,
-        },
-      );
-      final row = result is Map<String, dynamic>
-          ? result
-          : Map<String, dynamic>.from(result as Map);
+      final row = await callRiderFunction('driverCreatePickup', {
+        'p_external_order_id': normalized.isEmpty ? null : normalized,
+        'p_order_proof_url': proofObjectKey,
+        'p_pickup_lat': latitude,
+        'p_pickup_lng': longitude,
+        'p_device_id': deviceId,
+      });
       _networkStatus.recordRpcSuccess();
       return CreatedDelivery.fromJson(row);
-    } on PostgrestException catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       _networkStatus.recordRpcFailure();
-      if (userId != null && _isRecoverableNetworkError(e.message)) {
+      if (userId != null && _isRecoverableNetworkError(e)) {
         return await _queuePickupOffline(
           userId: userId,
           orderId: normalized,
@@ -186,7 +175,7 @@ class DeliveryService {
           deviceId: deviceId,
         );
       }
-      throw _mapPostgrest(e);
+      throw _mapCallable(e);
     }
   }
 
@@ -228,7 +217,7 @@ class DeliveryService {
     required double longitude,
     String? deviceIdOverride,
   }) async {
-    final userId = _client.auth.currentUser?.id;
+    final userId = _uid;
     final deviceId = await _resolveDeviceId(override: deviceIdOverride);
     try {
       if (_networkStatus.isOffline && userId != null) {
@@ -244,19 +233,13 @@ class DeliveryService {
           deviceId: deviceId,
         );
       }
-      final result = await _client.rpc(
-        'driver_complete_delivery',
-        params: {
-          'p_delivery_id': deliveryId,
-          'p_delivery_proof_url': proofObjectKey,
-          'p_delivered_lat': latitude,
-          'p_delivered_lng': longitude,
-          'p_device_id': deviceId,
-        },
-      );
-      final row = result is Map<String, dynamic>
-          ? result
-          : Map<String, dynamic>.from(result as Map);
+      final row = await callRiderFunction('driverCompleteDelivery', {
+        'p_delivery_id': deliveryId,
+        'p_delivery_proof_url': proofObjectKey,
+        'p_delivered_lat': latitude,
+        'p_delivered_lng': longitude,
+        'p_device_id': deviceId,
+      });
       _networkStatus.recordRpcSuccess();
       if (userId != null) {
         await OfflineDb.instance.deletePendingCompletionsForDelivery(
@@ -265,9 +248,9 @@ class DeliveryService {
         );
       }
       return CreatedDelivery.fromJson(row);
-    } on PostgrestException catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       _networkStatus.recordRpcFailure();
-      if (_isAlreadyCompletedError(e.message) && userId != null) {
+      if (_isAlreadyCompletedError(riderErrorCode(e)) && userId != null) {
         await OfflineDb.instance.deletePendingCompletionsForDelivery(
           userId: userId,
           deliveryId: deliveryId,
@@ -279,7 +262,7 @@ class DeliveryService {
           deliveredAt: DateTime.now(),
         );
       }
-      if (userId != null && _isRecoverableNetworkError(e.message)) {
+      if (userId != null && _isRecoverableNetworkError(e)) {
         return _offlineRepo.queueCompletion(
           userId: userId,
           deliveryId: deliveryId,
@@ -292,7 +275,7 @@ class DeliveryService {
           deviceId: deviceId,
         );
       }
-      throw _mapPostgrest(e);
+      throw _mapCallable(e);
     }
   }
 
@@ -306,7 +289,7 @@ class DeliveryService {
     required double longitude,
     String? deviceIdOverride,
   }) async {
-    final userId = _client.auth.currentUser?.id;
+    final userId = _uid;
     final deviceId = await _resolveDeviceId(override: deviceIdOverride);
     try {
       if (_networkStatus.isOffline && userId != null) {
@@ -323,20 +306,14 @@ class DeliveryService {
           deviceId: deviceId,
         );
       }
-      final result = await _client.rpc(
-        'driver_cancel_delivery',
-        params: {
-          'p_delivery_id': deliveryId,
-          'p_cancel_reason': cancelReason,
-          'p_cancel_proof_url': proofObjectKey,
-          'p_cancel_lat': latitude,
-          'p_cancel_lng': longitude,
-          'p_device_id': deviceId,
-        },
-      );
-      final row = result is Map<String, dynamic>
-          ? result
-          : Map<String, dynamic>.from(result as Map);
+      final row = await callRiderFunction('driverCancelDelivery', {
+        'p_delivery_id': deliveryId,
+        'p_cancel_reason': cancelReason,
+        'p_cancel_proof_url': proofObjectKey,
+        'p_cancel_lat': latitude,
+        'p_cancel_lng': longitude,
+        'p_device_id': deviceId,
+      });
       _networkStatus.recordRpcSuccess();
       if (userId != null) {
         await OfflineDb.instance.deletePendingCompletionsForDelivery(
@@ -345,9 +322,9 @@ class DeliveryService {
         );
       }
       return CreatedDelivery.fromJson(row);
-    } on PostgrestException catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       _networkStatus.recordRpcFailure();
-      if (_isAlreadyCompletedError(e.message) && userId != null) {
+      if (_isAlreadyCompletedError(riderErrorCode(e)) && userId != null) {
         await OfflineDb.instance.deletePendingCompletionsForDelivery(
           userId: userId,
           deliveryId: deliveryId,
@@ -358,7 +335,7 @@ class DeliveryService {
           status: 'completed',
         );
       }
-      if (userId != null && _isRecoverableNetworkError(e.message)) {
+      if (userId != null && _isRecoverableNetworkError(e)) {
         return _offlineRepo.queueCompletion(
           userId: userId,
           deliveryId: deliveryId,
@@ -372,7 +349,7 @@ class DeliveryService {
           deviceId: deviceId,
         );
       }
-      throw _mapPostgrest(e);
+      throw _mapCallable(e);
     }
   }
 
@@ -398,31 +375,10 @@ class DeliveryService {
   }
 
   Future<List<DriverDelivery>> listMyDeliveries({int limit = 50}) async {
-    final userId = _client.auth.currentUser?.id;
+    final userId = _uid;
     try {
-      return await _fetchMyDeliveries(
-        userId: userId,
-        select: deliverySelectWithShiftDate,
-        limit: limit,
-      );
+      return await _fetchMyDeliveries(userId: userId, limit: limit);
     } catch (error, stack) {
-      // Only a missing `shift_date` column earns a second round trip; every
-      // other failure falls through to the cache rather than being retried.
-      if (isMissingShiftDateColumn(error)) {
-        try {
-          return await _fetchMyDeliveries(
-            userId: userId,
-            select: deliverySelectWithoutShiftDate,
-            limit: limit,
-          );
-        } catch (fallbackError, fallbackStack) {
-          return _deliveriesFromCacheOrThrow(
-            userId,
-            fallbackError,
-            fallbackStack,
-          );
-        }
-      }
       return _deliveriesFromCacheOrThrow(userId, error, stack);
     }
   }
@@ -447,29 +403,36 @@ class DeliveryService {
 
   Future<List<DriverDelivery>> _fetchMyDeliveries({
     required String? userId,
-    required String select,
     required int limit,
   }) async {
-    final rows = await _client
-        .from('deliveries')
-        .select(select)
-        // `in_transit` is deliberately included: it is the rider's *current*
-        // order, and filtering it out left a rider with an open pickup staring
-        // at an empty list — the one delivery they care about most was the one
-        // missing. Cancelled and completed rows come back too; the day filter
-        // and calendar decide what is worth showing.
-        .order('created_at', ascending: false)
-        .limit(limit);
+    try {
+      final map = await callRiderFunction('driverListMyDeliveries', {
+        'p_limit': limit,
+      });
+      if (map['ok'] == false) {
+        throw DeliveryServiceException(
+          map['error']?.toString() ?? 'list_failed',
+          code: map['error']?.toString(),
+        );
+      }
+      final mapped = _callableRows(map);
+      _networkStatus.recordRpcSuccess();
+      unawaited(_saveDeliveriesCacheQuietly(userId, mapped));
+      return mapped.map(DriverDelivery.fromJson).toList(growable: false);
+    } on FirebaseFunctionsException catch (e) {
+      throw _mapCallable(e);
+    }
+  }
 
-    final mapped = (rows as List)
-        .map((e) => Map<String, dynamic>.from(e as Map))
+  List<Map<String, dynamic>> _callableRows(Map<String, dynamic> map) {
+    final raw = map['rows'] ?? map['items'] ?? map['data'] ?? map['deliveries'];
+    if (raw is! List) return const [];
+    return raw
+        .whereType<Object>()
+        .map((e) => e is Map<String, dynamic>
+            ? e
+            : Map<String, dynamic>.from(e as Map))
         .toList(growable: false);
-    _networkStatus.recordRpcSuccess();
-    // A cache write is an optimisation, never a precondition. This used to be
-    // awaited inside the fetch, so a locked or full SQLite file threw out of a
-    // perfectly good network read and the screen reported "could not load".
-    unawaited(_saveDeliveriesCacheQuietly(userId, mapped));
-    return mapped.map(DriverDelivery.fromJson).toList(growable: false);
   }
 
   Future<void> _saveDeliveriesCacheQuietly(
@@ -511,15 +474,17 @@ class DeliveryService {
     Error.throwWithStackTrace(error, stack);
   }
 
-  DeliveryServiceException _mapPostgrest(PostgrestException e) {
+  DeliveryServiceException _mapCallable(Object e) {
+    final code = riderErrorCode(e);
+    final details = riderErrorDetails(e);
     if (isDuplicateOrderIdError(
-      message: e.message,
-      code: e.code,
-      details: e.details?.toString(),
+      message: code,
+      code: code,
+      details: details?.toString(),
     )) {
       return DeliveryServiceException('', code: 'duplicate_order_id');
     }
-    final msg = e.message.toLowerCase();
+    final msg = code.toLowerCase();
     if (msg.contains('not_authenticated')) {
       return DeliveryServiceException('', code: 'auth');
     }
@@ -530,7 +495,8 @@ class DeliveryService {
       return DeliveryServiceException('', code: 'driver_archived');
     }
     if (msg.contains('driver_blocked')) {
-      final reason = DriverAccessParser.reasonFromPostgrest(e);
+      final reason = DriverAccessParser.reasonFromMessage(code) ??
+          (details == null ? null : DriverAccessParser.reasonFromMap(details));
       return DeliveryServiceException(
         reason ?? '',
         code: 'driver_blocked',
@@ -568,11 +534,15 @@ class DeliveryService {
     if (msg.contains('order_id_required')) {
       return DeliveryServiceException('', code: 'order_id_required');
     }
-    return DeliveryServiceException(e.message);
+    return DeliveryServiceException(code);
   }
 
-  bool _isRecoverableNetworkError(String message) {
-    final msg = message.toLowerCase();
+  bool _isRecoverableNetworkError(Object error) {
+    if (error is FirebaseFunctionsException) {
+      final c = error.code.toLowerCase();
+      if (c == 'unavailable' || c == 'deadline-exceeded') return true;
+    }
+    final msg = riderErrorCode(error).toLowerCase();
     return msg.contains('network') ||
         msg.contains('socket') ||
         msg.contains('timeout') ||
@@ -590,7 +560,6 @@ class DeliveryService {
 
 final deliveryServiceProvider = Provider<DeliveryService>((ref) {
   return DeliveryService(
-    Supabase.instance.client,
     ref.read(offlineRepoProvider),
     ref.read(networkStatusProvider.notifier),
     ref.read(deviceIdentityServiceProvider),

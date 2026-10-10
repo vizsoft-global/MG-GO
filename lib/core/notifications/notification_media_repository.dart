@@ -1,24 +1,22 @@
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../config/env.dart';
 
 final notificationMediaRepositoryProvider =
     Provider<NotificationMediaRepository>((ref) {
-      return NotificationMediaRepository(Supabase.instance.client);
+      return NotificationMediaRepository();
     });
 
 /// Signed read URLs for notification campaign images (banner / thumbnail).
 ///
 /// Backed by `GET /api/driver-app/notification-media` on the admin panel.
-/// Requires the rider's Supabase session token — same auth as uploads.
+/// Requires the rider's Firebase ID token — same auth as other driver-app routes.
 class NotificationMediaRepository {
-  NotificationMediaRepository(this._client);
-
-  final SupabaseClient _client;
+  NotificationMediaRepository();
 
   Future<NotificationMediaReadUrl?> resolve({
     required String campaignId,
@@ -27,8 +25,10 @@ class NotificationMediaRepository {
     final trimmedCampaignId = campaignId.trim();
     if (trimmedCampaignId.isEmpty) return null;
 
-    final session = _client.auth.currentSession;
-    if (session == null) return null;
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return null;
+    final idToken = await user.getIdToken();
+    if (idToken == null || idToken.isEmpty) return null;
 
     final uri =
         Uri.parse('${Env.adminApiBaseUrl}/api/driver-app/notification-media')
@@ -43,7 +43,7 @@ class NotificationMediaRepository {
       final response = await http.get(
         uri,
         headers: {
-          'Authorization': 'Bearer ${session.accessToken}',
+          'Authorization': 'Bearer $idToken',
           'Accept': 'application/json',
         },
       ).timeout(const Duration(seconds: 8));

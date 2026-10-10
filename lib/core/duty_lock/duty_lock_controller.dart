@@ -1,8 +1,8 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/rider_auth_service.dart';
 import '../../features/home/home_providers.dart';
@@ -10,7 +10,7 @@ import 'duty_lock_channel.dart';
 
 final dutyLockControllerProvider = Provider<DutyLockController?>((ref) {
   ref.watch(currentSessionProvider);
-  if (Supabase.instance.client.auth.currentSession == null) {
+  if (FirebaseAuth.instance.currentUser == null) {
     return null;
   }
   final controller = DutyLockController(ref);

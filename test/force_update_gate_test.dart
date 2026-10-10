@@ -142,6 +142,21 @@ void main() {
       expect(parseUpdateRequired('not json'), isNull);
       expect(parseUpdateRequired(null), isNull);
     });
+
+    test('reads callable details.error == update_required', () {
+      final parsed = parseUpdateRequired({
+        'error': 'update_required',
+        'min_version_code': 95,
+      });
+      expect(parsed, isA<UpdateRequiredException>());
+      expect(parsed!.minVersionCode, 95);
+    });
+
+    test('reads callable exception.message == update_required', () {
+      final parsed = parseUpdateRequired('update_required');
+      expect(parsed, isA<UpdateRequiredException>());
+      expect(parsed!.minVersionCode, isNull);
+    });
   });
 
   group('ForceUpdateDemand', () {

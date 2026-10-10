@@ -7,7 +7,7 @@ import 'package:geolocator/geolocator.dart';
 /// Use [DeviceLocationResolver] when the UI needs permission prompts, caching,
 /// and mock-location integrity checks (pickup/finish/proximity preview).
 /// Use this class directly from background isolates and lightweight monitors
-/// that must not depend on Supabase or security UI.
+/// that must not depend on Firebase plugins or security UI.
 class LocationSampler {
   LocationSampler._();
 

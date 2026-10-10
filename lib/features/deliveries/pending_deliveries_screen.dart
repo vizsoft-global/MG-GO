@@ -1,6 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/offline/offline_db.dart';
@@ -27,7 +27,7 @@ class PendingDeliveryRow {
 
 final pendingDeliveriesProvider =
     FutureProvider<List<PendingDeliveryRow>>((ref) async {
-  final userId = Supabase.instance.client.auth.currentUser?.id;
+  final userId = FirebaseAuth.instance.currentUser?.uid;
   if (userId == null) return const [];
 
   final legacy = await OfflineDb.instance.getPendingDeliveries(userId);

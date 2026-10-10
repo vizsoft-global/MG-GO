@@ -1,10 +1,12 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/app_update/force_update_gate.dart';
 import '../../core/app_update/force_update_state.dart';
@@ -12,6 +14,7 @@ import '../../core/config/env.dart';
 import '../../core/delivery/delivery_proximity_cache.dart';
 import '../../core/device/device_identity_service.dart';
 import '../../core/device/device_profile_service.dart';
+import '../../core/firebase/rider_backend.dart';
 import '../../core/geo/device_location_resolver.dart';
 import '../../core/observability/sentry_config.dart';
 import '../../core/utils/ascii_digits.dart';
@@ -55,9 +58,19 @@ class RiderBlockedException implements Exception {
   String toString() => reason ?? 'Driver account blocked';
 }
 
-/// Reads an `update_required` refusal out of an edge-function body. Accepts
-/// the decoded map or the raw JSON string `FunctionException.details` carries.
+/// Leftover callers use `.id`. Firebase [User] exposes [uid].
+extension RiderAuthUserId on User {
+  String get id => uid;
+}
+
+/// Reads an `update_required` refusal out of a callable body. Accepts the
+/// decoded map, the raw JSON string, or a bare `update_required` message
+/// (callable HTTPS is not HTTP 426).
 UpdateRequiredException? parseUpdateRequired(dynamic details) {
+  if (details is String && details.trim() == 'update_required') {
+    return const UpdateRequiredException();
+  }
+
   Map<String, dynamic>? payload;
   if (details is Map) {
     payload = Map<String, dynamic>.from(details);
@@ -132,19 +145,20 @@ String unsignedAvatarUrl(String url) => url.split('#').first;
 
 class RiderAuthService {
   RiderAuthService(
-    this._client,
     this._deviceIdentity, {
     DeviceProfileService? deviceProfile,
-  }) : _deviceProfile = deviceProfile ?? DeviceProfileService();
+    FirebaseAuth? auth,
+  }) : _deviceProfile = deviceProfile ?? DeviceProfileService(),
+       _auth = auth ?? FirebaseAuth.instance;
 
-  final SupabaseClient _client;
   final DeviceIdentityService _deviceIdentity;
   final DeviceProfileService _deviceProfile;
+  final FirebaseAuth _auth;
 
-  Session? get currentSession => _client.auth.currentSession;
-  User? get currentUser => _client.auth.currentUser;
+  User? get currentUser => _auth.currentUser;
+  User? get currentSession => currentUser;
 
-  Stream<AuthState> get authStateChanges => _client.auth.onAuthStateChange;
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
 
   /// Reads admin app-access block state for the signed-in driver.
   Future<DriverAccessStatus> fetchAppAccessStatus() async {
@@ -152,15 +166,9 @@ class RiderAuthService {
     if (user == null) return const DriverAccessStatus.allowed();
 
     try {
-      final row = await _client
-          .from('drivers')
-          .select(
-            'is_blocked, blocked_reason, login_verification_exempt, screenshots_allowed, archived_at, '
-            'force_app_update_at, force_app_update_min_code, '
-            'frozen_from, frozen_until, freeze_reason',
-          )
-          .eq('id', user.id)
-          .maybeSingle();
+      final snap = await riderFirestore().collection('drivers').doc(user.id).get();
+      if (!snap.exists) return const DriverAccessStatus.allowed();
+      final row = _normalizeDriverRow(snap.data());
       if (row == null) return const DriverAccessStatus.allowed();
 
       try {
@@ -186,7 +194,7 @@ class RiderAuthService {
     }
   }
 
-  /// Primary login: employee ID + 6-digit passcode via edge function.
+  /// Primary login: employee ID + 6-digit passcode via callable.
   Future<RiderProfile> signInWithDriverPasscode({
     required String employeeId,
     required String passcode,
@@ -219,33 +227,17 @@ class RiderAuthService {
       );
     }
 
-    final FunctionResponse response;
+    final Map<String, dynamic> payload;
     try {
-      response = await _client.functions.invoke(
-        'driver-passcode-login',
-        body: {
-          'employee_id': normalizedId,
-          'passcode': normalizedPasscode,
-          'device_id': device.deviceId,
-          'device_meta': deviceMeta,
-          'force_override': forceOverride,
-        },
-      );
-    } on FunctionException catch (e) {
-      final updateRequired = parseUpdateRequired(e.details);
-      if (updateRequired != null) throw updateRequired;
-      final conflict = _parseDeviceConflict(e);
-      if (conflict != null) throw conflict;
-      final blockedReason = _parseBlockedReason(e.details);
-      if (blockedReason != null || e.status == 403) {
-        throw RiderBlockedException(reason: blockedReason);
-      }
-      throw _mapFunctionException(e);
-    }
-
-    final payload = _parseFunctionPayload(response.data);
-    if (payload == null) {
-      throw RiderAuthFailure.unknown;
+      payload = await callRiderFunction('driverPasscodeLogin', {
+        'employee_id': normalizedId,
+        'passcode': normalizedPasscode,
+        'device_id': device.deviceId,
+        'device_meta': deviceMeta,
+        'force_override': forceOverride,
+      });
+    } on FirebaseFunctionsException catch (e) {
+      throw _mapCallableException(e);
     }
 
     final error = payload['error'] as String?;
@@ -254,12 +246,7 @@ class RiderAuthService {
         throw parseUpdateRequired(payload) ?? const UpdateRequiredException();
       }
       if (error == 'device_conflict') {
-        final activeRaw = payload['active_device'];
-        throw DeviceConflictException(
-          activeDevice: activeRaw is Map
-              ? ActiveDeviceInfo.fromJson(Map<String, dynamic>.from(activeRaw))
-              : const ActiveDeviceInfo(deviceId: ''),
-        );
+        throw _deviceConflictFromPayload(payload);
       }
       if (error == 'driver_blocked') {
         throw RiderBlockedException(
@@ -270,27 +257,22 @@ class RiderAuthService {
       throw _mapPasscodeError(error);
     }
 
-    final accessToken = payload['access_token'] as String?;
-    final refreshToken = payload['refresh_token'] as String?;
-    if (accessToken == null ||
-        refreshToken == null ||
-        accessToken.isEmpty ||
-        refreshToken.isEmpty) {
+    final customToken = payload['custom_token'] as String?;
+    if (customToken == null || customToken.isEmpty) {
       throw RiderAuthFailure.unknown;
     }
 
-    await _client.auth.setSession(refreshToken, accessToken: accessToken);
+    await _auth.signInWithCustomToken(customToken);
     if (currentSession == null) {
       throw RiderAuthFailure.unknown;
     }
 
-    // From this point on the user IS authenticated. The Supabase SDK has
-    // already fired AuthChangeEvent.signedIn, which causes GoRouter to redirect
+    // From this point on the user IS authenticated. authStateChanges has
+    // already fired signed-in, which causes GoRouter to redirect
     // /login -> /home. If anything below throws and propagates back up to the
     // login screen, the catch block there would call signOut() and bounce the
-    // user back to /login. That is the "log in -> home for a flash -> back to
-    // sign-in" loop. So we swallow any post-setSession error and fall back to a
-    // minimal profile; the rest of the app will refetch it lazily.
+    // user back to /login. So we swallow any post-token error and fall back
+    // to a minimal profile; the rest of the app will refetch it lazily.
     try {
       return await fetchProfile(afterSync: true);
     } on RiderAuthFailure catch (e) {
@@ -310,36 +292,42 @@ class RiderAuthService {
 
   RiderProfile _fallbackProfileForCurrentUser() {
     final user = currentUser;
+    final displayName = user?.displayName?.trim();
     return RiderProfile(
       id: user?.id ?? '',
-      fullName:
-          (user?.userMetadata?['full_name'] as String?)?.trim().isNotEmpty ==
-              true
-          ? user!.userMetadata!['full_name'] as String
+      fullName: displayName != null && displayName.isNotEmpty
+          ? displayName
           : 'Driver',
       email: user?.email,
       role: 'rider',
     );
   }
 
-  Map<String, dynamic>? _parseFunctionPayload(dynamic data) {
-    if (data == null) return null;
-    if (data is Map) {
-      return Map<String, dynamic>.from(data);
-    }
-    if (data is String && data.isNotEmpty) {
-      try {
-        final parsed = jsonDecode(data);
-        if (parsed is Map) {
-          return Map<String, dynamic>.from(parsed);
-        }
-      } catch (_) {}
-    }
-    return null;
-  }
-
   RiderAuthFailure _mapPasscodeError(String error) =>
       mapPasscodeLoginError(error);
+
+  Object _mapCallableException(FirebaseFunctionsException e) {
+    final details = riderErrorDetails(e);
+    final updateRequired =
+        parseUpdateRequired(details) ?? parseUpdateRequired(e.message);
+    if (updateRequired != null) return updateRequired;
+
+    final code = riderErrorCode(e);
+    if (code == 'update_required' || e.message?.trim() == 'update_required') {
+      return parseUpdateRequired(details) ?? const UpdateRequiredException();
+    }
+
+    final conflict = _parseDeviceConflict(details) ??
+        (code == 'device_conflict' ? _deviceConflictFromPayload(details) : null);
+    if (conflict != null) return conflict;
+
+    final blockedReason = _parseBlockedReason(details);
+    if (blockedReason != null || code == 'driver_blocked') {
+      return RiderBlockedException(reason: blockedReason);
+    }
+
+    return _mapPasscodeError(code);
+  }
 
   String? _parseBlockedReason(dynamic details) {
     if (details is Map && details['error'] == 'driver_blocked') {
@@ -360,25 +348,6 @@ class RiderAuthService {
     return null;
   }
 
-  RiderAuthFailure _mapFunctionException(FunctionException e) {
-    final details = e.details;
-    if (details is Map && details['error'] is String) {
-      return _mapPasscodeError(details['error'] as String);
-    }
-    if (details is String && details.isNotEmpty) {
-      try {
-        final parsed = jsonDecode(details);
-        if (parsed is Map && parsed['error'] is String) {
-          return _mapPasscodeError(parsed['error'] as String);
-        }
-      } catch (_) {}
-    }
-    if (e.status == 401) {
-      return RiderAuthFailure.invalidCredentials;
-    }
-    return RiderAuthFailure.unknown;
-  }
-
   Future<void> signOut({
     bool keepRememberMe = false,
     bool clockOut = false,
@@ -387,17 +356,17 @@ class RiderAuthService {
     await runSignOutSessionCleanup(
       clockOut: clockOut,
       clockOutFn: () async {
-        await _client.rpc(
-          'driver_set_duty_state',
-          params: {'p_is_on_duty': false, 'p_is_online': false},
-        );
+        await callRiderFunction('driverSetDutyState', {
+          'is_on_duty': false,
+          'is_online': false,
+        });
       },
       releaseDeviceFn: () async {
         final deviceId = await _deviceIdentity.deviceIdOnly();
-        await _client.rpc(
-          'driver_release_device_session',
-          params: {'p_device_id': deviceId},
-        );
+        await callRiderFunction('driverReleaseDeviceSession', {
+          'device_id': deviceId,
+          'p_device_id': deviceId,
+        });
       },
     );
     await DeliveryProximityCache.clearCurrentUser(userId);
@@ -408,12 +377,10 @@ class RiderAuthService {
     if (!keepRememberMe) {
       await LoginPreferencesStore.clearRememberMe();
     }
-    await _client.auth.signOut();
+    await _auth.signOut();
   }
 
-  DeviceConflictException? _parseDeviceConflict(FunctionException e) {
-    if (e.status != 409) return null;
-    final details = e.details;
+  DeviceConflictException? _parseDeviceConflict(dynamic details) {
     Map<String, dynamic>? payload;
     if (details is Map) {
       payload = Map<String, dynamic>.from(details);
@@ -424,7 +391,13 @@ class RiderAuthService {
       } catch (_) {}
     }
     if (payload?['error'] != 'device_conflict') return null;
-    final activeRaw = payload!['active_device'];
+    return _deviceConflictFromPayload(payload);
+  }
+
+  DeviceConflictException _deviceConflictFromPayload(
+    Map<String, dynamic>? payload,
+  ) {
+    final activeRaw = payload?['active_device'];
     if (activeRaw is! Map) {
       return const DeviceConflictException(
         activeDevice: ActiveDeviceInfo(deviceId: ''),
@@ -443,79 +416,40 @@ class RiderAuthService {
       throw RiderAuthFailure.invalidCredentials;
     }
 
-    // Reading the profiles table can throw (RLS denial, transient network
-    // error, postgrest hiccup). Treat any failure as "row missing" so we
-    // can fall back to user metadata instead of surfacing a hard error and
-    // showing "Could not load profile" while the user IS authenticated.
+    if (await _claimsStaff(user)) {
+      await signOut();
+      throw RiderAuthFailure.staffNotAllowed;
+    }
+
     Map<String, dynamic>? row;
     try {
-      row = await _client
-          .from('profiles')
-          .select('id, full_name, email, role, avatar_url')
-          .eq('id', user.id)
-          .maybeSingle();
+      final snap = await riderFirestore().collection('drivers').doc(user.id).get();
+      row = _normalizeDriverRow(snap.data());
     } catch (_) {
       row = null;
     }
 
     if (row == null) {
-      if (afterSync) {
-        // Last resort — auth user IS valid, so render a placeholder rather
-        // than failing the whole profile screen.
-        return _fallbackProfileForCurrentUser();
-      }
-      try {
-        await _syncRiderProfileRpc();
-      } on RiderAuthFailure catch (e) {
-        if (e == RiderAuthFailure.staffNotAllowed) rethrow;
-        return _fallbackProfileForCurrentUser();
-      } catch (_) {
-        return _fallbackProfileForCurrentUser();
-      }
-      return fetchProfile(afterSync: true);
+      // No register_or_sync_rider_profile on Firebase. afterSync still means
+      // the user is already signed in, so a missing driver row is a fallback.
+      return _fallbackProfileForCurrentUser();
     }
 
-    final role = row['role'] as String? ?? '';
-    if (role == 'staff') {
-      await signOut();
-      throw RiderAuthFailure.staffNotAllowed;
-    }
+    final fromDriver = (row['name'] as String?)?.trim();
+    final fromDisplay = user.displayName?.trim();
+    final fullName = fromDriver != null && fromDriver.isNotEmpty
+        ? fromDriver
+        : fromDisplay != null && fromDisplay.isNotEmpty
+        ? fromDisplay
+        : 'Driver';
 
-    // The canonical avatar key now lives on `drivers.avatar_object_key`
-    // (written by both the admin panel and the in-app uploader's
-    // `driver_update_avatar` RPC). `profiles.avatar_url` is only kept as a
-    // backward-compat fallback for very old rows where the driver app wrote
-    // there. `drivers.avatar_updated_at` is used as a cache buster so that
-    // a new admin upload invalidates any previously cached image.
-    String? driverCode;
-    String? employeeId;
-    String? driverAvatarKey;
-    DateTime? avatarUpdatedAt;
-    if (role == 'rider') {
-      try {
-        final driver = await _client
-            .from('drivers')
-            .select(
-              'driver_code, employee_id, avatar_object_key, avatar_updated_at',
-            )
-            .eq('id', user.id)
-            .maybeSingle();
-        driverCode = driver?['driver_code'] as String?;
-        employeeId = driver?['employee_id'] as String?;
-        final keyRaw = (driver?['avatar_object_key'] as String?)?.trim();
-        driverAvatarKey = (keyRaw == null || keyRaw.isEmpty) ? null : keyRaw;
-        final updatedRaw = driver?['avatar_updated_at'] as String?;
-        if (updatedRaw != null && updatedRaw.isNotEmpty) {
-          avatarUpdatedAt = DateTime.tryParse(updatedRaw);
-        }
-      } catch (_) {
-        // RLS denial or transient error — keep going. driver_code is
-        // non-essential for rendering the profile page.
-      }
-    }
+    final driverCode = row['driver_code'] as String?;
+    final employeeId = row['employee_id'] as String?;
+    final keyRaw = (row['avatar_object_key'] as String?)?.trim();
+    final avatarObjectKey = (keyRaw == null || keyRaw.isEmpty) ? null : keyRaw;
+    final avatarUpdatedAt = _asDateTime(row['avatar_updated_at']);
 
-    final avatarObjectKey = driverAvatarKey ?? row['avatar_url'] as String?;
-    final trimmedKey = avatarObjectKey?.trim();
+    final trimmedKey = avatarObjectKey;
     final String? immediateAvatarUrl;
     if (trimmedKey != null &&
         (trimmedKey.startsWith('http://') ||
@@ -524,19 +458,28 @@ class RiderAuthService {
     } else {
       immediateAvatarUrl = null;
     }
+
+    final emailRaw = (row['email'] as String?)?.trim();
     return RiderProfile(
       id: user.id,
-      fullName: (row['full_name'] as String?)?.trim().isNotEmpty == true
-          ? row['full_name'] as String
-          : 'Driver',
-      email: row['email'] as String? ?? user.email,
-      role: role.isEmpty ? 'rider' : role,
+      fullName: fullName,
+      email: emailRaw != null && emailRaw.isNotEmpty ? emailRaw : user.email,
+      role: 'rider',
       driverCode: driverCode,
       employeeId: employeeId,
       avatarObjectKey: avatarObjectKey,
       avatarUrl: immediateAvatarUrl,
       avatarUpdatedAt: avatarUpdatedAt,
     );
+  }
+
+  Future<bool> _claimsStaff(User user) async {
+    try {
+      final token = await user.getIdTokenResult();
+      return token.claims?['staff'] == true;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<String?> resolveAvatarUrl(
@@ -549,23 +492,21 @@ class RiderAuthService {
       return appendAvatarCacheBuster(trimmed, cacheBuster);
     }
 
-    final session = _client.auth.currentSession;
-    if (session == null) return null;
+    final user = currentUser;
+    if (user == null) return null;
+    final accessToken = await user.getIdToken();
+    if (accessToken == null || accessToken.isEmpty) return null;
 
     // Avatar resolution is a best-effort, network-bound side effect. It MUST
     // never throw, otherwise a transient network error here will propagate up
     // into the login flow and force a signOut() that kicks the user back to
     // the sign-in screen even though authentication actually succeeded.
-    //
-    // Failures are logged (debugPrint) so that "toast says updated but image
-    // never shows" is no longer a silent black hole — anyone tailing logcat
-    // will see the HTTP status + body and know exactly which side broke.
     try {
       final uri = Uri.parse(
         '${Env.adminApiBaseUrl}/api/driver-uploads/read',
       ).replace(queryParameters: {'objectKey': trimmed});
       final response = await http
-          .get(uri, headers: {'Authorization': 'Bearer ${session.accessToken}'})
+          .get(uri, headers: {'Authorization': 'Bearer $accessToken'})
           .timeout(const Duration(seconds: 12));
       if (response.statusCode != 200) {
         debugPrint(
@@ -588,52 +529,47 @@ class RiderAuthService {
       return null;
     }
   }
+}
 
-  Future<void> _syncRiderProfileRpc({String? fullName}) async {
-    final user = currentUser;
-    if (user == null) {
-      throw RiderAuthFailure.invalidCredentials;
-    }
+Map<String, dynamic>? _normalizeDriverRow(Map<String, dynamic>? raw) {
+  if (raw == null) return null;
+  final row = Map<String, dynamic>.from(raw);
+  row['frozen_from'] = _asYmd(row['frozen_from']);
+  row['frozen_until'] = _asYmd(row['frozen_until']);
+  return row;
+}
 
-    final name =
-        fullName ??
-        (user.userMetadata?['full_name'] as String?) ??
-        user.email?.split('@').first ??
-        'Driver';
-
-    final result = await _client.rpc(
-      'register_or_sync_rider_profile',
-      params: {'p_full_name': name},
-    );
-
-    if (result is Map && result['ok'] != true) {
-      final error = result['error'] as String?;
-      if (error == 'staff_not_allowed') {
-        await signOut();
-        throw RiderAuthFailure.staffNotAllowed;
-      }
-      // Don't sign the user out here — they're already authenticated. A failed
-      // profile sync should let the rest of the app continue (fallback profile)
-      // instead of bouncing them back to /login.
-      throw RiderAuthFailure.profileSyncFailed;
-    }
+String? _asYmd(dynamic value) {
+  if (value == null) return null;
+  if (value is Timestamp) return kuwaitDateYmd(value.toDate());
+  if (value is DateTime) return kuwaitDateYmd(value);
+  if (value is String) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return null;
+    if (trimmed.length >= 10) return trimmed.substring(0, 10);
+    return trimmed;
   }
+  return null;
+}
+
+DateTime? _asDateTime(dynamic value) {
+  if (value is Timestamp) return value.toDate();
+  if (value is DateTime) return value;
+  if (value is String && value.isNotEmpty) return DateTime.tryParse(value);
+  return null;
 }
 
 final riderAuthServiceProvider = Provider<RiderAuthService>((ref) {
-  return RiderAuthService(
-    Supabase.instance.client,
-    ref.read(deviceIdentityServiceProvider),
-  );
+  return RiderAuthService(ref.read(deviceIdentityServiceProvider));
 });
 
-final authStateChangesProvider = StreamProvider<AuthState>((ref) {
-  return Supabase.instance.client.auth.onAuthStateChange;
+final authStateChangesProvider = StreamProvider<User?>((ref) {
+  return FirebaseAuth.instance.authStateChanges();
 });
 
-final currentSessionProvider = Provider<Session?>((ref) {
+final currentSessionProvider = Provider<User?>((ref) {
   ref.watch(authStateChangesProvider);
-  return Supabase.instance.client.auth.currentSession;
+  return FirebaseAuth.instance.currentUser;
 });
 
 final riderProfileProvider = FutureProvider<RiderProfile?>((ref) async {

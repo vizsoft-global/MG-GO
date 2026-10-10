@@ -1,13 +1,12 @@
-import 'dart:convert';
-
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
-import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/config/env.dart';
+import '../../core/firebase/rider_backend.dart';
+import '../../core/firebase/rider_callable_http.dart';
 import '../../core/offline/network_status_provider.dart';
 import '../../core/offline/offline_repo.dart';
-import '../../features/duty/adaptive_location_scheduler.dart';
+import '../../features/duty/duty_session_storage.dart';
 import 'shift_models.dart';
 
 class ShiftServiceException implements Exception {
@@ -21,11 +20,12 @@ class ShiftServiceException implements Exception {
 }
 
 class ShiftService {
-  ShiftService(this._client, this._offlineRepo, this._networkStatus);
+  ShiftService(this._offlineRepo, this._networkStatus);
 
-  final SupabaseClient _client;
   final OfflineRepo _offlineRepo;
   final NetworkStatusController _networkStatus;
+
+  String? get _uid => FirebaseAuth.instance.currentUser?.uid;
 
   Future<DailyShift?> _normalizeShift(DailyShift? shift, String? userId) async {
     if (shift == null) return null;
@@ -37,12 +37,9 @@ class ShiftService {
   }
 
   Future<DailyShift?> fetchTodayShift() async {
-    final userId = _client.auth.currentUser?.id;
+    final userId = _uid;
     try {
-      final result = await _client.rpc('driver_get_today_shift');
-      final map = result is Map<String, dynamic>
-          ? result
-          : Map<String, dynamic>.from(result as Map);
+      final map = await callRiderFunction('driverGetTodayShift');
       _networkStatus.recordRpcSuccess();
       final shiftRaw = map['shift'];
       if (shiftRaw is Map) {
@@ -75,7 +72,7 @@ class ShiftService {
     ShiftSessionDraft? session2,
     DateTime? shiftDate,
   }) async {
-    final userId = _client.auth.currentUser?.id;
+    final userId = _uid;
     final date = shiftDate ?? DailyShift.kuwaitTodayDate();
     final validation = validateShiftDraft(
       type: type,
@@ -107,11 +104,7 @@ class ShiftService {
     }
 
     try {
-      final result =
-          await _client.rpc('driver_submit_daily_shift', params: params);
-      final map = result is Map<String, dynamic>
-          ? result
-          : Map<String, dynamic>.from(result as Map);
+      final map = await callRiderFunction('driverSubmitDailyShift', params);
       _networkStatus.recordRpcSuccess();
       final shiftRaw = map['shift'];
       if (shiftRaw is! Map) {
@@ -122,8 +115,8 @@ class ShiftService {
         await _offlineRepo.saveActiveShiftCache(userId, shift.toJson());
       }
       return shift;
-    } on PostgrestException catch (e) {
-      final mapped = _mapPostgrest(e);
+    } on FirebaseFunctionsException catch (e) {
+      final mapped = _mapCallable(e);
       if (mapped.code == 'shift_locked') {
         try {
           final reuse = existingShiftToReuseOnLock(await fetchTodayShift());
@@ -221,8 +214,12 @@ class ShiftService {
     );
   }
 
-  ShiftServiceException _mapPostgrest(PostgrestException e) {
-    final msg = e.message.toLowerCase();
+  ShiftServiceException _mapCallable(FirebaseFunctionsException e) {
+    return _mapShiftCode(riderErrorCode(e));
+  }
+
+  ShiftServiceException _mapShiftCode(String raw) {
+    final msg = raw.toLowerCase();
     if (msg.contains('shift_locked')) {
       return ShiftServiceException('', code: 'shift_locked');
     }
@@ -235,7 +232,7 @@ class ShiftService {
     if (msg.contains('session_too_long')) {
       return ShiftServiceException('', code: 'sessionTooLong');
     }
-    return ShiftServiceException(e.message);
+    return ShiftServiceException(raw);
   }
 }
 
@@ -243,33 +240,25 @@ Future<DailyShift> submitShiftViaHttp({
   required String accessToken,
   required Map<String, dynamic> payload,
 }) async {
-  final uri =
-      Uri.parse('${Env.supabaseUrl}/rest/v1/rpc/driver_submit_daily_shift');
-  final response = await http.post(
-    uri,
-    headers: {
-      'Authorization': 'Bearer $accessToken',
-      'apikey': Env.supabaseAnonKey,
-      'Content-Type': 'application/json',
-    },
-    body: jsonEncode(payload),
-  );
-
-  if (response.statusCode < 200 || response.statusCode >= 300) {
-    throw ShiftServiceException(await decodeRpcError(response.body));
+  final idToken = await DutySessionStorage.readCallableToken() ?? accessToken;
+  try {
+    final map = await callRiderFunctionHttp(
+      name: 'driverSubmitDailyShift',
+      idToken: idToken,
+      data: payload,
+    );
+    final shiftRaw = map['shift'];
+    if (shiftRaw is! Map) {
+      throw ShiftServiceException('Invalid shift response');
+    }
+    return DailyShift.fromJson(Map<String, dynamic>.from(shiftRaw));
+  } on RiderCallableHttpException catch (e) {
+    throw ShiftServiceException(e.code, code: e.code);
   }
-
-  final map = Map<String, dynamic>.from(jsonDecode(response.body) as Map);
-  final shiftRaw = map['shift'];
-  if (shiftRaw is! Map) {
-    throw ShiftServiceException('Invalid shift response');
-  }
-  return DailyShift.fromJson(Map<String, dynamic>.from(shiftRaw));
 }
 
 final shiftServiceProvider = Provider<ShiftService>((ref) {
   return ShiftService(
-    Supabase.instance.client,
     ref.read(offlineRepoProvider),
     ref.read(networkStatusProvider.notifier),
   );

@@ -1,6 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/firebase/rider_backend.dart';
 import '../../core/offline/network_status_provider.dart';
 import '../../core/offline/offline_repo.dart';
 import 'attendance_models.dart';
@@ -13,35 +14,36 @@ class AttendanceMonth {
 }
 
 class AttendanceService {
-  AttendanceService(this._client, this._offlineRepo, this._networkStatus);
+  AttendanceService(this._offlineRepo, this._networkStatus);
 
-  final SupabaseClient _client;
   final OfflineRepo _offlineRepo;
   final NetworkStatusController _networkStatus;
+
+  String? get _uid => FirebaseAuth.instance.currentUser?.uid;
 
   Future<MonthAttendance> fetchMonth({
     required int year,
     required int month,
   }) async {
-    final userId = _client.auth.currentUser?.id;
+    final userId = _uid;
     try {
-      final result = await _client.rpc(
-        'driver_get_attendance',
-        params: {'p_year': year, 'p_month': month},
-      );
-      final map = result is Map<String, dynamic>
-          ? result
-          : Map<String, dynamic>.from(result as Map);
+      final result = await callRiderFunction('driverGetAttendance', {
+        'p_year': year,
+        'p_month': month,
+      });
+      if (result['ok'] == false) {
+        throw StateError(result['error']?.toString() ?? 'attendance_failed');
+      }
       _networkStatus.recordRpcSuccess();
       if (userId != null) {
         await _offlineRepo.saveAttendanceCache(
           userId: userId,
           year: year,
           month: month,
-          payload: map,
+          payload: result,
         );
       }
-      return MonthAttendance.fromJson(map);
+      return MonthAttendance.fromJson(result);
     } catch (e) {
       _networkStatus.recordRpcFailure();
       if (userId != null) {
@@ -59,7 +61,6 @@ class AttendanceService {
 
 final attendanceServiceProvider = Provider<AttendanceService>((ref) {
   return AttendanceService(
-    Supabase.instance.client,
     ref.read(offlineRepoProvider),
     ref.read(networkStatusProvider.notifier),
   );

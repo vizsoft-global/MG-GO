@@ -1,8 +1,10 @@
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/app_update/force_update_state.dart';
 import '../../core/branding/app_branding_provider.dart';
+import '../../core/firebase/rider_backend.dart';
 import '../../core/offline/network_status_provider.dart';
 import '../../core/offline/offline_repo.dart';
 import '../../features/duty/duty_session_storage.dart';
@@ -29,34 +31,46 @@ class HomeServiceException implements Exception {
 DutyRejection? lastDutyRejection(Object? error) {
   if (error == null) return null;
   if (error is HomeServiceException) return error.rejection;
-  return dutyRejectionFrom(error.toString());
+  return dutyRejectionFrom(error);
 }
 
 class HomeService {
-  HomeService(this._client, this._offlineRepo, this._networkStatus);
+  HomeService(this._offlineRepo, this._networkStatus);
 
-  final SupabaseClient _client;
   final OfflineRepo _offlineRepo;
   final NetworkStatusController _networkStatus;
 
-  Future<HomeDashboard> fetchDashboard() async {
-    final userId = _client.auth.currentUser?.id;
+  String? get _uid => FirebaseAuth.instance.currentUser?.uid;
+
+  Future<void> _persistFirebaseIdToken() async {
     try {
-      final result = await _client.rpc('driver_get_home_dashboard');
-      final map = result is Map<String, dynamic>
-          ? result
-          : Map<String, dynamic>.from(result as Map);
+      final token = await FirebaseAuth.instance.currentUser?.getIdToken();
+      if (token != null && token.isNotEmpty) {
+        await DutySessionStorage.saveIdToken(token);
+      }
+    } catch (_) {}
+  }
+
+  Future<HomeDashboard> fetchDashboard() async {
+    final userId = _uid;
+    try {
+      final map = await callRiderFunction('driverGetHomeDashboard');
       _networkStatus.recordRpcSuccess();
+      await _persistFirebaseIdToken();
       if (userId != null) {
         await _offlineRepo.saveHomeDashboardCache(userId, map);
       }
       return HomeDashboard.fromJson(map);
-    } on PostgrestException catch (e) {
+    } on FirebaseFunctionsException catch (e) {
+      final rejection = dutyRejectionFrom(riderErrorCode(e));
+      if (rejection != null) {
+        throw HomeServiceException(_friendlyError(e), rejection: rejection);
+      }
       _networkStatus.recordRpcFailure();
       if (userId != null) {
         final cached = await _offlineRepo.loadHomeDashboardCache(userId);
         if (cached != null) {
-          final token = await DutySessionStorage.readAccessToken();
+          final token = await DutySessionStorage.readCallableToken();
           return HomeDashboard.fromJson(
             dutySafeHomeDashboardCache(
               cached: cached,
@@ -73,7 +87,7 @@ class HomeService {
     required bool isOnDuty,
     required bool isOnline,
   }) async {
-    final userId = _client.auth.currentUser?.id;
+    final userId = _uid;
     if (_networkStatus.isOffline && userId != null) {
       await _offlineRepo.queueDutyState(
         userId: userId,
@@ -84,20 +98,20 @@ class HomeService {
       return fallback;
     }
     try {
-      final result = await _client.rpc(
-        'driver_set_duty_state',
-        params: {'p_is_on_duty': isOnDuty, 'p_is_online': isOnline},
-      );
-      final map = result is Map<String, dynamic>
-          ? result
-          : Map<String, dynamic>.from(result as Map);
+      final map = await callRiderFunction('driverSetDutyState', {
+        'is_on_duty': isOnDuty,
+        'is_online': isOnline,
+        'p_is_on_duty': isOnDuty,
+        'p_is_online': isOnline,
+      });
       _networkStatus.recordRpcSuccess();
+      await _persistFirebaseIdToken();
       if (userId != null) {
         await _offlineRepo.saveHomeDashboardCache(userId, map);
       }
       return HomeDashboard.fromJson(map);
-    } on PostgrestException catch (e) {
-      final rejection = dutyRejectionFrom(e.message);
+    } on FirebaseFunctionsException catch (e) {
+      final rejection = dutyRejectionFrom(riderErrorCode(e));
       if (rejection != null) {
         // A refusal is not a failed round trip. Queueing it replays the same
         // refusal on every sync, and answering with the cached dashboard makes
@@ -120,14 +134,13 @@ class HomeService {
     }
   }
 
-  String _friendlyError(PostgrestException e) {
-    return friendlyHomeDutyError(e.message);
+  String _friendlyError(Object e) {
+    return friendlyHomeDutyError(riderErrorCode(e));
   }
 }
 
 final homeServiceProvider = Provider<HomeService>((ref) {
   return HomeService(
-    Supabase.instance.client,
     ref.read(offlineRepoProvider),
     ref.read(networkStatusProvider.notifier),
   );
@@ -151,14 +164,14 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboard> {
   /// False while Riverpod is still serving the previous rider's dashboard.
   bool get holdsCurrentRiderValue =>
       _valueRiderId != null &&
-      _valueRiderId == Supabase.instance.client.auth.currentUser?.id;
+      _valueRiderId == FirebaseAuth.instance.currentUser?.uid;
 
   @override
   Future<HomeDashboard> build() async {
     final dashboard = await _fetchWithRetry();
     await _ensureAccessAllowed();
     _applyForceUpdateDemand(dashboard);
-    _valueRiderId = Supabase.instance.client.auth.currentUser?.id;
+    _valueRiderId = FirebaseAuth.instance.currentUser?.uid;
     return dashboard;
   }
 
@@ -210,7 +223,7 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboard> {
   }
 
   bool _isRetryable(Object error) {
-    if (Supabase.instance.client.auth.currentSession == null) {
+    if (FirebaseAuth.instance.currentUser == null) {
       return false;
     }
     if (error is! HomeServiceException) return true;
@@ -228,7 +241,7 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboard> {
             await ref.read(homeServiceProvider).fetchDashboard();
         await _ensureAccessAllowed();
         _applyForceUpdateDemand(dashboard);
-        _valueRiderId = Supabase.instance.client.auth.currentUser?.id;
+        _valueRiderId = FirebaseAuth.instance.currentUser?.uid;
         return dashboard;
       },
     );
@@ -247,7 +260,7 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboard> {
             .read(homeServiceProvider)
             .setDutyState(isOnDuty: isOnDuty, isOnline: isOnline);
         await _ensureAccessAllowed();
-        _valueRiderId = Supabase.instance.client.auth.currentUser?.id;
+        _valueRiderId = FirebaseAuth.instance.currentUser?.uid;
         return dashboard;
       },
     );

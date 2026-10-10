@@ -2,12 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../app_update/force_update_gate.dart';
 import '../app_update/force_update_state.dart';
+import '../firebase/rider_backend.dart';
 import 'device_identity_service.dart';
 import 'device_profile_service.dart';
 
@@ -70,13 +71,13 @@ class DeviceProfileReporter with WidgetsBindingObserver {
   DeviceProfileReporter(this._ref);
 
   final Ref _ref;
-  StreamSubscription<AuthState>? _authSub;
+  StreamSubscription<User?>? _authSub;
   bool _inFlight = false;
 
   void start() {
     WidgetsBinding.instance.addObserver(this);
-    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((event) {
-      if (event.event == AuthChangeEvent.signedIn) {
+    _authSub = FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user != null) {
         // Login already wrote the full profile; only reset the throttle so the
         // next resume does not re-send it.
         unawaited(_markReported());
@@ -111,8 +112,7 @@ class DeviceProfileReporter with WidgetsBindingObserver {
 
   Future<void> reportIfDue({bool force = false}) async {
     if (_inFlight) return;
-    final client = Supabase.instance.client;
-    if (client.auth.currentSession == null) return;
+    if (FirebaseAuth.instance.currentUser == null) return;
 
     _inFlight = true;
     try {
@@ -132,10 +132,12 @@ class DeviceProfileReporter with WidgetsBindingObserver {
 
       final identity = await _ref.read(deviceIdentityServiceProvider).current();
       final meta = await _ref.read(deviceProfileServiceProvider).collect();
-      final response = await client.rpc(
-        'driver_report_device_meta',
-        params: {'p_device_id': identity.deviceId, 'p_meta': meta},
-      );
+      final response = await callRiderFunction('driverRecordAppVersion', {
+        'versionCode': InstalledBuild.versionCode ?? meta['app_version_code'],
+        'versionName': InstalledBuild.versionName ?? meta['app_version_name'],
+        'deviceId': identity.deviceId,
+        'deviceMeta': meta,
+      });
       await _markReported();
 
       final demand = parseForceUpdateFromReport(response);

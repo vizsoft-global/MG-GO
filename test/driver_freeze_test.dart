@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dpd_userapp/features/auth/driver_access.dart';
 import 'package:dpd_userapp/features/auth/driver_freeze.dart';
@@ -87,6 +88,28 @@ void main() {
       expect(status.blocked, isTrue);
       expect(status.frozen, isTrue);
       expect(status.reason, formatFreezeLoginReason('Investigation', '2026-09-25'));
+    });
+
+    test('Firestore Timestamp freeze window matches ISO strings', () {
+      final status = DriverAccessStatus.fromDriverRow({
+        'is_blocked': false,
+        'frozen_from': Timestamp.fromDate(DateTime.utc(2026, 9, 20)),
+        'frozen_until': Timestamp.fromDate(DateTime.utc(2026, 9, 25)),
+        'freeze_reason': 'Leave',
+      }, today);
+      expect(status.blocked, isTrue);
+      expect(status.frozen, isTrue);
+      expect(status.reason, formatFreezeLoginReason('Leave', '2026-09-25'));
+    });
+
+    test('ISO datetime freeze bounds still parse', () {
+      final status = DriverAccessStatus.fromDriverRow({
+        'is_blocked': false,
+        'frozen_from': '2026-09-20T00:00:00.000Z',
+        'frozen_until': '2026-09-25T00:00:00.000Z',
+        'freeze_reason': 'Leave',
+      }, today);
+      expect(status.frozen, isTrue);
     });
   });
 

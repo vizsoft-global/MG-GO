@@ -3,11 +3,11 @@ import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../offline/network_status_provider.dart';
 import 'telemetry_event_types.dart';
@@ -39,9 +39,7 @@ class TelemetryController with WidgetsBindingObserver {
       _onNetworkChanged(previous, next);
     });
 
-    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen(
-      _onAuthState,
-    );
+    _authSub = FirebaseAuth.instance.authStateChanges().listen(_onAuthState);
 
     _timer = Timer.periodic(kTelemetryFlushInterval, (_) => _onTimer());
     WidgetsBinding.instance.addObserver(this);
@@ -51,7 +49,7 @@ class TelemetryController with WidgetsBindingObserver {
   final Ref _ref;
   late final TelemetryService _service;
   late final TelemetryFlushTriggers _triggers;
-  StreamSubscription<AuthState>? _authSub;
+  StreamSubscription<User?>? _authSub;
   Timer? _timer;
 
   DateTime? _lastLifecycleAt;
@@ -66,7 +64,7 @@ class TelemetryController with WidgetsBindingObserver {
   String get currentScreen => _screen;
 
   Future<void> _bootstrap() async {
-    _lastUid = Supabase.instance.client.auth.currentUser?.id;
+    _lastUid = FirebaseAuth.instance.currentUser?.uid;
     _lastLifecycleAt = DateTime.now();
 
     final started = telemetryProcessStartedAt;
@@ -183,14 +181,10 @@ class TelemetryController with WidgetsBindingObserver {
     _triggers.network(wasOffline: wasOffline, isOffline: next.isOffline);
   }
 
-  void _onAuthState(AuthState event) {
+  void _onAuthState(User? user) {
     final previousUid = _lastUid;
-    _lastUid = event.session?.user.id;
-    _triggers.auth(
-      event: event.event,
-      uid: _lastUid,
-      previousUid: previousUid,
-    );
+    _lastUid = user?.uid;
+    _triggers.authFromUid(uid: _lastUid, previousUid: previousUid);
   }
 
   Future<void> _onTimer() async {

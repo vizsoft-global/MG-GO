@@ -1,13 +1,15 @@
 import 'dart:typed_data';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/firebase/rider_backend.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/l10n/locale_formatters.dart';
 import '../../core/theme/app_colors.dart';
@@ -144,21 +146,46 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
   }
 
   Future<List<String>> _uploadFiles() async {
-    final uid = Supabase.instance.client.auth.currentUser?.id;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
     if (_files.isEmpty) return const [];
     if (uid == null) throw Exception('not_authenticated');
     final keys = <String>[];
     for (final file in _files) {
       final key =
           '$uid/${widget.requestId}/${DateTime.now().millisecondsSinceEpoch}_${_fileBasename(file.name)}';
-      await Supabase.instance.client.storage.from('request-attachments').uploadBinary(
-            key,
-            file.bytes,
-            fileOptions: const FileOptions(contentType: 'image/jpeg'),
-          );
-      keys.add(key);
+      keys.add(
+        await _putRequestAttachment(
+          objectKey: key,
+          bytes: file.bytes,
+          contentType: 'image/jpeg',
+        ),
+      );
     }
     return keys;
+  }
+
+  Future<String> _putRequestAttachment({
+    required String objectKey,
+    required List<int> bytes,
+    required String contentType,
+  }) async {
+    final map = await callRiderFunction('driverGetUploadUrl', {
+      'bucket': 'request-attachments',
+      'object_key': objectKey,
+      'content_type': contentType,
+    });
+    final url = map['url']?.toString() ?? '';
+    final stored = map['object_key']?.toString().trim();
+    if (url.isEmpty) throw Exception('upload_url_missing');
+    final res = await http.put(
+      Uri.parse(url),
+      headers: {'Content-Type': contentType},
+      body: bytes,
+    );
+    if (res.statusCode != 200 && res.statusCode != 201) {
+      throw Exception('upload_failed');
+    }
+    return (stored != null && stored.isNotEmpty) ? stored : objectKey;
   }
 
   Future<void> _submitClarification() async {
@@ -361,9 +388,11 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     final key = row['storage_key']?.toString().trim() ?? '';
     if (key.isEmpty) return;
     try {
-      final url = await Supabase.instance.client.storage
-          .from('request-attachments')
-          .createSignedUrl(key, 3600);
+      final map = await callRiderFunction('driverGetDownloadUrl', {
+        'bucket': 'request-attachments',
+        'object_key': key,
+      });
+      final url = map['url']?.toString().trim() ?? '';
       final uri = Uri.tryParse(url);
       if (uri == null) return;
       await launchUrl(uri, mode: LaunchMode.externalApplication);

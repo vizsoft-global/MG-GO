@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:app_links/app_links.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/earnings/earnings_providers.dart';
 import '../../features/home/home_providers.dart';
@@ -33,7 +33,7 @@ final pushNotificationControllerProvider =
 class PushNotificationController extends Notifier<bool> {
   StreamSubscription<RemoteMessage>? _foregroundSub;
   StreamSubscription<String>? _tokenRefreshSub;
-  StreamSubscription<AuthState>? _authSub;
+  StreamSubscription<User?>? _authSub;
   StreamSubscription<Uri>? _deepLinkSub;
   AppLinks? _appLinks;
   bool _initialized = false;
@@ -43,10 +43,10 @@ class PushNotificationController extends Notifier<bool> {
   @override
   bool build() {
     _authSub?.cancel();
-    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((event) {
-      if (event.event == AuthChangeEvent.signedOut) {
+    _authSub = FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user == null) {
         unawaited(_onSignedOut());
-      } else if (event.session != null) {
+      } else {
         unawaited(_ensureReady());
       }
     });
@@ -64,7 +64,7 @@ class PushNotificationController extends Notifier<bool> {
       _deepLinkSub?.cancel();
     });
 
-    if (Supabase.instance.client.auth.currentSession != null) {
+    if (FirebaseAuth.instance.currentUser != null) {
       unawaited(_ensureReady());
     }
 
@@ -145,7 +145,7 @@ class PushNotificationController extends Notifier<bool> {
   }
 
   Future<void> _handleExternalDeepLink(Uri uri) async {
-    if (Supabase.instance.client.auth.currentSession == null) return;
+    if (FirebaseAuth.instance.currentUser == null) return;
     await _router.handleDeepLink(uri.toString(), fromUserTap: true);
   }
 
@@ -162,7 +162,7 @@ class PushNotificationController extends Notifier<bool> {
   }
 
   Future<void> _registerToken(String token) async {
-    if (Supabase.instance.client.auth.currentSession == null) return;
+    if (FirebaseAuth.instance.currentUser == null) return;
     if (!ref.read(notificationsEnabledProvider)) return;
     try {
       await ref.read(pushTokenRepositoryProvider).upsertToken(token);

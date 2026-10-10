@@ -7,8 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/firebase/rider_backend.dart';
 import '../../core/storage/driver_upload_provider.dart';
 import '../auth/rider_auth_service.dart';
 import 'avatar_disk_cache.dart';
@@ -173,10 +173,9 @@ class AvatarUploadController extends AsyncNotifier<AvatarUploadOutcome?> {
             filename: picked.name,
           );
 
-      await Supabase.instance.client.rpc(
-        'driver_update_avatar',
-        params: {'p_object_key': upload.objectKey},
-      );
+      await callRiderFunction('driverUpdateAvatar', {
+        'p_object_key': upload.objectKey,
+      });
 
       await ref
           .read(avatarDiskCacheProvider)

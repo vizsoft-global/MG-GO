@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/delivery/delivery_proximity_cache.dart';
+import '../../core/firebase/rider_backend.dart';
 import '../../core/geo/zone_geometry.dart';
 import '../../core/offline/network_status_provider.dart';
 import '../../core/settings/live_db_refresh.dart';
@@ -292,23 +294,19 @@ class DeliveryProximityStatus {
 }
 
 class DeliveryProximityService {
-  DeliveryProximityService(this._client, this._networkStatus);
+  DeliveryProximityService(this._networkStatus);
 
-  final SupabaseClient _client;
   final NetworkStatusController _networkStatus;
 
   Future<DeliveryProximityContext> fetchContext() async {
     try {
-      final result = await _client.rpc('driver_get_delivery_proximity_context');
-      final map = result is Map<String, dynamic>
-          ? result
-          : Map<String, dynamic>.from(result as Map);
+      final map = await callRiderFunction('driverGetDeliveryProximityContext');
       _networkStatus.recordRpcSuccess();
       return DeliveryProximityContext.fromJson(map);
-    } on PostgrestException catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       _networkStatus.recordRpcFailure();
       throw DeliveryServiceException(
-        _friendlyContextError(e),
+        riderErrorCode(e),
         code: 'proximity_context_unavailable',
       );
     }
@@ -503,13 +501,10 @@ class DeliveryProximityService {
     if (candidates.isEmpty) return double.infinity;
     return candidates.reduce(math.min);
   }
-
-  String _friendlyContextError(PostgrestException e) => e.message;
 }
 
 final deliveryProximityServiceProvider = Provider<DeliveryProximityService>(
   (ref) => DeliveryProximityService(
-    Supabase.instance.client,
     ref.read(networkStatusProvider.notifier),
   ),
 );
@@ -521,7 +516,7 @@ final deliveryProximityContextProvider =
 
 class DeliveryProximityContextNotifier
     extends AsyncNotifier<DeliveryProximityContext> {
-  String? get _userId => Supabase.instance.client.auth.currentUser?.id;
+  String? get _userId => FirebaseAuth.instance.currentUser?.uid;
 
   @override
   Future<DeliveryProximityContext> build() async {

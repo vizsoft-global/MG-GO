@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../features/app_update/update_required_screen.dart';
@@ -102,7 +101,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   ) ??
                   false));
 
-      final session = Supabase.instance.client.auth.currentSession;
+      final session = ref.read(riderAuthServiceProvider).currentSession;
       final loc = state.matchedLocation;
       const authRoutes = {'/login', '/blocked'};
       final isAuthRoute = authRoutes.contains(loc);
@@ -566,7 +565,7 @@ class SettingsRefreshListenable extends ChangeNotifier {
   void notify() => notifyListeners();
 }
 
-/// Notifies GoRouter when Supabase auth state changes.
+/// Notifies GoRouter when Firebase auth state changes.
 final authRefreshListenableProvider = Provider<AuthRefreshListenable>((ref) {
   final listenable = AuthRefreshListenable();
   ref.onDispose(listenable.dispose);

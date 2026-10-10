@@ -1,7 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../auth/login_verification_gate.dart';
@@ -28,8 +28,8 @@ class _BootstrapScreenState extends ConsumerState<BootstrapScreen> {
 
   Future<void> _resolveDestination() async {
     if (!mounted) return;
-    final session = Supabase.instance.client.auth.currentSession;
-    if (session == null) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
       context.go('/login');
       return;
     }
@@ -37,7 +37,7 @@ class _BootstrapScreenState extends ConsumerState<BootstrapScreen> {
     await ref.read(loginVerificationRefreshListenableProvider).refresh();
     final needs =
         ref.read(loginVerificationRefreshListenableProvider).needsCapture ??
-            await LoginVerificationStore.needsCapture(session.user.id);
+            await LoginVerificationStore.needsCapture(user.uid);
     if (!mounted) return;
     context.go(needs ? '/login-verification' : '/home');
   }

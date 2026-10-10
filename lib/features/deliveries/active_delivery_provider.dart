@@ -1,5 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/offline/network_status_provider.dart';
 import '../../core/offline/offline_db.dart';
@@ -12,7 +12,7 @@ final activeDeliveryProvider = FutureProvider<ActiveDelivery?>((ref) async {
   ref.watch(myDeliveriesProvider);
   final service = ref.watch(deliveryServiceProvider);
   final isOffline = ref.watch(networkStatusProvider.select((s) => s.isOffline));
-  final userId = Supabase.instance.client.auth.currentUser?.id;
+  final userId = FirebaseAuth.instance.currentUser?.uid;
 
   // Offline: the server is unreachable, so local queue state is all we have.
   if (isOffline) {

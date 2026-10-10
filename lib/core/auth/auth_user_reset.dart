@@ -1,8 +1,8 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/attendance/attendance_providers.dart';
 import '../../features/auth/rider_auth_service.dart';
@@ -20,7 +20,7 @@ import '../../features/profile/avatar_upload_controller.dart';
 import '../../features/shift/shift_providers.dart';
 import '../offline/offline_repo.dart';
 
-/// Watches Supabase auth user transitions and invalidates every user-scoped
+/// Watches Firebase auth user transitions and invalidates every user-scoped
 /// Riverpod provider whenever the authenticated user changes (sign-in,
 /// sign-out, or switching between two driver accounts on the same install).
 ///
@@ -30,10 +30,10 @@ import '../offline/offline_repo.dart';
 /// skip, the Add Delivery button silently no-op, and the profile show the old
 /// name/avatar.
 final authUserResetControllerProvider = Provider<void>((ref) {
-  String? lastUserId = Supabase.instance.client.auth.currentUser?.id;
+  String? lastUserId = FirebaseAuth.instance.currentUser?.uid;
 
-  final sub = Supabase.instance.client.auth.onAuthStateChange.listen((event) {
-    final currentUserId = event.session?.user.id;
+  final sub = FirebaseAuth.instance.authStateChanges().listen((user) {
+    final currentUserId = user?.uid;
     if (currentUserId == lastUserId) return;
     final previousUserId = lastUserId;
     lastUserId = currentUserId;

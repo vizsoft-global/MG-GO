@@ -94,8 +94,15 @@ class Env {
   static String get passcodeLoginUrl =>
       '$supabaseUrl/functions/v1/driver-passcode-login';
 
-  static bool get isConfigured =>
-      supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
+  /// Cloud Functions gen2 region. Firestore named `default` stays in me-central2.
+  static const firebaseFunctionsRegion = String.fromEnvironment(
+    'FIREBASE_FUNCTIONS_REGION',
+    defaultValue: 'me-central1',
+  );
+
+  /// Auth and rider callables need a Firebase project. Leftover Supabase
+  /// screens still fail-closed in [validateConfiguration].
+  static bool get isConfigured => isFirebaseConfigured;
 
   /// Fail fast if a build points at a non-production backend stack.
   static void validateConfiguration() {

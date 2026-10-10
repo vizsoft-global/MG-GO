@@ -1,11 +1,12 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'integrity_checker.dart';
 import 'security_bypass_store.dart';
+import '../firebase/rider_backend.dart';
 import '../l10n/localizations_loader.dart';
 import '../router/app_router.dart';
 import 'screen_protector_service.dart';
@@ -34,7 +35,7 @@ final securityGuardProvider =
 
 class SecurityGuardController extends Notifier<SecurityGuardState>
     with WidgetsBindingObserver {
-  StreamSubscription<AuthState>? _authSub;
+  StreamSubscription<User?>? _authSub;
   // NOT `late final`: Riverpod can rebuild this Notifier (e.g. when a
   // dependency changes, or when invalidated by the auth-reset controller),
   // and `late final` would throw LateInitializationError on the second
@@ -65,13 +66,11 @@ class SecurityGuardController extends Notifier<SecurityGuardState>
     }
 
     if (firstBuild) {
-      _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((
-        state,
-      ) {
-        if (state.event == AuthChangeEvent.signedOut) {
+      _authSub = FirebaseAuth.instance.authStateChanges().listen((user) {
+        if (user == null) {
           SecurityBypassStore.clearServerAllowed();
           unawaited(disable());
-        } else if (state.session != null) {
+        } else {
           unawaited(enable());
         }
       });
@@ -93,7 +92,7 @@ class SecurityGuardController extends Notifier<SecurityGuardState>
     ref.listen(securityBypassProvider, (previous, bypassEnabled) {
       if (bypassEnabled) {
         unawaited(disable());
-      } else if (Supabase.instance.client.auth.currentSession != null) {
+      } else if (FirebaseAuth.instance.currentUser != null) {
         unawaited(enable());
       }
     });
@@ -102,7 +101,7 @@ class SecurityGuardController extends Notifier<SecurityGuardState>
     // `ref.listen` above already handles that transition. Watching here was
     // what caused the LateInitializationError loop on every bypass change.
     final bypassEnabled = ref.read(securityBypassProvider);
-    final signedIn = Supabase.instance.client.auth.currentSession != null;
+    final signedIn = FirebaseAuth.instance.currentUser != null;
     if (signedIn && !bypassEnabled) {
       unawaited(enable());
     } else if (bypassEnabled) {
@@ -157,19 +156,13 @@ class SecurityGuardController extends Notifier<SecurityGuardState>
   }
 
   Future<void> _refreshServerAllow() async {
-    final user = Supabase.instance.client.auth.currentUser;
-    if (user == null) return;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
     try {
-      final row = await Supabase.instance.client
-          .from('drivers')
-          .select('screenshots_allowed')
-          .eq('id', user.id)
-          .maybeSingle();
-      SecurityBypassStore.setServerAllowed(row?['screenshots_allowed'] == true);
-    } on PostgrestException catch (e) {
-      if (e.code == '42703') {
-        SecurityBypassStore.setServerAllowed(false);
-      }
+      final snap = await riderFirestore().collection('drivers').doc(uid).get();
+      SecurityBypassStore.setServerAllowed(
+        snap.data()?['screenshots_allowed'] == true,
+      );
     } catch (_) {}
   }
 

@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../core/storage/driver_upload_messages.dart';
 import '../../core/storage/driver_upload_service.dart';
@@ -41,9 +42,9 @@ String messageForEsignFailure(Object error, AppLocalizations l10n) {
 
   final code = switch (error) {
     EsignFailure(:final code) => code,
-    AuthException() => 'not_authenticated',
+    FirebaseAuthException() => 'not_authenticated',
     SocketException() || TimeoutException() || HttpException() => 'network',
-    PostgrestException() || FunctionException() => 'network',
+    FirebaseFunctionsException() => 'network',
     _ => '',
   };
 

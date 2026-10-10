@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/offline/network_status_provider.dart';
 import '../../core/offline/offline_repo.dart';
@@ -8,7 +7,6 @@ import 'location_tracking_service.dart';
 
 final locationTrackingServiceProvider = Provider<LocationTrackingService>(
   (ref) => LocationTrackingService(
-    Supabase.instance.client,
     ref.read(offlineRepoProvider),
     ref.read(networkStatusProvider.notifier),
   ),

@@ -1,5 +1,4 @@
 import 'package:geolocator/geolocator.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/deliveries/delivery_service.dart';
 import '../security/integrity_checker.dart';
@@ -13,7 +12,7 @@ class DeviceLocationResolver {
   DeviceLocationResolver._();
   static final DeviceLocationResolver instance = DeviceLocationResolver._();
   static final IntegrityChecker _integrity = IntegrityChecker(
-    repository: SecurityEventRepository(Supabase.instance.client),
+    repository: SecurityEventRepository(),
     screenProtectorService: ScreenProtectorService(),
   );
 

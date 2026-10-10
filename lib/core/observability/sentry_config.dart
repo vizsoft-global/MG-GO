@@ -1,6 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../config/env.dart';
 
@@ -28,8 +28,9 @@ Future<void> configureSentryOptions(SentryFlutterOptions options) async {
   options.tracePropagationTargets
     ..clear()
     ..addAll([
-      Env.supabaseUrl,
       Env.adminApiBaseUrl,
+      Env.liveIngestUrl,
+      'https://${Env.firebaseFunctionsRegion}-${Env.firebaseProjectId}.cloudfunctions.net',
       'localhost',
     ]);
 
@@ -43,8 +44,8 @@ Future<void> configureSentryOptions(SentryFlutterOptions options) async {
   });
 }
 
-void bindSentryUserFromSession(Session? session) {
-  if (session?.user == null) {
+void bindSentryUserFromAuth(User? user) {
+  if (user == null) {
     Sentry.configureScope((scope) {
       scope.setUser(null);
       scope.removeTag('driver_code');
@@ -53,13 +54,12 @@ void bindSentryUserFromSession(Session? session) {
     return;
   }
 
-  final user = session!.user;
   Sentry.configureScope((scope) {
     scope.setUser(
       SentryUser(
-        id: user.id,
+        id: user.uid,
         email: user.email,
-        username: user.userMetadata?['full_name']?.toString(),
+        username: user.displayName,
       ),
     );
   });
@@ -83,8 +83,6 @@ void bindSentryDriverIdentity({String? driverCode, String? employeeId}) {
 }
 
 void listenForSentryAuthContext() {
-  bindSentryUserFromSession(Supabase.instance.client.auth.currentSession);
-  Supabase.instance.client.auth.onAuthStateChange.listen((state) {
-    bindSentryUserFromSession(state.session);
-  });
+  bindSentryUserFromAuth(FirebaseAuth.instance.currentUser);
+  FirebaseAuth.instance.authStateChanges().listen(bindSentryUserFromAuth);
 }

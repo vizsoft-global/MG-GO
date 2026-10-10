@@ -1,8 +1,11 @@
 import 'dart:convert';
 
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../core/app_update/force_update_state.dart';
+import '../../core/firebase/rider_backend.dart';
 import 'driver_freeze.dart';
 
 /// Current app-access state for the signed-in driver row.
@@ -51,8 +54,8 @@ class DriverAccessStatus {
         forceUpdate: forceUpdate,
       );
     }
-    final from = row['frozen_from'] as String?;
-    final until = row['frozen_until'] as String?;
+    final from = driverDateYmd(row['frozen_from']);
+    final until = driverDateYmd(row['frozen_until']);
     if (freezeWindowIsActive(from, until, todayYmd)) {
       return DriverAccessStatus(
         blocked: true,
@@ -70,6 +73,34 @@ class DriverAccessStatus {
   /// Set when the admin forced this rider onto a newer build and the installed
   /// one is still below it. Null when the flag is off or already satisfied.
   final UpdateRequiredException? forceUpdate;
+}
+
+/// Normalizes Firestore [Timestamp], [DateTime], or ISO / `YYYY-MM-DD` strings
+/// to a Kuwait calendar `YYYY-MM-DD` for freeze-window compares.
+@visibleForTesting
+String? driverDateYmd(Object? value) {
+  if (value == null) return null;
+  if (value is Timestamp) {
+    return kuwaitDateYmd(_kuwaitCalendarDate(value.toDate()));
+  }
+  if (value is DateTime) {
+    return kuwaitDateYmd(_kuwaitCalendarDate(value));
+  }
+  if (value is String) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return null;
+    final ymd = RegExp(r'^(\d{4}-\d{2}-\d{2})').firstMatch(trimmed);
+    if (ymd != null) return ymd.group(1);
+    final parsed = DateTime.tryParse(trimmed);
+    if (parsed != null) return kuwaitDateYmd(_kuwaitCalendarDate(parsed));
+    return trimmed;
+  }
+  return null;
+}
+
+DateTime _kuwaitCalendarDate(DateTime date) {
+  final kuwait = date.toUtc().add(const Duration(hours: 3));
+  return DateTime(kuwait.year, kuwait.month, kuwait.day);
 }
 
 /// Decides the per-driver force-update demand from the driver row. Mirrors the
@@ -100,18 +131,16 @@ UpdateRequiredException? perDriverForceUpdateFrom(
   );
 }
 
-/// Parses admin block signals from RPC / edge payloads and PostgREST errors.
+/// Parses admin block signals from callable / RPC / edge payloads.
 class DriverAccessParser {
-  static String? reasonFromPostgrest(PostgrestException error) {
-    final fromMessage = reasonFromMessage(error.message);
-    if (fromMessage != null) return fromMessage;
-
-    final details = error.details;
-    if (details is Map) {
-      return reasonFromMap(Map<String, dynamic>.from(details));
-    }
-    if (details is String && details.isNotEmpty) {
-      return reasonFromMessage(details) ?? reasonFromJsonString(details);
+  static String? reasonFromCallable(FirebaseFunctionsException error) {
+    final fromCode = reasonFromMessage(riderErrorCode(error));
+    if (fromCode != null) return fromCode;
+    final details = riderErrorDetails(error);
+    if (details != null) return reasonFromMap(details);
+    final message = error.message?.trim() ?? '';
+    if (message.isNotEmpty) {
+      return reasonFromMessage(message) ?? reasonFromJsonString(message);
     }
     return null;
   }
