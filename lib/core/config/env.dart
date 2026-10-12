@@ -94,8 +94,15 @@ class Env {
   static String get passcodeLoginUrl =>
       '$supabaseUrl/functions/v1/driver-passcode-login';
 
-  static bool get isConfigured =>
-      supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
+  /// Cloud Functions gen2 region. Firestore named `default` stays in me-central2.
+  static const firebaseFunctionsRegion = String.fromEnvironment(
+    'FIREBASE_FUNCTIONS_REGION',
+    defaultValue: 'me-central1',
+  );
+
+  /// Auth and rider callables need a Firebase project. Leftover Supabase
+  /// screens still fail-closed in [validateConfiguration].
+  static bool get isConfigured => isFirebaseConfigured;
 
   /// Fail fast if a build points at a non-production backend stack.
   static void validateConfiguration() {
@@ -118,35 +125,64 @@ class Env {
     }());
   }
 
-  static String _firebaseValue(String key, String prodDefault) {
-    final override = String.fromEnvironment(key, defaultValue: '');
-    if (override.isNotEmpty) return override;
-    return prodDefault;
+  /// Absent and explicit-empty defines both fall back to the prod value.
+  /// `String.fromEnvironment` has to be a const constructor — a runtime key
+  /// throws on web and `main` never reaches `runApp`.
+  static const _firebaseUnset = '__firebase_unset__';
+
+  static String _firebaseOrDefault(String raw, String prodDefault) {
+    if (raw.isEmpty || raw == _firebaseUnset) return prodDefault;
+    return raw;
   }
 
+  static const _firebaseProjectIdRaw = String.fromEnvironment(
+    'FIREBASE_PROJECT_ID',
+    defaultValue: _firebaseUnset,
+  );
+
+  static const _firebaseApiKeyRaw = String.fromEnvironment(
+    'FIREBASE_API_KEY',
+    defaultValue: _firebaseUnset,
+  );
+
+  static const _firebaseAppIdRaw = String.fromEnvironment(
+    'FIREBASE_APP_ID',
+    defaultValue: _firebaseUnset,
+  );
+
+  static const _firebaseMessagingSenderIdRaw = String.fromEnvironment(
+    'FIREBASE_MESSAGING_SENDER_ID',
+    defaultValue: _firebaseUnset,
+  );
+
+  static const _firebaseStorageBucketRaw = String.fromEnvironment(
+    'FIREBASE_STORAGE_BUCKET',
+    defaultValue: _firebaseUnset,
+  );
+
   /// Firebase client SDK overrides (optional — defaults match prod Firebase).
-  static String get firebaseProjectId => _firebaseValue(
-        'FIREBASE_PROJECT_ID',
+  static String get firebaseProjectId => _firebaseOrDefault(
+        _firebaseProjectIdRaw,
         'musallam-delivery-prod',
       );
 
-  static String get firebaseApiKey => _firebaseValue(
-        'FIREBASE_API_KEY',
+  static String get firebaseApiKey => _firebaseOrDefault(
+        _firebaseApiKeyRaw,
         'AIzaSyDm2hMXvmb7f-OdmPZUPfTzOpm4hGMhh1A',
       );
 
-  static String get firebaseAppId => _firebaseValue(
-        'FIREBASE_APP_ID',
+  static String get firebaseAppId => _firebaseOrDefault(
+        _firebaseAppIdRaw,
         '1:579224507592:android:eaa8cdda265bc0914981fd',
       );
 
-  static String get firebaseMessagingSenderId => _firebaseValue(
-        'FIREBASE_MESSAGING_SENDER_ID',
+  static String get firebaseMessagingSenderId => _firebaseOrDefault(
+        _firebaseMessagingSenderIdRaw,
         '579224507592',
       );
 
-  static String get firebaseStorageBucket => _firebaseValue(
-        'FIREBASE_STORAGE_BUCKET',
+  static String get firebaseStorageBucket => _firebaseOrDefault(
+        _firebaseStorageBucketRaw,
         'musallam-delivery-prod.firebasestorage.app',
       );
 

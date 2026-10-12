@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:dpd_userapp/features/home/home_duty_errors.dart';
 import 'package:dpd_userapp/l10n/app_localizations.dart';
 import 'package:dpd_userapp/l10n/app_localizations_ar.dart';
@@ -40,6 +41,46 @@ void main() {
       expect(
         dutyRejectionFrom('Could not find the function public.x'),
         DutyRejection.serverOutdated,
+      );
+    });
+
+    test('classifies FirebaseFunctionsException via riderErrorCode', () {
+      expect(
+        dutyRejectionFrom(
+          FirebaseFunctionsException(
+            message: 'inactive',
+            code: 'failed-precondition',
+          ),
+        ),
+        DutyRejection.accountNotActive,
+      );
+      expect(
+        dutyRejectionFrom(
+          FirebaseFunctionsException(
+            message: 'INTERNAL',
+            code: 'internal',
+            details: {'error': 'driver_archived'},
+          ),
+        ),
+        DutyRejection.driverArchived,
+      );
+      expect(
+        dutyRejectionFrom(
+          FirebaseFunctionsException(
+            message: 'shift_required',
+            code: 'failed-precondition',
+          ),
+        ),
+        DutyRejection.shiftRequired,
+      );
+      expect(
+        dutyRejectionFrom(
+          FirebaseFunctionsException(
+            message: 'not_authenticated',
+            code: 'unauthenticated',
+          ),
+        ),
+        DutyRejection.notAuthenticated,
       );
     });
 

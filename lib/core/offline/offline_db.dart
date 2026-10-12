@@ -141,6 +141,7 @@ class OfflineDb {
     required Map<String, Object?> keys,
     required Map<String, Object?> payload,
   }) async {
+    if (kIsWeb) return;
     final db = await database;
     await db.insert(table, {
       ...keys,
@@ -153,6 +154,7 @@ class OfflineDb {
     required String table,
     required Map<String, Object?> keys,
   }) async {
+    if (kIsWeb) return null;
     final db = await database;
     final where = keys.keys.map((k) => '$k = ?').join(' AND ');
     final args = keys.values.toList(growable: false);
@@ -168,6 +170,7 @@ class OfflineDb {
   }
 
   Future<void> clearUserCaches(String userId) async {
+    if (kIsWeb) return;
     final db = await database;
     await db.delete(
       'cache_proximity_context',
@@ -263,6 +266,7 @@ class OfflineDb {
   ];
 
   Future<void> clearVolatileCaches() async {
+    if (kIsWeb) return;
     final db = await database;
     for (final table in _volatileCacheTables) {
       // A table may not exist yet on an older schema — skip and continue so one

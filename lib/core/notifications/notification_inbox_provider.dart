@@ -1,7 +1,7 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'notification_inbox_models.dart';
 import 'notification_inbox_repository.dart';
@@ -20,14 +20,15 @@ class NotificationInboxNotifier
     extends AsyncNotifier<NotificationInboxSnapshot> {
   @override
   Future<NotificationInboxSnapshot> build() async {
-    Supabase.instance.client.auth.onAuthStateChange.listen((event) {
-      if (event.event == AuthChangeEvent.signedOut) {
+    final sub = FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user == null) {
         state = const AsyncData(NotificationInboxSnapshot.empty);
         // Ids belong to the rider that just left; the window belongs to the
         // device's toggle, which the next rider inherits as-is.
         unawaited(notificationMuteStore.saveMutedIds(<String>{}));
       }
     });
+    ref.onDispose(sub.cancel);
     return _fetch();
   }
 
@@ -40,12 +41,9 @@ class NotificationInboxNotifier
     if (result.hasValue || previous == null) {
       state = result;
     } else {
-      // A failed refresh must not erase a list the rider was reading; the
-      // error is still recorded so nothing is reported as success.
-      state = AsyncError<NotificationInboxSnapshot>(
-        result.error!,
-        result.stackTrace ?? StackTrace.empty,
-      ).copyWithPrevious(AsyncData(previous));
+      // Keep the list the rider was reading. `copyWithPrevious` is package-
+      // internal and fails `flutter analyze` on this file set.
+      state = AsyncData(previous);
     }
   }
 

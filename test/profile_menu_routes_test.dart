@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// Profile menu rows used to hardcode one shared placeholder, so nine of ten
 /// rows opened the same Coming-soon dialog. These assertions are deliberately
 /// source-level: the failure mode being guarded is "a row was never wired",
-/// and rendering the real screen needs a session, Supabase and the router.
+/// and rendering the real screen needs a session, Firebase and the router.
 ///
 /// A whole-screen widget test cannot see an unwired row that still renders, so
 /// the check is that every row's handler names a real destination and that no

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
@@ -165,6 +166,7 @@ class OfflineRepo {
   }
 
   Future<void> clearProximityCache(String userId) async {
+    if (kIsWeb) return;
     final db = await OfflineDb.instance.database;
     await db.delete(
       'cache_proximity_context',
@@ -177,6 +179,7 @@ class OfflineRepo {
     String userId,
     List<Map<String, dynamic>> rows,
   ) async {
+    if (kIsWeb) return;
     final db = await OfflineDb.instance.database;
     await db.transaction((txn) async {
       await txn.delete(
@@ -201,6 +204,7 @@ class OfflineRepo {
   }
 
   Future<List<Map<String, dynamic>>> loadDeliveriesCache(String userId) async {
+    if (kIsWeb) return const [];
     final db = await OfflineDb.instance.database;
     final rows = await db.query(
       'cache_deliveries',
@@ -404,6 +408,7 @@ class OfflineRepo {
   }
 
   Future<void> clearActiveShiftCache(String userId) async {
+    if (kIsWeb) return;
     final db = await OfflineDb.instance.database;
     await db.delete(
       'cache_active_shift',

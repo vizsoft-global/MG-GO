@@ -1,15 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dpd_userapp/core/geo/zone_geometry.dart';
 import 'package:dpd_userapp/core/offline/network_status_provider.dart';
 import 'package:dpd_userapp/features/deliveries/delivery_proximity_service.dart';
 
 DeliveryProximityService _testProximityService() {
-  return DeliveryProximityService(
-    SupabaseClient('http://localhost', 'test-anon-key'),
-    _NoOpNetworkStatus(),
-  );
+  return DeliveryProximityService(_NoOpNetworkStatus());
 }
 
 /// Minimal stub — [DeliveryProximityService.evaluate] does not use network state.

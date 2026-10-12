@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/security/developer_mode_blocked_screen.dart';
 import '../../l10n/app_localizations.dart';
@@ -89,7 +88,7 @@ class _DeveloperModeGateState extends ConsumerState<DeveloperModeGate>
       blocked = await isDeveloperModeHardBlocked();
       if (blocked) {
         try {
-          await SecurityEventRepository(Supabase.instance.client).logEvent(
+          await SecurityEventRepository().logEvent(
             type: SecurityEventType.developerMode,
             severity: SecuritySeverity.blocked,
             context: const {'source': 'developer_mode_gate'},

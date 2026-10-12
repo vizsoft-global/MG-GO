@@ -1,33 +1,32 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Keeps driver-facing DB settings fresh via Supabase Realtime + polling.
+import '../firebase/rider_backend.dart';
+
+/// Keeps driver-facing settings fresh via Firestore snapshots + polling.
 ///
-/// Realtime is the primary signal: an UPDATE on `app_settings`, `zones`,
-/// `restaurants`, `driver_restaurants` or `drivers` notifies every listener
-/// within a second. Polling is the fallback for a phone whose socket has
-/// silently died, and nothing more — it must not be the mechanism that keeps
-/// settings fresh, because every tick fans out to every listener (branding,
-/// login-verification gate, access monitor, duty monitor, proximity context),
-/// each of which is at least one request against Postgres.
+/// Primary signal: `app_settings/1` snapshots, plus the signed-in rider's
+/// `drivers/{uid}` doc after login. Client rules deny zones / restaurants /
+/// driver_restaurants, so those are not subscribed — polling is the fallback
+/// when a snapshot socket has died.
 class LiveDbRefreshCoordinator {
-  LiveDbRefreshCoordinator(this._client);
+  LiveDbRefreshCoordinator();
 
-  final SupabaseClient _client;
   final _listeners = <VoidCallback>{};
 
   Timer? _pollTimer;
-  RealtimeChannel? _channel;
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _settingsSub;
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _driverSub;
+  StreamSubscription<User?>? _authSub;
+  String? _driverUid;
   bool _started = false;
 
-  /// Was 5s. Across the fleet that was ~2.7M `GET app_settings` and ~1.25M
-  /// `GET drivers` a day from phones that were mostly parked, and it was the
-  /// largest single source of the request storm that took the database down.
-  /// 60s is the fallback cadence; anything an operator changes still lands
-  /// immediately through the Realtime subscription below.
+  /// 60s is the fallback cadence; operator changes still land through the
+  /// Firestore subscriptions below.
   static const pollInterval = Duration(seconds: 60);
 
   void addListener(VoidCallback listener) => _listeners.add(listener);
@@ -39,59 +38,75 @@ class LiveDbRefreshCoordinator {
     _started = true;
 
     _pollTimer = Timer.periodic(pollInterval, (_) => _notifyListeners());
-
-    _channel = _client
-        .channel('driver_live_settings')
-        .onPostgresChanges(
-          event: PostgresChangeEvent.update,
-          schema: 'public',
-          table: 'app_settings',
-          filter: PostgresChangeFilter(
-            type: PostgresChangeFilterType.eq,
-            column: 'id',
-            value: 1,
-          ),
-          callback: (_) => _notifyListeners(),
-        )
-        .onPostgresChanges(
-          event: PostgresChangeEvent.all,
-          schema: 'public',
-          table: 'zones',
-          callback: (_) => _notifyListeners(),
-        )
-        .onPostgresChanges(
-          event: PostgresChangeEvent.all,
-          schema: 'public',
-          table: 'restaurants',
-          callback: (_) => _notifyListeners(),
-        )
-        .onPostgresChanges(
-          event: PostgresChangeEvent.all,
-          schema: 'public',
-          table: 'driver_restaurants',
-          callback: (_) => _notifyListeners(),
-        )
-        .onPostgresChanges(
-          event: PostgresChangeEvent.update,
-          schema: 'public',
-          table: 'drivers',
-          callback: (_) => _notifyListeners(),
-        )
-        .subscribe();
+    _listenSettings();
+    _listenAuth();
   }
 
   void dispose() {
     _pollTimer?.cancel();
     _pollTimer = null;
-
-    final channel = _channel;
-    _channel = null;
-    if (channel != null) {
-      unawaited(_client.removeChannel(channel));
-    }
-
+    _cancelSettings();
+    _cancelDriver();
+    final auth = _authSub;
+    _authSub = null;
+    if (auth != null) unawaited(auth.cancel());
     _listeners.clear();
     _started = false;
+  }
+
+  void _listenSettings() {
+    try {
+      _settingsSub = riderFirestore()
+          .collection('app_settings')
+          .doc('1')
+          .snapshots()
+          .listen(
+            (_) => _notifyListeners(),
+            onError: (_) {},
+          );
+    } catch (_) {
+      // Polling still runs if Firebase is not ready.
+    }
+  }
+
+  void _listenAuth() {
+    try {
+      _authSub = FirebaseAuth.instance.authStateChanges().listen(_onAuth);
+    } catch (_) {}
+  }
+
+  void _onAuth(User? user) {
+    final uid = user?.uid;
+    if (uid == null || uid.isEmpty) {
+      _cancelDriver();
+      return;
+    }
+    if (_driverUid == uid && _driverSub != null) return;
+    _cancelDriver();
+    _driverUid = uid;
+    try {
+      _driverSub = riderFirestore()
+          .collection('drivers')
+          .doc(uid)
+          .snapshots()
+          .listen(
+            (_) => _notifyListeners(),
+            onError: (_) {},
+          );
+    } catch (_) {}
+  }
+
+  void _cancelSettings() {
+    final sub = _settingsSub;
+    _settingsSub = null;
+    if (sub != null) unawaited(sub.cancel());
+  }
+
+  void _cancelDriver() {
+    final sub = _driverSub;
+    _driverSub = null;
+    _driverUid = null;
+    if (sub != null) unawaited(sub.cancel());
   }
 
   void _notifyListeners() {
@@ -99,12 +114,15 @@ class LiveDbRefreshCoordinator {
       listener();
     }
   }
+
+  @visibleForTesting
+  void notifyListenersForTest() => _notifyListeners();
 }
 
 /// Singleton coordinator; kept alive for the app lifetime.
 final liveDbRefreshCoordinatorProvider =
     Provider<LiveDbRefreshCoordinator>((ref) {
-  final coordinator = LiveDbRefreshCoordinator(Supabase.instance.client);
+  final coordinator = LiveDbRefreshCoordinator();
   coordinator.start();
   ref.onDispose(coordinator.dispose);
   return coordinator;

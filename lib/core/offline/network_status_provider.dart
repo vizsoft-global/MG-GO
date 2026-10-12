@@ -55,7 +55,7 @@ final networkStatusProvider =
 ///    answers in tens of milliseconds, returns 204 with an empty body, and is
 ///    very unlikely to be down. If it responds 2xx/3xx → we have real internet.
 /// 2. The RPC heartbeat (`recordRpcSuccess`/`recordRpcFailure`) which records
-///    real Supabase request outcomes as the strongest signal we can have.
+///    real rider-callable outcomes as the strongest signal we can have.
 ///
 /// `isOffline` only flips to true after both signals agree we don't have a way
 /// out, so the UI never shows "offline" or "pending sync" on a healthy
@@ -98,7 +98,7 @@ class NetworkStatusController extends Notifier<NetworkStatusState> {
   bool get isOffline => state.isOffline;
 
   void recordRpcSuccess() {
-    // A successful Supabase RPC is the ultimate proof that we're online — no
+    // A successful rider callable is the ultimate proof that we're online — no
     // probe needed in this window.
     state = state.copyWith(
       lastRpcOkAt: DateTime.now(),

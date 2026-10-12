@@ -1,11 +1,14 @@
 import 'package:flutter/widgets.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+
+/// Local stand-in for Firebase Auth session flips so flush rules stay
+/// testable without a Firebase client.
+enum AuthChangeEvent { signedIn, signedOut, tokenRefreshed }
 
 /// The five flush triggers, as decisions rather than plumbing.
 ///
 /// The controller owns the timer, the lifecycle observer and the two streams;
 /// this class owns *when those mean flush*, so the rules can be tested without a
-/// Supabase client, a platform channel or a running app.
+/// Firebase client, a platform channel or a running app.
 class TelemetryFlushTriggers {
   const TelemetryFlushTriggers({
     required this.onFlush,
@@ -52,5 +55,23 @@ class TelemetryFlushTriggers {
 
     onClearSuppression();
     if (uid != null) onFlush(reasonAuth);
+  }
+
+  /// Map a uid change onto [auth] so tests that call [authFromUid] stay
+  /// independent of Firebase Auth streams.
+  void authFromUid({required String? uid, required String? previousUid}) {
+    if (uid == previousUid) {
+      auth(
+        event: AuthChangeEvent.tokenRefreshed,
+        uid: uid,
+        previousUid: previousUid,
+      );
+      return;
+    }
+    auth(
+      event: uid == null ? AuthChangeEvent.signedOut : AuthChangeEvent.signedIn,
+      uid: uid,
+      previousUid: previousUid,
+    );
   }
 }

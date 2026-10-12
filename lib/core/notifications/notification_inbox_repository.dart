@@ -1,15 +1,14 @@
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
-import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../config/env.dart';
+import '../firebase/rider_backend.dart';
 import 'notification_inbox_models.dart';
 
 final notificationInboxRepositoryProvider =
     Provider<NotificationInboxRepository>((ref) {
-      return NotificationInboxRepository(Supabase.instance.client);
+      return NotificationInboxRepository();
     });
 
 /// The inbox could not be loaded — which is not the same fact as an inbox with
@@ -33,9 +32,7 @@ class NotificationInboxUnavailable implements Exception {
 }
 
 class NotificationInboxRepository {
-  NotificationInboxRepository(this._client);
-
-  final SupabaseClient _client;
+  NotificationInboxRepository();
 
   /// Loads the rider's inbox.
   ///
@@ -50,165 +47,75 @@ class NotificationInboxRepository {
     bool unreadOnly = false,
     bool strict = false,
   }) async {
-    if (_client.auth.currentSession == null) {
-      if (strict) throw const NotificationInboxUnavailable();
+    if (FirebaseAuth.instance.currentUser == null) {
       return NotificationInboxSnapshot.empty;
     }
 
-    Object? rpcError;
     try {
-      final result = await _client.rpc(
-        'driver_list_notifications',
-        params: {
-          'p_limit': limit,
-          'p_before': before?.toUtc().toIso8601String(),
-          'p_unread_only': unreadOnly,
+      final result = await callRiderFunction('driverListNotifications', {
+        'limit': limit,
+        'p_limit': limit,
+        'unreadOnly': unreadOnly,
+        'p_unread_only': unreadOnly,
+        if (before != null) ...{
+          'before': before.toUtc().toIso8601String(),
+          'p_before': before.toUtc().toIso8601String(),
         },
-      );
-      return _parseSnapshot(result);
+      });
+      return _parseSnapshot(_normalizeInboxJson(result));
     } catch (error) {
-      rpcError = error;
-    }
-
-    try {
-      return await _listViaAdminApi(
-        limit: limit,
-        before: before,
-        unreadOnly: unreadOnly,
-      );
-    } catch (fallbackError) {
       if (strict) {
-        throw NotificationInboxUnavailable(
-          cause: fallbackError,
-          rpcCause: rpcError,
-        );
+        throw NotificationInboxUnavailable(rpcCause: riderErrorCode(error));
       }
       return NotificationInboxSnapshot.empty;
     }
   }
 
   Future<int> unreadCount() async {
-    if (_client.auth.currentSession == null) return 0;
+    if (FirebaseAuth.instance.currentUser == null) return 0;
     try {
-      final result = await _client.rpc('driver_notifications_unread_count');
-      if (result is num) return result.toInt();
-      return int.tryParse(result?.toString() ?? '0') ?? 0;
-    } catch (_) {
       final snapshot = await list(limit: 1, unreadOnly: true);
       return snapshot.unreadCount;
+    } catch (_) {
+      return 0;
     }
   }
 
   Future<int> markRead({List<String>? dispatchItemIds}) async {
-    if (_client.auth.currentSession == null) return 0;
+    if (FirebaseAuth.instance.currentUser == null) return 0;
     try {
-      final result = await _client.rpc(
-        'driver_mark_notifications_read',
-        params: {
-          'p_dispatch_item_ids': dispatchItemIds,
-        },
-      );
-      if (result is num) return result.toInt();
-      return int.tryParse(result?.toString() ?? '0') ?? 0;
+      return await _intFromCallable('driverMarkNotificationsRead', {
+        'dispatchItemIds': dispatchItemIds,
+        'p_dispatch_item_ids': dispatchItemIds,
+      });
     } catch (_) {
-      return _markReadViaAdminApi(dispatchItemIds);
+      return 0;
     }
   }
 
   Future<int> dismiss({List<String>? dispatchItemIds}) async {
-    if (_client.auth.currentSession == null) return 0;
+    if (FirebaseAuth.instance.currentUser == null) return 0;
     try {
-      final result = await _client.rpc(
-        'driver_dismiss_notifications',
-        params: {
-          'p_dispatch_item_ids': dispatchItemIds,
-        },
-      );
-      if (result is num) return result.toInt();
-      return int.tryParse(result?.toString() ?? '0') ?? 0;
+      return await _intFromCallable('driverDismissNotifications', {
+        'dispatchItemIds': dispatchItemIds,
+        'p_dispatch_item_ids': dispatchItemIds,
+      });
     } catch (_) {
-      return _dismissViaAdminApi(dispatchItemIds);
+      return 0;
     }
   }
 
-  Future<NotificationInboxSnapshot> _listViaAdminApi({
-    required int limit,
-    DateTime? before,
-    required bool unreadOnly,
-  }) async {
-    final session = _client.auth.currentSession;
-    if (session == null) throw const NotificationInboxUnavailable();
-
-    final params = <String, String>{
-      'limit': limit.toString(),
-      if (before != null) 'before': before.toUtc().toIso8601String(),
-      if (unreadOnly) 'unread_only': '1',
-    };
-    final uri = Uri.parse('${Env.adminApiBaseUrl}/api/driver-app/notifications')
-        .replace(queryParameters: params);
-
-    final response = await http.get(
-      uri,
-      headers: {
-        'Authorization': 'Bearer ${session.accessToken}',
-        'Accept': 'application/json',
-      },
-    );
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw NotificationInboxUnavailable(httpStatus: response.statusCode);
+  Future<int> _intFromCallable(
+    String name, [
+    Map<String, dynamic>? data,
+  ]) async {
+    final result = await riderCallable(name).call(data ?? <String, dynamic>{});
+    final raw = result.data;
+    if (raw is num) return raw.toInt();
+    if (raw is Map) {
+      final n = raw['updated'] ?? raw['count'];
+      if (n is num) return n.toInt();
     }
-    final decoded = jsonDecode(response.body);
-    if (decoded is! Map) throw const NotificationInboxUnavailable();
-    return NotificationInboxSnapshot.fromJson(
-      Map<String, dynamic>.from(decoded),
-    );
-  }
-
-  Future<int> _markReadViaAdminApi(List<String>? dispatchItemIds) async {
-    final session = _client.auth.currentSession;
-    if (session == null) return 0;
-
-    final response = await http.post(
-      Uri.parse('${Env.adminApiBaseUrl}/api/driver-app/notifications'),
-      headers: {
-        'Authorization': 'Bearer ${session.accessToken}',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'dispatch_item_ids': ?dispatchItemIds,
-      }),
-    );
-    if (response.statusCode < 200 || response.statusCode >= 300) return 0;
-    try {
-      final decoded = jsonDecode(response.body);
-      if (decoded is Map && decoded['updated'] is num) {
-        return (decoded['updated'] as num).toInt();
-      }
-    } catch (_) {}
-    return 0;
-  }
-
-  Future<int> _dismissViaAdminApi(List<String>? dispatchItemIds) async {
-    final session = _client.auth.currentSession;
-    if (session == null) return 0;
-
-    final response = await http.delete(
-      Uri.parse('${Env.adminApiBaseUrl}/api/driver-app/notifications'),
-      headers: {
-        'Authorization': 'Bearer ${session.accessToken}',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'dispatch_item_ids': ?dispatchItemIds,
-      }),
-    );
-    if (response.statusCode < 200 || response.statusCode >= 300) return 0;
-    try {
-      final decoded = jsonDecode(response.body);
-      if (decoded is Map && decoded['updated'] is num) {
-        return (decoded['updated'] as num).toInt();
-      }
-    } catch (_) {}
     return 0;
   }
 
@@ -229,5 +136,54 @@ class NotificationInboxRepository {
       } catch (_) {}
     }
     return NotificationInboxSnapshot.empty;
+  }
+
+  Map<String, dynamic> _normalizeInboxJson(Map<String, dynamic> json) {
+    final items = json['items'];
+    final unread = json['unread_count'] ?? json['unreadCount'];
+    if (items is! List) {
+      return {
+        ...json,
+        if (unread != null) 'unread_count': unread,
+      };
+    }
+    return {
+      ...json,
+      if (unread != null) 'unread_count': unread,
+      'items': items.map((item) {
+        if (item is! Map) return item;
+        final map = Map<String, dynamic>.from(item);
+        for (final key in [
+          'received_at',
+          'opened_at',
+          'clicked_at',
+          'delivered_at',
+        ]) {
+          if (map.containsKey(key)) map[key] = _wireInstant(map[key]);
+        }
+        return map;
+      }).toList(),
+    };
+  }
+
+  Object? _wireInstant(Object? value) {
+    if (value == null) return null;
+    if (value is DateTime) return value.toUtc().toIso8601String();
+    if (value is num) {
+      final ms = value > 20000000000 ? value.toInt() : value.toInt() * 1000;
+      return DateTime.fromMillisecondsSinceEpoch(ms, isUtc: true)
+          .toIso8601String();
+    }
+    if (value is Map) {
+      final seconds = value['_seconds'] ?? value['seconds'];
+      final nanos = value['_nanoseconds'] ?? value['nanoseconds'] ?? 0;
+      if (seconds is num) {
+        final ms = seconds.toInt() * 1000 +
+            (nanos is num ? nanos.toInt() ~/ 1000000 : 0);
+        return DateTime.fromMillisecondsSinceEpoch(ms, isUtc: true)
+            .toIso8601String();
+      }
+    }
+    return value;
   }
 }

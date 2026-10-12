@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/firebase/rider_backend.dart';
 import '../../core/offline/offline_db.dart';
 import '../../core/security/security_bypass_store.dart';
 
@@ -80,17 +80,16 @@ class LoginVerificationStore {
     String userId, {
     bool includeGlobal = true,
   }) async {
-    final client = Supabase.instance.client;
     if (includeGlobal) {
       try {
         final settings = await _bounded(
-          () async => await client
-              .from('app_settings')
-              .select('driver_app_login_verification_exempt_all')
-              .eq('id', 1)
-              .maybeSingle(),
+          () async => (await riderFirestore()
+                  .collection('app_settings')
+                  .doc('1')
+                  .get())
+              .data(),
         );
-        if (settings != null) {
+        if (settings is Map) {
           await setGlobalExemptCached(
             settings['driver_app_login_verification_exempt_all'] == true,
           );
@@ -100,13 +99,11 @@ class LoginVerificationStore {
 
     try {
       final row = await _bounded(
-        () async => await client
-            .from('drivers')
-            .select('login_verification_exempt, screenshots_allowed')
-            .eq('id', userId)
-            .maybeSingle(),
+        () async =>
+            (await riderFirestore().collection('drivers').doc(userId).get())
+                .data(),
       );
-      if (row != null) {
+      if (row is Map) {
         await setPerDriverExemptCached(
           userId: userId,
           exempt: row['login_verification_exempt'] == true,

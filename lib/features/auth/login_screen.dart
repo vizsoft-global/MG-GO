@@ -1,7 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/app_update/force_update_state.dart';
 import '../../core/branding/app_branding.dart';
@@ -65,7 +65,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             forceOverride: forceOverride,
           );
       // Remember-me is always-on: driver phones are personal devices, so the
-      // Supabase session is kept across launches.
+      // Firebase session is kept across launches.
       await LoginPreferencesStore.setRememberMe(true);
       _loginSucceeded = true;
       ref.invalidate(riderProfileProvider);
@@ -96,7 +96,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // Calling signOut() here would clear that session and bounce them back
       // to /login — exactly the "log in -> home for a flash -> sign-in" loop
       // we're trying to avoid. Treat this as a successful login instead.
-      final sessionAfterError = Supabase.instance.client.auth.currentSession;
+      final sessionAfterError = FirebaseAuth.instance.currentUser;
       if (sessionAfterError != null) {
         _loginSucceeded = true;
         ref.invalidate(riderProfileProvider);

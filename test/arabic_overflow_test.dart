@@ -309,8 +309,8 @@ final _myVisits = [
 
 /// The viewer has two branches reachable without a network: no document at all,
 /// and a document whose signed URL cannot be resolved. The second is what a test
-/// gets for free, since `Supabase.instance` is not initialised here and
-/// `_loadDocument` catches that into its failure state.
+/// gets for free, since Firebase / the rider callable backend is not initialised
+/// here and `_loadDocument` catches that into its failure state.
 const _viewerNoDocId = 'qa-esign-viewer-nodoc';
 const _viewerFailedId = 'qa-esign-viewer-failed';
 
@@ -677,9 +677,9 @@ void main() {
   testWidgets('e-sign viewer preview failure in Arabic', (tester) async {
     await _pumpAtPixel9(tester, const EsignViewerScreen(requestId: _viewerFailedId));
 
-    // Supabase is not initialised under flutter test, so resolving the signed
-    // URL throws and the screen must land on its retry state rather than an
-    // empty card or a stuck spinner.
+    // Firebase / the rider callable backend is not initialised under flutter
+    // test, so resolving the signed URL throws and the screen must land on its
+    // retry state rather than an empty card or a stuck spinner.
     expect(find.text('تعذّر تحميل معاينة المستند.'), findsOneWidget);
     expect(find.text('حاول مرة أخرى'), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsNothing);

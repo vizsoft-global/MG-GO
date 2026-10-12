@@ -1,8 +1,8 @@
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../config/env.dart';
 
@@ -32,9 +32,7 @@ class OrderProofReadUrl {
 
 /// Presign → PUT → confirm (proxy fallback). No R2 credentials in the app.
 class DriverUploadService {
-  DriverUploadService(this._client);
-
-  final SupabaseClient _client;
+  DriverUploadService();
 
   static const _orderProofMaxBytes = 10 * 1024 * 1024;
   static const _driverAvatarMaxBytes = 2 * 1024 * 1024;
@@ -57,7 +55,7 @@ class DriverUploadService {
       throw DriverUploadException(code: 'invalid_content_type');
     }
 
-    final token = _accessToken();
+    final token = await _accessToken();
     final authHeaders = {'Authorization': 'Bearer $token'};
 
     return _uploadViaPresign(
@@ -87,7 +85,7 @@ class DriverUploadService {
       throw DriverUploadException(code: 'invalid_content_type');
     }
 
-    final token = _accessToken();
+    final token = await _accessToken();
     final authHeaders = {'Authorization': 'Bearer $token'};
     return _uploadViaPresign(
       bytes: bytes,
@@ -115,7 +113,7 @@ class DriverUploadService {
       throw DriverUploadException(code: 'invalid_content_type');
     }
 
-    final token = _accessToken();
+    final token = await _accessToken();
     final authHeaders = {'Authorization': 'Bearer $token'};
     return _uploadViaPresign(
       bytes: bytes,
@@ -263,12 +261,12 @@ class DriverUploadService {
     );
   }
 
-  String _accessToken() {
-    final session = _client.auth.currentSession;
-    if (session == null) {
+  Future<String> _accessToken() async {
+    final token = await FirebaseAuth.instance.currentUser?.getIdToken();
+    if (token == null || token.isEmpty) {
       throw DriverUploadException(code: 'not_authenticated');
     }
-    return session.accessToken;
+    return token;
   }
 
   bool _isAllowedContentType(String contentType) {
@@ -300,7 +298,7 @@ class DriverUploadService {
       return OrderProofReadUrl(readUrl: trimmed);
     }
 
-    final token = _accessToken();
+    final token = await _accessToken();
     final uri = Uri.parse(
       '${Env.adminApiBaseUrl}/api/driver-uploads/read',
     ).replace(queryParameters: {'objectKey': trimmed});

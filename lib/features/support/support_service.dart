@@ -1,7 +1,10 @@
 import 'dart:typed_data';
 
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
 
+import '../../core/firebase/rider_backend.dart';
 import 'create_attachment.dart';
 import 'esign_failure.dart';
 import 'request_form_submit.dart';
@@ -9,9 +12,7 @@ import 'request_type_definition.dart';
 import 'support_models.dart';
 
 class SupportService {
-  SupportService(this._client);
-
-  final SupabaseClient _client;
+  SupportService();
 
   Map<String, dynamic> _asMap(dynamic result) {
     if (result is Map<String, dynamic>) return result;
@@ -30,38 +31,40 @@ class SupportService {
   }
 
   Future<List<SupportRequestSummary>> listMyRequests({String? status}) async {
-    final result = await _client.rpc(
-      'driver_list_my_requests',
-      params: {
+    try {
+      final map = await callRiderFunction('driverListMyRequests', {
         'p_status': status,
         'p_limit': 50,
         'p_offset': 0,
-      },
-    );
-    final map = _asMap(result);
-    if (map['ok'] == false) {
-      throw Exception(map['error']?.toString() ?? 'list_failed');
+      });
+      if (map['ok'] == false) {
+        throw Exception(map['error']?.toString() ?? 'list_failed');
+      }
+      return _asMapList(map['rows'])
+          .map(SupportRequestSummary.fromJson)
+          .toList();
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception(riderErrorCode(e));
     }
-    return _asMapList(map['rows'])
-        .map(SupportRequestSummary.fromJson)
-        .toList();
   }
 
   Future<SupportRequestDetail> getRequest(String id) async {
-    final result = await _client.rpc(
-      'driver_get_request',
-      params: {'p_request_id': id},
-    );
-    final map = _asMap(result);
-    if (map['ok'] == false) {
-      throw Exception(map['error']?.toString() ?? 'not_found');
+    try {
+      final map = await callRiderFunction('driverGetRequest', {
+        'p_request_id': id,
+      });
+      if (map['ok'] == false) {
+        throw Exception(map['error']?.toString() ?? 'not_found');
+      }
+      return SupportRequestDetail(
+        request: _asMap(map['request']),
+        steps: _asMapList(map['steps']),
+        clarifications: _asMapList(map['clarifications']),
+        attachments: _asMapList(map['attachments']),
+      );
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception(riderErrorCode(e));
     }
-    return SupportRequestDetail(
-      request: _asMap(map['request']),
-      steps: _asMapList(map['steps']),
-      clarifications: _asMapList(map['clarifications']),
-      attachments: _asMapList(map['attachments']),
-    );
   }
 
   Future<({String id, String requestCode})> createRequest({
@@ -74,9 +77,8 @@ class SupportService {
     String? details,
     String? severity,
   }) async {
-    final result = await _client.rpc(
-      'driver_create_request',
-      params: {
+    try {
+      final map = await callRiderFunction('driverCreateRequest', {
         'p_type': type,
         'p_payload': payload,
         'p_attachments': attachments,
@@ -85,16 +87,17 @@ class SupportService {
         'p_end_date': isoDateOnly(endDate),
         'p_details': details,
         'p_severity': severity,
-      },
-    );
-    final map = _asMap(result);
-    if (map['ok'] == false) {
-      throw Exception(map['error']?.toString() ?? 'create_failed');
+      });
+      if (map['ok'] == false) {
+        throw Exception(map['error']?.toString() ?? 'create_failed');
+      }
+      return (
+        id: map['id'] as String,
+        requestCode: map['request_code'] as String? ?? '',
+      );
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception(riderErrorCode(e));
     }
-    return (
-      id: map['id'] as String,
-      requestCode: map['request_code'] as String? ?? '',
-    );
   }
 
   Future<void> submitClarification({
@@ -102,17 +105,20 @@ class SupportService {
     required String answer,
     List<String> attachmentKeys = const [],
   }) async {
-    final result = await _client.rpc(
-      'driver_submit_clarification',
-      params: clarifyRpcParams(
-        requestId: requestId,
-        answer: answer,
-        attachmentKeys: attachmentKeys,
-      ),
-    );
-    final map = _asMap(result);
-    if (map['ok'] == false) {
-      throw Exception(map['error']?.toString() ?? 'clarify_failed');
+    try {
+      final map = await callRiderFunction(
+        'driverSubmitClarification',
+        clarifyRpcParams(
+          requestId: requestId,
+          answer: answer,
+          attachmentKeys: attachmentKeys,
+        ),
+      );
+      if (map['ok'] == false) {
+        throw Exception(map['error']?.toString() ?? 'clarify_failed');
+      }
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception(riderErrorCode(e));
     }
   }
 
@@ -121,17 +127,20 @@ class SupportService {
     String? note,
     List<String> attachmentKeys = const [],
   }) async {
-    final result = await _client.rpc(
-      'driver_acknowledge_request',
-      params: acknowledgeRpcParams(
-        requestId: requestId,
-        note: note,
-        attachmentKeys: attachmentKeys,
-      ),
-    );
-    final map = _asMap(result);
-    if (map['ok'] == false) {
-      throw Exception(map['error']?.toString() ?? 'ack_failed');
+    try {
+      final map = await callRiderFunction(
+        'driverAcknowledgeRequest',
+        acknowledgeRpcParams(
+          requestId: requestId,
+          note: note,
+          attachmentKeys: attachmentKeys,
+        ),
+      );
+      if (map['ok'] == false) {
+        throw Exception(map['error']?.toString() ?? 'ack_failed');
+      }
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception(riderErrorCode(e));
     }
   }
 
@@ -142,121 +151,146 @@ class SupportService {
     required bool accept,
     String? note,
   }) async {
-    final result = await _client.rpc(
-      'driver_respond_reschedule',
-      params: {
+    try {
+      final map = await callRiderFunction('driverRespondReschedule', {
         'p_request_id': requestId,
         'p_accept': accept,
         'p_note': note,
-      },
-    );
-    final map = _asMap(result);
-    if (map['ok'] == false) {
-      throw Exception(map['error']?.toString() ?? 'reschedule_reply_failed');
+      });
+      if (map['ok'] == false) {
+        throw Exception(map['error']?.toString() ?? 'reschedule_reply_failed');
+      }
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception(riderErrorCode(e));
     }
   }
 
   /// Request types the admin has published. Drives the hub tiles, so a type
   /// added in the panel appears without an app release.
   Future<List<RequestTypeDefinition>> listRequestTypes() async {
-    final rows = await _client
-        .from('request_type_definitions')
-        .select(
-          'key, label_en, label_ar, icon_key, is_system, sort_order, '
-          'date_range_required, min_attachments, attachments_error_code',
-        )
-        .eq('is_active', true)
-        .order('sort_order');
-    return (rows as List)
-        .map((e) =>
-            RequestTypeDefinition.fromJson(Map<String, dynamic>.from(e as Map)))
-        .toList();
+    try {
+      final map = await callRiderFunction('driverListRequestTypes');
+      if (map['ok'] == false) {
+        throw Exception(map['error']?.toString() ?? 'list_failed');
+      }
+      return _asMapList(map['rows'] ?? map['items'] ?? map['data'])
+          .map(RequestTypeDefinition.fromJson)
+          .toList();
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception(riderErrorCode(e));
+    }
   }
 
   Future<List<RequestFieldDefinition>> listRequestFields(String typeKey) async {
-    final rows = await _client
-        .from('request_field_definitions')
-        .select(
-          'field_key, label_en, label_ar, kind, target, is_required, '
-          'sort_order, options_source, options, min_value, max_value, '
-          'help_en, help_ar',
-        )
-        .eq('type_key', typeKey)
-        .order('sort_order');
-    return (rows as List)
-        .map((e) =>
-            RequestFieldDefinition.fromJson(Map<String, dynamic>.from(e as Map)))
-        .toList();
+    try {
+      final map = await callRiderFunction('driverListRequestFields', {
+        'p_type_key': typeKey,
+      });
+      if (map['ok'] == false) {
+        throw Exception(map['error']?.toString() ?? 'list_failed');
+      }
+      return _asMapList(map['rows'] ?? map['items'] ?? map['data'])
+          .map(RequestFieldDefinition.fromJson)
+          .toList();
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception(riderErrorCode(e));
+    }
   }
 
   Future<List<LoanTenureOption>> listTenureOptions() async {
-    final rows = await _client
-        .from('loan_tenure_options')
-        .select('months, label')
-        .eq('is_active', true)
-        .order('sort_order');
-    return (rows as List)
-        .map((e) => LoanTenureOption.fromJson(Map<String, dynamic>.from(e as Map)))
-        .toList();
+    try {
+      final map = await callRiderFunction('driverListTenureOptions');
+      if (map['ok'] == false) {
+        throw Exception(map['error']?.toString() ?? 'list_failed');
+      }
+      return _asMapList(map['rows'] ?? map['items'] ?? map['data'])
+          .map(LoanTenureOption.fromJson)
+          .toList();
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception(riderErrorCode(e));
+    }
   }
 
   Future<List<ComplaintCategory>> listComplaintCategories() async {
-    final rows = await _client
-        .from('complaint_categories')
-        .select('key, label_en, label_ar')
-        .eq('is_active', true)
-        .order('sort_order');
-    return (rows as List)
-        .map((e) => ComplaintCategory.fromJson(Map<String, dynamic>.from(e as Map)))
-        .toList();
+    try {
+      final map = await callRiderFunction('driverListComplaintCategories');
+      if (map['ok'] == false) {
+        throw Exception(map['error']?.toString() ?? 'list_failed');
+      }
+      return _asMapList(map['rows'] ?? map['items'] ?? map['data'])
+          .map(ComplaintCategory.fromJson)
+          .toList();
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception(riderErrorCode(e));
+    }
   }
 
   Future<VisitBranch?> getCentralTowerBranch() async {
-    final rows = await _client
-        .from('visit_branches')
-        .select('id, key, name, address, working_hours, contact_phone')
-        .eq('is_active', true)
-        .order('is_default', ascending: false)
-        .order('sort_order')
-        .limit(1);
-    final list = rows as List;
-    if (list.isEmpty) return null;
-    return VisitBranch.fromJson(Map<String, dynamic>.from(list.first as Map));
+    try {
+      final map = await callRiderFunction('driverGetDefaultVisitBranch');
+      if (map['ok'] == false) return null;
+      final row = _singleRow(map, const ['branch', 'row']);
+      if (row == null) return null;
+      return VisitBranch.fromJson(row);
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception(riderErrorCode(e));
+    }
   }
 
   /// Departments offered at [branchId]. A department with a null `branch_id` is
   /// offered everywhere; one pinned to another branch must not be bookable here.
   Future<List<VisitDepartment>> listVisitDepartments({String? branchId}) async {
-    var query = _client
-        .from('visit_departments')
-        .select('key, label_en, label_ar, branch_id')
-        .eq('is_active', true);
-    if (branchId != null) {
-      query = query.or('branch_id.is.null,branch_id.eq.$branchId');
+    try {
+      final map = await callRiderFunction('driverListVisitDepartments', {
+        'p_branch_id': ?branchId,
+      });
+      if (map['ok'] == false) {
+        throw Exception(map['error']?.toString() ?? 'list_failed');
+      }
+      return _asMapList(
+        map['rows'] ?? map['departments'] ?? map['items'] ?? map['data'],
+      )
+          .map(VisitDepartment.fromJson)
+          .where((d) => kVisitDepartmentKeys.contains(d.key))
+          .toList();
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception(riderErrorCode(e));
     }
-    final rows = await query.order('sort_order');
-    return (rows as List)
-        .map((e) => VisitDepartment.fromJson(Map<String, dynamic>.from(e as Map)))
-        .where((d) => kVisitDepartmentKeys.contains(d.key))
-        .toList();
+  }
+
+  Map<String, dynamic>? _singleRow(
+    Map<String, dynamic> map,
+    List<String> keys,
+  ) {
+    for (final key in keys) {
+      final value = map[key];
+      if (value is Map<String, dynamic>) return value;
+      if (value is Map) return Map<String, dynamic>.from(value);
+    }
+    final rows = _asMapList(map['rows'] ?? map['items'] ?? map['data']);
+    if (rows.isNotEmpty) return rows.first;
+    if (map['id'] != null || map['key'] != null) {
+      return Map<String, dynamic>.from(map)..remove('ok');
+    }
+    return null;
   }
 
   Future<List<VisitSlotOption>> listVisitSlots({
     required DateTime date,
     required String departmentKey,
   }) async {
-    final result = await _client.rpc(
-      'driver_list_visit_slots',
-      params: {
+    try {
+      final map = await callRiderFunction('driverListVisitSlots', {
         'p_date': date.toIso8601String().split('T').first,
         'p_department_key': departmentKey,
-      },
-    );
-    final map = _asMap(result);
-    if (map['ok'] == false) {
-      throw Exception(map['error']?.toString() ?? 'slots_failed');
+      });
+      if (map['ok'] == false) {
+        throw Exception(map['error']?.toString() ?? 'slots_failed');
+      }
+      return _asMapList(map['slots']).map(VisitSlotOption.fromJson).toList();
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception(riderErrorCode(e));
     }
-    return _asMapList(map['slots']).map(VisitSlotOption.fromJson).toList();
   }
 
   Future<({String id, String bookingCode})> bookVisit({
@@ -265,132 +299,157 @@ class SupportService {
     required String slotId,
     String? note,
   }) async {
-    final result = await _client.rpc(
-      'driver_book_visit',
-      params: {
+    try {
+      final map = await callRiderFunction('driverBookVisit', {
         'p_department_key': departmentKey,
         'p_date': date.toIso8601String().split('T').first,
         'p_slot_id': slotId,
         'p_note': note,
-      },
-    );
-    final map = _asMap(result);
-    if (map['ok'] == false) {
-      final code = map['error']?.toString() ?? 'book_failed';
-      final message = map['message']?.toString();
-      throw Exception(message ?? code);
+      });
+      if (map['ok'] == false) {
+        final code = map['error']?.toString() ?? 'book_failed';
+        final message = map['message']?.toString();
+        throw Exception(message ?? code);
+      }
+      return (
+        id: map['id'] as String,
+        bookingCode: map['booking_code'] as String? ?? '',
+      );
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception(riderErrorCode(e));
     }
-    return (
-      id: map['id'] as String,
-      bookingCode: map['booking_code'] as String? ?? '',
-    );
   }
 
   Future<void> cancelVisit(String bookingId) async {
-    final result = await _client.rpc(
-      'driver_cancel_visit',
-      params: {'p_booking_id': bookingId},
-    );
-    final map = _asMap(result);
-    if (map['ok'] == false) {
-      throw Exception(map['error']?.toString() ?? 'cancel_failed');
+    try {
+      final map = await callRiderFunction('driverCancelVisit', {
+        'p_booking_id': bookingId,
+      });
+      if (map['ok'] == false) {
+        throw Exception(map['error']?.toString() ?? 'cancel_failed');
+      }
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception(riderErrorCode(e));
     }
   }
 
   Future<List<VisitBooking>> listMyVisits() async {
-    final rows = await _client
-        .from('visit_bookings')
-        .select(
-          'id, booking_code, department_key, scheduled_date, status, note, note_to_rider',
-        )
-        .order('scheduled_date', ascending: false);
-    return (rows as List)
-        .map((e) => VisitBooking.fromJson(Map<String, dynamic>.from(e as Map)))
-        .toList();
+    try {
+      final map = await callRiderFunction('driverListMyVisits');
+      if (map['ok'] == false) {
+        throw Exception(map['error']?.toString() ?? 'list_failed');
+      }
+      return _asMapList(
+        map['rows'] ?? map['visits'] ?? map['items'] ?? map['data'],
+      ).map(VisitBooking.fromJson).toList();
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception(riderErrorCode(e));
+    }
   }
 
   Future<List<EsignRequestSummary>> listEsignRequests() async {
-    final result = await _client.rpc(
-      'driver_list_esign_requests',
-      params: {'p_limit': 50, 'p_offset': 0},
-    );
-    final map = _asMap(result);
-    if (map['ok'] == false) {
-      throw Exception(map['error']?.toString() ?? 'list_failed');
+    try {
+      final map = await callRiderFunction('driverListEsignRequests', {
+        'p_limit': 50,
+        'p_offset': 0,
+      });
+      if (map['ok'] == false) {
+        throw Exception(map['error']?.toString() ?? 'list_failed');
+      }
+      return _asMapList(map['rows'])
+          .map(EsignRequestSummary.fromJson)
+          .toList();
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception(riderErrorCode(e));
     }
-    return _asMapList(map['rows'])
-        .map(EsignRequestSummary.fromJson)
-        .toList();
   }
 
   Future<EsignRequestDetail> getEsignRequest(String id) async {
-    final result = await _client.rpc(
-      'driver_get_esign_request',
-      params: {'p_id': id},
-    );
-    final map = _asMap(result);
-    if (map['ok'] == false) {
-      throw Exception(map['error']?.toString() ?? 'not_found');
+    try {
+      final map = await callRiderFunction('driverGetEsignRequest', {
+        'p_id': id,
+      });
+      if (map['ok'] == false) {
+        throw Exception(map['error']?.toString() ?? 'not_found');
+      }
+      return EsignRequestDetail(raw: _asMap(map['request']));
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception(riderErrorCode(e));
     }
-    return EsignRequestDetail(raw: _asMap(map['request']));
   }
 
   Future<String> uploadEsignSignature({
     required String requestId,
     required Uint8List pngBytes,
   }) async {
-    final uid = _client.auth.currentUser?.id;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) throw const EsignFailure('not_authenticated');
     final key = '$uid/$requestId/signature.png';
-    await withEsignTimeout(
-      () => _client.storage.from('esign-documents').uploadBinary(
-            key,
-            pngBytes,
-            fileOptions: const FileOptions(
-              contentType: 'image/png',
-              upsert: true,
-            ),
-          ),
+    return withEsignTimeout(
+      () => _putViaUploadUrl(
+        bucket: 'esign-documents',
+        objectKey: key,
+        contentType: 'image/png',
+        bytes: pngBytes,
+      ),
     );
-    return key;
   }
 
-  /// Asks the server to compose the signature-stamped copy.
-  ///
-  /// The device only triggers this; the edge function runs with the service
-  /// role, re-reads the original document, and is the sole writer of
-  /// `signed_document_storage_key`. Safe to call repeatedly — it overwrites a
-  /// deterministic object key rather than stamping again.
+  /// Compose stays on Next/R2 — there is no rider callable. Re-read the
+  /// request and return an already-written signed copy, otherwise null so
+  /// the viewer can still open the source document.
   Future<String?> composeSignedEsignDocument(String requestId) async {
     try {
-      final response = await withEsignTimeout(
-        () => _client.functions.invoke(
-          'esign-compose-signed-document',
-          body: {'request_id': requestId},
-        ),
-      );
-      final map = _asMap(response.data);
-      if (map['ok'] != true) {
-        throw EsignFailure(
-          'compose_failed',
-          detail: map['error']?.toString(),
-        );
-      }
-      return map['storage_key'] as String?;
-    } on FunctionException catch (e) {
-      final map = _asMap(e.details);
-      throw EsignFailure(
-        'compose_failed',
-        detail: map['error']?.toString(),
-      );
+      final detail = await getEsignRequest(requestId);
+      final key = detail.signedDocumentStorageKey?.trim();
+      if (key != null && key.isNotEmpty) return key;
+      return null;
+    } catch (_) {
+      return null;
     }
   }
 
   Future<String?> signedEsignDocumentUrl(String storageKey) async {
     if (storageKey.trim().isEmpty) return null;
-    return _client.storage
-        .from('esign-documents')
-        .createSignedUrl(storageKey, 3600);
+    try {
+      final map = await callRiderFunction('driverGetDownloadUrl', {
+        'bucket': 'esign-documents',
+        'object_key': storageKey,
+      });
+      final url = map['url']?.toString().trim() ?? '';
+      return url.isEmpty ? null : url;
+    } on FirebaseFunctionsException catch (e) {
+      throw EsignFailure(riderErrorCode(e), detail: e.message);
+    }
+  }
+
+  Future<String> _putViaUploadUrl({
+    required String bucket,
+    required String objectKey,
+    required String contentType,
+    required List<int> bytes,
+  }) async {
+    try {
+      final map = await callRiderFunction('driverGetUploadUrl', {
+        'bucket': bucket,
+        'object_key': objectKey,
+        'content_type': contentType,
+      });
+      final url = map['url']?.toString() ?? '';
+      final key = map['object_key']?.toString().trim();
+      if (url.isEmpty) throw const EsignFailure('network');
+      final res = await http.put(
+        Uri.parse(url),
+        headers: {'Content-Type': contentType},
+        body: bytes,
+      );
+      if (res.statusCode != 200 && res.statusCode != 201) {
+        throw const EsignFailure('network');
+      }
+      return (key != null && key.isNotEmpty) ? key : objectKey;
+    } on FirebaseFunctionsException catch (e) {
+      throw EsignFailure(riderErrorCode(e), detail: e.message);
+    }
   }
 
   Future<void> submitEsignature({
@@ -399,22 +458,25 @@ class SupportService {
     String? signerDisplayName,
     Map<String, dynamic> signerMeta = const {},
   }) async {
-    final result = await withEsignTimeout(
-      () => _client.rpc(
-        'driver_submit_esignature',
-        params: {
+    try {
+      final map = await withEsignTimeout(
+        () => callRiderFunction('driverSubmitEsignature', {
           'p_id': requestId,
           'p_signature_storage_key': signatureStorageKey,
           'p_signer_display_name': signerDisplayName,
           'p_signer_meta': signerMeta,
-        },
-      ),
-    );
-    final map = _asMap(result);
-    if (map['ok'] == false) {
+        }),
+      );
+      if (map['ok'] == false) {
+        throw EsignFailure(
+          map['error']?.toString() ?? 'sign_failed',
+          detail: map['message']?.toString(),
+        );
+      }
+    } on FirebaseFunctionsException catch (e) {
       throw EsignFailure(
-        map['error']?.toString() ?? 'sign_failed',
-        detail: map['message']?.toString(),
+        riderErrorCode(e),
+        detail: e.message,
       );
     }
   }
@@ -422,40 +484,53 @@ class SupportService {
   /// Records the first time the rider opened the document. The server keeps the
   /// earliest stamp, so re-opening is harmless.
   Future<void> markEsignViewed(String requestId) async {
-    await _client.rpc('driver_mark_esign_viewed', params: {'p_id': requestId});
+    try {
+      await callRiderFunction('driverMarkEsignViewed', {'p_id': requestId});
+    } on FirebaseFunctionsException catch (e) {
+      throw EsignFailure(riderErrorCode(e), detail: e.message);
+    }
   }
 
   Future<void> declineEsignature({
     required String requestId,
     String? reason,
   }) async {
-    final result = await withEsignTimeout(
-      () => _client.rpc(
-        'driver_decline_esignature',
-        params: {'p_id': requestId, 'p_reason': reason},
-      ),
-    );
-    final map = _asMap(result);
-    if (map['ok'] == false) {
+    try {
+      final map = await withEsignTimeout(
+        () => callRiderFunction('driverDeclineEsignature', {
+          'p_id': requestId,
+          'p_reason': reason,
+        }),
+      );
+      if (map['ok'] == false) {
+        throw EsignFailure(
+          map['error']?.toString() ?? 'decline_failed',
+          detail: map['message']?.toString(),
+        );
+      }
+    } on FirebaseFunctionsException catch (e) {
       throw EsignFailure(
-        map['error']?.toString() ?? 'decline_failed',
-        detail: map['message']?.toString(),
+        riderErrorCode(e),
+        detail: e.message,
       );
     }
   }
 
   Future<List<DriverAppointment>> listAppointments() async {
-    final result = await _client.rpc(
-      'driver_list_appointments',
-      params: {'p_limit': 50, 'p_offset': 0},
-    );
-    final map = _asMap(result);
-    if (map['ok'] == false) {
-      throw Exception(map['error']?.toString() ?? 'list_failed');
+    try {
+      final map = await callRiderFunction('driverListAppointments', {
+        'p_limit': 50,
+        'p_offset': 0,
+      });
+      if (map['ok'] == false) {
+        throw Exception(map['error']?.toString() ?? 'list_failed');
+      }
+      return _asMapList(map['rows'])
+          .map(DriverAppointment.fromJson)
+          .toList();
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception(riderErrorCode(e));
     }
-    return _asMapList(map['rows'])
-        .map(DriverAppointment.fromJson)
-        .toList();
   }
 
   Future<String> respondAppointment({
@@ -464,19 +539,19 @@ class SupportService {
     DateTime? proposedFor,
     String? note,
   }) async {
-    final result = await _client.rpc(
-      'driver_respond_appointment',
-      params: {
+    try {
+      final map = await callRiderFunction('driverRespondAppointment', {
         'p_id': appointmentId,
         'p_action': action,
         'p_proposed_for': proposedFor?.toIso8601String(),
         'p_note': note,
-      },
-    );
-    final map = _asMap(result);
-    if (map['ok'] == false) {
-      throw Exception(map['error']?.toString() ?? 'respond_failed');
+      });
+      if (map['ok'] == false) {
+        throw Exception(map['error']?.toString() ?? 'respond_failed');
+      }
+      return map['status']?.toString() ?? '';
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception(riderErrorCode(e));
     }
-    return map['status']?.toString() ?? '';
   }
 }

@@ -1,3 +1,4 @@
+import '../../core/firebase/rider_backend.dart';
 import '../../l10n/app_localizations.dart';
 
 /// A duty write the server refused outright.
@@ -13,10 +14,13 @@ enum DutyRejection {
   serverOutdated,
 }
 
-/// Classifies a PostgREST error message. Returns null for anything that could
-/// succeed on a later attempt (timeouts, 5xx, connection resets).
-DutyRejection? dutyRejectionFrom(String? message) {
-  final msg = (message ?? '').toLowerCase();
+/// Classifies a PostgREST / callable error. [String] (and `null`) stay the
+/// old path; [FirebaseFunctionsException] is read through [riderErrorCode].
+/// Returns null for anything that could succeed on a later attempt.
+DutyRejection? dutyRejectionFrom(Object? error) {
+  if (error == null) return null;
+  final raw = error is String ? error : riderErrorCode(error);
+  final msg = raw.toLowerCase();
   if (msg.isEmpty) return null;
   if (msg.contains('not_authenticated')) return DutyRejection.notAuthenticated;
   if (msg.contains('could not find the function')) {

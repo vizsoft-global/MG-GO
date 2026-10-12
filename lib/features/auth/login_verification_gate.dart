@@ -1,6 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/branding/app_branding_provider.dart';
 import '../../core/settings/live_db_refresh.dart';
@@ -12,7 +12,7 @@ final loginVerificationRefreshListenableProvider =
   final listenable = LoginVerificationRefreshListenable();
   ref.onDispose(listenable.dispose);
 
-  final sub = Supabase.instance.client.auth.onAuthStateChange.listen((_) {
+  final sub = FirebaseAuth.instance.authStateChanges().listen((_) {
     listenable.refresh();
   });
   ref.onDispose(sub.cancel);
@@ -46,7 +46,7 @@ class LoginVerificationRefreshListenable extends ChangeNotifier {
   bool? get needsCapture => _needsCapture;
 
   Future<void> refresh({bool syncGlobalFromNetwork = true}) async {
-    final userId = Supabase.instance.client.auth.currentUser?.id;
+    final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) {
       if (_needsCapture != false) {
         _needsCapture = false;
@@ -70,7 +70,7 @@ class LoginVerificationRefreshListenable extends ChangeNotifier {
 
 /// Resolves post-login destination: verification gate or home.
 Future<String> resolvePostLoginLocation() async {
-  final userId = Supabase.instance.client.auth.currentUser?.id;
+  final userId = FirebaseAuth.instance.currentUser?.uid;
   if (userId == null) return '/login';
   await LoginVerificationStore.syncExemptFlagsFromNetwork(userId);
   final needs = await LoginVerificationStore.needsCapture(userId);

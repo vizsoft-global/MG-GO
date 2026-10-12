@@ -1,10 +1,11 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+import '../firebase/rider_backend.dart';
 import 'telemetry_context_sanitizer.dart';
 import 'telemetry_event.dart';
 import 'telemetry_event_types.dart';
@@ -183,7 +184,7 @@ class TelemetryService {
     final reader = _uidReader;
     if (reader != null) return reader();
     try {
-      return Supabase.instance.client.auth.currentUser?.id;
+      return FirebaseAuth.instance.currentUser?.uid;
     } catch (_) {
       return null;
     }
@@ -192,8 +193,10 @@ class TelemetryService {
   Future<Object?> _callRpc(List<Map<String, Object?>> events) {
     final rpc = _rpc;
     if (rpc != null) return rpc(events);
-    return Supabase.instance.client
-        .rpc('driver_ingest_telemetry', params: {'p_events': events});
+    return callRiderFunction('driverIngestTelemetry', {
+      'p_events': events,
+      'events': events,
+    });
   }
 
   /// True when there is nothing worth a network call, so the 60s timer stays
@@ -273,11 +276,19 @@ class TelemetryService {
       );
       return classifyTelemetryResponse(result);
     } catch (error) {
-      // Transport, timeout or server fault: keep the rows and back off.
-      return TelemetryFlushOutcome(
-        disposition: TelemetryFlushDisposition.retryLater,
-        error: error.runtimeType.toString(),
-      );
+      final code = riderErrorCode(error);
+      switch (code) {
+        case 'not_authenticated':
+        case 'not_a_driver':
+        case 'batch_too_large':
+        case 'invalid_payload':
+          return classifyTelemetryResponse({'ok': false, 'error': code});
+        default:
+          return TelemetryFlushOutcome(
+            disposition: TelemetryFlushDisposition.retryLater,
+            error: error.runtimeType.toString(),
+          );
+      }
     }
   }
 

@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/offline/network_status_provider.dart';
 import '../../core/offline/offline_repo.dart';
@@ -10,7 +9,6 @@ export 'earnings_service.dart' show EarningsMonth, EarningsServiceException;
 
 final earningsServiceProvider = Provider<EarningsService>((ref) {
   return EarningsService(
-    Supabase.instance.client,
     ref.read(offlineRepoProvider),
     ref.read(networkStatusProvider.notifier),
   );

@@ -1,7 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/app_update/force_update_gate.dart';
@@ -196,7 +196,7 @@ class _UpdateRequiredScreenState extends ConsumerState<UpdateRequiredScreen> {
       demandNotifier.clear();
       // A per-driver demand is decided by the driver row, not app_settings:
       // re-read it, and stay on the gate while the admin's flag still holds.
-      if (Supabase.instance.client.auth.currentSession != null) {
+      if (FirebaseAuth.instance.currentUser != null) {
         final status =
             await ref.read(riderAuthServiceProvider).fetchAppAccessStatus();
         if (!mounted) return;
@@ -213,8 +213,7 @@ class _UpdateRequiredScreenState extends ConsumerState<UpdateRequiredScreen> {
         context.go('/maintenance');
         return;
       }
-      final session = Supabase.instance.client.auth.currentSession;
-      if (session == null) {
+      if (FirebaseAuth.instance.currentUser == null) {
         context.go('/login');
         return;
       }

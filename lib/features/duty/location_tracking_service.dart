@@ -1,10 +1,9 @@
-import 'dart:convert';
-
 import 'package:battery_plus/battery_plus.dart';
-import 'package:http/http.dart' as http;
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-import '../../core/config/env.dart';
+import '../../core/firebase/rider_backend.dart';
+import '../../core/firebase/rider_callable_http.dart';
 import '../../core/l10n/localizations_loader.dart';
 import '../../core/offline/network_status_provider.dart';
 import '../../core/offline/offline_repo.dart';
@@ -92,9 +91,8 @@ class LocationReportExtras {
 }
 
 class LocationTrackingService {
-  LocationTrackingService(this._client, this._offlineRepo, this._networkStatus);
+  LocationTrackingService(this._offlineRepo, this._networkStatus);
 
-  final SupabaseClient _client;
   final OfflineRepo _offlineRepo;
   final NetworkStatusController _networkStatus;
 
@@ -109,7 +107,7 @@ class LocationTrackingService {
     bool forceHistory = false,
     LocationReportExtras extras = const LocationReportExtras(),
   }) async {
-    final userId = _client.auth.currentUser?.id;
+    final userId = FirebaseAuth.instance.currentUser?.uid;
     if (_networkStatus.isOffline && userId != null) {
       await _offlineRepo.queueLocation(
         userId: userId,
@@ -138,28 +136,23 @@ class LocationTrackingService {
       );
     }
     try {
-      final result = await _client.rpc(
-        'driver_report_location',
-        params: {
-          'p_latitude': latitude,
-          'p_longitude': longitude,
-          'p_speed_mps': speedMps,
-          'p_accuracy_meters': accuracyMeters,
-          'p_battery_pct': batteryPct,
-          'p_tracking_status': trackingStatus.apiValue,
-          'p_delivery_id': deliveryId,
-          'p_force_history': forceHistory,
-          ...extras.toRpcParams(),
-        },
-      );
-      final map = result is Map<String, dynamic>
-          ? result
-          : Map<String, dynamic>.from(result as Map);
+      final map = await callRiderFunction('driverReportLocation', {
+        'p_latitude': latitude,
+        'p_longitude': longitude,
+        'p_speed_mps': speedMps,
+        'p_accuracy_meters': accuracyMeters,
+        'p_battery_pct': batteryPct,
+        'p_tracking_status': trackingStatus.apiValue,
+        'p_delivery_id': deliveryId,
+        'p_force_history': forceHistory,
+        ...extras.toRpcParams(),
+      });
       _networkStatus.recordRpcSuccess();
       return LocationReportResult.fromJson(map);
-    } on PostgrestException catch (e) {
+    } on FirebaseFunctionsException catch (e) {
       _networkStatus.recordRpcFailure();
-      if (userId != null && _isRecoverableNetworkError(e.message)) {
+      final message = riderErrorCode(e);
+      if (userId != null && _isRecoverableNetworkError(message)) {
         await _offlineRepo.queueLocation(
           userId: userId,
           latitude: latitude,
@@ -186,7 +179,7 @@ class LocationTrackingService {
           trackingStatus: 'queued',
         );
       }
-      throw LocationTrackingException(await _friendlyError(e.message));
+      throw LocationTrackingException(await _friendlyError(message));
     }
   }
 
@@ -226,38 +219,30 @@ Future<LocationReportResult> reportLocationViaHttp({
   bool forceHistory = false,
   LocationReportExtras extras = const LocationReportExtras(),
 }) async {
-  final uri = Uri.parse(
-    '${Env.supabaseUrl}/rest/v1/rpc/driver_report_location',
-  );
-  final response = await http.post(
-    uri,
-    headers: {
-      'Authorization': 'Bearer $accessToken',
-      'apikey': Env.supabaseAnonKey,
-      'Content-Type': 'application/json',
-    },
-    body: jsonEncode({
-      'p_latitude': latitude,
-      'p_longitude': longitude,
-      'p_speed_mps': speedMps,
-      'p_accuracy_meters': accuracyMeters,
-      'p_battery_pct': batteryPct,
-      'p_tracking_status': trackingStatus.apiValue,
-      'p_delivery_id': deliveryId,
-      'p_force_history': forceHistory,
-      ...extras.toRpcParams(),
-    }),
-  );
-
-  if (response.statusCode < 200 || response.statusCode >= 300) {
+  final idToken = await DutySessionStorage.readCallableToken() ?? accessToken;
+  try {
+    final map = await callRiderFunctionHttp(
+      name: 'driverReportLocation',
+      idToken: idToken,
+      data: {
+        'p_latitude': latitude,
+        'p_longitude': longitude,
+        'p_speed_mps': speedMps,
+        'p_accuracy_meters': accuracyMeters,
+        'p_battery_pct': batteryPct,
+        'p_tracking_status': trackingStatus.apiValue,
+        'p_delivery_id': deliveryId,
+        'p_force_history': forceHistory,
+        ...extras.toRpcParams(),
+      },
+    );
+    return LocationReportResult.fromJson(map);
+  } on RiderCallableHttpException catch (e) {
     throw LocationTrackingHttpException(
-      await decodeRpcError(response.body),
-      statusCode: response.statusCode,
+      e.code,
+      statusCode: e.statusCode ?? 500,
     );
   }
-
-  final map = jsonDecode(response.body) as Map<String, dynamic>;
-  return LocationReportResult.fromJson(map);
 }
 
 Future<Map<String, dynamic>> setDutyStateViaHttp({
@@ -265,52 +250,45 @@ Future<Map<String, dynamic>> setDutyStateViaHttp({
   required bool isOnDuty,
   required bool isOnline,
 }) async {
-  final uri = Uri.parse('${Env.supabaseUrl}/rest/v1/rpc/driver_set_duty_state');
-  final response = await http.post(
-    uri,
-    headers: {
-      'Authorization': 'Bearer $accessToken',
-      'apikey': Env.supabaseAnonKey,
-      'Content-Type': 'application/json',
-    },
-    body: jsonEncode({'p_is_on_duty': isOnDuty, 'p_is_online': isOnline}),
-  );
-
-  if (response.statusCode < 200 || response.statusCode >= 300) {
-    throw LocationTrackingException(await decodeRpcError(response.body));
+  final idToken = await DutySessionStorage.readCallableToken() ?? accessToken;
+  try {
+    return await callRiderFunctionHttp(
+      name: 'driverSetDutyState',
+      idToken: idToken,
+      data: {
+        'is_on_duty': isOnDuty,
+        'is_online': isOnline,
+        'p_is_on_duty': isOnDuty,
+        'p_is_online': isOnline,
+      },
+    );
+  } on RiderCallableHttpException catch (e) {
+    throw LocationTrackingHttpException(
+      e.code,
+      statusCode: e.statusCode ?? 500,
+    );
   }
-
-  return Map<String, dynamic>.from(jsonDecode(response.body) as Map);
 }
 
 Future<Map<String, dynamic>> clearLiveLocationViaHttp({
   required String accessToken,
 }) async {
-  final uri = Uri.parse(
-    '${Env.supabaseUrl}/rest/v1/rpc/driver_clear_live_location',
-  );
-  final response = await http.post(
-    uri,
-    headers: {
-      'Authorization': 'Bearer $accessToken',
-      'apikey': Env.supabaseAnonKey,
-      'Content-Type': 'application/json',
-    },
-    body: '{}',
-  );
-
-  if (response.statusCode < 200 || response.statusCode >= 300) {
-    throw LocationTrackingException(await decodeRpcError(response.body));
+  final idToken = await DutySessionStorage.readCallableToken() ?? accessToken;
+  try {
+    return await callRiderFunctionHttp(
+      name: 'driverClearLiveLocation',
+      idToken: idToken,
+    );
+  } on RiderCallableHttpException catch (e) {
+    throw LocationTrackingException(e.code);
   }
-
-  return Map<String, dynamic>.from(jsonDecode(response.body) as Map);
 }
 
 /// Re-reads the duty session from disk. Only the foreground service needs this; the UI
 /// isolate is the writer and its cache is never behind. See [DutySessionStorage].
 Future<void> reloadDutySession() => DutySessionStorage.reload();
 
-Future<String?> readDutyAccessToken() => DutySessionStorage.readAccessToken();
+Future<String?> readDutyAccessToken() => DutySessionStorage.readCallableToken();
 
 Future<void> persistDutyAccessToken(String token) =>
     DutySessionStorage.saveAccessToken(token);

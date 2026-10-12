@@ -17,6 +17,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// start and once per watchdog tick, which is where these values are actually consumed.
 class DutySessionStorage {
   static const _accessTokenKey = 'duty_tracking_access_token';
+  static const _idTokenKey = 'duty_tracking_firebase_id_token';
   static const _activeDeliveryIdKey = 'duty_active_delivery_id';
   static const _dutyStateVersionKey = 'duty_state_version';
 
@@ -36,9 +37,28 @@ class DutySessionStorage {
     return prefs.getString(_accessTokenKey);
   }
 
+  static Future<void> saveIdToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_idTokenKey, token);
+  }
+
+  static Future<String?> readIdToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_idTokenKey);
+  }
+
+  /// Isolate / HTTP callables: Firebase idToken first. A leftover
+  /// [_accessTokenKey] may still exist from older builds.
+  static Future<String?> readCallableToken() async {
+    final idToken = await readIdToken();
+    if (idToken != null && idToken.isNotEmpty) return idToken;
+    return readAccessToken();
+  }
+
   static Future<void> clearAccessToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_accessTokenKey);
+    await prefs.remove(_idTokenKey);
   }
 
   static const _activeDeliveryOrderIdKey = 'duty_active_delivery_order_id';

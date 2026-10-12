@@ -253,7 +253,7 @@ class LivePositionPublisher {
   int? get lastStatusCode => _lastStatusCode;
 
   /// The Worker rejected the bearer token on the last publish. It validates
-  /// the same Supabase JWT PostgREST does, so this is the same expired token.
+  /// the Firebase ID token (JWKS RS256), so this is the same expired token.
   bool get lastPublishAuthRejected => _lastStatusCode == 401;
 
   void add(LiveFix fix) {

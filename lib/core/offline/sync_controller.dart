@@ -1,10 +1,11 @@
 import 'dart:io';
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../config/env.dart';
+import '../firebase/rider_backend.dart';
 import '../../features/duty/adaptive_location_scheduler.dart';
 import '../../features/duty/duty_session_storage.dart';
 import '../../features/duty/live_position_publisher.dart';
@@ -71,7 +72,7 @@ class SyncController extends Notifier<SyncState> {
 
   Future<void> drain() async {
     if (_busy) return;
-    final userId = Supabase.instance.client.auth.currentUser?.id;
+    final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) return;
 
     _busy = true;
@@ -189,7 +190,7 @@ class SyncController extends Notifier<SyncState> {
 
   Future<int> _syncShiftRows(List<Map<String, Object?>> rows) async {
     var synced = 0;
-    final token = Supabase.instance.client.auth.currentSession?.accessToken;
+    final token = await FirebaseAuth.instance.currentUser?.getIdToken();
     if (token == null) return synced;
     for (final row in rows) {
       final id = row['id'];
@@ -198,7 +199,7 @@ class SyncController extends Notifier<SyncState> {
       try {
         final payload = Map<String, dynamic>.from(jsonDecode(raw) as Map);
         final shift = await submitShiftViaHttp(accessToken: token, payload: payload);
-        final userId = Supabase.instance.client.auth.currentUser?.id;
+        final userId = FirebaseAuth.instance.currentUser?.uid;
         if (userId != null) {
           await ref.read(offlineRepoProvider).saveActiveShiftCache(
                 userId,
@@ -228,7 +229,7 @@ class SyncController extends Notifier<SyncState> {
 
   Future<int> _syncDutyRows(List<Map<String, Object?>> rows) async {
     var synced = 0;
-    final token = Supabase.instance.client.auth.currentSession?.accessToken;
+    final token = await FirebaseAuth.instance.currentUser?.getIdToken();
     if (token == null) return synced;
     for (final row in rows) {
       final id = row['id'];
@@ -269,7 +270,7 @@ class SyncController extends Notifier<SyncState> {
 
   Future<int> _syncLocationRows(List<Map<String, Object?>> rows) async {
     var synced = 0;
-    final token = Supabase.instance.client.auth.currentSession?.accessToken;
+    final token = await FirebaseAuth.instance.currentUser?.getIdToken();
     if (token == null) return synced;
 
     // Queued points are history, not "where the driver is now". Sent through the
@@ -419,14 +420,12 @@ class SyncController extends Notifier<SyncState> {
 
   Future<int> _syncPickupRows(List<Map<String, Object?>> rows) async {
     var synced = 0;
-    final client = Supabase.instance.client;
     final deliveryService = DeliveryService(
-      client,
       ref.read(offlineRepoProvider),
       ref.read(networkStatusProvider.notifier),
       ref.read(deviceIdentityServiceProvider),
     );
-    final uploadService = DriverUploadService(client);
+    final uploadService = DriverUploadService();
 
     for (final row in rows) {
       final id = row['id'] as String?;
@@ -470,14 +469,12 @@ class SyncController extends Notifier<SyncState> {
 
   Future<int> _syncCompletionRows(List<Map<String, Object?>> rows) async {
     var synced = 0;
-    final client = Supabase.instance.client;
     final deliveryService = DeliveryService(
-      client,
       ref.read(offlineRepoProvider),
       ref.read(networkStatusProvider.notifier),
       ref.read(deviceIdentityServiceProvider),
     );
-    final uploadService = DriverUploadService(client);
+    final uploadService = DriverUploadService();
 
     for (final row in rows) {
       final id = row['id'] as String?;
@@ -590,14 +587,12 @@ class SyncController extends Notifier<SyncState> {
 
   Future<int> _syncDeliveryRows(List<Map<String, Object?>> rows) async {
     var synced = 0;
-    final client = Supabase.instance.client;
     final deliveryService = DeliveryService(
-      client,
       ref.read(offlineRepoProvider),
       ref.read(networkStatusProvider.notifier),
       ref.read(deviceIdentityServiceProvider),
     );
-    final uploadService = DriverUploadService(client);
+    final uploadService = DriverUploadService();
 
     for (final row in rows) {
       final id = row['id'] as String?;
@@ -658,7 +653,7 @@ class SyncController extends Notifier<SyncState> {
 
   Future<int> _syncSecurityRows(List<Map<String, Object?>> rows) async {
     var synced = 0;
-    final token = Supabase.instance.client.auth.currentSession?.accessToken;
+    final token = await FirebaseAuth.instance.currentUser?.getIdToken();
     if (token == null) return synced;
     for (final row in rows) {
       final id = row['id'];
@@ -693,10 +688,9 @@ class SyncController extends Notifier<SyncState> {
 
   Future<int> _syncLoginVerificationRows(List<Map<String, Object?>> rows) async {
     var synced = 0;
-    final client = Supabase.instance.client;
-    final userId = client.auth.currentUser?.id;
+    final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null || rows.isEmpty) return synced;
-    final uploadService = DriverUploadService(client);
+    final uploadService = DriverUploadService();
     final nowMs = DateTime.now().millisecondsSinceEpoch;
 
     for (final row in rows) {
@@ -735,14 +729,11 @@ class SyncController extends Notifier<SyncState> {
         );
         final livenessPassed = (row['liveness_passed'] as int?) == 1;
         final livenessMethod = row['liveness_method'] as String?;
-        await client.rpc(
-          'driver_record_login_verification',
-          params: {
-            'p_object_key': upload.objectKey,
-            'p_liveness_passed': livenessPassed,
-            'p_liveness_method': livenessMethod,
-          },
-        );
+        await callRiderFunction('driverRecordLoginVerification', {
+          'p_object_key': upload.objectKey,
+          'p_liveness_passed': livenessPassed,
+          'p_liveness_method': livenessMethod,
+        });
         await OfflineDb.instance.deletePendingById(
           table: 'pending_login_verifications',
           id: id,

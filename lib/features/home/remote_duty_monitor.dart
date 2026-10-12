@@ -1,10 +1,11 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../app.dart';
+import '../../core/firebase/rider_backend.dart';
 import '../../core/l10n/localizations_loader.dart';
 import '../../core/settings/live_db_refresh.dart';
 import '../duty/duty_session_gate_provider.dart';
@@ -95,17 +96,13 @@ class _RemoteDutyMonitor with WidgetsBindingObserver {
 
   Future<void> _sync() async {
     if (_inFlight) return;
-    final client = Supabase.instance.client;
-    final userId = client.auth.currentUser?.id;
+    final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) return;
 
     _inFlight = true;
     try {
-      final row = await client
-          .from('drivers')
-          .select('is_on_duty')
-          .eq('id', userId)
-          .maybeSingle();
+      final row = (await riderFirestore().collection('drivers').doc(userId).get())
+          .data();
       if (row == null) return;
 
       final remoteOnDuty = row['is_on_duty'] == true;
@@ -151,15 +148,13 @@ class _RemoteDutyMonitor with WidgetsBindingObserver {
       return;
     }
 
-    final client = Supabase.instance.client;
-    final log = await client
-        .from('attendance_logs')
-        .select('check_out_reason, check_out_at')
-        .eq('driver_id', userId)
-        .not('check_out_at', 'is', null)
-        .order('check_out_at', ascending: false)
+    final logs = await riderFirestore()
+        .collection('attendance_logs')
+        .where('driver_id', isEqualTo: userId)
+        .orderBy('check_out_at', descending: true)
         .limit(1)
-        .maybeSingle();
+        .get();
+    final log = logs.docs.isEmpty ? null : logs.docs.first.data();
 
     final reason = log?['check_out_reason'] as String?;
     if (reason == 'auto_shift_end') {

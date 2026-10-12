@@ -1,6 +1,15 @@
 import 'package:dpd_userapp/features/deliveries/delivery_service.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+
+class _CodedError {
+  _CodedError(this.code, [this.message = '']);
+
+  final String code;
+  final String message;
+
+  @override
+  String toString() => message;
+}
 
 void main() {
   test('select without shift_date omits the column', () {
@@ -17,10 +26,7 @@ void main() {
   test('42703 is treated as a missing shift_date column', () {
     expect(
       isMissingShiftDateColumn(
-        PostgrestException(
-          message: 'column deliveries.shift_date does not exist',
-          code: '42703',
-        ),
+        _CodedError('42703', 'column deliveries.shift_date does not exist'),
       ),
       isTrue,
     );
@@ -29,7 +35,7 @@ void main() {
   test('unrelated errors are not a missing-column fallback', () {
     expect(
       isMissingShiftDateColumn(
-        PostgrestException(message: 'permission denied', code: '42501'),
+        _CodedError('42501', 'permission denied'),
       ),
       isFalse,
     );

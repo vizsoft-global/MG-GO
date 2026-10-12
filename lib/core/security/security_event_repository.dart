@@ -1,24 +1,23 @@
-import 'dart:convert';
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
-import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../config/env.dart';
+import '../firebase/rider_backend.dart';
 import '../offline/offline_db.dart';
 import 'security_event_types.dart';
 
 final securityEventRepositoryProvider = Provider<SecurityEventRepository>((
   ref,
 ) {
-  return SecurityEventRepository(Supabase.instance.client);
+  return SecurityEventRepository();
 });
 
 class SecurityEventRepository {
-  SecurityEventRepository(this._client);
-
-  final SupabaseClient _client;
+  /// [unused] kept so uneditable callers (`device_location_resolver`) can still
+  /// construct without a client; events go through [sendSecurityEvent] /
+  /// `driverLogSecurityEvent`.
+  SecurityEventRepository([Object? unused]);
 
   Future<void> logEvent({
     required SecurityEventType type,
@@ -26,20 +25,17 @@ class SecurityEventRepository {
     Map<String, dynamic>? context,
     bool queueOnFailure = true,
   }) async {
-    final userId = _client.auth.currentUser?.id;
+    final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) return;
 
     final eventContext = <String, dynamic>{...?context};
     final device = _defaultDevicePayload();
     try {
-      await _client.rpc(
-        'driver_log_security_event',
-        params: {
-          'p_event_type': type.value,
-          'p_severity': severity.value,
-          'p_context': eventContext,
-          'p_device': device,
-        },
+      await sendSecurityEvent(
+        type: type,
+        severity: severity,
+        context: eventContext,
+        device: device,
       );
     } catch (e) {
       if (!queueOnFailure) rethrow;
@@ -62,6 +58,8 @@ class SecurityEventRepository {
   }
 }
 
+/// Offline drain / duty isolate still pass [accessToken]. Ignored — the
+/// callable uses the Firebase ID token on the Functions client.
 Future<void> logSecurityEventViaHttp({
   required String accessToken,
   required SecurityEventType eventType,
@@ -69,24 +67,30 @@ Future<void> logSecurityEventViaHttp({
   Map<String, dynamic>? context,
   Map<String, dynamic>? device,
 }) async {
-  final uri = Uri.parse(
-    '${Env.supabaseUrl}/rest/v1/rpc/driver_log_security_event',
+  await sendSecurityEvent(
+    type: eventType,
+    severity: severity,
+    context: context,
+    device: device,
   );
-  final response = await http.post(
-    uri,
-    headers: {
-      'Authorization': 'Bearer $accessToken',
-      'apikey': Env.supabaseAnonKey,
-      'Content-Type': 'application/json',
-    },
-    body: jsonEncode({
-      'p_event_type': eventType.value,
-      'p_severity': severity.value,
-      'p_context': context ?? const <String, dynamic>{},
-      'p_device': device ?? const <String, dynamic>{},
-    }),
-  );
-  if (response.statusCode < 200 || response.statusCode >= 300) {
-    throw Exception('Failed to log security event: ${response.body}');
-  }
+}
+
+/// TODO: `driverLogSecurityEvent` is not exported from Admin
+/// `functions/src/index.ts`. Call the SQL camelCase name anyway; queue on miss.
+Future<void> sendSecurityEvent({
+  required SecurityEventType type,
+  SecuritySeverity severity = SecuritySeverity.warning,
+  Map<String, dynamic>? context,
+  Map<String, dynamic>? device,
+}) async {
+  await callRiderFunction('driverLogSecurityEvent', {
+    'p_event_type': type.value,
+    'eventType': type.value,
+    'p_severity': severity.value,
+    'severity': severity.value,
+    'p_context': context ?? const <String, dynamic>{},
+    'context': context ?? const <String, dynamic>{},
+    'p_device': device ?? const <String, dynamic>{},
+    'device': device ?? const <String, dynamic>{},
+  });
 }

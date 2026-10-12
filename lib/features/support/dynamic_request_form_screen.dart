@@ -1,10 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/firebase/rider_backend.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
@@ -141,23 +143,20 @@ class _DynamicRequestFormScreenState
   }
 
   Future<List<Map<String, dynamic>>> _uploadFiles() async {
-    final uid = Supabase.instance.client.auth.currentUser?.id;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) throw Exception('not_authenticated');
     final out = <Map<String, dynamic>>[];
     final capturedAt = DateTime.now();
     for (final file in _files) {
       final key = '$uid/${DateTime.now().millisecondsSinceEpoch}_${file.name}';
-      await Supabase.instance.client.storage
-          .from('request-attachments')
-          .uploadBinary(
-            key,
-            file.bytes,
-            fileOptions:
-                FileOptions(contentType: file.contentType, upsert: false),
-          );
+      final stored = await _putRequestAttachment(
+        objectKey: key,
+        bytes: file.bytes,
+        contentType: file.contentType,
+      );
       out.add(
         createAttachmentPayload(
-          storageKey: key,
+          storageKey: stored,
           fileName: file.name,
           contentType: file.contentType,
           byteSize: file.bytes.length,
@@ -172,23 +171,20 @@ class _DynamicRequestFormScreenState
   }
 
   Future<List<Map<String, dynamic>>> _uploadKindFiles() async {
-    final uid = Supabase.instance.client.auth.currentUser?.id;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) throw Exception('not_authenticated');
     final out = <Map<String, dynamic>>[];
     for (final file in _kindFiles.values) {
       final key =
           '$uid/${DateTime.now().millisecondsSinceEpoch}_${file.spec.kind}.jpg';
-      await Supabase.instance.client.storage
-          .from('request-attachments')
-          .uploadBinary(
-            key,
-            file.bytes,
-            fileOptions:
-                FileOptions(contentType: file.contentType, upsert: false),
-          );
+      final stored = await _putRequestAttachment(
+        objectKey: key,
+        bytes: file.bytes,
+        contentType: file.contentType,
+      );
       out.add(
         createAttachmentPayload(
-          storageKey: key,
+          storageKey: stored,
           fileName: file.name,
           contentType: file.contentType,
           byteSize: file.bytes.length,
@@ -200,6 +196,30 @@ class _DynamicRequestFormScreenState
       );
     }
     return out;
+  }
+
+  Future<String> _putRequestAttachment({
+    required String objectKey,
+    required List<int> bytes,
+    required String contentType,
+  }) async {
+    final map = await callRiderFunction('driverGetUploadUrl', {
+      'bucket': 'request-attachments',
+      'object_key': objectKey,
+      'content_type': contentType,
+    });
+    final url = map['url']?.toString() ?? '';
+    final stored = map['object_key']?.toString().trim();
+    if (url.isEmpty) throw Exception('upload_url_missing');
+    final res = await http.put(
+      Uri.parse(url),
+      headers: {'Content-Type': contentType},
+      body: bytes,
+    );
+    if (res.statusCode != 200 && res.statusCode != 201) {
+      throw Exception('upload_failed');
+    }
+    return (stored != null && stored.isNotEmpty) ? stored : objectKey;
   }
 
   static String _isoDate(DateTime d) =>

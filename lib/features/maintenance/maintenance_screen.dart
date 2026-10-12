@@ -1,7 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/branding/app_branding.dart';
 import '../../core/branding/app_branding_provider.dart';
@@ -47,8 +47,7 @@ class MaintenanceScreen extends ConsumerWidget {
     final settings = ref.read(appBrandingProvider).value;
     if (!context.mounted || settings == null) return;
     if (!settings.maintenanceMode) {
-      final session = Supabase.instance.client.auth.currentSession;
-      if (session == null) {
+      if (FirebaseAuth.instance.currentUser == null) {
         context.go('/login');
         return;
       }
