@@ -15,6 +15,10 @@ void main() {
       mapPasscodeLoginError('invalid_credentials'),
       RiderAuthFailure.invalidCredentials,
     );
+    expect(
+      mapPasscodeLoginError('server_error'),
+      RiderAuthFailure.unknown,
+    );
   });
 
   testWidgets('archived account shows an archive message, not invalid credentials',

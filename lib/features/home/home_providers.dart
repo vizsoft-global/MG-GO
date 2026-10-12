@@ -1,5 +1,6 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/app_update/force_update_state.dart';
@@ -58,7 +59,11 @@ class HomeService {
       _networkStatus.recordRpcSuccess();
       await _persistFirebaseIdToken();
       if (userId != null) {
-        await _offlineRepo.saveHomeDashboardCache(userId, map);
+        try {
+          await _offlineRepo.saveHomeDashboardCache(userId, map);
+        } catch (error, stack) {
+          debugPrint('saveHomeDashboardCache failed: $error\n$stack');
+        }
       }
       return HomeDashboard.fromJson(map);
     } on FirebaseFunctionsException catch (e) {
@@ -68,7 +73,7 @@ class HomeService {
       }
       _networkStatus.recordRpcFailure();
       if (userId != null) {
-        final cached = await _offlineRepo.loadHomeDashboardCache(userId);
+        final cached = await _loadHomeDashboardCache(userId);
         if (cached != null) {
           final token = await DutySessionStorage.readCallableToken();
           return HomeDashboard.fromJson(
@@ -107,7 +112,11 @@ class HomeService {
       _networkStatus.recordRpcSuccess();
       await _persistFirebaseIdToken();
       if (userId != null) {
-        await _offlineRepo.saveHomeDashboardCache(userId, map);
+        try {
+          await _offlineRepo.saveHomeDashboardCache(userId, map);
+        } catch (error, stack) {
+          debugPrint('saveHomeDashboardCache failed: $error\n$stack');
+        }
       }
       return HomeDashboard.fromJson(map);
     } on FirebaseFunctionsException catch (e) {
@@ -120,12 +129,16 @@ class HomeService {
       }
       _networkStatus.recordRpcFailure();
       if (userId != null) {
-        await _offlineRepo.queueDutyState(
-          userId: userId,
-          isOnDuty: isOnDuty,
-          isOnline: isOnline,
-        );
-        final cached = await _offlineRepo.loadHomeDashboardCache(userId);
+        try {
+          await _offlineRepo.queueDutyState(
+            userId: userId,
+            isOnDuty: isOnDuty,
+            isOnline: isOnline,
+          );
+        } catch (error, stack) {
+          debugPrint('queueDutyState failed: $error\n$stack');
+        }
+        final cached = await _loadHomeDashboardCache(userId);
         if (cached != null) {
           return HomeDashboard.fromJson(cached);
         }
@@ -136,6 +149,15 @@ class HomeService {
 
   String _friendlyError(Object e) {
     return friendlyHomeDutyError(riderErrorCode(e));
+  }
+
+  Future<Map<String, dynamic>?> _loadHomeDashboardCache(String userId) async {
+    try {
+      return await _offlineRepo.loadHomeDashboardCache(userId);
+    } catch (error, stack) {
+      debugPrint('loadHomeDashboardCache failed: $error\n$stack');
+      return null;
+    }
   }
 }
 

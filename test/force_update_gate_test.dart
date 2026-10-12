@@ -139,8 +139,23 @@ void main() {
     test('ignores every other error body', () {
       expect(parseUpdateRequired({'error': 'device_conflict'}), isNull);
       expect(parseUpdateRequired({'error': 'invalid_credentials'}), isNull);
+      expect(parseUpdateRequired({'error': 'driver_blocked'}), isNull);
       expect(parseUpdateRequired('not json'), isNull);
       expect(parseUpdateRequired(null), isNull);
+    });
+
+    test('reads driver_blocked when the function also set update_required', () {
+      final parsed = parseUpdateRequired({
+        'error': 'driver_blocked',
+        'update_required': true,
+        'min_version_code': 95,
+        'min_version_name': '1.1.25',
+        'message': 'Please update',
+      });
+      expect(parsed, isA<UpdateRequiredException>());
+      expect(parsed!.minVersionCode, 95);
+      expect(parsed.minVersionName, '1.1.25');
+      expect(parsed.message, 'Please update');
     });
 
     test('reads callable details.error == update_required', () {

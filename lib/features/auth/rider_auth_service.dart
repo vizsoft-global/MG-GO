@@ -45,7 +45,7 @@ RiderAuthFailure mapPasscodeLoginError(String error) {
     'driver_suspended' => RiderAuthFailure.driverSuspended,
     'driver_archived' => RiderAuthFailure.driverArchived,
     'invalid_credentials' => RiderAuthFailure.invalidCredentials,
-    _ => RiderAuthFailure.invalidCredentials,
+    _ => RiderAuthFailure.unknown,
   };
 }
 
@@ -80,7 +80,10 @@ UpdateRequiredException? parseUpdateRequired(dynamic details) {
       if (parsed is Map) payload = Map<String, dynamic>.from(parsed);
     } catch (_) {}
   }
-  if (payload == null || payload['error'] != 'update_required') return null;
+  if (payload == null) return null;
+  final updateRequired =
+      payload['error'] == 'update_required' || payload['update_required'] == true;
+  if (!updateRequired) return null;
 
   final rawCode = payload['min_version_code'];
   final minCode = rawCode is int
