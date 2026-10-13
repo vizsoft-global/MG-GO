@@ -1099,7 +1099,7 @@
   "esignDownloadSignedCopy": "تنزيل النسخة الموقّعة",
   "esignDownloadDocument": "تنزيل المستند",
   "esignNoDocumentToDownload": "لا يوجد مستند متاح للتنزيل",
-  "esignSignedCopyReady": "تم ختم توقيعك في الصفحة الأخيرة من هذه النسخة.",
+  "esignSignedCopyReady": "تم ختم توقيعك في مربع توقيع الموظف على هذه النسخة.",
   "esignSignedCopyPending": "يجري تجهيز نسختك الموقّعة — هذه هي النسخة الأصلية حتى تصبح جاهزة. أعد فتح هذه الشاشة بعد قليل.",
   "esignSignedCopyUnavailable": "النسخة الموقّعة غير متاحة، لذا هذه هي النسخة الأصلية المرسلة إليك. توقيعك محفوظ مع الطلب.",
   "esignBackToDocuments": "العودة إلى المستندات",

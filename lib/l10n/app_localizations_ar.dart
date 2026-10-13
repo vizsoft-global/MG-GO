@@ -3438,7 +3438,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get esignSignedCopyReady =>
-      'تم ختم توقيعك في الصفحة الأخيرة من هذه النسخة.';
+      'تم ختم توقيعك في مربع توقيع الموظف على هذه النسخة.';
 
   @override
   String get esignSignedCopyPending =>

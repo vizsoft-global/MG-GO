@@ -6232,7 +6232,7 @@ abstract class AppLocalizations {
   /// No description provided for @esignSignedCopyReady.
   ///
   /// In en, this message translates to:
-  /// **'Your signature is stamped on the last page of this copy.'**
+  /// **'Your signature is stamped in the employee signature box on this copy.'**
   String get esignSignedCopyReady;
 
   /// No description provided for @esignSignedCopyPending.

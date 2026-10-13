@@ -1862,7 +1862,7 @@
   "esignDownloadSignedCopy": "Download signed copy",
   "esignDownloadDocument": "Download document",
   "esignNoDocumentToDownload": "No document available to download",
-  "esignSignedCopyReady": "Your signature is stamped on the last page of this copy.",
+  "esignSignedCopyReady": "Your signature is stamped in the employee signature box on this copy.",
   "esignSignedCopyPending": "Preparing your signed copy — this is the original document until it is ready. Reopen this screen in a moment.",
   "esignSignedCopyUnavailable": "Signed copy unavailable, so this is the original document you were sent. Your signature is stored with the request.",
   "esignBackToDocuments": "Back to documents",

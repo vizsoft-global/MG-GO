@@ -100,7 +100,14 @@ const internalRequestPayloadKeys = {
   'created_on_behalf_by',
   'created_on_behalf_by_name',
   'created_on_behalf_at',
+  'closing_remark',
 };
+
+/// Staff closing text on a complaint. Blank and missing stay hidden.
+String? complaintClosingRemark(Map<String, dynamic> payload) {
+  final text = payload['closing_remark']?.toString().trim() ?? '';
+  return text.isEmpty ? null : text;
+}
 
 bool isInternalRequestPayloadKey(String key) =>
     internalRequestPayloadKeys.contains(key);

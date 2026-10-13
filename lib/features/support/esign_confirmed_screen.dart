@@ -64,7 +64,7 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
   }
 
   Future<void> _openStoredFile(EsignRequestDetail detail) async {
-    final storageKey = detail.downloadStorageKey;
+    final storageKey = detail.openDocumentStorageKey;
     if (storageKey == null || storageKey.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.l10n.esignNoDocumentToDownload)),
@@ -234,7 +234,7 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
                         )
                       : const Icon(Icons.download_outlined),
                   label: Text(
-                    detail.signedDocumentReady
+                    detail.showsSignedCopyReady
                         ? l10n.esignDownloadSignedCopy
                         : l10n.esignDownloadDocument,
                   ),
@@ -244,7 +244,7 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
               Text(
                 detail.isAwaitingCounterSignature
                     ? l10n.esignAwaitingCounterSignatureBody
-                    : detail.signedDocumentReady
+                    : detail.showsSignedCopyReady
                         ? l10n.esignSignedCopyReady
                         : detail.signedDocumentPending
                             ? l10n.esignSignedCopyPending
