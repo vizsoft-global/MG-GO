@@ -351,6 +351,10 @@ final _viewerSender = EsignRequestDetail(raw: const {
     'company_name': 'مسلّم للتوصيل',
     'employee_name': 'عبد الرحمن الشمري',
     'employee_id': '10421',
+    'position': 'سائق توصيل',
+    'sponsor': '',
+    'pay_through': 'تحويل بنكي',
+    'bank_number': 'KW81XXXX1041',
   },
   'field_values_labeled': [
     {
@@ -670,7 +674,15 @@ void main() {
     expect(find.text('تفاصيل الطلب'), findsOneWidget);
     expect(find.text('مسلّم للتوصيل'), findsOneWidget);
     expect(find.text('10421'), findsOneWidget);
-    expect(find.text('القرار الإداري الصادر بحق الموظف'), findsOneWidget);
+    expect(find.text('سائق توصيل'), findsOneWidget);
+    expect(find.text('تحويل بنكي'), findsOneWidget);
+    expect(find.text('KW81…1041'), findsOneWidget);
+    expect(find.text('KW81XXXX1041'), findsNothing);
+    expect(find.textContaining('الكفيل'), findsNothing);
+    expect(
+      find.text('Decision / القرار الإداري الصادر بحق الموظف'),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 

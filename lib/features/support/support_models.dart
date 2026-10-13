@@ -661,6 +661,26 @@ EsignInboxSections partitionEsignInbox(Iterable<EsignRequestSummary> rows) {
   );
 }
 
+/// Last-four mask in the payslip shape `KW81…1041`.
+/// Whitespace is stripped first. Four characters or fewer, and any value
+/// too short to hide a middle (eight or fewer), stay as written.
+/// The full account number is never logged.
+String maskBankNumber(String? value) {
+  final compact = (value ?? '').replaceAll(RegExp(r'\s+'), '');
+  if (compact.length <= 8) return compact;
+  return '${compact.substring(0, 4)}…${compact.substring(compact.length - 4)}';
+}
+
+/// Joins EN and AR when both exist so a bilingual document does not drop
+/// one language because the rider's UI locale is the other.
+String joinBilingualLabels(String? en, String? ar) {
+  final e = en?.trim() ?? '';
+  final a = ar?.trim() ?? '';
+  if (e.isNotEmpty && a.isNotEmpty && e != a) return '$e / $a';
+  if (e.isNotEmpty) return e;
+  return a;
+}
+
 class EsignLabeledField {
   const EsignLabeledField({
     required this.key,
@@ -679,6 +699,9 @@ class EsignLabeledField {
     if (arabic && ar != null && ar.isNotEmpty) return ar;
     return labelEn;
   }
+
+  /// Both catalogue labels, for a document that is itself bilingual.
+  String get bilingualLabel => joinBilingualLabels(labelEn, labelAr);
 
   factory EsignLabeledField.fromJson(Map<String, dynamic> json) {
     return EsignLabeledField(
@@ -716,6 +739,15 @@ class EsignRequestDetail {
   String? get downloadStorageKey =>
       raw['download_storage_key'] as String? ?? documentStorageKey;
 
+  /// File the rider should open. While staff countersignature is still
+  /// pending, never prefer a composed "final" copy.
+  String? get openDocumentStorageKey =>
+      isAwaitingCounterSignature ? documentStorageKey : downloadStorageKey;
+
+  /// The composed copy is only "ready" once staff is not still pending.
+  bool get showsSignedCopyReady =>
+      signedDocumentReady && !isAwaitingCounterSignature;
+
   bool get signedDocumentReady => raw['signed_document_ready'] as bool? ?? false;
 
   /// Signed, but the composed copy has not been written yet and no attempt
@@ -744,6 +776,12 @@ class EsignRequestDetail {
   String? get description => raw['description'] as String?;
   String? get templateName => raw['template_name'] as String?;
   String? get templateNameAr => raw['template_name_ar'] as String?;
+
+  /// EN and AR template names together when both exist.
+  String? get templateDisplayName {
+    final joined = joinBilingualLabels(templateName, templateNameAr);
+    return joined.isEmpty ? null : joined;
+  }
 
   Map<String, dynamic> get employeeSnapshot {
     final snap = raw['employee_snapshot'];
@@ -784,11 +822,18 @@ class EsignRequestDetail {
     final desc = (description ?? '').trim();
     final hasTemplate = (templateName ?? '').trim().isNotEmpty ||
         (templateNameAr ?? '').trim().isNotEmpty;
+    const snapshotKeys = [
+      'company_name',
+      'employee_name',
+      'employee_id',
+      'position',
+      'sponsor',
+      'pay_through',
+      'bank_number',
+    ];
     return desc.isNotEmpty ||
         hasTemplate ||
-        snapshotValue('company_name').isNotEmpty ||
-        snapshotValue('employee_name').isNotEmpty ||
-        snapshotValue('employee_id').isNotEmpty ||
+        snapshotKeys.any((key) => snapshotValue(key).isNotEmpty) ||
         fieldValuesLabeled.any((f) => f.value.trim().isNotEmpty);
   }
 

@@ -34,6 +34,36 @@ final _complaintOnBehalf = SupportRequestDetail(
   attachments: const [],
 );
 
+const _closedComplaintId = 'qa-complaint-closed';
+
+final _complaintClosed = SupportRequestDetail(
+  request: const {
+    'id': _closedComplaintId,
+    'request_code': 'RCM-4403',
+    'request_type': 'complaint',
+    'status': 'closed',
+    'decision_reason': 'Fallback reason that must stay secondary',
+    'severity': 'low',
+    'payload': {
+      'category': 'salary_issues',
+      'subject': 'Late salary',
+      'description': 'August salary has not arrived',
+      'closing_remark': 'Closed after payroll confirmed the transfer.',
+    },
+  },
+  steps: const [
+    {
+      'step_order': 1,
+      'step_name': 'HR',
+      'status': 'completed',
+      'decided_at': '2026-08-26T10:00:00Z',
+      'decision_note': 'Reviewed and sent to payroll',
+    },
+  ],
+  clarifications: const [],
+  attachments: const [],
+);
+
 final _loanNeedsClarify = SupportRequestDetail(
   request: const {
     'id': _loanClarifyId,
@@ -108,6 +138,35 @@ void main() {
       expect(find.textContaining(_staffUuid), findsNothing);
       expect(find.textContaining('2026-08-25T21:15:00'), findsNothing);
       expect(find.textContaining('Created on behalf'), findsWidgets);
+    },
+  );
+
+  testWidgets(
+    'closed complaint shows the closing remark under the admin response',
+    (tester) async {
+      await _pumpDetail(
+        tester,
+        requestId: _closedComplaintId,
+        detail: _complaintClosed,
+      );
+
+      expect(find.text('Admin response'), findsOneWidget);
+      expect(find.text('Reviewed and sent to payroll'), findsOneWidget);
+      expect(find.text('Closing remark / ملاحظة ختامية'), findsOneWidget);
+      expect(
+        find.text('Closed after payroll confirmed the transfer.'),
+        findsOneWidget,
+      );
+      expect(find.text('closing_remark'), findsNothing);
+      expect(find.text('Closing Remark'), findsNothing);
+      expect(
+        find.text('Fallback reason that must stay secondary'),
+        findsNothing,
+      );
+
+      final comment = tester.getTopLeft(find.text('Comment from admin'));
+      final remark = tester.getTopLeft(find.text('Closing remark / ملاحظة ختامية'));
+      expect(remark.dy, greaterThan(comment.dy));
     },
   );
 

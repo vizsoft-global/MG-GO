@@ -1704,6 +1704,9 @@ class _AdminResponseCard extends StatelessWidget {
       comment: _RequestDetailScreenState._adminComment(detail),
       clarifications: detail.clarifications,
     );
+    final closingRemark = detail.requestType == 'complaint'
+        ? complaintClosingRemark(detail.payload)
+        : null;
     final amountChanged = detail.requestType == 'loan' &&
         meta['approved_amount'] != null &&
         '${meta['approved_amount']}' != '${detail.request['amount_kwd']}';
@@ -1782,6 +1785,22 @@ class _AdminResponseCard extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+          ],
+          if (closingRemark != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              joinBilingualLabels('Closing remark', 'ملاحظة ختامية'),
+              style: TextStyle(
+                color: theme.commentTitle,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              closingRemark,
+              style: TextStyle(color: theme.commentBody, fontSize: 12),
             ),
           ],
         ],

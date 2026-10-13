@@ -418,19 +418,33 @@ class _EsignDetailsCard extends StatelessWidget {
     final company = detail.snapshotValue('company_name');
     final name = detail.snapshotValue('employee_name');
     final employeeId = detail.snapshotValue('employee_id');
+    final position = detail.snapshotValue('position');
+    final sponsor = detail.snapshotValue('sponsor');
+    final payThrough = detail.snapshotValue('pay_through');
+    final bankNumber = maskBankNumber(detail.snapshotValue('bank_number'));
     final description = (detail.description ?? '').trim();
     final rows = <(String, String)>[
-      if (company.isNotEmpty) (arabic ? 'الشركة' : 'Company', company),
-      if (name.isNotEmpty) (arabic ? 'اسم الموظف' : 'Employee name', name),
-      if (employeeId.isNotEmpty) (arabic ? 'رقم الموظف' : 'Employee ID', employeeId),
-      if (description.isNotEmpty) (arabic ? 'الوصف' : 'Description', description),
+      if (company.isNotEmpty)
+        (joinBilingualLabels('Company', 'الشركة'), company),
+      if (name.isNotEmpty)
+        (joinBilingualLabels('Employee name', 'اسم الموظف'), name),
+      if (employeeId.isNotEmpty)
+        (joinBilingualLabels('Employee ID', 'رقم الموظف'), employeeId),
+      if (position.isNotEmpty)
+        (joinBilingualLabels('Position', 'الوظيفة'), position),
+      if (sponsor.isNotEmpty)
+        (joinBilingualLabels('Sponsor', 'الكفيل'), sponsor),
+      if (payThrough.isNotEmpty)
+        (joinBilingualLabels('Pay through', 'طريقة الدفع'), payThrough),
+      if (bankNumber.isNotEmpty)
+        (joinBilingualLabels('Bank account', 'الحساب البنكي'), bankNumber),
+      if (description.isNotEmpty)
+        (joinBilingualLabels('Description', 'الوصف'), description),
       ...detail.fieldValuesLabeled
           .where((f) => f.value.trim().isNotEmpty)
-          .map((f) => (f.labelFor(arabic), f.value)),
+          .map((f) => (f.bilingualLabel, f.value)),
     ];
-    final template = arabic
-        ? (detail.templateNameAr ?? detail.templateName)
-        : (detail.templateName ?? detail.templateNameAr);
+    final template = detail.templateDisplayName;
 
     return Card(
       child: Padding(

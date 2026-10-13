@@ -61,11 +61,17 @@ void main() {
         'created_on_behalf_by_name': 'Ops Admin',
         'created_on_behalf_at': '2026-08-25T21:15:00+03:00',
         'awaiting_driver_ack': false,
+        'closing_remark': 'Closed after payroll confirmed the transfer.',
       },
       categoryLabels: const {'salary_issues': 'Salary Issues'},
       formatDateTime: (_) => 'should not appear',
     );
     expect(rows.map((e) => e.key).toList(), ['category', 'subject']);
+    expect(complaintClosingRemark({
+      'closing_remark': '  Closed after payroll confirmed the transfer.  ',
+    }), 'Closed after payroll confirmed the transfer.');
+    expect(complaintClosingRemark({'closing_remark': '  '}), isNull);
+    expect(complaintClosingRemark({}), isNull);
     expect(rows.first.value, 'Salary Issues');
     expect(rows.any((e) => e.value == 'true'), isFalse);
     expect(rows.any((e) => looksLikeUuid(e.value)), isFalse);

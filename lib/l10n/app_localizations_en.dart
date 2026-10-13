@@ -3454,7 +3454,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get esignSignedCopyReady =>
-      'Your signature is stamped on the last page of this copy.';
+      'Your signature is stamped in the employee signature box on this copy.';
 
   @override
   String get esignSignedCopyPending =>
