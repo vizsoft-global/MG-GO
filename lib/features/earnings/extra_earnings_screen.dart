@@ -7,6 +7,7 @@ import '../../l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import 'earnings_models.dart';
 import 'earnings_providers.dart';
+import 'extra_earnings_layout.dart';
 import '../home/widgets/incentive_band_row.dart';
 import 'widgets/active_offer_card.dart';
 import 'widgets/company_scheme_card.dart';
@@ -43,7 +44,10 @@ class ExtraEarningsScreen extends ConsumerWidget {
                     onRetry: () => ref.invalidate(extraEarningsProvider),
                   ),
                   data: (data) => data.companyScheme != null
-                      ? _CompanySchemeList(scheme: data.companyScheme!)
+                      ? _CompanySchemeList(
+                          scheme: data.companyScheme!,
+                          setup: data.riderSetup,
+                        )
                       : _OffersList(extra: data),
                 ),
               ),
@@ -98,9 +102,14 @@ class _OffersList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strip = riderSetupStripParts(
+      setup: extra.riderSetup,
+      l10n: context.l10n,
+    );
     return ListView(
       padding: const EdgeInsets.fromLTRB(10, 10, 10, 24),
       children: [
+        if (strip.isNotEmpty) _RiderSetupStrip(parts: strip),
         _HeroCard(
           offers: extra.activeOffers,
           setup: extra.riderSetup,
@@ -114,15 +123,56 @@ class _OffersList extends StatelessWidget {
 /// Extra Earnings for an outsourced rider with an active company scheme: the
 /// flat above/below breakdown replaces the list of restaurant quests.
 class _CompanySchemeList extends StatelessWidget {
-  const _CompanySchemeList({required this.scheme});
+  const _CompanySchemeList({required this.scheme, this.setup});
 
   final CompanyIncentiveScheme scheme;
+  final RiderIncentiveSetup? setup;
 
   @override
   Widget build(BuildContext context) {
+    final strip = riderSetupStripParts(setup: setup, l10n: context.l10n);
     return ListView(
       padding: const EdgeInsets.fromLTRB(10, 10, 10, 24),
-      children: [CompanySchemeCard(scheme: scheme)],
+      children: [
+        if (strip.isNotEmpty) _RiderSetupStrip(parts: strip),
+        CompanySchemeCard(scheme: scheme),
+      ],
+    );
+  }
+}
+
+class _RiderSetupStrip extends StatelessWidget {
+  const _RiderSetupStrip({required this.parts});
+
+  final List<String> parts;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 6,
+        children: [
+          for (final part in parts)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF4F4F5),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.cardBorder, width: 0.7),
+              ),
+              child: Text(
+                part,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF141414),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

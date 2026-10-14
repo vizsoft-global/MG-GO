@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dpd_userapp/core/storage/driver_upload_service.dart';
 import 'package:dpd_userapp/features/support/request_detail_fields.dart';
+import 'package:dpd_userapp/l10n/app_localizations_en.dart';
 
 void main() {
   test('fuel refund reuses firstAmount and transfer labels', () {
@@ -218,5 +220,62 @@ void main() {
     );
     expect(isHttpAttachmentRef('https://cdn.example/a.jpg'), isTrue);
     expect(isHttpAttachmentRef('requests/a.jpg'), isFalse);
+  });
+
+  test('storage keys read R2 only; http refs stay http-only', () {
+    expect(
+      requestAttachmentReadOrder('requests/a.jpg'),
+      [RequestAttachmentReadSource.r2],
+    );
+    expect(
+      requestAttachmentReadOrder('https://cdn.example/a.jpg'),
+      [RequestAttachmentReadSource.http],
+    );
+    expect(
+      requestAttachmentReadOrder('requests/a.jpg'),
+      isNot(contains(RequestAttachmentReadSource.http)),
+    );
+  });
+
+  test('resolve uses R2 when it succeeds', () async {
+    final calls = <String>[];
+    final uri = await resolveRequestAttachmentLaunchUri(
+      'drivers/req/file.jpg',
+      readR2: (key) async {
+        calls.add('r2:$key');
+        return 'https://r2.example/signed/$key';
+      },
+    );
+    expect(calls, ['r2:drivers/req/file.jpg']);
+    expect(uri.toString(), 'https://r2.example/signed/drivers/req/file.jpg');
+  });
+
+  test('resolve throws when R2 fails', () async {
+    await expectLater(
+      resolveRequestAttachmentLaunchUri(
+        'drivers/req/file.jpg',
+        readR2: (_) async {
+          throw DriverUploadException(code: 'read_failed');
+        },
+      ),
+      throwsA(
+        isA<DriverUploadException>().having((e) => e.code, 'code', 'read_failed'),
+      ),
+    );
+  });
+
+  test('attachment open failure uses a localized upload message', () {
+    final l10n = AppLocalizationsEn();
+    expect(
+      requestAttachmentOpenFailureMessage(
+        DriverUploadException(code: 'read_failed'),
+        l10n,
+      ),
+      l10n.couldNotLoadProofImage,
+    );
+    expect(
+      requestAttachmentOpenFailureMessage(Exception('gcs'), l10n),
+      l10n.somethingWentWrong,
+    );
   });
 }

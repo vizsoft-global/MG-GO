@@ -1,3 +1,10 @@
+import 'package:cloud_functions/cloud_functions.dart';
+
+import '../../core/firebase/rider_backend.dart';
+import '../../core/storage/driver_upload_messages.dart';
+import '../../core/storage/driver_upload_service.dart';
+import '../../l10n/app_localizations.dart';
+
 /// Display helpers for Request Details. Kept free of widgets so the fuel
 /// amount / transfer-type / clarification-thread rules can be unit-tested.
 
@@ -236,4 +243,46 @@ String? requestAttachmentRef(Map<String, dynamic> row) {
 
 bool isHttpAttachmentRef(String value) {
   return value.startsWith('http://') || value.startsWith('https://');
+}
+
+enum RequestAttachmentReadSource { http, r2 }
+
+/// Storage keys go through admin R2 `/api/driver-uploads/read` only.
+List<RequestAttachmentReadSource> requestAttachmentReadOrder(String ref) {
+  if (isHttpAttachmentRef(ref)) {
+    return const [RequestAttachmentReadSource.http];
+  }
+  return const [RequestAttachmentReadSource.r2];
+}
+
+Future<Uri?> resolveRequestAttachmentLaunchUri(
+  String ref, {
+  required Future<String> Function(String objectKey) readR2,
+}) async {
+  if (isHttpAttachmentRef(ref)) {
+    return Uri.tryParse(ref);
+  }
+
+  final r2Url = (await readR2(ref)).trim();
+  if (r2Url.isNotEmpty) {
+    final uri = Uri.tryParse(r2Url);
+    if (uri != null) return uri;
+  }
+  throw DriverUploadException(code: 'read_failed');
+}
+
+String requestAttachmentOpenFailureMessage(
+  Object error,
+  AppLocalizations l10n,
+) {
+  if (error is DriverUploadException) {
+    return messageForDriverUploadException(error, l10n);
+  }
+  if (error is FirebaseFunctionsException) {
+    return switch (riderErrorCode(error)) {
+      'not_authorized' => l10n.cannotViewProofImage,
+      _ => l10n.couldNotLoadProofImage,
+    };
+  }
+  return l10n.somethingWentWrong;
 }

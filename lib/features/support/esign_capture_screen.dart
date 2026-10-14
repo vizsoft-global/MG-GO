@@ -6,10 +6,12 @@ import 'package:intl/intl.dart';
 import '../../core/device/device_identity_service.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/l10n/locale_formatters.dart';
+import '../../core/security/security_bypass_store.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/rider_auth_service.dart';
 import 'esign_failure.dart';
+import 'esign_secure_flag.dart';
 import 'support_providers.dart';
 import 'widgets/esign_sensitive_scope.dart';
 import 'widgets/signature_pad.dart';
@@ -133,12 +135,15 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
     final profile = ref.watch(riderProfileProvider).asData?.value;
     // Fail closed: until the detail resolves we do not know whether the
     // document is restricted, and an unprotected frame is unrecoverable.
-    final restricted = ref
-            .watch(esignRequestDetailProvider(widget.requestId))
-            .asData
-            ?.value
-            .screenshotRestricted ??
-        true;
+    final restricted = esignShouldSecureScreen(
+      screenshotRestricted: ref
+          .watch(esignRequestDetailProvider(widget.requestId))
+          .asData
+          ?.value
+          .screenshotRestricted,
+      screenshotsAllowed: ref.watch(securityBypassProvider),
+      failClosed: true,
+    );
     final scaffold = Scaffold(
       appBar: AppBar(
         title: Text(l10n.esignAddYourSignature),

@@ -389,35 +389,23 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     final ref = requestAttachmentRef(row);
     if (ref == null) return;
     try {
-      if (isHttpAttachmentRef(ref)) {
-        final uri = Uri.tryParse(ref);
-        if (uri == null) return;
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-        return;
+      final uri = await resolveRequestAttachmentLaunchUri(
+        ref,
+        readR2: (key) async {
+          final resolved = await DriverUploadService().resolveReadUrl(key);
+          return resolved.readUrl;
+        },
+      );
+      if (uri == null) {
+        throw DriverUploadException(code: 'read_failed');
       }
-      try {
-        final map = await callRiderFunction('driverGetDownloadUrl', {
-          'bucket': 'request-attachments',
-          'object_key': ref,
-        });
-        if (map['ok'] == false) {
-          throw Exception(map['error']?.toString() ?? 'download_failed');
-        }
-        final url = map['url']?.toString().trim() ?? '';
-        final uri = Uri.tryParse(url);
-        if (uri != null && url.isNotEmpty) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-          return;
-        }
-      } catch (_) {}
-      final resolved = await DriverUploadService().resolveReadUrl(ref);
-      final uri = Uri.tryParse(resolved.readUrl);
-      if (uri == null) return;
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(supportUserMessage(e))),
+        SnackBar(
+          content: Text(requestAttachmentOpenFailureMessage(e, context.l10n)),
+        ),
       );
     }
   }
