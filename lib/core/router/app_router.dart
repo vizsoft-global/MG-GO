@@ -418,6 +418,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => VisitBookingFlowScreen(
           initialNote: state.uri.queryParameters['note'],
+          replaceBookingId: state.uri.queryParameters['replace'],
         ),
       ),
       GoRoute(

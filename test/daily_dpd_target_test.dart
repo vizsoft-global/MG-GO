@@ -20,6 +20,7 @@ Map<String, dynamic> _offer({
   'scope_label': 'Crystal Tower',
   'current_count': eligible,
   'progress_count': eligible,
+  'eligible_count': eligible,
   'target': 25,
   'reward_mode': 'fixed',
   'target_mode': 'tiered',
@@ -62,6 +63,20 @@ void main() {
       expect(offer.bandLocked, isFalse);
       expect(offer.extraOrders, 3);
       expect(offer.ordersToNextRate, 2);
+    });
+
+    test('eligible_count is not inferred from current_count', () {
+      final offer = ActiveOffer.fromJson({
+        'rule_id': 'r1',
+        'name': 'KFC',
+        'current_count': 12,
+        'progress_count': 12,
+        'target': 25,
+        'band_start': 10,
+      });
+      expect(offer.eligibleCount, isNull);
+      expect(offer.verifiedCount, 0);
+      expect(offer.bandLocked, isTrue);
     });
 
     test('older servers without the new fields stay legacy', () {
@@ -219,6 +234,16 @@ void main() {
       // separately, never by overflowing this label.
       expect(find.text('10 / 10'), findsOneWidget);
       expect(find.text('Target achieved \u2014 incentives unlocked'), findsOneWidget);
+    });
+
+    testWidgets('band row stays locked until daily DPD is achieved',
+        (tester) async {
+      final offer = ActiveOffer.fromJson(_offer(eligible: 13, payout: 0.75, toNext: 2));
+      await tester.pumpWidget(_host(IncentiveBandRow(
+        offer: offer,
+        dailyTargetAchieved: false,
+      )));
+      expect(find.text('Locked'), findsOneWidget);
     });
 
     testWidgets('band row locked state', (tester) async {

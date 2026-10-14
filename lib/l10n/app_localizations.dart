@@ -3223,6 +3223,78 @@ abstract class AppLocalizations {
   /// **'Status'**
   String get vehicleStatus;
 
+  /// No description provided for @vehicleValueRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Running'**
+  String get vehicleValueRunning;
+
+  /// No description provided for @vehicleValueOperational.
+  ///
+  /// In en, this message translates to:
+  /// **'Operational'**
+  String get vehicleValueOperational;
+
+  /// No description provided for @vehicleValueCompany.
+  ///
+  /// In en, this message translates to:
+  /// **'Company'**
+  String get vehicleValueCompany;
+
+  /// No description provided for @vehicleValueActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get vehicleValueActive;
+
+  /// No description provided for @vehicleValueInactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Inactive'**
+  String get vehicleValueInactive;
+
+  /// No description provided for @vehicleValueExcellent.
+  ///
+  /// In en, this message translates to:
+  /// **'Excellent'**
+  String get vehicleValueExcellent;
+
+  /// No description provided for @vehicleValueGood.
+  ///
+  /// In en, this message translates to:
+  /// **'Good'**
+  String get vehicleValueGood;
+
+  /// No description provided for @vehicleValueFair.
+  ///
+  /// In en, this message translates to:
+  /// **'Fair'**
+  String get vehicleValueFair;
+
+  /// No description provided for @vehicleValuePoor.
+  ///
+  /// In en, this message translates to:
+  /// **'Poor'**
+  String get vehicleValuePoor;
+
+  /// No description provided for @vehicleValuePrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Private'**
+  String get vehicleValuePrivate;
+
+  /// No description provided for @vehicleValuePublic.
+  ///
+  /// In en, this message translates to:
+  /// **'Public'**
+  String get vehicleValuePublic;
+
+  /// No description provided for @vehicleValueCommercial.
+  ///
+  /// In en, this message translates to:
+  /// **'Commercial'**
+  String get vehicleValueCommercial;
+
   /// No description provided for @vehicleHandover.
   ///
   /// In en, this message translates to:
@@ -5782,8 +5854,32 @@ abstract class AppLocalizations {
   /// No description provided for @visitRescheduleBody.
   ///
   /// In en, this message translates to:
-  /// **'Cancel {code} and book a new slot?'**
+  /// **'Book a new slot for {code}. The current booking stays until the new one succeeds.'**
   String visitRescheduleBody(String code);
+
+  /// No description provided for @visitCancelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel visit?'**
+  String get visitCancelTitle;
+
+  /// No description provided for @visitCancelBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This booking will be cancelled.'**
+  String get visitCancelBody;
+
+  /// No description provided for @visitCancelAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel visit'**
+  String get visitCancelAction;
+
+  /// No description provided for @visitReplaceCancelFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'New slot booked. The previous booking could not be cancelled — cancel it from My visits.'**
+  String get visitReplaceCancelFailed;
 
   /// No description provided for @visitKeep.
   ///

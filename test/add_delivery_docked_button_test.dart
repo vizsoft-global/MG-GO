@@ -1,10 +1,8 @@
-import 'package:dpd_userapp/features/deliveries/active_delivery_provider.dart';
 import 'package:dpd_userapp/features/deliveries/widgets/add_delivery_docked_button.dart';
 import 'package:dpd_userapp/features/shell/main_shell.dart';
 import 'package:dpd_userapp/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Widget _app(Widget home) {
@@ -86,27 +84,15 @@ void main() {
     expect(find.byIcon(Icons.add), findsNothing);
   });
 
-  testWidgets('shell floats add above a five-tab bar', (tester) async {
-    var opened = false;
+  testWidgets('shell tab bar has no global add FAB', (tester) async {
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          activeDeliveryProvider.overrideWith((ref) async => null),
-        ],
-        child: _app(
-          Scaffold(
-            body: const SizedBox.shrink(),
-            floatingActionButton: AddDeliveryDockedButton(
-              onOpen: (context, ref) async {
-                opened = true;
-              },
-            ),
-            floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-            bottomNavigationBar: MainShellTabBar(
-              selectedIndex: 0,
-              tabs: _tabs,
-              onDestinationSelected: (_) {},
-            ),
+      _app(
+        Scaffold(
+          body: const SizedBox.shrink(),
+          bottomNavigationBar: MainShellTabBar(
+            selectedIndex: 0,
+            tabs: _tabs,
+            onDestinationSelected: (_) {},
           ),
         ),
       ),
@@ -115,18 +101,7 @@ void main() {
 
     expect(find.text('Home'), findsOneWidget);
     expect(find.text('Deliveries'), findsOneWidget);
-    expect(find.text('Earnings'), findsOneWidget);
-    expect(find.text('Vehicle'), findsOneWidget);
-    expect(find.text('Profile'), findsOneWidget);
-    expect(find.byIcon(Icons.add), findsOneWidget);
-
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-    expect(opened, isTrue);
-
-    final fab = tester.getCenter(find.byIcon(Icons.add));
-    final profile = tester.getCenter(find.text('Profile'));
-    expect(fab.dy, lessThan(profile.dy - 8));
+    expect(find.byIcon(Icons.add), findsNothing);
   });
 
   testWidgets('earnings and vehicle tabs keep their shell branches',

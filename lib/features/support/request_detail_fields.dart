@@ -225,3 +225,15 @@ String? adminResponseComment({
   );
   return isDuplicate ? null : note;
 }
+
+String? requestAttachmentRef(Map<String, dynamic> row) {
+  for (final key in ['url', 'read_url', 'storage_key', 'object_key']) {
+    final value = row[key]?.toString().trim() ?? '';
+    if (value.isNotEmpty) return value;
+  }
+  return null;
+}
+
+bool isHttpAttachmentRef(String value) {
+  return value.startsWith('http://') || value.startsWith('https://');
+}

@@ -12,6 +12,7 @@ import '../deliveries/active_delivery_provider.dart';
 import '../duty/duty_location_provider.dart';
 import 'home_providers.dart';
 import 'remote_duty_monitor.dart';
+import 'zone_episode_store.dart';
 
 /// Outside-zone warning window while on duty (including during a delivery).
 /// Matches admin `attendance_auto_checkout_minutes` default (45).
@@ -196,12 +197,40 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
       if (!(ref.read(homeDashboardProvider).asData?.value.isOnDuty ?? false)) {
         return;
       }
-      if (next.isServiceRunning) {
-        _reevaluateOutsideFromDuty();
-      }
+      _reevaluateOutsideFromDuty();
     });
 
+    unawaited(_restorePersistedEpisode());
     return const ZoneMonitorState();
+  }
+
+  Future<void> _restorePersistedEpisode() async {
+    final saved = await ZoneEpisodeStore.load();
+    if (saved == null) return;
+    _outsideSince = saved.since;
+    _activeMode = switch (saved.modeName) {
+      'returnGrace' => ZoneTimeoutMode.returnGrace,
+      'idle' => ZoneTimeoutMode.idle,
+      _ => ZoneTimeoutMode.idle,
+    };
+    _hadActiveDeliveryWhileOutside = saved.hadActiveDelivery;
+    if (ref.read(homeDashboardProvider).asData?.value.isOnDuty ?? false) {
+      _ensureCountdownRunning();
+      _tickCountdown();
+    }
+  }
+
+  Future<void> _persistEpisode() async {
+    final since = _outsideSince;
+    if (since == null) {
+      await ZoneEpisodeStore.clear();
+      return;
+    }
+    await ZoneEpisodeStore.save(
+      since: since,
+      modeName: _activeMode.name,
+      hadActiveDelivery: _hadActiveDeliveryWhileOutside,
+    );
   }
 
   void _dispose() {
@@ -221,19 +250,18 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
   void _pauseForClockOut() {
     _cancelTimer();
     _checkoutTriggered = false;
-    if (_pausedRemainingSeconds == null && _outsideSince != null) {
-      _pausedRemainingSeconds = freezeRemainingOnPause(
-        outsideSince: _outsideSince!,
-        now: DateTime.now(),
-        windowSeconds: _windowSecondsForMode(_activeMode),
-      );
-    }
-    _outsideSince = null;
+    final remaining = _outsideSince == null
+        ? state.remainingSeconds
+        : remainingOutsideSeconds(
+            outsideSince: _outsideSince!,
+            now: DateTime.now(),
+            windowSeconds: _windowSecondsForMode(_activeMode),
+          );
+    unawaited(_persistEpisode());
     state = state.copyWith(
       isOutsideZone: false,
       isChecking: false,
-      remainingSeconds:
-          _pausedRemainingSeconds ?? state.remainingSeconds,
+      remainingSeconds: remaining,
     );
   }
 
@@ -244,11 +272,11 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
     _activeMode = ZoneTimeoutMode.none;
     _hadActiveDeliveryWhileOutside = false;
     _checkoutTriggered = false;
+    unawaited(ZoneEpisodeStore.clear());
   }
 
   void _reevaluateOutsideFromDuty() {
     final duty = ref.read(dutyLocationProvider);
-    if (!duty.isServiceRunning) return;
 
     final hasActiveDelivery =
         ref.read(activeDeliveryProvider).asData?.value != null;
@@ -287,6 +315,7 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
         ? ZoneTimeoutMode.returnGrace
         : ZoneTimeoutMode.idle;
     _checkoutTriggered = false;
+    unawaited(_persistEpisode());
     _ensureCountdownRunning();
     _tickCountdown();
   }
@@ -317,6 +346,7 @@ class ZoneMonitorNotifier extends Notifier<ZoneMonitorState> {
       windowSeconds: window,
     );
     _pausedRemainingSeconds = null;
+    unawaited(_persistEpisode());
     _ensureCountdownRunning();
     _tickCountdown();
   }

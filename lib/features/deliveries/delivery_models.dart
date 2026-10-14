@@ -65,6 +65,7 @@ class DriverDelivery {
     this.partnerName,
     this.partnerLogoUrl,
     this.shiftDate,
+    this.createdAt,
   });
 
   final String id;
@@ -88,6 +89,7 @@ class DriverDelivery {
   final String? partnerLogoUrl;
   /// Kuwait shift day (`deliveries.shift_date`). Null on old rows / old APKs.
   final DateTime? shiftDate;
+  final DateTime? createdAt;
 
   bool get isCancelled => status == 'cancelled';
   bool get isInTransit => status == 'in_transit';
@@ -137,68 +139,128 @@ class DriverDelivery {
 
   /// Sort/display timestamp: delivered, cancelled, pickup, or created fallback.
   DateTime? get primaryTimestamp =>
-      deliveredAt ?? cancelledAt ?? pickupAt;
+      deliveredAt ?? cancelledAt ?? pickupAt ?? createdAt;
 
   factory DriverDelivery.fromJson(Map<String, dynamic> json) {
     final partners = json['partners'];
     Map<String, dynamic>? partnerMap;
-    if (partners is Map<String, dynamic>) {
-      partnerMap = partners;
-    } else if (partners is List && partners.isNotEmpty) {
+    if (partners is Map) {
+      partnerMap = Map<String, dynamic>.from(partners);
+    } else if (partners is List &&
+        partners.isNotEmpty &&
+        partners.first is Map) {
       partnerMap = Map<String, dynamic>.from(partners.first as Map);
     }
 
-    DateTime? parseTs(String? raw) {
-      if (raw == null || raw.isEmpty) return null;
-      return DateTime.tryParse(raw);
-    }
-
-    double? parseDouble(dynamic raw) {
-      if (raw == null) return null;
-      if (raw is num) return raw.toDouble();
-      return double.tryParse(raw.toString());
-    }
-
-    DateTime? _parseDateOnly(Object? raw) {
-      if (raw is String && raw.isNotEmpty) {
-        final match = RegExp(r'^(\d{4})-(\d{2})-(\d{2})').firstMatch(raw);
-        if (match != null) {
-          return DateTime(
-            int.parse(match.group(1)!),
-            int.parse(match.group(2)!),
-            int.parse(match.group(3)!),
-          );
-        }
-      }
-      return null;
-    }
-
     return DriverDelivery(
-      // `id` is the primary key so it is always present in practice, but this
-      // list is mapped row-by-row inside one `map()`: a single unexpected shape
-      // used to throw and blank the whole screen. Coerce rather than cast.
       id: json['id']?.toString() ?? '',
       externalOrderId: json['external_order_id']?.toString() ?? '—',
       status: json['status']?.toString() ?? 'pending',
-      deliveredAt: parseTs(json['delivered_at'] as String?),
-      pickupAt: parseTs(json['pickup_at'] as String?),
-      pickupLat: parseDouble(json['pickup_lat']),
-      pickupLng: parseDouble(json['pickup_lng']),
-      pickupProofUrl: json['pickup_proof_url'] as String?,
-      deliveredLat: parseDouble(json['delivered_lat']),
-      deliveredLng: parseDouble(json['delivered_lng']),
-      orderProofUrl: json['order_proof_url'] as String?,
-      cancelledAt: parseTs(json['cancelled_at'] as String?),
-      cancelLat: parseDouble(json['cancel_lat']),
-      cancelLng: parseDouble(json['cancel_lng']),
-      cancelReason: json['cancel_reason'] as String?,
-      cancelProofUrl: json['cancel_proof_url'] as String?,
-      rejectionReason: json['rejection_reason'] as String?,
+      deliveredAt: parseDeliveryTimestamp(json['delivered_at']),
+      pickupAt: parseDeliveryTimestamp(json['pickup_at']),
+      pickupLat: parseDeliveryDouble(json['pickup_lat']),
+      pickupLng: parseDeliveryDouble(json['pickup_lng']),
+      pickupProofUrl: _optionalText(json['pickup_proof_url']),
+      deliveredLat: parseDeliveryDouble(json['delivered_lat']),
+      deliveredLng: parseDeliveryDouble(json['delivered_lng']),
+      orderProofUrl: _optionalText(json['order_proof_url']),
+      cancelledAt: parseDeliveryTimestamp(json['cancelled_at']),
+      cancelLat: parseDeliveryDouble(json['cancel_lat']),
+      cancelLng: parseDeliveryDouble(json['cancel_lng']),
+      cancelReason: _optionalText(json['cancel_reason']),
+      cancelProofUrl: _optionalText(json['cancel_proof_url']),
+      rejectionReason: _optionalText(json['rejection_reason']),
       partnerName: partnerMap?['name']?.toString(),
       partnerLogoUrl: partnerMap?['logo_url']?.toString(),
-      shiftDate: _parseDateOnly(json['shift_date']),
+      shiftDate: parseDeliveryDateOnly(json['shift_date']),
+      createdAt: parseDeliveryTimestamp(json['created_at']),
     );
   }
+}
+
+/// `driverListMyDeliveries` returns raw Firestore docs. Timestamps arrive as
+/// `{_seconds,_nanoseconds}` maps, not ISO strings. A single `as String?`
+/// used to blank the whole list.
+DateTime? parseDeliveryTimestamp(Object? raw) {
+  if (raw == null) return null;
+  if (raw is DateTime) return raw;
+  if (raw is String) {
+    if (raw.isEmpty) return null;
+    return DateTime.tryParse(raw);
+  }
+  if (raw is num) {
+    final n = raw.toInt();
+    if (n > 1000000000000) {
+      return DateTime.fromMillisecondsSinceEpoch(n, isUtc: true);
+    }
+    return DateTime.fromMillisecondsSinceEpoch(n * 1000, isUtc: true);
+  }
+  if (raw is Map) {
+    final seconds = raw['_seconds'] ?? raw['seconds'];
+    final nanos = raw['_nanoseconds'] ?? raw['nanoseconds'] ?? raw['nanos'];
+    if (seconds is num) {
+      final ms = seconds.toInt() * 1000 +
+          (nanos is num ? nanos.toInt() ~/ 1000000 : 0);
+      return DateTime.fromMillisecondsSinceEpoch(ms, isUtc: true);
+    }
+    if (seconds is String) {
+      final parsed = int.tryParse(seconds);
+      if (parsed != null) {
+        return DateTime.fromMillisecondsSinceEpoch(parsed * 1000, isUtc: true);
+      }
+    }
+    final iso = raw['__time__'] ?? raw['iso'];
+    if (iso is String) return DateTime.tryParse(iso);
+  }
+  return null;
+}
+
+double? parseDeliveryDouble(Object? raw) {
+  if (raw == null) return null;
+  if (raw is num) return raw.toDouble();
+  return double.tryParse(raw.toString());
+}
+
+DateTime? parseDeliveryDateOnly(Object? raw) {
+  if (raw is String && raw.isNotEmpty) {
+    final match = RegExp(r'^(\d{4})-(\d{2})-(\d{2})').firstMatch(raw);
+    if (match != null) {
+      return DateTime(
+        int.parse(match.group(1)!),
+        int.parse(match.group(2)!),
+        int.parse(match.group(3)!),
+      );
+    }
+  }
+  return parseDeliveryTimestamp(raw);
+}
+
+String? _optionalText(Object? raw) {
+  if (raw == null) return null;
+  final text = raw.toString();
+  return text.isEmpty ? null : text;
+}
+
+/// Skip a bad row instead of failing the list. [onSkip] gets id + reason.
+List<DriverDelivery> parseDriverDeliveries(
+  Iterable<Map<String, dynamic>> rows, {
+  void Function(String id, String reason)? onSkip,
+}) {
+  final out = <DriverDelivery>[];
+  for (final row in rows) {
+    final id = row['id']?.toString() ?? '';
+    try {
+      final parsed = DriverDelivery.fromJson(row);
+      if (parsed.id.isEmpty) {
+        onSkip?.call(id, 'missing_id');
+        continue;
+      }
+      out.add(parsed);
+    } catch (error) {
+      onSkip?.call(id.isEmpty ? '?' : id, error.toString());
+    }
+  }
+  return List<DriverDelivery>.unmodifiable(out);
 }
 
 /// In-progress pickup returned by `driver_get_active_pickup`.
@@ -218,17 +280,14 @@ class ActiveDelivery {
   final String? partnerName;
 
   factory ActiveDelivery.fromJson(Map<String, dynamic> json) {
-    final pickupRaw = json['pickup_at'] as String?;
-    final createdRaw = json['created_at'] as String?;
-    final pickupAt =
-        DateTime.tryParse(pickupRaw ?? '') ??
-        DateTime.tryParse(createdRaw ?? '') ??
+    final pickupAt = parseDeliveryTimestamp(json['pickup_at']) ??
+        parseDeliveryTimestamp(json['created_at']) ??
         DateTime.now();
     return ActiveDelivery(
-      id: json['id'] as String,
-      externalOrderId: json['external_order_id'] as String? ?? '',
+      id: json['id']?.toString() ?? '',
+      externalOrderId: json['external_order_id']?.toString() ?? '',
       pickupAt: pickupAt,
-      pickupProofUrl: json['pickup_proof_url'] as String?,
+      pickupProofUrl: _optionalText(json['pickup_proof_url']),
       partnerName: null,
     );
   }
@@ -260,17 +319,12 @@ class CreatedDelivery {
   final DateTime? pickupAt;
 
   factory CreatedDelivery.fromJson(Map<String, dynamic> json) {
-    DateTime? parseTs(String? raw) {
-      if (raw == null || raw.isEmpty) return null;
-      return DateTime.tryParse(raw);
-    }
-
     return CreatedDelivery(
-      id: json['id'] as String,
-      externalOrderId: json['external_order_id'] as String? ?? '',
-      status: json['status'] as String? ?? 'pending',
-      deliveredAt: parseTs(json['delivered_at'] as String?),
-      pickupAt: parseTs(json['pickup_at'] as String?),
+      id: json['id']?.toString() ?? '',
+      externalOrderId: json['external_order_id']?.toString() ?? '',
+      status: json['status']?.toString() ?? 'pending',
+      deliveredAt: parseDeliveryTimestamp(json['delivered_at']),
+      pickupAt: parseDeliveryTimestamp(json['pickup_at']),
     );
   }
 }

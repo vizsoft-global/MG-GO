@@ -268,9 +268,10 @@ class _NotificationCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            item.title.isEmpty
-                                ? l10n.notificationFallback
-                                : item.title,
+                            item.displayTitle(
+                              Localizations.localeOf(context),
+                              l10n,
+                            ),
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: item.isUnread
@@ -307,7 +308,7 @@ class _NotificationCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      item.body,
+                      item.displayBody(Localizations.localeOf(context)),
                       style: const TextStyle(
                         fontSize: 13,
                         color: AppColors.textSecondary,

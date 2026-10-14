@@ -50,6 +50,7 @@ class ProfileHeaderCard extends ConsumerWidget {
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(14)),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           if (showHeaderRow) ...[
             Row(
@@ -105,6 +106,7 @@ class ProfileHeaderCard extends ConsumerWidget {
           const SizedBox(height: 10),
           Text(
             profile.fullName,
+            textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 33 / 2,
               color: Colors.black,
@@ -114,6 +116,7 @@ class ProfileHeaderCard extends ConsumerWidget {
           const SizedBox(height: 4),
           Text(
             l10n.driverIdLabel(profile.driverCode ?? '—'),
+            textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 12,
               color: Color(0xFF2D2D2D),
@@ -123,6 +126,7 @@ class ProfileHeaderCard extends ConsumerWidget {
           if (phone != null)
             Text(
               phone!,
+              textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 12,
                 color: Color(0xFF646464),

@@ -157,6 +157,13 @@ void main() {
     expect(isNeededByInPast(DateTime(2026, 9, 1), now), isFalse);
   });
 
+  test('empty required range reports From before To', () {
+    expect(
+      requestFormDateRangeIssue(required: true, start: null, end: null),
+      RequestDateRangeIssue.fromRequired,
+    );
+  });
+
   test('leave date fields render From then To even when sort_order is inverted', () {
     final fields = [
       RequestFieldDefinition.fromJson(const {

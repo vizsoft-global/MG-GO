@@ -53,6 +53,7 @@ class IncentiveQuestCard extends ConsumerWidget {
             return _QuestList(
               offers: offers.take(_inlineQuestLimit).toList(),
               moreCount: offers.length - _inlineQuestLimit,
+              dailyTargetAchieved: extra.dailyDpd?.achieved ?? true,
             );
           },
         ),
@@ -211,15 +212,20 @@ class _ViewAllChip extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _QuestList extends StatelessWidget {
-  const _QuestList({required this.offers, required this.moreCount});
+  const _QuestList({
+    required this.offers,
+    required this.moreCount,
+    required this.dailyTargetAchieved,
+  });
 
   final List<ActiveOffer> offers;
   final int moreCount;
+  final bool dailyTargetAchieved;
 
   String? _subtitle(AppLocalizations l10n) {
     for (final offer in offers) {
       if (!offer.isBand) continue;
-      return offer.bandLocked
+      return offer.bandLocked || !dailyTargetAchieved
           ? l10n.incentivesStartAfterTarget
           : l10n.incentivesLivePaidAbove(offer.bandStart!);
     }
@@ -235,7 +241,10 @@ class _QuestList extends StatelessWidget {
         children: [
           for (var i = 0; i < offers.length; i++) ...[
             if (i > 0) const SizedBox(height: 10),
-            _QuestRow(offer: offers[i]),
+            _QuestRow(
+              offer: offers[i],
+              dailyTargetAchieved: dailyTargetAchieved,
+            ),
           ],
         ],
       ),
@@ -248,9 +257,13 @@ class _QuestList extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _QuestRow extends StatelessWidget {
-  const _QuestRow({required this.offer});
+  const _QuestRow({
+    required this.offer,
+    this.dailyTargetAchieved = true,
+  });
 
   final ActiveOffer offer;
+  final bool dailyTargetAchieved;
 
   bool get _isPerDelivery => offer.rewardMode == 'per_delivery';
 
@@ -294,7 +307,12 @@ class _QuestRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (offer.isBand) return IncentiveBandRow(offer: offer);
+    if (offer.isBand) {
+      return IncentiveBandRow(
+        offer: offer,
+        dailyTargetAchieved: dailyTargetAchieved,
+      );
+    }
     final l10n = context.l10n;
     final completed = offer.completed;
     return Container(

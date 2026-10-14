@@ -176,7 +176,7 @@ class _NotificationDetailSheetState
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final title = item.title.isEmpty ? l10n.notificationFallback : item.title;
+    final title = item.displayTitle(Localizations.localeOf(context), l10n);
     final maxHeight = MediaQuery.sizeOf(context).height * 0.85;
 
     return ConstrainedBox(
@@ -275,10 +275,14 @@ class _NotificationDetailSheetState
                                 resolve: _resolveHeroImage,
                               ),
                             ],
-                            if (item.body.isNotEmpty) ...[
+                            if (item
+                                .displayBody(Localizations.localeOf(context))
+                                .isNotEmpty) ...[
                               const SizedBox(height: 16),
                               Text(
-                                item.body,
+                                item.displayBody(
+                                  Localizations.localeOf(context),
+                                ),
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodyMedium

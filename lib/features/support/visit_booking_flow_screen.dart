@@ -8,6 +8,7 @@ import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
+import 'visit_replace.dart';
 import 'widgets/booking_qr.dart';
 
 /// Calendar column headers, Sunday-first to match `_weeksOf`.
@@ -25,9 +26,14 @@ List<String> _weekdayInitials(AppLocalizations l10n) => [
 /// The intro card's Location/Working hours/Contact are all DB-backed via
 /// `visit_branches` (`address`/`working_hours`/`contact_phone`).
 class VisitBookingFlowScreen extends ConsumerStatefulWidget {
-  const VisitBookingFlowScreen({this.initialNote, super.key});
+  const VisitBookingFlowScreen({
+    this.initialNote,
+    this.replaceBookingId,
+    super.key,
+  });
 
   final String? initialNote;
+  final String? replaceBookingId;
 
   @override
   ConsumerState<VisitBookingFlowScreen> createState() =>
@@ -89,7 +95,32 @@ class _VisitBookingFlowScreenState
     if (_dept == null || _date == null || _slot == null) return;
     setState(() => _submitting = true);
     try {
-      final booked = await ref.read(supportServiceProvider).bookVisit(
+      final service = ref.read(supportServiceProvider);
+      final replaceId = widget.replaceBookingId;
+      if (replaceId != null && replaceId.isNotEmpty) {
+        final outcome = await replaceVisitBooking(
+          originalId: replaceId,
+          book: () => service.bookVisit(
+            departmentKey: _dept!.key,
+            date: _date!,
+            slotId: _slot!.id,
+            note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
+          ),
+          cancel: service.cancelVisit,
+        );
+        if (outcome.cancelFailed && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(context.l10n.visitReplaceCancelFailed)),
+          );
+        }
+        ref.invalidate(myVisitsProvider);
+        setState(() {
+          _bookingCode = outcome.bookingCode ?? '';
+          _step = 4;
+        });
+        return;
+      }
+      final booked = await service.bookVisit(
             departmentKey: _dept!.key,
             date: _date!,
             slotId: _slot!.id,

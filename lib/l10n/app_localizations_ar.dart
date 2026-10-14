@@ -1804,6 +1804,42 @@ class AppLocalizationsAr extends AppLocalizations {
   String get vehicleStatus => 'الحالة التشغيلية';
 
   @override
+  String get vehicleValueRunning => 'سارية';
+
+  @override
+  String get vehicleValueOperational => 'تشغيلية';
+
+  @override
+  String get vehicleValueCompany => 'شركة';
+
+  @override
+  String get vehicleValueActive => 'نشطة';
+
+  @override
+  String get vehicleValueInactive => 'غير نشطة';
+
+  @override
+  String get vehicleValueExcellent => 'ممتازة';
+
+  @override
+  String get vehicleValueGood => 'جيدة';
+
+  @override
+  String get vehicleValueFair => 'مقبولة';
+
+  @override
+  String get vehicleValuePoor => 'ضعيفة';
+
+  @override
+  String get vehicleValuePrivate => 'خاصة';
+
+  @override
+  String get vehicleValuePublic => 'عامة';
+
+  @override
+  String get vehicleValueCommercial => 'تجارية';
+
+  @override
   String get vehicleHandover => 'التسليم';
 
   @override
@@ -3195,8 +3231,21 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String visitRescheduleBody(String code) {
-    return 'هل تريد إلغاء $code وحجز موعد جديد؟';
+    return 'احجز موعداً جديداً لـ $code. يبقى الحجز الحالي حتى ينجح الحجز الجديد.';
   }
+
+  @override
+  String get visitCancelTitle => 'إلغاء الزيارة؟';
+
+  @override
+  String get visitCancelBody => 'سيتم إلغاء هذا الحجز.';
+
+  @override
+  String get visitCancelAction => 'إلغاء الزيارة';
+
+  @override
+  String get visitReplaceCancelFailed =>
+      'تم حجز الموعد الجديد. تعذر إلغاء الحجز السابق — ألغه من زياراتي.';
 
   @override
   String get visitKeep => 'الإبقاء عليها';

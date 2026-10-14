@@ -10,6 +10,7 @@ import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../home/widgets/kd_note.dart';
 import 'assigned_vehicle.dart';
+import 'vehicle_labels.dart';
 import 'vehicle_providers.dart';
 
 class VehicleScreen extends ConsumerStatefulWidget {
@@ -137,13 +138,25 @@ class _AssignedCard extends StatelessWidget {
                   value: vehicle.modelYear!.toString(),
                 ),
               if (vehicle.condition != null)
-                _Row(label: l10n.vehicleCondition, value: vehicle.condition!),
+                _Row(
+                  label: l10n.vehicleCondition,
+                  value: vehicleConditionLabel(l10n, vehicle.condition),
+                ),
               if (vehicle.carType != null)
-                _Row(label: l10n.vehicleCarType, value: vehicle.carType!),
+                _Row(
+                  label: l10n.vehicleCarType,
+                  value: vehicleCarTypeLabel(l10n, vehicle.carType),
+                ),
               if (vehicle.typeOfUse != null)
-                _Row(label: l10n.vehicleTypeOfUse, value: vehicle.typeOfUse!),
+                _Row(
+                  label: l10n.vehicleTypeOfUse,
+                  value: vehicleTypeOfUseLabel(l10n, vehicle.typeOfUse),
+                ),
               if (vehicle.status != null)
-                _Row(label: l10n.vehicleStatus, value: vehicle.status!),
+                _Row(
+                  label: l10n.vehicleStatus,
+                  value: vehicleStatusLabel(l10n, vehicle.status),
+                ),
             ],
           ),
         ),

@@ -1816,6 +1816,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get vehicleStatus => 'Status';
 
   @override
+  String get vehicleValueRunning => 'Running';
+
+  @override
+  String get vehicleValueOperational => 'Operational';
+
+  @override
+  String get vehicleValueCompany => 'Company';
+
+  @override
+  String get vehicleValueActive => 'Active';
+
+  @override
+  String get vehicleValueInactive => 'Inactive';
+
+  @override
+  String get vehicleValueExcellent => 'Excellent';
+
+  @override
+  String get vehicleValueGood => 'Good';
+
+  @override
+  String get vehicleValueFair => 'Fair';
+
+  @override
+  String get vehicleValuePoor => 'Poor';
+
+  @override
+  String get vehicleValuePrivate => 'Private';
+
+  @override
+  String get vehicleValuePublic => 'Public';
+
+  @override
+  String get vehicleValueCommercial => 'Commercial';
+
+  @override
   String get vehicleHandover => 'Handover';
 
   @override
@@ -3210,8 +3246,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String visitRescheduleBody(String code) {
-    return 'Cancel $code and book a new slot?';
+    return 'Book a new slot for $code. The current booking stays until the new one succeeds.';
   }
+
+  @override
+  String get visitCancelTitle => 'Cancel visit?';
+
+  @override
+  String get visitCancelBody => 'This booking will be cancelled.';
+
+  @override
+  String get visitCancelAction => 'Cancel visit';
+
+  @override
+  String get visitReplaceCancelFailed =>
+      'New slot booked. The previous booking could not be cancelled — cancel it from My visits.';
 
   @override
   String get visitKeep => 'Keep';

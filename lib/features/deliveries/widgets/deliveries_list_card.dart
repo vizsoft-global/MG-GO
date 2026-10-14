@@ -18,7 +18,7 @@ class DeliveriesListCard extends ConsumerWidget {
     final countLabel = l10n.deliveriesCount(deliveries.length);
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(10, 5, 10, 100),
+      margin: const EdgeInsets.fromLTRB(10, 5, 10, 20),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(12),

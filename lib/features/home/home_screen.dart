@@ -15,9 +15,11 @@ import '../duty/duty_lifecycle_controller.dart';
 import '../duty/duty_location_provider.dart';
 import '../duty/duty_session_gate_provider.dart';
 import '../duty/on_duty_permission_gate.dart';
+import '../earnings/earnings_providers.dart';
 import '../shift/on_duty_gate.dart';
 import '../shift/shift_providers.dart';
 import 'home_dashboard_ui_state.dart';
+import 'refresh_home_progress.dart';
 import 'home_duty_errors.dart';
 import 'home_models.dart';
 import 'home_providers.dart';
@@ -137,8 +139,12 @@ class HomeScreen extends ConsumerWidget {
           body: SafeArea(
             child: RefreshIndicator(
               onRefresh: () async {
-                await ref.read(homeDashboardProvider.notifier).refresh();
-                await ref.read(todayShiftProvider.notifier).refresh();
+                refreshHomeProgress(ref);
+                await Future.wait([
+                  ref.read(homeDashboardProvider.notifier).refresh(),
+                  ref.read(todayShiftProvider.notifier).refresh(),
+                  ref.read(extraEarningsProvider.future),
+                ]);
               },
               child: CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
