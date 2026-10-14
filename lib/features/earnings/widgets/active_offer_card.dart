@@ -4,6 +4,7 @@ import '../../../core/l10n/l10n.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../core/theme/app_colors.dart';
 import '../earnings_models.dart';
+import '../extra_earnings_layout.dart';
 
 /// One incentive-rule progress card on the Extra Earnings screen.
 class ActiveOfferCard extends StatelessWidget {
@@ -142,22 +143,11 @@ class _OfferBreakdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final lines = <String>[
-      l10n.offerVerifiedToday(offer.verifiedCount),
-    ];
-    if (offer.bandStart != null) {
-      lines.add(l10n.offerBonusStartsAfter(offer.bandStart!));
-    }
-    final setupLine = _setupLine(setup, l10n);
-    if (setupLine != null) lines.add(setupLine);
-    for (final tier in offer.tiers) {
-      final rate = tier.rewardPerDeliveryKwd;
-      if (rate == null || rate <= 0) continue;
-      lines.add(l10n.offerTierStep(tier.threshold, formatKwd(rate)));
-    }
-    if (offer.currentPayoutKwd > 0) {
-      lines.add(l10n.offerBonusSoFar(formatKwd(offer.currentPayoutKwd)));
-    }
+    final lines = offerCardBreakdownLines(
+      offer: offer,
+      setup: setup,
+      l10n: l10n,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -172,21 +162,4 @@ class _OfferBreakdown extends StatelessWidget {
       ],
     );
   }
-}
-
-String? _setupLine(RiderIncentiveSetup? setup, AppLocalizations l10n) {
-  if (setup == null) return null;
-  final parts = <String>[];
-  final project = setup.projectKey?.trim();
-  if (project != null && project.isNotEmpty) parts.add(project);
-  final category = switch (setup.riderCategory) {
-    'in_house' => l10n.riderCategoryMg,
-    'outsourced' => l10n.riderCategoryOutsource,
-    _ => null,
-  };
-  if (category != null) parts.add(category);
-  final company = setup.companyName?.trim();
-  if (company != null && company.isNotEmpty) parts.add(company);
-  if (parts.isEmpty) return null;
-  return parts.join(' · ');
 }

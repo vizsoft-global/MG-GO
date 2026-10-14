@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/l10n/locale_formatters.dart';
+import '../../core/security/security_bypass_store.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
 import 'esign_full_document_screen.dart';
+import 'esign_secure_flag.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
 import 'widgets/esign_pdf_preview.dart';
@@ -154,7 +156,10 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
           url: url,
           title: detail.title,
           isImage: _isImageKey(key),
-          restricted: detail.screenshotRestricted,
+          restricted: esignShouldSecureScreen(
+            screenshotRestricted: detail.screenshotRestricted,
+            screenshotsAllowed: ref.read(securityBypassProvider),
+          ),
         ),
       ),
     );
@@ -169,14 +174,25 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final async = ref.watch(esignRequestDetailProvider(widget.requestId));
+    final bypass = ref.watch(securityBypassProvider);
+    final loadingRestricted = esignShouldSecureScreen(
+      screenshotRestricted: null,
+      screenshotsAllowed: bypass,
+    );
     return async.when(
-      loading: () => Scaffold(
-        appBar: AppBar(title: Text(l10n.esignDocumentTitle)),
-        body: const Center(child: CircularProgressIndicator()),
+      loading: () => EsignSensitiveScope(
+        restricted: loadingRestricted,
+        child: Scaffold(
+          appBar: AppBar(title: Text(l10n.esignDocumentTitle)),
+          body: const Center(child: CircularProgressIndicator()),
+        ),
       ),
-      error: (e, _) => Scaffold(
-        appBar: AppBar(title: Text(l10n.esignDocumentTitle)),
-        body: Center(child: Text('$e')),
+      error: (e, _) => EsignSensitiveScope(
+        restricted: loadingRestricted,
+        child: Scaffold(
+          appBar: AppBar(title: Text(l10n.esignDocumentTitle)),
+          body: Center(child: Text('$e')),
+        ),
       ),
       data: (detail) {
         if (!_docRequested && !_loadingDoc) {
@@ -192,8 +208,12 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
             );
           });
         }
+        final restricted = esignShouldSecureScreen(
+          screenshotRestricted: detail.screenshotRestricted,
+          screenshotsAllowed: bypass,
+        );
         return EsignSensitiveScope(
-          restricted: detail.screenshotRestricted,
+          restricted: restricted,
           child: Scaffold(
             appBar: AppBar(
               title: Text(l10n.esignReviewDocument),
@@ -205,9 +225,8 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
             body: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                if (detail.screenshotRestricted)
-                  const ScreenshotRestrictionBanner(),
-                if (detail.screenshotRestricted) const SizedBox(height: 12),
+                if (restricted) const ScreenshotRestrictionBanner(),
+                if (restricted) const SizedBox(height: 12),
                 if (detail.hasSenderDetails) ...[
                   _EsignDetailsCard(detail: detail),
                   const SizedBox(height: 10),

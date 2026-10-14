@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/security/screen_protector_service.dart';
+import '../../../core/security/security_bypass_store.dart';
 
 class EsignSensitiveScope extends StatefulWidget {
   const EsignSensitiveScope({
@@ -24,6 +25,9 @@ class _EsignSensitiveScopeState extends State<EsignSensitiveScope>
   final ScreenProtectorService _protector = ScreenProtectorService.instance;
   bool _sessionActive = false;
   bool _obscureContent = false;
+
+  bool get _protect =>
+      widget.restricted && !SecurityBypassStore.isEnabled;
 
   @override
   void initState() {
@@ -51,7 +55,7 @@ class _EsignSensitiveScopeState extends State<EsignSensitiveScope>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (!widget.restricted) return;
+    if (!_protect) return;
     if (state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden) {
@@ -70,7 +74,7 @@ class _EsignSensitiveScopeState extends State<EsignSensitiveScope>
   }
 
   Future<void> _startProtection() async {
-    if (!widget.restricted) return;
+    if (!_protect) return;
     await _protector.beginSensitiveSession(
       onCaptureAttempt: (_) async {
         if (mounted) setState(() => _obscureContent = true);
@@ -91,7 +95,7 @@ class _EsignSensitiveScopeState extends State<EsignSensitiveScope>
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.restricted) return widget.child;
+    if (!_protect) return widget.child;
     return Stack(
       fit: StackFit.expand,
       children: [

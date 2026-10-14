@@ -5,10 +5,12 @@ import 'package:intl/intl.dart';
 
 import '../../core/l10n/l10n.dart';
 import '../../core/l10n/locale_formatters.dart';
+import '../../core/security/security_bypass_store.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
 import 'esign_failure.dart';
 import 'esign_full_document_screen.dart';
+import 'esign_secure_flag.dart';
 import 'support_models.dart';
 import 'support_providers.dart';
 
@@ -83,7 +85,10 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
             url: url,
             title: detail.title,
             isImage: _isImageKey(storageKey),
-            restricted: detail.screenshotRestricted,
+            restricted: esignShouldSecureScreen(
+              screenshotRestricted: detail.screenshotRestricted,
+              screenshotsAllowed: ref.read(securityBypassProvider),
+            ),
           ),
         ),
       );
