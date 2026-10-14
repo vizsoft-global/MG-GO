@@ -1,15 +1,37 @@
+import 'dart:io' show Platform;
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../firebase/rider_backend.dart';
 
 final pushTokenRepositoryProvider = Provider<PushTokenRepository>((ref) {
   return PushTokenRepository();
 });
 
+typedef RiderCallable =
+    Future<Map<String, dynamic>> Function(
+      String name, [
+      Map<String, dynamic>? data,
+    ]);
+
 class PushTokenRepository {
-  PushTokenRepository();
+  PushTokenRepository({
+    RiderCallable? call,
+    String? Function()? currentUid,
+    String Function()? platform,
+  }) : _call = call ?? callRiderFunction,
+       _currentUid = currentUid ?? (() => FirebaseAuth.instance.currentUser?.uid),
+       _platform = platform ?? _hostPlatform;
+
+  final RiderCallable _call;
+  final String? Function() _currentUid;
+  final String Function() _platform;
 
   static const _storedTokenKey = 'push.fcm_token';
+
+  static String _hostPlatform() => Platform.isIOS ? 'ios' : 'android';
 
   Future<String?> readStoredToken() async {
     final prefs = await SharedPreferences.getInstance();
@@ -27,20 +49,32 @@ class PushTokenRepository {
   }
 
   Future<void> upsertToken(String token) async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
+    final userId = _currentUid();
     if (userId == null || token.isEmpty) return;
-
-    // TODO: no rider callable is exported for FCM upsert. Admin still reads
-    // `driver_push_tokens`; Firestore rules deny client writes. Do not invent
-    // a callable from the app.
     await storeToken(token);
+    try {
+      await _call('driverUpsertPushToken', {
+        'token': token,
+        'p_token': token,
+        'platform': _platform(),
+        'p_platform': _platform(),
+      });
+    } catch (_) {
+      // Local store already written; the next login/refresh retries the callable.
+    }
   }
 
   Future<void> deactivateToken(String token) async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
+    final userId = _currentUid();
     if (userId == null || token.isEmpty) return;
-
-    // TODO: same gap as [upsertToken] — no exported rider callable.
+    try {
+      await _call('driverDeactivatePushToken', {
+        'token': token,
+        'p_token': token,
+      });
+    } catch (_) {
+      // Sign-out must still clear the local token.
+    }
   }
 
   Future<void> deactivateCurrentToken() async {
