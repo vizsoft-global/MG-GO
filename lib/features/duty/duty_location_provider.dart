@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/offline/network_status_provider.dart';
 import '../../core/offline/offline_repo.dart';
 import 'adaptive_location_scheduler.dart';
+import 'distance_today.dart';
 import 'location_tracking_service.dart';
 
 final locationTrackingServiceProvider = Provider<LocationTrackingService>(
@@ -83,8 +84,27 @@ class DutyLocationNotifier extends Notifier<DutyLocationState> {
       'delivery_submit' => TrackingStatus.deliverySubmit,
       _ => TrackingStatus.idle,
     };
+    final previous = state.lastReport;
+    final meters = coalesceDistanceTodayMeters(
+      previousMeters: previous?.distanceTodayMeters ?? 0,
+      incomingMeters: report.distanceTodayMeters,
+      now: DateTime.now(),
+      previousAt: previous?.lastSeenAt,
+      incomingAt: report.lastSeenAt,
+    );
+    final next = meters == report.distanceTodayMeters
+        ? report
+        : LocationReportResult(
+            zoneStatus: report.zoneStatus,
+            inRange: report.inRange,
+            lastSeenAt: report.lastSeenAt,
+            historyWritten: report.historyWritten,
+            trackingStatus: report.trackingStatus,
+            speedMps: report.speedMps,
+            distanceTodayMeters: meters,
+          );
     state = state.copyWith(
-      lastReport: report,
+      lastReport: next,
       trackingStatus: status,
       clearError: true,
     );

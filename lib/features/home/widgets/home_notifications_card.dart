@@ -225,11 +225,10 @@ class _NotificationRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item.title.isEmpty
-                        ? (item.body.isEmpty
-                              ? l10n.notificationFallback
-                              : item.body)
-                        : item.title,
+                    item.displayTitle(
+                      Localizations.localeOf(context),
+                      l10n,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -241,10 +240,11 @@ class _NotificationRow extends StatelessWidget {
                       height: 1.3,
                     ),
                   ),
-                  if (item.title.isNotEmpty && item.body.isNotEmpty) ...[
+                  if (item.displayBody(Localizations.localeOf(context))
+                      .isNotEmpty) ...[
                     const SizedBox(height: 3),
                     Text(
-                      item.body,
+                      item.displayBody(Localizations.localeOf(context)),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(

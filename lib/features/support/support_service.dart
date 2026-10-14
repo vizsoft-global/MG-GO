@@ -1,10 +1,9 @@
 import 'dart:typed_data';
 
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:http/http.dart' as http;
 
 import '../../core/firebase/rider_backend.dart';
+import '../../core/storage/driver_upload_service.dart';
 import 'create_attachment.dart';
 import 'esign_failure.dart';
 import 'request_form_submit.dart';
@@ -12,7 +11,10 @@ import 'request_type_definition.dart';
 import 'support_models.dart';
 
 class SupportService {
-  SupportService();
+  SupportService({DriverUploadService? uploads})
+      : _uploads = uploads ?? DriverUploadService();
+
+  final DriverUploadService _uploads;
 
   Map<String, dynamic> _asMap(dynamic result) {
     if (result is Map<String, dynamic>) return result;
@@ -382,17 +384,17 @@ class SupportService {
     required String requestId,
     required Uint8List pngBytes,
   }) async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) throw const EsignFailure('not_authenticated');
-    final key = '$uid/$requestId/signature.png';
-    return withEsignTimeout(
-      () => _putViaUploadUrl(
-        bucket: 'esign-documents',
-        objectKey: key,
-        contentType: 'image/png',
-        bytes: pngBytes,
-      ),
-    );
+    try {
+      final result = await withEsignTimeout(
+        () => _uploads.uploadEsignSignature(
+          bytes: pngBytes,
+          requestId: requestId,
+        ),
+      );
+      return result.objectKey;
+    } on DriverUploadException catch (e) {
+      throw EsignFailure(e.code ?? 'network', detail: e.message);
+    }
   }
 
   /// Compose stays on Next/R2 — there is no rider callable. Re-read the
@@ -412,43 +414,10 @@ class SupportService {
   Future<String?> signedEsignDocumentUrl(String storageKey) async {
     if (storageKey.trim().isEmpty) return null;
     try {
-      final map = await callRiderFunction('driverGetDownloadUrl', {
-        'bucket': 'esign-documents',
-        'object_key': storageKey,
-      });
-      final url = map['url']?.toString().trim() ?? '';
-      return url.isEmpty ? null : url;
-    } on FirebaseFunctionsException catch (e) {
-      throw EsignFailure(riderErrorCode(e), detail: e.message);
-    }
-  }
-
-  Future<String> _putViaUploadUrl({
-    required String bucket,
-    required String objectKey,
-    required String contentType,
-    required List<int> bytes,
-  }) async {
-    try {
-      final map = await callRiderFunction('driverGetUploadUrl', {
-        'bucket': bucket,
-        'object_key': objectKey,
-        'content_type': contentType,
-      });
-      final url = map['url']?.toString() ?? '';
-      final key = map['object_key']?.toString().trim();
-      if (url.isEmpty) throw const EsignFailure('network');
-      final res = await http.put(
-        Uri.parse(url),
-        headers: {'Content-Type': contentType},
-        body: bytes,
-      );
-      if (res.statusCode != 200 && res.statusCode != 201) {
-        throw const EsignFailure('network');
-      }
-      return (key != null && key.isNotEmpty) ? key : objectKey;
-    } on FirebaseFunctionsException catch (e) {
-      throw EsignFailure(riderErrorCode(e), detail: e.message);
+      final resolved = await _uploads.resolveReadUrl(storageKey);
+      return resolved.readUrl;
+    } on DriverUploadException catch (e) {
+      throw EsignFailure(e.code ?? 'network', detail: e.message);
     }
   }
 

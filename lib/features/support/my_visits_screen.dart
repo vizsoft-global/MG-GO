@@ -109,6 +109,24 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen>
                   empty: l10n.visitNoUpcoming,
                   deptLabels: deptLabels,
                   onCancel: (id) async {
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: Text(l10n.visitCancelTitle),
+                        content: Text(l10n.visitCancelBody),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: Text(l10n.visitKeep),
+                          ),
+                          FilledButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: Text(l10n.visitCancelAction),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirmed != true || !context.mounted) return;
                     try {
                       await ref.read(supportServiceProvider).cancelVisit(id);
                       ref.invalidate(myVisitsProvider);
@@ -141,20 +159,9 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen>
                       ),
                     );
                     if (confirmed != true || !context.mounted) return;
-                    try {
-                      await ref.read(supportServiceProvider).cancelVisit(row.id);
-                      ref.invalidate(myVisitsProvider);
-                      if (!context.mounted) return;
-                      context.push(
-                        '/profile/support/visits/book?note=${Uri.encodeComponent('Reschedule ${row.bookingCode}')}',
-                      );
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('$e')),
-                        );
-                      }
-                    }
+                    context.push(
+                      '/profile/support/visits/book?replace=${Uri.encodeComponent(row.id)}&note=${Uri.encodeComponent('Reschedule ${row.bookingCode}')}',
+                    );
                   },
                 ),
                 _VisitList(

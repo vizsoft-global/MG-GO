@@ -937,7 +937,7 @@ class ActiveOffer {
   final int? ordersToNextRate;
 
   bool get isBand => bandStart != null;
-  int get verifiedCount => eligibleCount ?? currentCount;
+  int get verifiedCount => eligibleCount ?? 0;
 
   /// What every progress label prints. A milestone quest that pays at 3 must
   /// not read "6 / 3": the extra orders are not a bigger reward, and a label is
@@ -1054,9 +1054,7 @@ class ActiveOffer {
         (json['current_count'] as num?)?.toInt() ??
         0;
     final target = (json['target'] as num?)?.toInt() ?? 0;
-    final verified = (json['eligible_count'] as num?)?.toInt() ??
-        (json['current_count'] as num?)?.toInt() ??
-        progress;
+    final verified = (json['eligible_count'] as num?)?.toInt() ?? 0;
     final leftover = target - verified;
     return ActiveOffer(
       ruleId: json['rule_id']?.toString() ?? '',
@@ -1088,8 +1086,7 @@ class ActiveOffer {
       displayName: (json['display_name'] as String?)?.trim().isNotEmpty == true
           ? (json['display_name'] as String).trim()
           : null,
-      eligibleCount: (json['eligible_count'] as num?)?.toInt() ??
-          (json['current_count'] as num?)?.toInt(),
+      eligibleCount: (json['eligible_count'] as num?)?.toInt(),
       bandStart: (json['band_start'] as num?)?.toInt(),
       currentRateKwd: (json['current_rate_kwd'] as num?)?.toDouble(),
       nextRateKwd: (json['next_rate_kwd'] as num?)?.toDouble(),

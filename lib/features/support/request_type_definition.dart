@@ -314,3 +314,81 @@ String builtInOptionLabel(AppLocalizations l10n, String value) {
     _ => value,
   };
 }
+
+/// ARB label for a built-in field when DB `label_ar` is empty.
+String? builtInFieldLabel(
+  AppLocalizations l10n,
+  String typeKey,
+  String fieldKey,
+) {
+  switch (fieldKey) {
+    case 'start_date':
+    case 'from_date':
+    case 'from':
+      return l10n.supportFieldFrom;
+    case 'end_date':
+    case 'to_date':
+    case 'to':
+      return l10n.supportFieldTo;
+    case 'leave_type':
+      return l10n.supportFieldLeaveType;
+    case 'leave_subtype_other':
+      return l10n.supportFieldLeaveSubtypeOther;
+    case 'comment':
+    case 'details':
+    case 'description':
+      return typeKey == 'complaint'
+          ? l10n.supportFieldDescription
+          : l10n.supportFieldComment;
+    case 'amount_kwd':
+    case 'amount':
+      return l10n.supportFieldAmount;
+    case 'tenure_months':
+    case 'tenure':
+      return l10n.supportFieldInstallments;
+    case 'needed_by':
+      return l10n.supportFieldNeededBy;
+    case 'reason':
+      return l10n.supportFieldPurpose;
+    case 'asset_type':
+      return l10n.supportFieldAssetType;
+    case 'quantity':
+      return l10n.supportFieldQuantity;
+    case 'period_month':
+    case 'salary_month':
+      return typeKey == 'salary_justification'
+          ? l10n.supportFieldSalaryMonth
+          : l10n.supportFieldPeriodMonth;
+    case 'distance_km':
+      return l10n.supportFieldDistanceKm;
+    case 'document_type':
+    case 'doc_type':
+      return l10n.supportFieldDocumentType;
+    case 'category':
+      return l10n.supportFieldCategory;
+    case 'subject':
+      return l10n.supportFieldSubject;
+    case 'severity':
+      return l10n.supportFieldSeverity;
+    case 'expected_amount':
+      return l10n.supportFieldAmount;
+    case 'received_amount':
+      return l10n.supportFieldAmount;
+    case 'request_mode':
+      return l10n.supportFieldRequestMode;
+    case 'asset_current_status':
+      return l10n.supportFieldCondition;
+    case 'symptoms':
+      return l10n.supportFieldComment;
+    case 'declaration':
+    case 'declaration_accepted':
+      return switch (typeKey) {
+        'loan' => l10n.supportDeclarationLoan,
+        'leave' => l10n.supportDeclarationLeave,
+        'asset' => l10n.supportDeclarationAsset,
+        _ => null,
+      };
+    default:
+      return null;
+  }
+}

@@ -206,4 +206,17 @@ void main() {
       'Approved with document request',
     );
   });
+
+  test('attachment ref prefers a URL then storage or object key', () {
+    expect(
+      requestAttachmentRef({'url': 'https://cdn.example/a.jpg'}),
+      'https://cdn.example/a.jpg',
+    );
+    expect(
+      requestAttachmentRef({'object_key': 'requests/a.jpg'}),
+      'requests/a.jpg',
+    );
+    expect(isHttpAttachmentRef('https://cdn.example/a.jpg'), isTrue);
+    expect(isHttpAttachmentRef('requests/a.jpg'), isFalse);
+  });
 }

@@ -7,6 +7,7 @@ import '../../l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import 'earnings_models.dart';
 import 'earnings_providers.dart';
+import '../home/widgets/incentive_band_row.dart';
 import 'widgets/active_offer_card.dart';
 import 'widgets/company_scheme_card.dart';
 
@@ -100,7 +101,11 @@ class _OffersList extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(10, 10, 10, 24),
       children: [
-        _HeroCard(offers: extra.activeOffers, setup: extra.riderSetup),
+        _HeroCard(
+          offers: extra.activeOffers,
+          setup: extra.riderSetup,
+          dailyTargetAchieved: extra.dailyDpd?.achieved ?? true,
+        ),
       ],
     );
   }
@@ -123,10 +128,15 @@ class _CompanySchemeList extends StatelessWidget {
 }
 
 class _HeroCard extends StatelessWidget {
-  const _HeroCard({required this.offers, this.setup});
+  const _HeroCard({
+    required this.offers,
+    this.setup,
+    this.dailyTargetAchieved = true,
+  });
 
   final List<ActiveOffer> offers;
   final RiderIncentiveSetup? setup;
+  final bool dailyTargetAchieved;
 
   @override
   Widget build(BuildContext context) {
@@ -180,7 +190,12 @@ class _HeroCard extends StatelessWidget {
             Column(
               children: [
                 for (final offer in offers) ...[
-                  ActiveOfferCard(offer: offer, setup: setup),
+                  offer.isBand
+                      ? IncentiveBandRow(
+                          offer: offer,
+                          dailyTargetAchieved: dailyTargetAchieved,
+                        )
+                      : ActiveOfferCard(offer: offer, setup: setup),
                   const SizedBox(height: 10),
                 ],
               ],

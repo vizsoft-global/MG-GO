@@ -1,5 +1,10 @@
 import 'dart:convert';
 
+import 'package:flutter/widgets.dart';
+
+import '../../features/support/request_type_definition.dart';
+import '../../l10n/app_localizations.dart';
+
 /// One item in the driver's notification inbox.
 ///
 /// Mirrors the row shape returned by the `driver_list_notifications` RPC,
@@ -10,6 +15,8 @@ class NotificationInboxItem {
     required this.campaignId,
     required this.title,
     required this.body,
+    this.titleAr,
+    this.bodyAr,
     required this.category,
     required this.priority,
     required this.actionType,
@@ -27,6 +34,8 @@ class NotificationInboxItem {
   final String campaignId;
   final String title;
   final String body;
+  final String? titleAr;
+  final String? bodyAr;
   final String category;
   final String priority;
   final String actionType;
@@ -42,6 +51,25 @@ class NotificationInboxItem {
 
   bool get isUnread => openedAt == null;
 
+  String displayTitle(Locale locale, AppLocalizations l10n) {
+    if (locale.languageCode == 'ar') {
+      final ar = titleAr?.trim();
+      if (ar != null && ar.isNotEmpty) return ar;
+      final mapped = requestNotificationTitle(l10n, actionParams);
+      if (mapped != null) return mapped;
+    }
+    if (title.trim().isEmpty) return l10n.notificationFallback;
+    return title;
+  }
+
+  String displayBody(Locale locale) {
+    if (locale.languageCode == 'ar') {
+      final ar = bodyAr?.trim();
+      if (ar != null && ar.isNotEmpty) return ar;
+    }
+    return body;
+  }
+
   factory NotificationInboxItem.fromJson(Map<String, dynamic> json) {
     final params = _decodeMap(json['action_params']);
     final media = _decodeMediaList(json['media']);
@@ -51,7 +79,9 @@ class NotificationInboxItem {
       dispatchItemId: json['dispatch_item_id']?.toString() ?? '',
       campaignId: json['campaign_id']?.toString() ?? '',
       title: (json['title'] ?? '').toString(),
+      titleAr: json['title_ar']?.toString(),
       body: inboxBodyFromJson(json, params),
+      bodyAr: _optionalText(json['body_ar']),
       category: (json['category'] ?? 'announcement').toString(),
       priority: (json['priority'] ?? 'normal').toString(),
       actionType: (json['action_type'] ?? 'open_screen').toString(),
@@ -75,7 +105,9 @@ class NotificationInboxItem {
       dispatchItemId: dispatchItemId,
       campaignId: campaignId,
       title: title,
+      titleAr: titleAr,
       body: body,
+      bodyAr: bodyAr,
       category: category,
       priority: priority,
       actionType: actionType,
@@ -150,6 +182,30 @@ class NotificationInboxItem {
     }
     return null;
   }
+}
+
+String? _optionalText(Object? raw) {
+  if (raw == null) return null;
+  final text = raw.toString().trim();
+  return text.isEmpty ? null : text;
+}
+
+String? requestNotificationTitle(
+  AppLocalizations l10n,
+  Map<String, dynamic> params,
+) {
+  final recordType = params['record_type']?.toString();
+  if (recordType != null &&
+      recordType != 'request' &&
+      recordType != 'driver_request') {
+    return null;
+  }
+  final key = (params['type_key'] ??
+          params['request_type'] ??
+          params['type'])
+      ?.toString();
+  if (key == null || key.isEmpty) return null;
+  return builtInRequestFormTitle(l10n, key);
 }
 
 String inboxBodyFromJson(

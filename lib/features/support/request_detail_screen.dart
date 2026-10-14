@@ -11,6 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/firebase/rider_backend.dart';
 import '../../core/l10n/l10n.dart';
+import '../../core/storage/driver_upload_service.dart';
 import '../../core/l10n/locale_formatters.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
@@ -385,15 +386,32 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
   }
 
   Future<void> _openAttachment(Map<String, dynamic> row) async {
-    final key = row['storage_key']?.toString().trim() ?? '';
-    if (key.isEmpty) return;
+    final ref = requestAttachmentRef(row);
+    if (ref == null) return;
     try {
-      final map = await callRiderFunction('driverGetDownloadUrl', {
-        'bucket': 'request-attachments',
-        'object_key': key,
-      });
-      final url = map['url']?.toString().trim() ?? '';
-      final uri = Uri.tryParse(url);
+      if (isHttpAttachmentRef(ref)) {
+        final uri = Uri.tryParse(ref);
+        if (uri == null) return;
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        return;
+      }
+      try {
+        final map = await callRiderFunction('driverGetDownloadUrl', {
+          'bucket': 'request-attachments',
+          'object_key': ref,
+        });
+        if (map['ok'] == false) {
+          throw Exception(map['error']?.toString() ?? 'download_failed');
+        }
+        final url = map['url']?.toString().trim() ?? '';
+        final uri = Uri.tryParse(url);
+        if (uri != null && url.isNotEmpty) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+          return;
+        }
+      } catch (_) {}
+      final resolved = await DriverUploadService().resolveReadUrl(ref);
+      final uri = Uri.tryParse(resolved.readUrl);
       if (uri == null) return;
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (e) {

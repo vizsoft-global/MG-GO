@@ -9,9 +9,14 @@ import 'kd_note.dart';
 /// One incentive quest paid per order above the daily DPD target (SOP §4.2).
 /// Locked until the target is reached, then Active with the band rates.
 class IncentiveBandRow extends StatelessWidget {
-  const IncentiveBandRow({super.key, required this.offer});
+  const IncentiveBandRow({
+    super.key,
+    required this.offer,
+    this.dailyTargetAchieved = true,
+  });
 
   final ActiveOffer offer;
+  final bool dailyTargetAchieved;
 
   List<ActiveOfferTier> get _tiers =>
       ([...offer.tiers]..sort((a, b) => a.threshold.compareTo(b.threshold)))
@@ -20,7 +25,7 @@ class IncentiveBandRow extends StatelessWidget {
 
   String _footer(AppLocalizations l10n) {
     final start = offer.bandStart!;
-    if (offer.bandLocked) {
+    if (offer.bandLocked || !dailyTargetAchieved) {
       return l10n.incentiveUnlocksAt(start, start - offer.verifiedCount);
     }
     final tiers = _tiers;
@@ -44,7 +49,7 @@ class IncentiveBandRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final locked = offer.bandLocked;
+    final locked = offer.bandLocked || !dailyTargetAchieved;
     final tiers = _tiers;
     final last = tiers.isEmpty ? offer.target : tiers.last.threshold;
     final scope = offer.scopeLabel?.trim();

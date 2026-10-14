@@ -394,7 +394,12 @@ class DeliveryService {
   Future<List<DriverDelivery>> cachedDeliveries(String userId) async {
     try {
       final rows = await _offlineRepo.loadDeliveriesCache(userId);
-      return rows.map(DriverDelivery.fromJson).toList(growable: false);
+      return parseDriverDeliveries(
+        rows,
+        onSkip: (id, reason) {
+          debugPrint('skip cached delivery row id=$id reason=$reason');
+        },
+      );
     } catch (error, stack) {
       debugPrint('loadDeliveriesCache failed: $error\n$stack');
       return const [];
@@ -418,7 +423,12 @@ class DeliveryService {
       final mapped = _callableRows(map);
       _networkStatus.recordRpcSuccess();
       unawaited(_saveDeliveriesCacheQuietly(userId, mapped));
-      return mapped.map(DriverDelivery.fromJson).toList(growable: false);
+      return parseDriverDeliveries(
+        mapped,
+        onSkip: (id, reason) {
+          debugPrint('skip delivery row id=$id reason=$reason');
+        },
+      );
     } on FirebaseFunctionsException catch (e) {
       throw _mapCallable(e);
     }
@@ -458,9 +468,12 @@ class DeliveryService {
       try {
         final cached = await _offlineRepo.loadDeliveriesCache(userId);
         if (cached.isNotEmpty) {
-          return cached
-              .map(DriverDelivery.fromJson)
-              .toList(growable: false);
+          return parseDriverDeliveries(
+            cached,
+            onSkip: (id, reason) {
+              debugPrint('skip cached delivery row id=$id reason=$reason');
+            },
+          );
         }
       } catch (cacheError, cacheStack) {
         debugPrint('loadDeliveriesCache failed: $cacheError\n$cacheStack');

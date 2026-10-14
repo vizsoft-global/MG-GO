@@ -37,6 +37,7 @@ class DriverUploadService {
   static const _orderProofMaxBytes = 10 * 1024 * 1024;
   static const _driverAvatarMaxBytes = 2 * 1024 * 1024;
   static const _loginVerificationMaxBytes = 5 * 1024 * 1024;
+  static const _esignSignatureMaxBytes = 4 * 1024 * 1024;
 
   Future<DriverUploadResult> uploadOrderProof({
     required List<int> bytes,
@@ -125,6 +126,31 @@ class DriverUploadService {
     );
   }
 
+  Future<DriverUploadResult> uploadEsignSignature({
+    required List<int> bytes,
+    required String requestId,
+    void Function(double progress)? onProgress,
+  }) async {
+    if (bytes.isEmpty) {
+      throw DriverUploadException(code: 'file_empty');
+    }
+    if (bytes.length > _esignSignatureMaxBytes) {
+      throw DriverUploadException(code: 'file_too_large');
+    }
+
+    final token = await _accessToken();
+    final authHeaders = {'Authorization': 'Bearer $token'};
+    return _uploadViaPresign(
+      bytes: bytes,
+      contentType: 'image/png',
+      filename: 'signature.png',
+      entityType: 'esign_signature',
+      entityId: requestId,
+      authHeaders: authHeaders,
+      onProgress: onProgress,
+    );
+  }
+
   Future<DriverUploadResult> _uploadViaPresign({
     required List<int> bytes,
     required String contentType,
@@ -155,7 +181,7 @@ class DriverUploadService {
 
     final presign = jsonDecode(presignRes.body) as Map<String, dynamic>;
     final uploadUrl = presign['uploadUrl'] as String;
-    final uploadId = presign['uploadId'] as String;
+    final uploadId = (presign['uploadId'] as String?) ?? '';
     final objectKey = presign['objectKey'] as String;
 
     onProgress?.call(0.1);
@@ -186,6 +212,11 @@ class DriverUploadService {
         authHeaders: authHeaders,
         onProgress: onProgress,
       );
+    }
+
+    if (uploadId.isEmpty) {
+      onProgress?.call(1.0);
+      return DriverUploadResult(objectKey: objectKey, sizeBytes: bytes.length);
     }
 
     final confirmRes = await http.post(

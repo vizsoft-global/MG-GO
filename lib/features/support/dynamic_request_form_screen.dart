@@ -275,12 +275,16 @@ class _DynamicRequestFormScreenState
       String? details;
       String? severity;
 
-      for (final field in fields) {
+      for (final field in orderRequestFormFields(fields)) {
         if (field.kind == 'file' || field.target == 'attachments') continue;
         if (!shouldShowRequestFormField(field, _values)) {
           continue;
         }
         final value = _wireValue(field);
+
+        if (isStartDateField(field) || isEndDateField(field)) {
+          continue;
+        }
 
         if (field.kind == 'number') {
           final issue = numberFieldSubmitIssue(
@@ -521,9 +525,8 @@ class _DynamicRequestFormScreenState
         ? l10n.supportFieldFrom
         : isEndDateField(field)
             ? l10n.supportFieldTo
-            : field.fieldKey == 'leave_subtype_other'
-                ? l10n.supportFieldLeaveSubtypeOther
-                : field.label(locale);
+            : builtInFieldLabel(l10n, widget.type, field.fieldKey) ??
+                field.label(locale);
     final showStar = isRequestFormFieldRequired(field, _values) ||
         (field.fieldKey == 'leave_subtype_other' &&
             isOtherLeaveSubtype(_values['leave_subtype']));
@@ -610,7 +613,14 @@ class _DynamicRequestFormScreenState
         final data = ref.watch(loanTenureOptionsProvider).asData?.value;
         if (data == null) return null;
         return data
-            .map((o) => (value: '${o.months}', label: o.label))
+            .map(
+              (o) => (
+                value: '${o.months}',
+                label: Localizations.localeOf(context).languageCode == 'ar'
+                    ? context.l10n.supportMonthsCount('${o.months}')
+                    : o.label,
+              ),
+            )
             .toList();
       case 'complaint_categories':
         final data = ref.watch(complaintCategoriesProvider).asData?.value;
