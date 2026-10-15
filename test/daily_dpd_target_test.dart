@@ -136,6 +136,38 @@ void main() {
       expect(extra.dailyDpdTargets, isEmpty);
     });
 
+    test('empty named targets still show daily_dpd on Home', () {
+      final extra = ExtraEarnings.fromJson({
+        'active_offers': const [],
+        'daily_dpd': {'target': 15, 'completed_today': 2, 'company_name': 'Sadeeq'},
+        'daily_dpd_targets': const [],
+      });
+      final cards = homeDpdCards(extra, (name) => '$name Target');
+      expect(cards, hasLength(1));
+      expect(cards.single.title, isNull);
+      expect(cards.single.daily.target, 15);
+      expect(cards.single.daily.displayCount, 2);
+    });
+
+    test('named targets stay the Home cards when the server sent any', () {
+      final extra = ExtraEarnings.fromJson({
+        'active_offers': const [],
+        'daily_dpd': {'target': 15, 'completed_today': 2},
+        'daily_dpd_targets': [
+          {
+            'kind': 'restaurant',
+            'name': 'KFC Jahra',
+            'target': 10,
+            'completed_today': 4,
+          },
+        ],
+      });
+      final cards = homeDpdCards(extra, (name) => '$name Target');
+      expect(cards, hasLength(1));
+      expect(cards.single.title, 'KFC Jahra Target');
+      expect(cards.single.daily.target, 10);
+    });
+
     test('cache round-trip keeps band fields and verified count', () {
       final offer = ActiveOffer.fromJson({
         ..._offer(eligible: 13, payout: 0.75, toNext: 2),

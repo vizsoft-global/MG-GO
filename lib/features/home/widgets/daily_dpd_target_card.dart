@@ -7,8 +7,8 @@ import '../../earnings/earnings_models.dart';
 import '../../earnings/earnings_providers.dart';
 
 /// Rider Daily DPD Target (SOP §4.1). Stays on Home after the target is hit,
-/// switching to the achieved state. Hidden when no restaurant rule sets a
-/// target for the rider today.
+/// switching to the achieved state. Hidden only when neither a named card nor
+/// [ExtraEarnings.dailyDpd] is present.
 class DailyDpdTargetCard extends ConsumerWidget {
   const DailyDpdTargetCard({super.key});
 
@@ -16,29 +16,43 @@ class DailyDpdTargetCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final extra = ref.watch(extraEarningsProvider).value;
     if (extra == null) return const SizedBox.shrink();
-    final named = extra.dailyDpdTargets;
-    if (named != null) {
-      if (named.isEmpty) return const SizedBox.shrink();
-      return Column(
-        children: [
-          for (final card in named)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: DailyDpdTargetView(
-                daily: card.toDaily(),
-                title: context.l10n.namedDpdTarget(card.name),
-              ),
-            ),
-        ],
-      );
-    }
-    final daily = extra.dailyDpd;
-    if (daily == null) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: DailyDpdTargetView(daily: daily),
+    final cards = homeDpdCards(extra, context.l10n.namedDpdTarget);
+    if (cards.isEmpty) return const SizedBox.shrink();
+    return Column(
+      children: [
+        for (final card in cards)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: DailyDpdTargetView(daily: card.daily, title: card.title),
+          ),
+      ],
     );
   }
+}
+
+/// Named restaurant/zone cards when the server sent any. Otherwise the single
+/// [ExtraEarnings.dailyDpd], including when `daily_dpd_targets` is `[]`.
+List<HomeDpdCard> homeDpdCards(
+  ExtraEarnings extra,
+  String Function(String name) namedTitle,
+) {
+  final named = extra.dailyDpdTargets;
+  if (named != null && named.isNotEmpty) {
+    return [
+      for (final card in named)
+        HomeDpdCard(card.toDaily(), title: namedTitle(card.name)),
+    ];
+  }
+  final daily = extra.dailyDpd;
+  if (daily == null) return const [];
+  return [HomeDpdCard(daily)];
+}
+
+class HomeDpdCard {
+  const HomeDpdCard(this.daily, {this.title});
+
+  final DailyDpdTarget daily;
+  final String? title;
 }
 
 class DailyDpdTargetView extends StatelessWidget {
