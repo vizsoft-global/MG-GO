@@ -203,8 +203,8 @@ class DeliveryProximityContext {
       proximityMeters: (json['proximity_meters'] as num?)?.toInt() ?? 500,
       zoneId: json['zone_id'] as String?,
       zoneType: json['zone_type'] as String?,
-      zoneGeometry: json['zone_geometry'] is Map<String, dynamic>
-          ? Map<String, dynamic>.from(json['zone_geometry'] as Map)
+      zoneGeometry: json['zone_geometry'] is Map
+          ? deepStringKeyMap(json['zone_geometry'] as Map)
           : null,
       restaurants: restaurants,
     );
@@ -317,6 +317,15 @@ class DeliveryProximityService {
     required double latitude,
     required double longitude,
   }) {
+    if (context.restaurants.isEmpty) {
+      return DeliveryProximityStatus(
+        allowed: false,
+        reason: DeliveryProximityBlockReason.contextUnavailable,
+        proximityMeters: context.proximityMeters,
+        zoneTarget: false,
+      );
+    }
+
     if (!context.proximityEnabled) {
       return DeliveryProximityStatus.proximityDisabled();
     }

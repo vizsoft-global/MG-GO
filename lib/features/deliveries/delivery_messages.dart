@@ -41,6 +41,7 @@ String messageForDeliveryServiceException(
         : l10n.accountBlockedDefault,
     'driver_archived' => l10n.authDriverArchived,
     'delivery_out_of_range' => l10n.outsideAllowedDeliveryArea,
+    'no_restaurants_assigned' => l10n.noRestaurantsAssigned,
     'driver_off_duty' => l10n.mustBeOnDutyToAddDelivery,
     'location_required' => l10n.gpsRequiredForDelivery,
     'proximity_context_unavailable' => l10n.couldNotLoadDeliveryLocationRules,

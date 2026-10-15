@@ -317,5 +317,63 @@ void main() {
       expect(status.distanceBeyondRangeMeters!.isFinite, isTrue);
       expect(status.distanceBeyondRangeMeters!, greaterThan(0));
     });
+
+    test('zone inside range still blocks when no restaurant is assigned', () {
+      final status = service.evaluate(
+        context: DeliveryProximityContext(
+          proximityMeters: 500,
+          zoneId: 'zone-1',
+          zoneType: 'polygon',
+          zoneGeometry: _polygonGeometry(ring: _largeRing),
+        ),
+        latitude: 29.38,
+        longitude: 47.98,
+      );
+
+      expect(status.allowed, isFalse);
+      expect(status.reason, DeliveryProximityBlockReason.contextUnavailable);
+      expect(status.zoneTarget, isFalse);
+    });
+
+    test('callable zone geometry that is not Map<String, dynamic> still parses', () {
+      final geometry = <dynamic, dynamic>{
+        'type': 'Feature',
+        'properties': <dynamic, dynamic>{},
+        'geometry': <dynamic, dynamic>{
+          'type': 'Polygon',
+          'coordinates': <dynamic>[
+            <dynamic>[
+              <dynamic>[47.97, 29.37],
+              <dynamic>[47.99, 29.37],
+              <dynamic>[47.99, 29.39],
+              <dynamic>[47.97, 29.39],
+              <dynamic>[47.97, 29.37],
+            ],
+          ],
+        },
+      };
+      final context = DeliveryProximityContext.fromJson(<String, dynamic>{
+        'proximity_meters': 500,
+        'zone_id': 'zone-1',
+        'zone_type': 'polygon',
+        'zone_geometry': geometry,
+        'restaurants': <dynamic>[
+          <dynamic, dynamic>{
+            'id': 'r1',
+            'name': 'Store',
+            'latitude': 29.375,
+            'longitude': 47.978,
+          },
+        ],
+      });
+
+      expect(context.zoneShape, isNotNull);
+      final status = service.evaluate(
+        context: context,
+        latitude: 29.38,
+        longitude: 47.98,
+      );
+      expect(status.allowed, isTrue);
+    });
   });
 }

@@ -518,6 +518,9 @@ class DeliveryService {
     if (msg.contains('active_pickup_exists')) {
       return DeliveryServiceException('', code: 'active_pickup_exists');
     }
+    if (msg.contains('no_restaurants_assigned')) {
+      return DeliveryServiceException('', code: 'no_restaurants_assigned');
+    }
     if (msg.contains('delivery_out_of_range') ||
         msg.contains('outside the allowed delivery area')) {
       return DeliveryServiceException('', code: 'delivery_out_of_range');

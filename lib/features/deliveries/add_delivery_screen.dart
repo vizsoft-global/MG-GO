@@ -105,6 +105,10 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
   bool _canSubmitDelivery(DeliveryProximityPreviewState preview) {
     if (_submitting) return false;
     if (!_hasOrderId()) return false;
+    final status = preview.status;
+    if (status != null && !status.allowed) return false;
+    final restaurants = preview.context?.restaurants;
+    if (restaurants != null && restaurants.isEmpty) return false;
     return true;
   }
 
