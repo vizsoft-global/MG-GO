@@ -38,6 +38,7 @@ class DriverUploadService {
   static const _driverAvatarMaxBytes = 2 * 1024 * 1024;
   static const _loginVerificationMaxBytes = 5 * 1024 * 1024;
   static const _esignSignatureMaxBytes = 4 * 1024 * 1024;
+  static const _requestAttachmentMaxBytes = 10 * 1024 * 1024;
 
   Future<DriverUploadResult> uploadOrderProof({
     required List<int> bytes,
@@ -121,6 +122,36 @@ class DriverUploadService {
       contentType: contentType,
       filename: filename,
       entityType: 'login_verification',
+      authHeaders: authHeaders,
+      onProgress: onProgress,
+    );
+  }
+
+  Future<DriverUploadResult> uploadRequestAttachment({
+    required List<int> bytes,
+    required String contentType,
+    required String filename,
+    String? entityId,
+    void Function(double progress)? onProgress,
+  }) async {
+    if (bytes.isEmpty) {
+      throw DriverUploadException(code: 'file_empty');
+    }
+    if (bytes.length > _requestAttachmentMaxBytes) {
+      throw DriverUploadException(code: 'file_too_large_order');
+    }
+    if (!_isAllowedRequestAttachmentType(contentType)) {
+      throw DriverUploadException(code: 'invalid_content_type');
+    }
+
+    final token = await _accessToken();
+    final authHeaders = {'Authorization': 'Bearer $token'};
+    return _uploadViaPresign(
+      bytes: bytes,
+      contentType: contentType,
+      filename: filename,
+      entityType: 'request_attachment',
+      entityId: entityId,
       authHeaders: authHeaders,
       onProgress: onProgress,
     );
@@ -309,6 +340,11 @@ class DriverUploadService {
       'image/heif',
     };
     return allowed.contains(contentType.toLowerCase());
+  }
+
+  bool _isAllowedRequestAttachmentType(String contentType) {
+    final ct = contentType.toLowerCase();
+    return ct.startsWith('image/') || ct == 'application/pdf';
   }
 
   Future<OrderProofReadUrl> resolveOrderProofReadUrl(String objectKey) async {

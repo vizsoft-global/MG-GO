@@ -27,6 +27,23 @@ void main() {
     expect(map['source'], 'mobile_camera');
   });
 
+  test('create payload accepts an R2 request_attachment key', () {
+    const key =
+        'drivers/rider-1/request_attachment/2026-10-14/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee.jpg';
+    final map = createAttachmentPayload(
+      storageKey: key,
+      fileName: 'invoice.jpg',
+      contentType: 'image/jpeg',
+      byteSize: 800,
+      title: 'Clear fuel invoice',
+      kind: 'clear_fuel_invoice',
+      capturedAt: DateTime.utc(2026, 10, 14, 6),
+    );
+    expect(map['storage_key'], key);
+    expect(map['storage_key'], startsWith('drivers/'));
+    expect(map['storage_key'], contains('/request_attachment/'));
+  });
+
   test('fuel / refund / asset require the titled kinds', () {
     expect(missingRequiredCreateKind('fuel', ['clear_fuel_invoice']), 'vehicle_plate');
     expect(

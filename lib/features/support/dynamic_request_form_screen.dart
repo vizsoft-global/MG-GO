@@ -1,13 +1,12 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
-import '../../core/firebase/rider_backend.dart';
 import '../../core/l10n/l10n.dart';
+import '../../core/storage/driver_upload_messages.dart';
+import '../../core/storage/driver_upload_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../deliveries/capture_order_proof.dart';
@@ -143,16 +142,13 @@ class _DynamicRequestFormScreenState
   }
 
   Future<List<Map<String, dynamic>>> _uploadFiles() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) throw Exception('not_authenticated');
     final out = <Map<String, dynamic>>[];
     final capturedAt = DateTime.now();
     for (final file in _files) {
-      final key = '$uid/${DateTime.now().millisecondsSinceEpoch}_${file.name}';
       final stored = await _putRequestAttachment(
-        objectKey: key,
         bytes: file.bytes,
         contentType: file.contentType,
+        filename: file.name,
       );
       out.add(
         createAttachmentPayload(
@@ -171,16 +167,12 @@ class _DynamicRequestFormScreenState
   }
 
   Future<List<Map<String, dynamic>>> _uploadKindFiles() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) throw Exception('not_authenticated');
     final out = <Map<String, dynamic>>[];
     for (final file in _kindFiles.values) {
-      final key =
-          '$uid/${DateTime.now().millisecondsSinceEpoch}_${file.spec.kind}.jpg';
       final stored = await _putRequestAttachment(
-        objectKey: key,
         bytes: file.bytes,
         contentType: file.contentType,
+        filename: '${file.spec.kind}.jpg',
       );
       out.add(
         createAttachmentPayload(
@@ -199,27 +191,15 @@ class _DynamicRequestFormScreenState
   }
 
   Future<String> _putRequestAttachment({
-    required String objectKey,
     required List<int> bytes,
     required String contentType,
-  }) async {
-    final map = await callRiderFunction('driverGetUploadUrl', {
-      'bucket': 'request-attachments',
-      'object_key': objectKey,
-      'content_type': contentType,
-    });
-    final url = map['url']?.toString() ?? '';
-    final stored = map['object_key']?.toString().trim();
-    if (url.isEmpty) throw Exception('upload_url_missing');
-    final res = await http.put(
-      Uri.parse(url),
-      headers: {'Content-Type': contentType},
-      body: bytes,
-    );
-    if (res.statusCode != 200 && res.statusCode != 201) {
-      throw Exception('upload_failed');
-    }
-    return (stored != null && stored.isNotEmpty) ? stored : objectKey;
+    required String filename,
+  }) {
+    return ref.read(supportServiceProvider).uploadRequestAttachment(
+          bytes: bytes,
+          contentType: contentType,
+          filename: filename,
+        );
   }
 
   static String _isoDate(DateTime d) =>
@@ -428,15 +408,17 @@ class _DynamicRequestFormScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              requestFormErrorMessage(
-                e,
-                fromRequired: context.l10n.supportErrorFromDateRequired,
-                toRequired: context.l10n.supportErrorToDateRequired,
-                toBeforeFrom: context.l10n.supportErrorToDateBeforeFrom,
-                fieldRequired: (key) => context.l10n
-                    .supportFieldRequiredNamed(humanizeFieldKey(key)),
-                numberInvalid: context.l10n.supportErrorValidAmount,
-              ),
+              e is DriverUploadException
+                  ? messageForDriverUploadException(e, context.l10n)
+                  : requestFormErrorMessage(
+                      e,
+                      fromRequired: context.l10n.supportErrorFromDateRequired,
+                      toRequired: context.l10n.supportErrorToDateRequired,
+                      toBeforeFrom: context.l10n.supportErrorToDateBeforeFrom,
+                      fieldRequired: (key) => context.l10n
+                          .supportFieldRequiredNamed(humanizeFieldKey(key)),
+                      numberInvalid: context.l10n.supportErrorValidAmount,
+                    ),
             ),
           ),
         );
