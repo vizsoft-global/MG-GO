@@ -156,6 +156,7 @@ class HomeDashboard {
     this.primaryWeeklyIncentive,
     this.deliveryRules = const [],
     this.shiftAdherence,
+    this.todayOnlineSecondsStored,
     this.banner,
     this.forceAppUpdate = false,
     this.forceAppUpdateMinCode,
@@ -167,6 +168,7 @@ class HomeDashboard {
   final HomeIncentiveProgress? primaryWeeklyIncentive;
   final List<HomeDeliveryRuleSummary> deliveryRules;
   final ShiftAdherence? shiftAdherence;
+  final int? todayOnlineSecondsStored;
   final HomeBanner? banner;
   final bool forceAppUpdate;
   final int? forceAppUpdateMinCode;
@@ -177,7 +179,7 @@ class HomeDashboard {
 
   /// Accumulated online seconds from earlier sessions today (from attendance).
   int get todayAccumulatedOnlineSeconds =>
-      shiftAdherence?.onlineSeconds ?? 0;
+      todayOnlineSecondsStored ?? shiftAdherence?.onlineSeconds ?? 0;
 
   /// Total time clocked in today, including the current session when online.
   int get todayOnlineSeconds {
@@ -224,6 +226,12 @@ class HomeDashboard {
           : ShiftAdherence.fromJson(
               Map<String, dynamic>.from(json['shift_adherence'] as Map),
             ),
+      todayOnlineSecondsStored: () {
+        final raw = json['today_online_seconds'];
+        if (raw is int) return raw;
+        if (raw is num) return raw.toInt();
+        return null;
+      }(),
       banner: () {
         if (json['banner'] is! Map) return null;
         final parsed = HomeBanner.fromJson(

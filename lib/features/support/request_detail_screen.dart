@@ -1,16 +1,14 @@
 import 'dart:typed_data';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../core/firebase/rider_backend.dart';
 import '../../core/l10n/l10n.dart';
+import '../../core/storage/driver_upload_messages.dart';
 import '../../core/storage/driver_upload_service.dart';
 import '../../core/l10n/locale_formatters.dart';
 import '../../core/theme/app_colors.dart';
@@ -147,46 +145,19 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
   }
 
   Future<List<String>> _uploadFiles() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
     if (_files.isEmpty) return const [];
-    if (uid == null) throw Exception('not_authenticated');
     final keys = <String>[];
     for (final file in _files) {
-      final key =
-          '$uid/${widget.requestId}/${DateTime.now().millisecondsSinceEpoch}_${_fileBasename(file.name)}';
       keys.add(
-        await _putRequestAttachment(
-          objectKey: key,
-          bytes: file.bytes,
-          contentType: 'image/jpeg',
-        ),
+        await ref.read(supportServiceProvider).uploadRequestAttachment(
+              bytes: file.bytes,
+              contentType: 'image/jpeg',
+              filename: _fileBasename(file.name),
+              entityId: widget.requestId,
+            ),
       );
     }
     return keys;
-  }
-
-  Future<String> _putRequestAttachment({
-    required String objectKey,
-    required List<int> bytes,
-    required String contentType,
-  }) async {
-    final map = await callRiderFunction('driverGetUploadUrl', {
-      'bucket': 'request-attachments',
-      'object_key': objectKey,
-      'content_type': contentType,
-    });
-    final url = map['url']?.toString() ?? '';
-    final stored = map['object_key']?.toString().trim();
-    if (url.isEmpty) throw Exception('upload_url_missing');
-    final res = await http.put(
-      Uri.parse(url),
-      headers: {'Content-Type': contentType},
-      body: bytes,
-    );
-    if (res.statusCode != 200 && res.statusCode != 201) {
-      throw Exception('upload_failed');
-    }
-    return (stored != null && stored.isNotEmpty) ? stored : objectKey;
   }
 
   Future<void> _submitClarification() async {
@@ -217,7 +188,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(supportUserMessage(e))),
+          SnackBar(content: Text(_actionError(e))),
         );
       }
     } finally {
@@ -328,7 +299,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(supportUserMessage(e))),
+          SnackBar(content: Text(_actionError(e))),
         );
       }
     } finally {
@@ -363,7 +334,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(supportUserMessage(e))),
+          SnackBar(content: Text(_actionError(e))),
         );
       }
     } finally {
@@ -383,6 +354,13 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
     final normalized = name.replaceAll('\\', '/');
     final base = normalized.split('/').last.trim();
     return base.isEmpty ? 'attachment' : base;
+  }
+
+  String _actionError(Object e) {
+    if (e is DriverUploadException) {
+      return messageForDriverUploadException(e, context.l10n);
+    }
+    return supportUserMessage(e);
   }
 
   Future<void> _openAttachment(Map<String, dynamic> row) async {

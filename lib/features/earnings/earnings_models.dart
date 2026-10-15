@@ -595,8 +595,8 @@ class ExtraEarnings {
 
   /// One card per restaurant or zone target. Null when the server predates
   /// `daily_dpd_targets` (keep [dailyDpd]). An empty list means the server
-  /// answered and there is no restaurant or zone card — including when only a
-  /// company scheme exists.
+  /// answered and there is no restaurant or zone card — Home then shows
+  /// [dailyDpd], which already includes the zone fallback and a company target.
   final List<NamedDpdTarget>? dailyDpdTargets;
 
   /// Project, MG/Outsource category and company name for the bonus-start line.

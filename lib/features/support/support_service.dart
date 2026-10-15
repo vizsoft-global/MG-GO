@@ -380,6 +380,21 @@ class SupportService {
     }
   }
 
+  Future<String> uploadRequestAttachment({
+    required List<int> bytes,
+    required String contentType,
+    required String filename,
+    String? entityId,
+  }) async {
+    final result = await _uploads.uploadRequestAttachment(
+      bytes: bytes,
+      contentType: contentType,
+      filename: filename,
+      entityId: entityId,
+    );
+    return result.objectKey;
+  }
+
   Future<String> uploadEsignSignature({
     required String requestId,
     required Uint8List pngBytes,

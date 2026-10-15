@@ -29,6 +29,30 @@ void main() {
     );
   });
 
+  test('today_online_seconds wins over an empty shift_adherence object', () {
+    final dashboard = HomeDashboard.fromJson({
+      'driver': {'full_name': 'Jhon', 'is_on_duty': true},
+      'session': {
+        'is_online': true,
+        'went_online_at': '2026-08-13T11:00:00.000Z',
+      },
+      'week': {},
+      'shift_adherence': {},
+      'today_online_seconds': 7200,
+    });
+    expect(dashboard.todayAccumulatedOnlineSeconds, 7200);
+  });
+
+  test('empty shift_adherence without today_online_seconds stays 0', () {
+    final dashboard = HomeDashboard.fromJson({
+      'driver': {'full_name': 'Jhon', 'is_on_duty': true},
+      'session': {'is_online': true},
+      'week': {},
+      'shift_adherence': {},
+    });
+    expect(dashboard.todayAccumulatedOnlineSeconds, 0);
+  });
+
   test('offline session adds no live time', () {
     expect(
       liveOpenSessionSeconds(

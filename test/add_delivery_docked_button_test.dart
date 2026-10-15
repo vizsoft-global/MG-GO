@@ -84,11 +84,16 @@ void main() {
     expect(find.byIcon(Icons.add), findsNothing);
   });
 
-  testWidgets('shell tab bar has no global add FAB', (tester) async {
+  testWidgets('shell floats add above the five-tab bar', (tester) async {
     await tester.pumpWidget(
       _app(
         Scaffold(
           body: const SizedBox.shrink(),
+          floatingActionButton: const AddDeliveryDockedFab(
+            hasActiveDelivery: false,
+            onPressed: _noop,
+          ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           bottomNavigationBar: MainShellTabBar(
             selectedIndex: 0,
             tabs: _tabs,
@@ -101,7 +106,10 @@ void main() {
 
     expect(find.text('Home'), findsOneWidget);
     expect(find.text('Deliveries'), findsOneWidget);
-    expect(find.byIcon(Icons.add), findsNothing);
+    expect(find.byIcon(Icons.add), findsOneWidget);
+    final fab = tester.getRect(find.byIcon(Icons.add));
+    final profile = tester.getRect(find.text('Profile'));
+    expect(fab.bottom, lessThanOrEqualTo(profile.top));
   });
 
   testWidgets('earnings and vehicle tabs keep their shell branches',

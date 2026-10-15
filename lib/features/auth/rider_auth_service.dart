@@ -15,9 +15,12 @@ import '../../core/delivery/delivery_proximity_cache.dart';
 import '../../core/device/device_identity_service.dart';
 import '../../core/device/device_profile_service.dart';
 import '../../core/firebase/rider_backend.dart';
+import '../../core/notifications/push_token_repository.dart';
 import '../../core/geo/device_location_resolver.dart';
 import '../../core/observability/sentry_config.dart';
 import '../../core/utils/ascii_digits.dart';
+import '../duty/duty_background_service.dart';
+import '../duty/duty_session_storage.dart';
 import '../profile/avatar_disk_cache.dart';
 import '../shift/shift_models.dart';
 import 'device_session_models.dart';
@@ -351,6 +354,20 @@ class RiderAuthService {
     return null;
   }
 
+  /// Same local teardown as a duty stop: the foreground service, the token it
+  /// would keep posting with, and the duty version a late tick would stamp.
+  Future<void> _endLocalDutyTracking() async {
+    try {
+      await DutyBackgroundService.stop();
+    } catch (_) {}
+    try {
+      await DutySessionStorage.clearAccessToken();
+    } catch (_) {}
+    try {
+      await DutySessionStorage.bumpDutyStateVersion();
+    } catch (_) {}
+  }
+
   Future<void> signOut({
     bool keepRememberMe = false,
     bool clockOut = false,
@@ -358,6 +375,8 @@ class RiderAuthService {
     final userId = currentUser?.id;
     await runSignOutSessionCleanup(
       clockOut: clockOut,
+      stopTrackingFn: _endLocalDutyTracking,
+      deactivatePushFn: () => PushTokenRepository().deactivateCurrentToken(),
       clockOutFn: () async {
         await callRiderFunction('driverSetDutyState', {
           'is_on_duty': false,

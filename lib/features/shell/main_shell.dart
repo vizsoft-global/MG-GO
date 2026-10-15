@@ -14,6 +14,7 @@ import '../auth/login_verification_store.dart';
 import '../auth/rider_auth_service.dart';
 import '../deliveries/delivery_proximity_preview.dart';
 import '../deliveries/delivery_proximity_service.dart';
+import '../deliveries/widgets/add_delivery_docked_button.dart';
 import '../earnings/earnings_providers.dart';
 import '../home/home_providers.dart';
 import '../profile/avatar_upload_controller.dart';
@@ -126,6 +127,8 @@ class _MainShellState extends ConsumerState<MainShell>
             Expanded(child: widget.navigationShell),
           ],
         ),
+        floatingActionButton: const AddDeliveryDockedButton(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         bottomNavigationBar: MainShellTabBar(
           selectedIndex: widget.navigationShell.currentIndex,
           tabs: tabs,
