@@ -189,7 +189,8 @@ _CircleData? _circleFromFeature(Map<String, dynamic> feature) {
 
   final lng = (coords[0] as num).toDouble();
   final lat = (coords[1] as num).toDouble();
-  final props = feature['properties'] as Map<String, dynamic>?;
+  final propsRaw = feature['properties'];
+  final props = propsRaw is Map ? deepStringKeyMap(propsRaw) : null;
   final radius = (props?['radiusMeters'] as num?)?.toDouble() ?? 0;
   if (radius <= 0) return null;
 
@@ -215,10 +216,24 @@ List<LatLng> _polygonRingFromFeature(Map<String, dynamic> feature) {
       .toList(growable: false);
 }
 
+Map<String, dynamic> deepStringKeyMap(Map<dynamic, dynamic> raw) {
+  final out = <String, dynamic>{};
+  raw.forEach((key, value) {
+    out[key.toString()] = _deepJsonValue(value);
+  });
+  return out;
+}
+
+Object? _deepJsonValue(Object? value) {
+  if (value is Map) return deepStringKeyMap(value);
+  if (value is List) return value.map(_deepJsonValue).toList();
+  return value;
+}
+
 Map<String, dynamic>? _geometryNode(Map<String, dynamic> feature) {
   if (feature['type'] == 'Feature') {
     final geometry = feature['geometry'];
-    if (geometry is Map<String, dynamic>) return geometry;
+    if (geometry is Map) return deepStringKeyMap(geometry);
     return null;
   }
   if (feature['type'] == 'Polygon' || feature['type'] == 'Point') {
