@@ -5,6 +5,7 @@ import '../../core/firebase/rider_backend.dart';
 import '../../core/offline/network_status_provider.dart';
 import '../../core/offline/offline_repo.dart';
 import 'earnings_models.dart';
+import 'pay_plan.dart';
 
 /// Marker for a calendar month — also used as Riverpod family argument.
 class EarningsMonth {
@@ -259,6 +260,25 @@ class EarningsService {
       });
       _networkStatus.recordRpcSuccess();
       return EarningsDetail.fromJson(map);
+    } on FirebaseFunctionsException catch (e) {
+      _networkStatus.recordRpcFailure();
+      throw EarningsServiceException(_friendly(e));
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // Pay calculator — this month's plan + the rider's own numbers
+  // ---------------------------------------------------------------------
+
+  /// The stored pay plan plus this month's prefill, from
+  /// `driverGetPayCalculator`. No offline cache: the plan is not per-rider and
+  /// the prefill is only useful while it is current, so a failure surfaces as
+  /// the standard plan with a notice rather than as month-old numbers.
+  Future<PayCalculatorData> loadPayCalculator() async {
+    try {
+      final map = await callRiderFunction('driverGetPayCalculator');
+      _networkStatus.recordRpcSuccess();
+      return PayCalculatorData.fromJson(map);
     } on FirebaseFunctionsException catch (e) {
       _networkStatus.recordRpcFailure();
       throw EarningsServiceException(_friendly(e));

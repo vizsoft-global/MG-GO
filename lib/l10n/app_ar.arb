@@ -1172,5 +1172,68 @@
   "supportRescheduleAccept": "قبول المواعيد",
   "supportRescheduleDecline": "رفض",
   "supportRescheduleAccepted": "تم قبول المواعيد. طلبك قيد المراجعة مرة أخرى.",
-  "supportRescheduleDeclined": "تم رفض المواعيد. طلبك قيد المراجعة مرة أخرى."
+  "supportRescheduleDeclined": "تم رفض المواعيد. طلبك قيد المراجعة مرة أخرى.",
+  "payCalculatorTitle": "حاسبة الراتب",
+  "payCalculatorHint": "احسب راتب هذا الشهر من أرقامك",
+  "payCalculatorOffline": "يتم عرض الخطة الأساسية — تعذّر تحميل أرقام هذا الشهر.",
+  "payVehicleBike": "دراجة",
+  "payVehicleCar": "سيارة",
+  "payFieldOrders": "الطلبات المكتملة الصالحة",
+  "payFieldRejected": "الطلبات المرفوضة",
+  "payFieldCancelled": "الطلبات الملغاة",
+  "payFieldInvalidDays": "الأيام غير الصالحة",
+  "payBase": "الراتب الأساسي",
+  "payBandLine": "الطلبات {from}–{to}",
+  "@payBandLine": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      }
+    }
+  },
+  "payBandOpen": "الطلبات {from} وأكثر",
+  "@payBandOpen": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      }
+    }
+  },
+  "payPenalty": "خصم الطلبات",
+  "payInvalidDaysLine": "خصم الأيام غير الصالحة",
+  "payGross": "الراتب الإجمالي",
+  "payFloor": "الحد الأدنى المضمون",
+  "payNet": "صافي الراتب الشهري",
+  "payTierTitle": "سعر الطلب لكل شريحة",
+  "payTierHint": "تُطبَّق الأسعار على الطلبات التي تتجاوز {threshold}.",
+  "@payTierHint": {
+    "placeholders": {
+      "threshold": {
+        "type": "int"
+      }
+    }
+  },
+  "payWarnLowPerformance": "أقل من {threshold} طلبًا صالحًا، لذلك يُطبَّق الراتب الأساسي الأقل.",
+  "@payWarnLowPerformance": {
+    "placeholders": {
+      "threshold": {
+        "type": "int"
+      }
+    }
+  },
+  "payWarnTermination": "تُراجَع الأيام غير الصالحة مع قلة الطلبات لأغراض الإنهاء.",
+  "payWarnFloor": "لم يُطبَّق كامل الخصم لأن الراتب لا يمكن أن ينزل عن الحد الأدنى.",
+  "payNextBand": "تحتاج {count} طلبًا صالحًا للوصول إلى الشريحة التالية.",
+  "@payNextBand": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "payReset": "إعادة تعيين",
+  "payRefresh": "إعادة تحميل هذا الشهر"
 }

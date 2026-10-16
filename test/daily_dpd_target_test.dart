@@ -128,6 +128,35 @@ void main() {
       expect(extra.riderSetup!.riderCategory, 'in_house');
     });
 
+    test('a partner-scoped rule is a card too, and drops a company kind', () {
+      final extra = ExtraEarnings.fromJson({
+        'active_offers': const [],
+        'daily_dpd_targets': [
+          {
+            'kind': 'partner',
+            'name': 'Sadeeq',
+            'target': 18,
+            'completed_today': 4,
+            'progress_today': 6,
+          },
+          {'kind': 'company', 'name': 'Sadeeq', 'target': 18, 'completed_today': 4},
+        ],
+      });
+      expect(extra.dailyDpdTargets, hasLength(1));
+      final card = extra.dailyDpdTargets!.single;
+      expect(card.kind, 'partner');
+      expect(card.name, 'Sadeeq');
+      expect(card.target, 18);
+
+      final cards = homeDpdCards(extra, (name) => '$name Target');
+      expect(cards.single.title, 'Sadeeq Target');
+      expect(cards.single.daily.target, 18);
+      expect(cards.single.daily.completedToday, 4);
+      // A partner rule is not a store rule: the rider must not be shown a
+      // restaurant name the server never sent.
+      expect(cards.single.daily.restaurantName, isNull);
+    });
+
     test('an empty targets array is an answer, not a missing key', () {
       final extra = ExtraEarnings.fromJson({
         'active_offers': const [],

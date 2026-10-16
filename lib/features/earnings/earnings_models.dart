@@ -593,10 +593,10 @@ class ExtraEarnings {
   /// no restaurant rule sets one (or the server predates the field).
   final DailyDpdTarget? dailyDpd;
 
-  /// One card per restaurant or zone target. Null when the server predates
-  /// `daily_dpd_targets` (keep [dailyDpd]). An empty list means the server
-  /// answered and there is no restaurant or zone card — Home then shows
-  /// [dailyDpd], which already includes the zone fallback and a company target.
+  /// One card per restaurant, zone or partner target. Null when the server
+  /// predates `daily_dpd_targets` (keep [dailyDpd]). An empty list means the
+  /// server answered and there is no scope card — Home then shows [dailyDpd],
+  /// which already includes the zone and partner fallbacks and a company target.
   final List<NamedDpdTarget>? dailyDpdTargets;
 
   /// Project, MG/Outsource category and company name for the bonus-start line.
@@ -717,8 +717,9 @@ class DailyDpdTarget {
   };
 }
 
-/// One Home card. `kind` is only `restaurant` or `zone`. A company scheme is
-/// never a card here.
+/// One Home card. `kind` is `restaurant`, `zone` or `partner` — one per rule
+/// scope the admin can set a daily target against. A company scheme is never a
+/// card here.
 class NamedDpdTarget {
   const NamedDpdTarget({
     required this.kind,
@@ -747,7 +748,9 @@ class NamedDpdTarget {
       final kind = (json['kind'] as String?)?.trim();
       final name = (json['name'] as String?)?.trim();
       final target = (json['target'] as num?)?.toInt() ?? 0;
-      if (kind != 'restaurant' && kind != 'zone') return null;
+      if (kind != 'restaurant' && kind != 'zone' && kind != 'partner') {
+        return null;
+      }
       if (name == null || name.isEmpty || target <= 0) return null;
       return NamedDpdTarget(
         kind: kind!,

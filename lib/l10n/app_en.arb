@@ -1955,5 +1955,68 @@
   "supportRescheduleAccept": "Accept dates",
   "supportRescheduleDecline": "Decline",
   "supportRescheduleAccepted": "Dates accepted. Your request is back under review.",
-  "supportRescheduleDeclined": "Dates declined. Your request is back under review."
+  "supportRescheduleDeclined": "Dates declined. Your request is back under review.",
+  "payCalculatorTitle": "Pay calculator",
+  "payCalculatorHint": "Estimate this month's pay from your own numbers",
+  "payCalculatorOffline": "Showing the standard plan — this month's numbers could not be loaded.",
+  "payVehicleBike": "Bike",
+  "payVehicleCar": "Car",
+  "payFieldOrders": "Valid completed orders",
+  "payFieldRejected": "Rejected orders",
+  "payFieldCancelled": "Cancelled orders",
+  "payFieldInvalidDays": "Invalid days",
+  "payBase": "Base pay",
+  "payBandLine": "Orders {from}–{to}",
+  "@payBandLine": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      }
+    }
+  },
+  "payBandOpen": "Orders {from} and above",
+  "@payBandOpen": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      }
+    }
+  },
+  "payPenalty": "Order penalties",
+  "payInvalidDaysLine": "Invalid-day deduction",
+  "payGross": "Gross pay",
+  "payFloor": "Minimum guaranteed pay",
+  "payNet": "Net monthly pay",
+  "payTierTitle": "Per-order rates",
+  "payTierHint": "Rates apply to orders above {threshold}.",
+  "@payTierHint": {
+    "placeholders": {
+      "threshold": {
+        "type": "int"
+      }
+    }
+  },
+  "payWarnLowPerformance": "Below {threshold} valid orders, so the lower base rate applies.",
+  "@payWarnLowPerformance": {
+    "placeholders": {
+      "threshold": {
+        "type": "int"
+      }
+    }
+  },
+  "payWarnTermination": "Invalid days with a low order count are reviewed for termination.",
+  "payWarnFloor": "Part of the deduction was not applied because pay cannot drop below the minimum.",
+  "payNextBand": "{count} more valid orders reach the next rate band.",
+  "@payNextBand": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "payReset": "Reset",
+  "payRefresh": "Reload this month"
 }

@@ -7,6 +7,7 @@ import '../../l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import 'earnings_models.dart';
 import 'earnings_providers.dart';
+import 'pay_calculator_screen.dart';
 import 'widgets/earnings_history_card.dart';
 import 'widgets/month_overview_card.dart';
 import 'widgets/performance_summary_card.dart';
@@ -38,6 +39,7 @@ class EarningsScreen extends ConsumerWidget {
                   ref.invalidate(earningsMonthProvider(selectedMonth));
                   ref.invalidate(earningsPerformanceProvider);
                   ref.invalidate(payoutsProvider);
+                  ref.invalidate(payCalculatorProvider);
                   await Future.wait([
                     ref.read(earningsMonthProvider(selectedMonth).future),
                     ref.read(earningsPerformanceProvider.future),
@@ -49,6 +51,8 @@ class EarningsScreen extends ConsumerWidget {
                     _PerformanceSection(perfAsync: perfAsync),
                     const SizedBox(height: 10),
                     _MonthSection(monthAsync: monthAsync),
+                    const SizedBox(height: 10),
+                    const _PayCalculatorCard(),
                   ],
                 ),
               ),
@@ -113,6 +117,68 @@ class _MonthSection extends ConsumerWidget {
           const SizedBox(height: 10),
           EarningsHistoryCard(aggregate: data),
         ],
+      ),
+    );
+  }
+}
+
+class _PayCalculatorCard extends StatelessWidget {
+  const _PayCalculatorCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Material(
+      color: AppColors.white,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => context.pushNamed(PayCalculatorScreen.routeName),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.cardBorder, width: 0.7),
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.calculate_outlined,
+                size: 20,
+                color: AppColors.accentOrange,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.payCalculatorTitle,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.payCalculatorHint,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 20,
+                color: AppColors.textSecondary,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

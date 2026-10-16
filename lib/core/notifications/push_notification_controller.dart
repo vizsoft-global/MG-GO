@@ -227,6 +227,15 @@ class PushNotificationController extends Notifier<bool> {
       ref.invalidate(earningsDayDetailProvider);
     }
 
+    // A compliance upload writes `rider_compliance_daily`, which feeds both the
+    // Home week counters and the pay calculator's prefill. The push is silent,
+    // so without this an open calculator keeps the numbers from before the
+    // upload until the app is restarted.
+    if (payload.actionParams['record_type'] == 'compliance') {
+      ref.invalidate(homeDashboardProvider);
+      ref.invalidate(payCalculatorProvider);
+    }
+
     if (payload.actionType == NotificationActionType.silentUpdateTrigger) {
       await _router.handlePayload(payload, fromUserTap: false);
       return;
