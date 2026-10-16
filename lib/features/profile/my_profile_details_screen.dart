@@ -86,15 +86,24 @@ class MyProfileDetailsScreen extends ConsumerWidget {
                           subtitle: l10n.profileManagedByAdmin,
                         ),
                         const SizedBox(height: 6),
-                        // Name, driver ID and mobile already sit in the header
-                        // card directly above, so only the fields it does not
-                        // carry belong here.
+                        // QA #22: one identity card. Name, driver ID and the photo
+                        // live in the header directly above; every other identity
+                        // field belongs in this single list — a second card with a
+                        // lone row read as a layout mistake. Dividers sit between
+                        // rows only, so the spacing is the same in every card.
                         ProfileDetailRow(
                           icon: Icons.badge_outlined,
                           label: l10n.employeeId,
                           value: profile.employeeId ?? '—',
-                          showDivider: false,
+                          showDivider: phone != null,
                         ),
+                        if (phone != null)
+                          ProfileDetailRow(
+                            icon: Icons.phone_outlined,
+                            label: l10n.mobileNumber,
+                            value: phone,
+                            showDivider: false,
+                          ),
                       ],
                     ),
                   ),

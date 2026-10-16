@@ -102,6 +102,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get rejected => 'مرفوض';
 
   @override
+  String get invalidDays => 'أيام غير صالحة';
+
+  @override
+  String get rejectedOrders => 'طلبات مرفوضة';
+
+  @override
+  String get cancelledOrders => 'طلبات ملغاة';
+
+  @override
   String get underReview => 'قيد المراجعة';
 
   @override
@@ -280,6 +289,19 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get employeeId => 'رقم الموظف';
+
+  @override
+  String get mobileNumber => 'رقم الجوال';
+
+  @override
+  String get trainingSharedVideoHint => 'كلا المدخلين يعرض الفيديو نفسه حالياً';
+
+  @override
+  String get supportSalaryAmountRequired =>
+      'أدخل مبلغاً واحداً على الأقل — المتوقع أو المستلم';
+
+  @override
+  String get supportQuantityTooLarge => 'لا يمكن أن تتجاوز الكمية 100';
 
   @override
   String get passcode => 'رمز الدخول';

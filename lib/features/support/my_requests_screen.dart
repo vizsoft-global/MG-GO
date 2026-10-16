@@ -104,7 +104,16 @@ class _RequestsList extends StatelessWidget {
               ],
             )
           : ListView(
-              padding: const EdgeInsets.all(16),
+              // QA #27: the last card sat under the shell's floating action
+              // button and the gesture bar. Reserve the FAB's box plus the
+              // device's own bottom inset so the final row always scrolls clear
+              // of both.
+              padding: EdgeInsets.fromLTRB(
+                16,
+                16,
+                16,
+                16 + MediaQuery.viewPaddingOf(context).bottom + 72,
+              ),
               children: [
                 if (attentionRows.isNotEmpty) ...[
                   _AttentionBanner(rows: attentionRows),

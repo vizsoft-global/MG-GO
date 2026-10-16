@@ -295,10 +295,14 @@ class _DynamicRequestFormScreenState
             );
           }
           if (issue == NumberFieldSubmitIssue.tooLarge) {
+            // QA #39: the quantity cap reads as its own sentence rather than a
+            // bare "Enter no more than 100".
             throw Exception(
-              l10n.supportErrorNumberTooLarge(
-                formatNumberBound(field.maxValue ?? 0),
-              ),
+              field.fieldKey == 'quantity'
+                  ? l10n.supportQuantityTooLarge
+                  : l10n.supportErrorNumberTooLarge(
+                      formatNumberBound(field.maxValue ?? 0),
+                    ),
             );
           }
         } else if (isRequestFormFieldRequired(field, _values) &&
@@ -418,6 +422,8 @@ class _DynamicRequestFormScreenState
                       fieldRequired: (key) => context.l10n
                           .supportFieldRequiredNamed(humanizeFieldKey(key)),
                       numberInvalid: context.l10n.supportErrorValidAmount,
+                      salaryAmountRequired: context.l10n.supportSalaryAmountRequired,
+                      quantityTooLarge: context.l10n.supportQuantityTooLarge,
                     ),
             ),
           ),

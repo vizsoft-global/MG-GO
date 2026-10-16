@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../../core/config/env.dart';
 import '../../core/l10n/l10n.dart';
 import '../../core/l10n/locale_provider.dart';
 import '../../core/notifications/notifications_preference_provider.dart';
@@ -233,6 +234,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       ProfileMenuRow(
                         icon: Icons.play_circle_outline,
                         label: l10n.tutorialMaterial,
+                        // Only claim a separate video once one is published.
+                        subtitle: Env.hasRiderTutorialVideo
+                            ? null
+                            : l10n.trainingSharedVideoHint,
                         onTap: () => context.push('/profile/tutorial'),
                       ),
                       ProfileMenuRow(
