@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
+import '../../core/config/env.dart';
 import '../../core/l10n/l10n.dart';
 import '../../features/app_update/update_required_screen.dart';
 import '../../features/auth/login_screen.dart';
@@ -306,15 +307,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const ManualVideoScreen(),
       ),
-      // Profile → Training → Tutorial Material. The same player and the same
-      // verified R2 URL as the manual, because the two rows are two entrances
-      // to one video; only the app-bar title differs.
+      // Profile → Training → Tutorial Material. QA #34 / #35: this row plays the
+      // clock-in / shift tutorial when `RIDER_TUTORIAL_VIDEO_URL` is published,
+      // and otherwise falls back to the same manual the row above uses — the
+      // Profile row says so, so the rider is not told they are different videos.
       GoRoute(
         path: '/profile/tutorial',
         name: 'tutorial_video',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) =>
-            ManualVideoScreen(title: context.l10n.tutorialMaterial),
+        builder: (context, state) => ManualVideoScreen(
+          title: context.l10n.tutorialMaterial,
+          url: Env.riderTutorialVideoUrl,
+        ),
       ),
       GoRoute(
         path: '/profile/details',

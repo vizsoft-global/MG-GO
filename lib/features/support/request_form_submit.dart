@@ -356,6 +356,8 @@ String requestFormErrorMessage(
   required String toBeforeFrom,
   String Function(String fieldKey)? fieldRequired,
   String? numberInvalid,
+  String? salaryAmountRequired,
+  String? quantityTooLarge,
 }) {
   final raw = supportUserMessage(error);
   final code = raw.split(':').first.trim().toLowerCase();
@@ -376,9 +378,19 @@ String requestFormErrorMessage(
       if (detail == 'end_date') return toRequired;
       return fieldRequired?.call(detail) ?? raw;
     case 'invalid_number':
-    case 'number_too_small':
-    case 'number_too_large':
       return numberInvalid ?? raw;
+    case 'number_too_large':
+    case 'number_too_small':
+      // QA #39: the asset quantity cap reads as its own sentence — the field
+      // definition caps `quantity` at 100, and "Enter a valid amount" hid that.
+      if (detail == 'quantity' && quantityTooLarge != null) {
+        return quantityTooLarge;
+      }
+      return numberInvalid ?? raw;
+    case 'salary_amount_required':
+      // QA #25: the two salary amounts are alternatives, so neither field can
+      // name itself in the message.
+      return salaryAmountRequired ?? raw;
     default:
       if (raw.contains('field_required') && raw.contains('start_date')) {
         return fromRequired;

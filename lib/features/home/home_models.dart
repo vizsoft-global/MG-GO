@@ -314,6 +314,9 @@ class HomeWeekStats {
     required this.earningsKwd,
     required this.deliveriesCount,
     required this.onlineSeconds,
+    this.invalidDays = 0,
+    this.rejectedOrders = 0,
+    this.cancelledOrders = 0,
   });
 
   final DateTime? startDate;
@@ -321,6 +324,12 @@ class HomeWeekStats {
   final double earningsKwd;
   final int deliveriesCount;
   final int onlineSeconds;
+
+  /// Compliance counters (additive on the week payload). A backend that omits
+  /// them reads as 0 rather than breaking the card.
+  final int invalidDays;
+  final int rejectedOrders;
+  final int cancelledOrders;
 
   String get earningsLabel {
     final value = earningsKwd == earningsKwd.roundToDouble()
@@ -356,6 +365,9 @@ class HomeWeekStats {
       earningsKwd: (json['earnings_kwd'] as num?)?.toDouble() ?? 0,
       deliveriesCount: (json['deliveries_count'] as num?)?.toInt() ?? 0,
       onlineSeconds: (json['online_seconds'] as num?)?.toInt() ?? 0,
+      invalidDays: (json['invalid_days'] as num?)?.toInt() ?? 0,
+      rejectedOrders: (json['rejected_orders'] as num?)?.toInt() ?? 0,
+      cancelledOrders: (json['cancelled_orders'] as num?)?.toInt() ?? 0,
     );
   }
 }

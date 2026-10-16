@@ -7,6 +7,7 @@ class ProfileMenuRow extends StatelessWidget {
     required this.onTap,
     this.trailing,
     this.showDivider = true,
+    this.subtitle,
     super.key,
   });
 
@@ -15,6 +16,10 @@ class ProfileMenuRow extends StatelessWidget {
   final VoidCallback onTap;
   final Widget? trailing;
   final bool showDivider;
+
+  /// Optional second line under the label — used by the Training rows to say
+  /// that both entries currently play the same video (QA #34 / #35).
+  final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
@@ -29,13 +34,29 @@ class ProfileMenuRow extends StatelessWidget {
                 Icon(icon, size: 16, color: const Color(0xFF222222)),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: Text(
-                    label,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF222222),
-                      fontWeight: FontWeight.w500,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF222222),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle!,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF767676),
+                            height: 1.3,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
                 if (trailing != null) ...[trailing!],

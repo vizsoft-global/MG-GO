@@ -21,10 +21,15 @@ import '../../core/theme/app_colors.dart';
 /// The same screen serves both Profile → Training rows (User Manual Video and
 /// Tutorial Material); [title] only changes the app-bar copy.
 class ManualVideoScreen extends ConsumerStatefulWidget {
-  const ManualVideoScreen({super.key, this.title});
+  const ManualVideoScreen({super.key, this.title, this.url});
 
   /// App-bar title override. `null` falls back to `l10n.userManualVideo`.
   final String? title;
+
+  /// Player source override. `null` uses [Env.riderManualVideoUrl]; the
+  /// Tutorial route passes [Env.riderTutorialVideoUrl] so a second object can be
+  /// published without changing this screen (QA #34 / #35).
+  final String? url;
 
   @override
   ConsumerState<ManualVideoScreen> createState() => _ManualVideoScreenState();
@@ -78,7 +83,7 @@ class _ManualVideoScreenState extends ConsumerState<ManualVideoScreen> {
   }
 
   Future<void> _init() async {
-    final url = Env.riderManualVideoUrl.trim();
+    final url = (widget.url ?? Env.riderManualVideoUrl).trim();
     if (url.isEmpty) {
       if (!mounted) return;
       setState(() => _error = true);

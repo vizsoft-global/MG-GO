@@ -130,6 +130,36 @@ class _WeeklyProgressCardState extends State<WeeklyProgressCard> {
                         ),
                       ),
                       const SizedBox(height: 10),
+                      IntrinsicHeight(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _StatColumn(
+                                value: '${widget.week.invalidDays}',
+                                label: l10n.invalidDays,
+                                icon: Icons.event_busy_outlined,
+                              ),
+                            ),
+                            _divider(),
+                            Expanded(
+                              child: _StatColumn(
+                                value: '${widget.week.rejectedOrders}',
+                                label: l10n.rejectedOrders,
+                                icon: Icons.block,
+                              ),
+                            ),
+                            _divider(),
+                            Expanded(
+                              child: _StatColumn(
+                                value: '${widget.week.cancelledOrders}',
+                                label: l10n.cancelledOrders,
+                                icon: Icons.cancel_outlined,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
                       const VerifiedCountNote(),
                     ],
                   )

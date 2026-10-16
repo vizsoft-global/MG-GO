@@ -102,6 +102,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rejected => 'Rejected';
 
   @override
+  String get invalidDays => 'Invalid days';
+
+  @override
+  String get rejectedOrders => 'Rejected orders';
+
+  @override
+  String get cancelledOrders => 'Cancelled orders';
+
+  @override
   String get underReview => 'Under Review';
 
   @override
@@ -277,6 +286,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get employeeId => 'Employee ID';
+
+  @override
+  String get mobileNumber => 'Mobile number';
+
+  @override
+  String get trainingSharedVideoHint =>
+      'Both entries play the same video for now';
+
+  @override
+  String get supportSalaryAmountRequired =>
+      'Enter at least one amount — expected or received';
+
+  @override
+  String get supportQuantityTooLarge => 'Quantity cannot exceed 100';
 
   @override
   String get passcode => 'Passcode';

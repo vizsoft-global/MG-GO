@@ -266,6 +266,24 @@ abstract class AppLocalizations {
   /// **'Rejected'**
   String get rejected;
 
+  /// No description provided for @invalidDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid days'**
+  String get invalidDays;
+
+  /// No description provided for @rejectedOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected orders'**
+  String get rejectedOrders;
+
+  /// No description provided for @cancelledOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled orders'**
+  String get cancelledOrders;
+
   /// No description provided for @underReview.
   ///
   /// In en, this message translates to:
@@ -565,6 +583,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Employee ID'**
   String get employeeId;
+
+  /// No description provided for @mobileNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile number'**
+  String get mobileNumber;
+
+  /// No description provided for @trainingSharedVideoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Both entries play the same video for now'**
+  String get trainingSharedVideoHint;
+
+  /// No description provided for @supportSalaryAmountRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter at least one amount — expected or received'**
+  String get supportSalaryAmountRequired;
+
+  /// No description provided for @supportQuantityTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity cannot exceed 100'**
+  String get supportQuantityTooLarge;
 
   /// No description provided for @passcode.
   ///

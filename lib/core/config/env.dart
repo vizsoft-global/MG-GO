@@ -48,6 +48,24 @@ class Env {
   static bool get hasRiderManualVideo =>
       riderManualVideoUrl.trim().isNotEmpty;
 
+  /// Public R2 URL for the clock-in / shift tutorial. QA #34 / #35: the Training
+  /// section had two rows pointing at one old manual, so the video never matched
+  /// the row the rider tapped. A second object can now be published without an
+  /// app release; while it is absent the tutorial row keeps playing the manual
+  /// and its subtitle says so.
+  static const riderTutorialVideoUrlRaw = String.fromEnvironment(
+    'RIDER_TUTORIAL_VIDEO_URL',
+  );
+
+  static String get riderTutorialVideoUrl {
+    final tutorial = riderTutorialVideoUrlRaw.trim();
+    return tutorial.isEmpty ? riderManualVideoUrl.trim() : tutorial;
+  }
+
+  /// True when a distinct tutorial object has been published.
+  static bool get hasRiderTutorialVideo =>
+      riderTutorialVideoUrlRaw.trim().isNotEmpty;
+
   /// Production `dpd-live` edge origin. Deployed Worker for `FLEET_ROOM=fleet-kw`.
   static const prodLiveIngestUrl = 'https://dpd-live.vizsoft.workers.dev';
 
