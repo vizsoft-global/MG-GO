@@ -3690,4 +3690,93 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get supportRescheduleDeclined =>
       'Dates declined. Your request is back under review.';
+
+  @override
+  String get payCalculatorTitle => 'Pay calculator';
+
+  @override
+  String get payCalculatorHint =>
+      'Estimate this month\'s pay from your own numbers';
+
+  @override
+  String get payCalculatorOffline =>
+      'Showing the standard plan — this month\'s numbers could not be loaded.';
+
+  @override
+  String get payVehicleBike => 'Bike';
+
+  @override
+  String get payVehicleCar => 'Car';
+
+  @override
+  String get payFieldOrders => 'Valid completed orders';
+
+  @override
+  String get payFieldRejected => 'Rejected orders';
+
+  @override
+  String get payFieldCancelled => 'Cancelled orders';
+
+  @override
+  String get payFieldInvalidDays => 'Invalid days';
+
+  @override
+  String get payBase => 'Base pay';
+
+  @override
+  String payBandLine(int from, int to) {
+    return 'Orders $from–$to';
+  }
+
+  @override
+  String payBandOpen(int from) {
+    return 'Orders $from and above';
+  }
+
+  @override
+  String get payPenalty => 'Order penalties';
+
+  @override
+  String get payInvalidDaysLine => 'Invalid-day deduction';
+
+  @override
+  String get payGross => 'Gross pay';
+
+  @override
+  String get payFloor => 'Minimum guaranteed pay';
+
+  @override
+  String get payNet => 'Net monthly pay';
+
+  @override
+  String get payTierTitle => 'Per-order rates';
+
+  @override
+  String payTierHint(int threshold) {
+    return 'Rates apply to orders above $threshold.';
+  }
+
+  @override
+  String payWarnLowPerformance(int threshold) {
+    return 'Below $threshold valid orders, so the lower base rate applies.';
+  }
+
+  @override
+  String get payWarnTermination =>
+      'Invalid days with a low order count are reviewed for termination.';
+
+  @override
+  String get payWarnFloor =>
+      'Part of the deduction was not applied because pay cannot drop below the minimum.';
+
+  @override
+  String payNextBand(int count) {
+    return '$count more valid orders reach the next rate band.';
+  }
+
+  @override
+  String get payReset => 'Reset';
+
+  @override
+  String get payRefresh => 'Reload this month';
 }

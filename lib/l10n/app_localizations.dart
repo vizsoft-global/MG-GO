@@ -6672,6 +6672,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dates declined. Your request is back under review.'**
   String get supportRescheduleDeclined;
+
+  /// No description provided for @payCalculatorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay calculator'**
+  String get payCalculatorTitle;
+
+  /// No description provided for @payCalculatorHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimate this month\'s pay from your own numbers'**
+  String get payCalculatorHint;
+
+  /// No description provided for @payCalculatorOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing the standard plan — this month\'s numbers could not be loaded.'**
+  String get payCalculatorOffline;
+
+  /// No description provided for @payVehicleBike.
+  ///
+  /// In en, this message translates to:
+  /// **'Bike'**
+  String get payVehicleBike;
+
+  /// No description provided for @payVehicleCar.
+  ///
+  /// In en, this message translates to:
+  /// **'Car'**
+  String get payVehicleCar;
+
+  /// No description provided for @payFieldOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Valid completed orders'**
+  String get payFieldOrders;
+
+  /// No description provided for @payFieldRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected orders'**
+  String get payFieldRejected;
+
+  /// No description provided for @payFieldCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled orders'**
+  String get payFieldCancelled;
+
+  /// No description provided for @payFieldInvalidDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid days'**
+  String get payFieldInvalidDays;
+
+  /// No description provided for @payBase.
+  ///
+  /// In en, this message translates to:
+  /// **'Base pay'**
+  String get payBase;
+
+  /// No description provided for @payBandLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders {from}–{to}'**
+  String payBandLine(int from, int to);
+
+  /// No description provided for @payBandOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders {from} and above'**
+  String payBandOpen(int from);
+
+  /// No description provided for @payPenalty.
+  ///
+  /// In en, this message translates to:
+  /// **'Order penalties'**
+  String get payPenalty;
+
+  /// No description provided for @payInvalidDaysLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid-day deduction'**
+  String get payInvalidDaysLine;
+
+  /// No description provided for @payGross.
+  ///
+  /// In en, this message translates to:
+  /// **'Gross pay'**
+  String get payGross;
+
+  /// No description provided for @payFloor.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum guaranteed pay'**
+  String get payFloor;
+
+  /// No description provided for @payNet.
+  ///
+  /// In en, this message translates to:
+  /// **'Net monthly pay'**
+  String get payNet;
+
+  /// No description provided for @payTierTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Per-order rates'**
+  String get payTierTitle;
+
+  /// No description provided for @payTierHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Rates apply to orders above {threshold}.'**
+  String payTierHint(int threshold);
+
+  /// No description provided for @payWarnLowPerformance.
+  ///
+  /// In en, this message translates to:
+  /// **'Below {threshold} valid orders, so the lower base rate applies.'**
+  String payWarnLowPerformance(int threshold);
+
+  /// No description provided for @payWarnTermination.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid days with a low order count are reviewed for termination.'**
+  String get payWarnTermination;
+
+  /// No description provided for @payWarnFloor.
+  ///
+  /// In en, this message translates to:
+  /// **'Part of the deduction was not applied because pay cannot drop below the minimum.'**
+  String get payWarnFloor;
+
+  /// No description provided for @payNextBand.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} more valid orders reach the next rate band.'**
+  String payNextBand(int count);
+
+  /// No description provided for @payReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get payReset;
+
+  /// No description provided for @payRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Reload this month'**
+  String get payRefresh;
 }
 
 class _AppLocalizationsDelegate

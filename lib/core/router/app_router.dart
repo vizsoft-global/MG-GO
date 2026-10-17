@@ -23,6 +23,7 @@ import '../../features/deliveries/delivery_success_screen.dart';
 import '../../features/earnings/earnings_day_detail_screen.dart';
 import '../../features/earnings/earnings_screen.dart';
 import '../../features/earnings/extra_earnings_screen.dart';
+import '../../features/earnings/pay_calculator_screen.dart';
 import '../../features/earnings/payout_detail_screen.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/maintenance/maintenance_screen.dart';
@@ -294,6 +295,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final id = state.pathParameters['id'] ?? '';
           return PayoutDetailScreen(payoutId: id);
         },
+      ),
+      GoRoute(
+        path: '/earnings/pay-calculator',
+        name: PayCalculatorScreen.routeName,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const PayCalculatorScreen(),
       ),
       GoRoute(
         path: '/notifications',

@@ -60,6 +60,11 @@ class _MainShellState extends ConsumerState<MainShell>
       // RPC and is the only signal the phone gets for those changes.
       ref.invalidate(extraEarningsProvider);
       ref.invalidate(homeDashboardProvider);
+      // A compliance upload that ran while the phone was offline sends a data
+      // push the phone never saw, so the calculator's prefill is refreshed on
+      // resume too. A plain FutureProvider with no listener is only marked
+      // stale, so this costs nothing unless the screen is open.
+      ref.invalidate(payCalculatorProvider);
     }
   }
 

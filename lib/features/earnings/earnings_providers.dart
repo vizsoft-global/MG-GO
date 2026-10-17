@@ -4,6 +4,7 @@ import '../../core/offline/network_status_provider.dart';
 import '../../core/offline/offline_repo.dart';
 import 'earnings_models.dart';
 import 'earnings_service.dart';
+import 'pay_plan.dart';
 
 export 'earnings_service.dart' show EarningsMonth, EarningsServiceException;
 
@@ -69,4 +70,11 @@ final earningsDayDetailProvider =
 /// SECURITY DEFINER RPC for efficiency (single round-trip).
 final extraEarningsProvider = FutureProvider<ExtraEarnings>((ref) async {
   return ref.watch(earningsServiceProvider).fetchExtraEarnings();
+});
+
+/// Pay calculator: the stored pay plan plus this month's prefill from
+/// `driverGetPayCalculator`. Invalidated by a `compliance` push so a freshly
+/// uploaded Invalid / Rejected / Cancelled row lands without a restart.
+final payCalculatorProvider = FutureProvider<PayCalculatorData>((ref) async {
+  return ref.watch(earningsServiceProvider).loadPayCalculator();
 });

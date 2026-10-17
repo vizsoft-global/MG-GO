@@ -3672,4 +3672,92 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get supportRescheduleDeclined =>
       'تم رفض المواعيد. طلبك قيد المراجعة مرة أخرى.';
+
+  @override
+  String get payCalculatorTitle => 'حاسبة الراتب';
+
+  @override
+  String get payCalculatorHint => 'احسب راتب هذا الشهر من أرقامك';
+
+  @override
+  String get payCalculatorOffline =>
+      'يتم عرض الخطة الأساسية — تعذّر تحميل أرقام هذا الشهر.';
+
+  @override
+  String get payVehicleBike => 'دراجة';
+
+  @override
+  String get payVehicleCar => 'سيارة';
+
+  @override
+  String get payFieldOrders => 'الطلبات المكتملة الصالحة';
+
+  @override
+  String get payFieldRejected => 'الطلبات المرفوضة';
+
+  @override
+  String get payFieldCancelled => 'الطلبات الملغاة';
+
+  @override
+  String get payFieldInvalidDays => 'الأيام غير الصالحة';
+
+  @override
+  String get payBase => 'الراتب الأساسي';
+
+  @override
+  String payBandLine(int from, int to) {
+    return 'الطلبات $from–$to';
+  }
+
+  @override
+  String payBandOpen(int from) {
+    return 'الطلبات $from وأكثر';
+  }
+
+  @override
+  String get payPenalty => 'خصم الطلبات';
+
+  @override
+  String get payInvalidDaysLine => 'خصم الأيام غير الصالحة';
+
+  @override
+  String get payGross => 'الراتب الإجمالي';
+
+  @override
+  String get payFloor => 'الحد الأدنى المضمون';
+
+  @override
+  String get payNet => 'صافي الراتب الشهري';
+
+  @override
+  String get payTierTitle => 'سعر الطلب لكل شريحة';
+
+  @override
+  String payTierHint(int threshold) {
+    return 'تُطبَّق الأسعار على الطلبات التي تتجاوز $threshold.';
+  }
+
+  @override
+  String payWarnLowPerformance(int threshold) {
+    return 'أقل من $threshold طلبًا صالحًا، لذلك يُطبَّق الراتب الأساسي الأقل.';
+  }
+
+  @override
+  String get payWarnTermination =>
+      'تُراجَع الأيام غير الصالحة مع قلة الطلبات لأغراض الإنهاء.';
+
+  @override
+  String get payWarnFloor =>
+      'لم يُطبَّق كامل الخصم لأن الراتب لا يمكن أن ينزل عن الحد الأدنى.';
+
+  @override
+  String payNextBand(int count) {
+    return 'تحتاج $count طلبًا صالحًا للوصول إلى الشريحة التالية.';
+  }
+
+  @override
+  String get payReset => 'إعادة تعيين';
+
+  @override
+  String get payRefresh => 'إعادة تحميل هذا الشهر';
 }
