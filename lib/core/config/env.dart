@@ -109,6 +109,16 @@ class Env {
     return '$base/ingest';
   }
 
+  /// Same room over a WebSocket; `/ingest` stays the fallback.
+  static String get liveIngestSocketEndpoint {
+    final base = liveIngestUrl
+        .trim()
+        .replaceAll(RegExp(r'/+$'), '')
+        .replaceFirst(RegExp(r'^https://'), 'wss://')
+        .replaceFirst(RegExp(r'^http://'), 'ws://');
+    return '$base/ingest/ws';
+  }
+
   static String get passcodeLoginUrl =>
       '$supabaseUrl/functions/v1/driver-passcode-login';
 

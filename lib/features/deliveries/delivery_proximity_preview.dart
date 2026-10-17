@@ -62,11 +62,8 @@ class DeliveryProximityPreviewNotifier
       });
     });
 
-    // Also re-evaluate on every coordinator tick (~5s) so that even if the
-    // proximity context DTO is reference-equal (admin only nudged a value that
-    // didn't change our resolved set, or the driver has merely moved), the
-    // banner reflects the latest state quickly instead of waiting for the
-    // 30s screen-local timer.
+    // Re-evaluating is a local GPS check (no network), so it is safe to run
+    // on every coordinator event even when the context DTO is unchanged.
     final coordinator = ref.watch(liveDbRefreshCoordinatorProvider);
     void onCoordinatorTick() {
       final ctx = ref.read(deliveryProximityContextProvider).value;
@@ -92,6 +89,7 @@ class DeliveryProximityPreviewNotifier
   Future<void> warmUp() async {
     try {
       await ref.read(deliveryProximityContextProvider.future);
+      await ref.read(deliveryProximityContextProvider.notifier).refreshIfStale();
     } catch (_) {}
 
     final ctx = ref.read(deliveryProximityContextProvider).value;

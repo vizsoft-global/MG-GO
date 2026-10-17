@@ -71,7 +71,6 @@ class DutyLifecycleController with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       unawaited(_persistDutyAccessToken());
-      unawaited(_ref.read(homeDashboardProvider.notifier).refresh());
       unawaited(_ensureServiceRunning());
       unawaited(_ref.read(syncControllerProvider.notifier).drain());
     }

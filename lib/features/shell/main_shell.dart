@@ -53,13 +53,11 @@ class _MainShellState extends ConsumerState<MainShell>
     if (state == AppLifecycleState.resumed) {
       unawaited(_enforceLoginVerificationGate());
       ref.invalidate(esignRequestsProvider);
-      // Delivery-rule / company-scheme edits are made in the admin panel and
-      // are not pushed to the phone, so a cached read kept serving yesterday's
-      // target and rule set until the rider restarted the app (QA #42, #44).
-      // Refreshing the live quest + payout caches on every foreground costs one
-      // RPC and is the only signal the phone gets for those changes.
-      ref.invalidate(extraEarningsProvider);
+      // Rule edits reach extra earnings through `app_settings/1.config_epoch`
+      // (see rider_signal_router.dart), so resume no longer refetches it.
       // Resume is an event, so the phone cache must not answer this open.
+      // This is the only resume-time Home refresh; the duty lifecycle
+      // controller does not issue a second one.
       ref.read(homeDashboardCacheProvider).clear();
       ref.invalidate(homeDashboardProvider);
       // A compliance upload that ran while the phone was offline sends a data

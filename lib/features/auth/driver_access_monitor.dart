@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -80,16 +79,17 @@ class _DriverAccessMonitor with WidgetsBindingObserver {
 
   final Ref _ref;
   StreamSubscription<User?>? _authSub;
-  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _driverSub;
   VoidCallback? _refreshListener;
   Timer? _debounce;
-  String? _subscribedUserId;
   bool _checking = false;
+
+  LiveDbRefreshCoordinator get _coordinator =>
+      _ref.read(liveDbRefreshCoordinatorProvider);
 
   void start() {
     WidgetsBinding.instance.addObserver(this);
     _refreshListener = _scheduleCheck;
-    _ref.read(liveDbRefreshCoordinatorProvider).addListener(_refreshListener!);
+    _coordinator.addListener(_refreshListener!);
 
     try {
       _authSub = FirebaseAuth.instance.authStateChanges().listen((user) {
@@ -99,10 +99,7 @@ class _DriverAccessMonitor with WidgetsBindingObserver {
           // router would bounce the just-signed-in rider straight back to
           // `/blocked` and it would look like the session did not take.
           _ref.read(blockedGateProvider).clear();
-          _resubscribeDriver(user.uid);
           _scheduleCheck();
-        } else {
-          _teardownDriver();
         }
       });
     } catch (_) {}
@@ -117,62 +114,33 @@ class _DriverAccessMonitor with WidgetsBindingObserver {
     _authSub = null;
     if (auth != null) unawaited(auth.cancel());
     if (_refreshListener != null) {
-      _ref.read(liveDbRefreshCoordinatorProvider).removeListener(
-            _refreshListener!,
-          );
+      _coordinator.removeListener(_refreshListener!);
     }
-    _teardownDriver();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _scheduleCheck();
+      _scheduleCheck(allowNetwork: true);
     }
   }
 
-  void _scheduleCheck() {
+  void _scheduleCheck({bool allowNetwork = false}) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 250), () {
-      unawaited(_checkAccess());
+      unawaited(_checkAccess(allowNetwork: allowNetwork));
     });
   }
 
-  void _resubscribeDriver(String userId) {
-    if (userId.isEmpty) {
-      _teardownDriver();
+  /// The row comes from the coordinator's `drivers/{uid}` watcher, so a check
+  /// costs no read. Re-evaluating the cached row still matters: a freeze
+  /// window starts and ends on a Kuwait date with no write to the document.
+  /// Only a resume with no row yet (watcher not delivered or dead) reads once.
+  Future<void> _checkAccess({bool allowNetwork = false}) async {
+    if (_checking) {
+      _scheduleCheck(allowNetwork: allowNetwork);
       return;
     }
-    if (_subscribedUserId == userId && _driverSub != null) return;
-
-    _teardownDriver();
-    _subscribedUserId = userId;
-
-    try {
-      _driverSub = riderFirestore()
-          .collection('drivers')
-          .doc(userId)
-          .snapshots()
-          .listen(
-            (snap) {
-              final data = snap.data();
-              if (data == null) return;
-              unawaited(_applyRow(data, userId));
-            },
-            onError: (_) {},
-          );
-    } catch (_) {}
-  }
-
-  void _teardownDriver() {
-    final sub = _driverSub;
-    _driverSub = null;
-    _subscribedUserId = null;
-    if (sub != null) unawaited(sub.cancel());
-  }
-
-  Future<void> _checkAccess() async {
-    if (_checking) return;
     String? uid;
     try {
       uid = FirebaseAuth.instance.currentUser?.uid;
@@ -183,22 +151,15 @@ class _DriverAccessMonitor with WidgetsBindingObserver {
 
     _checking = true;
     try {
-      final snap = await riderFirestore().collection('drivers').doc(uid).get();
-      final data = snap.data();
+      var data = _coordinator.driverData;
+      if (data == null && allowNetwork) {
+        data = (await riderFirestore().collection('drivers').doc(uid).get())
+            .data();
+      }
       if (data == null) return;
       await _applyStatus(data, uid);
     } catch (_) {
       // Fail-open: a dead read must not kick a signed-in rider.
-    } finally {
-      _checking = false;
-    }
-  }
-
-  Future<void> _applyRow(Map<String, dynamic> row, String userId) async {
-    if (_checking) return;
-    _checking = true;
-    try {
-      await _applyStatus(row, userId);
     } finally {
       _checking = false;
     }

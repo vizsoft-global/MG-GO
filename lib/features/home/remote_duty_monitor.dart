@@ -8,6 +8,7 @@ import '../../app.dart';
 import '../../core/firebase/rider_backend.dart';
 import '../../core/l10n/localizations_loader.dart';
 import '../../core/settings/live_db_refresh.dart';
+import '../../core/settings/rider_signals.dart';
 import '../duty/duty_session_gate_provider.dart';
 import 'home_providers.dart';
 
@@ -40,8 +41,8 @@ void suppressRemoteDutyAutoCheckoutToastRef(Ref ref, {Duration forDuration = con
 }
 
 /// When the server auto-checkouts (offline / out-of-zone cron), refresh home
-/// duty UI and show a snackbar. Relies on `liveDbRefreshCoordinator` which
-/// already listens to `drivers` updates + 5s poll.
+/// duty UI and show a snackbar. Relies on `liveDbRefreshCoordinator`, which
+/// listens to `drivers/{uid}` and `rider_signals/{uid}`.
 final remoteDutyMonitorProvider = Provider<void>((ref) {
   final monitor = _RemoteDutyMonitor(ref);
   monitor.start();
@@ -53,16 +54,27 @@ class _RemoteDutyMonitor with WidgetsBindingObserver {
 
   final Ref _ref;
   VoidCallback? _refreshListener;
+  void Function(Set<RiderSignalKey>)? _signalListener;
   Timer? _debounce;
   bool _inFlight = false;
+  bool _pendingHomeRefresh = false;
   bool? _lastOnDuty;
   String? _lastZoneId;
   String? _lastPartnerId;
 
   void start() {
     WidgetsBinding.instance.addObserver(this);
-    _refreshListener = _scheduleSync;
-    _ref.read(liveDbRefreshCoordinatorProvider).addListener(_refreshListener!);
+    final coordinator = _ref.read(liveDbRefreshCoordinatorProvider);
+    _refreshListener = () => _scheduleSync(
+          refreshHome: coordinator.lastReason == LiveRefreshReason.tick &&
+              (coordinator.homePollEnabled ||
+                  coordinator.mode == RiderSignalMode.signal),
+        );
+    _signalListener = (keys) {
+      if (keys.contains(RiderSignalKey.home)) _scheduleSync(refreshHome: true);
+    };
+    coordinator.addListener(_refreshListener!);
+    coordinator.addSignalListener(_signalListener!);
     _seedFromDashboard();
     _scheduleSync();
   }
@@ -70,10 +82,12 @@ class _RemoteDutyMonitor with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _debounce?.cancel();
+    final coordinator = _ref.read(liveDbRefreshCoordinatorProvider);
     if (_refreshListener != null) {
-      _ref
-          .read(liveDbRefreshCoordinatorProvider)
-          .removeListener(_refreshListener!);
+      coordinator.removeListener(_refreshListener!);
+    }
+    if (_signalListener != null) {
+      coordinator.removeSignalListener(_signalListener!);
     }
   }
 
@@ -89,7 +103,8 @@ class _RemoteDutyMonitor with WidgetsBindingObserver {
         _ref.read(homeDashboardProvider).asData?.value.isOnDuty;
   }
 
-  void _scheduleSync() {
+  void _scheduleSync({bool refreshHome = false}) {
+    _pendingHomeRefresh = _pendingHomeRefresh || refreshHome;
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 400), () {
       unawaited(_sync());
@@ -97,7 +112,10 @@ class _RemoteDutyMonitor with WidgetsBindingObserver {
   }
 
   Future<void> _sync() async {
-    if (_inFlight) return;
+    if (_inFlight) {
+      _scheduleSync();
+      return;
+    }
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) return;
 
@@ -105,10 +123,11 @@ class _RemoteDutyMonitor with WidgetsBindingObserver {
     try {
       final coordinator = _ref.read(liveDbRefreshCoordinatorProvider);
 
-      // The legacy poll, restorable from the panel without a Play release. It
-      // is off by default: Home refreshes on events (open, resume, duty, pickup,
-      // complete, FCM), not on a timer.
-      if (coordinator.homePollEnabled) {
+      // A `home` signal, the signal-mode safety tick, or the legacy poll
+      // (`home_poll_enabled`, restorable from the panel without a release).
+      if (_pendingHomeRefresh) {
+        _pendingHomeRefresh = false;
+        _ref.read(homeDashboardCacheProvider).clear();
         await _ref.read(homeDashboardProvider.notifier).refresh();
       }
 

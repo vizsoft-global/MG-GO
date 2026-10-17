@@ -23,7 +23,17 @@ class AppBrandingNotifier extends AsyncNotifier<AppBranding> {
     // build() can run repeatedly; a `late final` listener field would throw
     // LateInitializationError on the second build. Use a local listener.
     final coordinator = ref.watch(liveDbRefreshCoordinatorProvider);
-    void refreshListener() => unawaited(refresh());
+    void refreshListener() {
+      switch (coordinator.lastReason) {
+        case LiveRefreshReason.settings:
+          final row = coordinator.settingsData;
+          unawaited(row == null ? refresh() : applySettingsRow(row));
+        case LiveRefreshReason.tick:
+          unawaited(refresh());
+        case LiveRefreshReason.driver:
+          break;
+      }
+    }
     coordinator.addListener(refreshListener);
     ref.onDispose(() => coordinator.removeListener(refreshListener));
     final branding = await ref.read(appBrandingServiceProvider).fetch();
@@ -31,6 +41,21 @@ class AppBrandingNotifier extends AsyncNotifier<AppBranding> {
       branding.loginVerificationExemptAll,
     );
     return branding;
+  }
+
+  /// Applies the row the coordinator's `app_settings/1` listener just
+  /// delivered, so a settings event costs no second read.
+  Future<void> applySettingsRow(Map<String, dynamic> row) async {
+    final previous = state;
+    try {
+      final next =
+          await ref.read(appBrandingServiceProvider).fromLiveRow(row);
+      await LoginVerificationStore.setGlobalExemptCached(
+        next.loginVerificationExemptAll,
+      );
+      if (previous.hasValue && previous.value == next) return;
+      state = AsyncValue.data(next);
+    } catch (_) {}
   }
 
   /// Re-fetch settings (Try again, pull-to-refresh, poll/realtime).

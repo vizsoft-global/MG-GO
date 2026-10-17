@@ -31,6 +31,13 @@ class AppBrandingService {
     return AppBranding.defaults;
   }
 
+  Future<AppBranding> fromLiveRow(Map<String, dynamic> row) async {
+    final fallbackExempt = await LoginVerificationStore.readGlobalExemptCached();
+    final branding = fromSettingsRow(row, fallbackExempt: fallbackExempt);
+    await _offlineRepo.saveBrandingCache(_toJson(branding));
+    return branding;
+  }
+
   Future<AppBranding?> _fetchFromNetwork({bool? fallbackExempt}) async {
     try {
       final snap = await riderFirestore().collection('app_settings').doc('1').get();

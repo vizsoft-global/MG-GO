@@ -266,7 +266,7 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
       // would refetch active delivery twice and flicker Active Delivery.
       ref.invalidate(myDeliveriesProvider);
       ref.invalidate(pendingDeliveriesProvider);
-      refreshHomeProgress(ref);
+      refreshHomeProgress(ref, deliveryDelta: 1);
 
       if (!mounted) return;
       final queued = created.status == 'queued';

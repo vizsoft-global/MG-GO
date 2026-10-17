@@ -321,6 +321,7 @@ String? builtInFieldLabel(
   String typeKey,
   String fieldKey,
 ) {
+  if (!kBuiltInRequestTypes.contains(typeKey)) return null;
   switch (fieldKey) {
     case 'start_date':
     case 'from_date':
