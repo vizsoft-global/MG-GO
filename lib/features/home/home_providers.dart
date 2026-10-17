@@ -9,6 +9,7 @@ import '../../core/firebase/rider_backend.dart';
 import '../../core/offline/network_status_provider.dart';
 import '../../core/offline/offline_repo.dart';
 import '../../core/settings/live_db_refresh.dart';
+import '../../core/settings/rider_signals.dart';
 import '../../features/duty/duty_session_storage.dart';
 import '../auth/driver_access_monitor.dart';
 import '../auth/rider_auth_service.dart';
@@ -18,7 +19,11 @@ import 'home_models.dart';
 import 'remote_duty_monitor.dart';
 
 export 'home_dashboard_cache.dart'
-    show HomeDashboardCache, homeDashboardCacheProvider, kuwaitDayKey;
+    show
+        HomeDashboardCache,
+        bumpDeliveryCounters,
+        homeDashboardCacheProvider,
+        kuwaitDayKey;
 
 class HomeServiceException implements Exception {
   HomeServiceException(this.message, {this.rejection});
@@ -63,17 +68,20 @@ class HomeService {
   /// precisely to replace what the cache holds.
   Future<HomeDashboard> fetchDashboard({
     bool allowCache = false,
-    bool liveOnDuty = false,
+    bool? liveOnDuty,
     int settingsRevision = 0,
+    int homeRev = 0,
   }) async {
     final userId = _uid;
-    if (allowCache && userId != null && !liveOnDuty) {
+    if (allowCache && userId != null) {
       final cached = _cache.payload;
       if (cached != null &&
           _cache.isUsable(
             uid: userId,
             day: kuwaitDayKey(DateTime.now()),
             settingsRevision: settingsRevision,
+            homeRev: homeRev,
+            liveOnDuty: liveOnDuty,
           )) {
         return HomeDashboard.fromJson(cached);
       }
@@ -92,6 +100,7 @@ class HomeService {
           uid: userId,
           payload: map,
           settingsRevision: settingsRevision,
+          homeRev: homeRev,
         );
       }
       return HomeDashboard.fromJson(map);
@@ -121,6 +130,7 @@ class HomeService {
     required bool isOnDuty,
     required bool isOnline,
     int settingsRevision = 0,
+    int homeRev = 0,
   }) async {
     final userId = _uid;
     // A duty transition invalidates every cached number, not just the duty flag.
@@ -153,6 +163,7 @@ class HomeService {
           uid: userId,
           payload: map,
           settingsRevision: settingsRevision,
+          homeRev: homeRev,
         );
       }
       return HomeDashboard.fromJson(map);
@@ -276,14 +287,12 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboard> {
         await Future<void>.delayed(_retryDelay * attempt);
       }
       try {
+        final coordinator = ref.read(liveDbRefreshCoordinatorProvider);
         return await ref.read(homeServiceProvider).fetchDashboard(
               allowCache: allowCache && attempt == 0,
-              liveOnDuty: ref
-                      .read(liveDbRefreshCoordinatorProvider)
-                      .driverLive
-                      ?.isOnDuty ==
-                  true,
+              liveOnDuty: coordinator.driverLive?.isOnDuty,
               settingsRevision: settingsRevision,
+              homeRev: _homeRev(),
             );
       } catch (e, st) {
         lastError = e;
@@ -309,13 +318,17 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboard> {
     return msg.contains('could not load home dashboard') || msg.isEmpty;
   }
 
+  int _homeRev() =>
+      ref.read(liveDbRefreshCoordinatorProvider).signals?[RiderSignalKey.home] ??
+      0;
+
   Future<void> refresh() async {
     state = await AsyncValue.guard(
       () async {
         final revision = ref.read(liveDbRefreshCoordinatorProvider).settingsRevision;
         final dashboard = await ref
             .read(homeServiceProvider)
-            .fetchDashboard(settingsRevision: revision);
+            .fetchDashboard(settingsRevision: revision, homeRev: _homeRev());
         await _ensureAccessAllowed();
         _applyForceUpdateDemand(dashboard);
         _valueRiderId = FirebaseAuth.instance.currentUser?.uid;
@@ -338,12 +351,24 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboard> {
               isOnDuty: isOnDuty,
               isOnline: isOnline,
               settingsRevision: revision,
+              homeRev: _homeRev(),
             );
         await _ensureAccessAllowed();
         _valueRiderId = FirebaseAuth.instance.currentUser?.uid;
         return dashboard;
       },
     );
+  }
+
+  /// False when there is no payload to patch, so the caller refetches instead.
+  bool applyDeliveryDelta(int delta) {
+    final cache = ref.read(homeDashboardCacheProvider);
+    if (state.value == null || cache.payload == null) return false;
+    cache.patch((payload) => bumpDeliveryCounters(payload, delta));
+    final patched = cache.payload;
+    if (patched == null) return false;
+    state = AsyncData(HomeDashboard.fromJson(patched));
+    return true;
   }
 
   /// Keeps the UI in sync when the background duty service clocks out.

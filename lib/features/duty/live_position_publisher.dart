@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import '../../core/config/env.dart';
 import 'adaptive_location_scheduler.dart';
+import 'live_ingest_channel.dart';
 
 /// One GPS fix on its way to the edge rail.
 ///
@@ -199,7 +200,8 @@ EdgeDurableFallback edgeDurableFallback({
   return EdgeDurableFallback.skip;
 }
 
-/// POSTs batches of GPS fixes to the `dpd-live` edge rail.
+/// Sends batches of GPS fixes to the `dpd-live` edge rail — over the room's
+/// ingest WebSocket when it is up, `POST /ingest` otherwise.
 ///
 /// Never throws: a failed publish is a signal to the caller that the durable
 /// `driver_report_location` path has to cover this fix, not an error to
@@ -211,11 +213,32 @@ class LivePositionPublisher {
     this.timeout = const Duration(seconds: 2),
     bool? enabled,
     String? endpoint,
+    String? socketEndpoint,
+    LiveIngestChannelConnector? socketConnector,
+    DateTime Function()? clock,
   }) : _client = client ?? http.Client(),
        _enabled = enabled ?? Env.isLiveIngestEnabled,
-       _endpoint = endpoint ?? Env.liveIngestEndpoint;
+       _endpoint = endpoint ?? Env.liveIngestEndpoint,
+       _socketEndpoint =
+           socketEndpoint ?? (endpoint == null ? Env.liveIngestSocketEndpoint : null),
+       _socketConnector =
+           socketConnector ??
+           (endpoint == null ? connectIoLiveIngestChannel : null),
+       _clock = clock ?? DateTime.now;
 
   final http.Client _client;
+
+  /// Null on an injected HTTP endpoint without a connector, so tests that only
+  /// exercise `/ingest` never open a real socket.
+  final String? _socketEndpoint;
+  final LiveIngestChannelConnector? _socketConnector;
+  final DateTime Function() _clock;
+  LiveIngestChannel? _channel;
+  DateTime? _socketRetryAfter;
+
+  /// After a socket failure, HTTP carries the rail for this long before the
+  /// socket is tried again — a flapping network must not pay a handshake per fix.
+  static const socketRetryBackoff = Duration(seconds: 60);
   final LiveCadence cadence;
   final Duration timeout;
 
@@ -271,11 +294,50 @@ class LivePositionPublisher {
     _lastPublishAt = null;
     _lastSuccessAt = null;
     _lastStatusCode = null;
+    _closeSocket();
+    _socketRetryAfter = null;
   }
 
   void dispose() {
     _buffer.clear();
+    _closeSocket();
     _client.close();
+  }
+
+  void _closeSocket() {
+    _channel?.close();
+    _channel = null;
+  }
+
+  /// Ack status from the socket, or null when the socket could not carry it.
+  Future<int?> _sendOverSocket(String accessToken, Map<String, dynamic> body) async {
+    final endpoint = _socketEndpoint;
+    final connector = _socketConnector;
+    if (endpoint == null || endpoint.isEmpty || connector == null) return null;
+    final retryAfter = _socketRetryAfter;
+    if (retryAfter != null && _clock().isBefore(retryAfter)) return null;
+
+    var channel = _channel;
+    if (channel != null && (!channel.isOpen || channel.accessToken != accessToken)) {
+      _closeSocket();
+      channel = null;
+    }
+    channel ??= _channel = await connector(Uri.parse(endpoint), accessToken, timeout);
+    if (channel == null) {
+      _socketRetryAfter = _clock().add(socketRetryBackoff);
+      return null;
+    }
+
+    final status = await channel.sendPoints(body, timeout);
+    if (status == null) {
+      _closeSocket();
+      _socketRetryAfter = _clock().add(socketRetryBackoff);
+      return null;
+    }
+    // The room closes the socket on an expired token; the next fix reconnects
+    // with whatever token the caller holds by then.
+    if (status == 401) _closeSocket();
+    return status;
   }
 
   bool shouldPublish({
@@ -355,6 +417,11 @@ class LivePositionPublisher {
       body['duty_state_version'] = dutyStateVersion;
     }
     _lastStatusCode = null;
+    final socketStatus = await _sendOverSocket(accessToken, body);
+    if (socketStatus != null) {
+      _lastStatusCode = socketStatus;
+      return socketStatus >= 200 && socketStatus < 300;
+    }
     try {
       final response = await _client
           .post(

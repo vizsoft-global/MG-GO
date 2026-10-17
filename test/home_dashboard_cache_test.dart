@@ -208,24 +208,76 @@ void main() {
       );
     });
 
-    test('an on-duty or online payload is never stored', () {
-      final onDuty = HomeDashboardCache()
+    test('an on-duty payload is served only while the watcher agrees', () {
+      final cache = HomeDashboardCache()
         ..remember(
           uid: 'driver-1',
-          payload: idlePayload(onDuty: true),
+          payload: idlePayload(onDuty: true, online: true),
           settingsRevision: 3,
           now: savedAt,
         );
-      expect(onDuty.payload, isNull);
+      bool usable(bool? live) => cache.isUsable(
+            uid: 'driver-1',
+            day: '2026-10-17',
+            settingsRevision: 3,
+            liveOnDuty: live,
+            now: savedAt,
+          );
+      expect(cache.payload, isNotNull);
+      expect(usable(true), isTrue);
+      expect(usable(false), isFalse);
+      expect(usable(null), isTrue);
+    });
 
-      final online = HomeDashboardCache()
+    test('a home_rev bump misses the cache', () {
+      final cache = HomeDashboardCache()
         ..remember(
           uid: 'driver-1',
-          payload: idlePayload(online: true),
+          payload: idlePayload(),
+          settingsRevision: 3,
+          homeRev: 7,
+          now: savedAt,
+        );
+      bool usable(int rev) => cache.isUsable(
+            uid: 'driver-1',
+            day: '2026-10-17',
+            settingsRevision: 3,
+            homeRev: rev,
+            now: savedAt,
+          );
+      expect(usable(7), isTrue);
+      expect(usable(8), isFalse);
+    });
+
+    test('bumpDeliveryCounters moves week and bar counts together', () {
+      final payload = {
+        ...idlePayload(),
+        'week': {'deliveries_count': 4},
+        'primary_weekly_incentive': {'progress_count': 4, 'target': 5},
+      };
+      final next = bumpDeliveryCounters(payload, 1);
+      final dashboard = HomeDashboard.fromJson(next);
+      expect(dashboard.week.deliveriesCount, 5);
+      expect(next['primary_weekly_incentive']['remaining_deliveries'], 0);
+      expect(payload['week'], {'deliveries_count': 4});
+      expect(identical(bumpDeliveryCounters(payload, 0), payload), isTrue);
+      expect(
+        bumpDeliveryCounters({'week': {'deliveries_count': 0}}, -1)['week']
+            ['deliveries_count'],
+        0,
+      );
+    });
+
+    test('patch keeps the optimistic change on a cache hit', () {
+      final cache = HomeDashboardCache()
+        ..remember(
+          uid: 'driver-1',
+          payload: {...idlePayload(), 'week': {'deliveries_count': 2}},
           settingsRevision: 3,
           now: savedAt,
         );
-      expect(online.payload, isNull);
+      cache.patch((p) => bumpDeliveryCounters(p, 1));
+      expect(cache.payload!['week']['deliveries_count'], 3);
     });
 
     test('clear() drops the entry', () {

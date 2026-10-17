@@ -19,7 +19,6 @@ import '../earnings/earnings_providers.dart';
 import '../shift/on_duty_gate.dart';
 import '../shift/shift_providers.dart';
 import 'home_dashboard_ui_state.dart';
-import 'refresh_home_progress.dart';
 import 'home_duty_errors.dart';
 import 'home_models.dart';
 import 'home_providers.dart';
@@ -139,7 +138,12 @@ class HomeScreen extends ConsumerWidget {
           body: SafeArea(
             child: RefreshIndicator(
               onRefresh: () async {
-                refreshHomeProgress(ref);
+                // One Home fetch: invalidating homeDashboardProvider here as
+                // well would start a second one alongside refresh().
+                ref.read(homeDashboardCacheProvider).clear();
+                ref.invalidate(extraEarningsProvider);
+                ref.invalidate(earningsMonthProvider);
+                ref.invalidate(earningsDayDetailProvider);
                 await Future.wait([
                   ref.read(homeDashboardProvider.notifier).refresh(),
                   ref.read(todayShiftProvider.notifier).refresh(),

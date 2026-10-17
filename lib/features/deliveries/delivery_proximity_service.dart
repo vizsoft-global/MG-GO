@@ -12,6 +12,7 @@ import '../../core/firebase/rider_backend.dart';
 import '../../core/geo/zone_geometry.dart';
 import '../../core/offline/network_status_provider.dart';
 import '../../core/settings/live_db_refresh.dart';
+import '../../core/settings/rider_signals.dart';
 import 'delivery_service.dart';
 
 enum RestaurantGeofenceKind { inclusion, exclusion }
@@ -533,10 +534,35 @@ class DeliveryProximityContextNotifier
     // listener registered for disposal instead of a `late final` field, which
     // would throw LateInitializationError on the second build and push this
     // provider into an error state — silently disabling Add Delivery.
+    // The context is the rider's assigned restaurants and geofences, which do
+    // not depend on where the phone is. It changes on a settings edit, a
+    // zone/partner move, or an assignment edit (signalled as `home`); the
+    // safety tick and opening Add Delivery cover anything else.
     final coordinator = ref.watch(liveDbRefreshCoordinatorProvider);
-    void refreshListener() => unawaited(refresh());
+    var seenAssignment = coordinator.assignmentRevision;
+    void refreshListener() {
+      switch (coordinator.lastReason) {
+        case LiveRefreshReason.tick:
+        case LiveRefreshReason.settings:
+          unawaited(refresh());
+        case LiveRefreshReason.driver:
+          if (coordinator.assignmentRevision != seenAssignment) {
+            seenAssignment = coordinator.assignmentRevision;
+            unawaited(refresh());
+          }
+      }
+    }
+
+    void signalListener(Set<RiderSignalKey> keys) {
+      if (keys.contains(RiderSignalKey.home)) unawaited(refresh());
+    }
+
     coordinator.addListener(refreshListener);
-    ref.onDispose(() => coordinator.removeListener(refreshListener));
+    coordinator.addSignalListener(signalListener);
+    ref.onDispose(() {
+      coordinator.removeListener(refreshListener);
+      coordinator.removeSignalListener(signalListener);
+    });
 
     final userId = _userId;
     if (userId != null) {
@@ -552,6 +578,7 @@ class DeliveryProximityContextNotifier
 
   Future<DeliveryProximityContext> _loadFromNetwork(String? userId) async {
     final next = await ref.read(deliveryProximityServiceProvider).fetchContext();
+    _fetchedAt = DateTime.now();
     if (userId != null) {
       await DeliveryProximityCache.save(userId, next);
     }
@@ -562,12 +589,25 @@ class DeliveryProximityContextNotifier
     final previous = state;
     try {
       final next = await ref.read(deliveryProximityServiceProvider).fetchContext();
+      _fetchedAt = DateTime.now();
       await DeliveryProximityCache.save(userId, next);
       if (previous.hasValue && previous.value == next) return;
       state = AsyncValue.data(next);
     } catch (_) {
       // Keep serving cached data when the network refresh fails.
     }
+  }
+
+  DateTime? _fetchedAt;
+
+  /// Opening Add Delivery refetches only when the last network read is older
+  /// than [maxAge]; signals and settings events refresh it in between.
+  Future<void> refreshIfStale({
+    Duration maxAge = const Duration(minutes: 5),
+  }) async {
+    final at = _fetchedAt;
+    if (at != null && DateTime.now().difference(at) < maxAge) return;
+    await refresh();
   }
 
   Future<void> refresh() async {
@@ -577,6 +617,7 @@ class DeliveryProximityContextNotifier
     final previous = state;
     try {
       final next = await ref.read(deliveryProximityServiceProvider).fetchContext();
+      _fetchedAt = DateTime.now();
       await DeliveryProximityCache.save(userId, next);
       if (previous.hasValue && previous.value == next) return;
       state = AsyncValue.data(next);

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dpd_userapp/core/config/env.dart';
 import 'package:dpd_userapp/features/duty/adaptive_location_scheduler.dart';
+import 'package:dpd_userapp/features/duty/live_ingest_channel.dart';
 import 'package:dpd_userapp/features/duty/live_position_publisher.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -380,4 +381,109 @@ void main() {
       expect(publisher.lastSuccessAt, isNull);
     });
   });
+
+  group('LivePositionPublisher socket transport', () {
+    final now = DateTime.utc(2026, 1, 1, 12);
+
+    test('an acked socket frame skips the HTTP post', () async {
+      var httpCalls = 0;
+      final channel = _FakeChannel('jwt', statuses: [200]);
+      final publisher = LivePositionPublisher(
+        enabled: true,
+        endpoint: 'https://edge.test/ingest',
+        socketEndpoint: 'wss://edge.test/ingest/ws',
+        socketConnector: (_, _, _) async => channel,
+        client: MockClient((_) async {
+          httpCalls += 1;
+          return http.Response('{}', 200);
+        }),
+      );
+      addTearDown(publisher.dispose);
+
+      publisher.add(_fix());
+      final ok = await publisher.flush(accessToken: 'jwt', now: now, dutyStateVersion: 3);
+
+      expect(ok, isTrue);
+      expect(httpCalls, 0);
+      expect(channel.sent.single['duty_state_version'], 3);
+      expect((channel.sent.single['points'] as List).length, 1);
+    });
+
+    test('a dead socket falls back to HTTP and backs off', () async {
+      var httpCalls = 0;
+      var connects = 0;
+      final publisher = LivePositionPublisher(
+        enabled: true,
+        endpoint: 'https://edge.test/ingest',
+        socketEndpoint: 'wss://edge.test/ingest/ws',
+        socketConnector: (_, _, _) async {
+          connects += 1;
+          return _FakeChannel('jwt', statuses: [null]);
+        },
+        clock: () => now,
+        client: MockClient((_) async {
+          httpCalls += 1;
+          return http.Response('{}', 200);
+        }),
+      );
+      addTearDown(publisher.dispose);
+
+      publisher.add(_fix());
+      expect(await publisher.flush(accessToken: 'jwt', now: now), isTrue);
+      publisher.add(_fix());
+      expect(await publisher.flush(accessToken: 'jwt', now: now), isTrue);
+
+      expect(httpCalls, 2);
+      expect(connects, 1, reason: 'backoff keeps the second fix on HTTP');
+    });
+
+    test('a 401 ack closes the socket and a new token reconnects', () async {
+      final channels = <_FakeChannel>[];
+      final publisher = LivePositionPublisher(
+        enabled: true,
+        endpoint: 'https://edge.test/ingest',
+        socketEndpoint: 'wss://edge.test/ingest/ws',
+        socketConnector: (_, token, _) async {
+          final channel = _FakeChannel(token, statuses: [channels.isEmpty ? 401 : 200]);
+          channels.add(channel);
+          return channel;
+        },
+        client: MockClient((_) async => http.Response('{}', 200)),
+      );
+      addTearDown(publisher.dispose);
+
+      publisher.add(_fix());
+      expect(await publisher.flush(accessToken: 'old', now: now), isFalse);
+      expect(publisher.lastStatusCode, 401);
+      expect(channels.first.closed, isTrue);
+
+      publisher.add(_fix());
+      expect(await publisher.flush(accessToken: 'new', now: now), isTrue);
+      expect(channels.length, 2);
+      expect(channels.last.accessToken, 'new');
+    });
+  });
+}
+
+class _FakeChannel implements LiveIngestChannel {
+  _FakeChannel(this.accessToken, {required List<int?> statuses})
+    : _statuses = List.of(statuses);
+
+  @override
+  final String accessToken;
+  final List<int?> _statuses;
+  final List<Map<String, dynamic>> sent = [];
+  bool closed = false;
+
+  @override
+  bool get isOpen => !closed;
+
+  @override
+  Future<int?> sendPoints(Map<String, dynamic> body, Duration timeout) async {
+    sent.add(body);
+    return _statuses.isEmpty ? 200 : _statuses.removeAt(0);
+  }
+
+  @override
+  void close() => closed = true;
 }
