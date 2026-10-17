@@ -8,12 +8,17 @@ import '../../core/branding/app_branding_provider.dart';
 import '../../core/firebase/rider_backend.dart';
 import '../../core/offline/network_status_provider.dart';
 import '../../core/offline/offline_repo.dart';
+import '../../core/settings/live_db_refresh.dart';
 import '../../features/duty/duty_session_storage.dart';
 import '../auth/driver_access_monitor.dart';
 import '../auth/rider_auth_service.dart';
+import 'home_dashboard_cache.dart';
 import 'home_duty_errors.dart';
 import 'home_models.dart';
 import 'remote_duty_monitor.dart';
+
+export 'home_dashboard_cache.dart'
+    show HomeDashboardCache, homeDashboardCacheProvider, kuwaitDayKey;
 
 class HomeServiceException implements Exception {
   HomeServiceException(this.message, {this.rejection});
@@ -36,10 +41,11 @@ DutyRejection? lastDutyRejection(Object? error) {
 }
 
 class HomeService {
-  HomeService(this._offlineRepo, this._networkStatus);
+  HomeService(this._offlineRepo, this._networkStatus, this._cache);
 
   final OfflineRepo _offlineRepo;
   final NetworkStatusController _networkStatus;
+  final HomeDashboardCache _cache;
 
   String? get _uid => FirebaseAuth.instance.currentUser?.uid;
 
@@ -52,8 +58,26 @@ class HomeService {
     } catch (_) {}
   }
 
-  Future<HomeDashboard> fetchDashboard() async {
+  /// [allowCache] is only set by the first load of a screen build. Pull-to-refresh,
+  /// duty writes and every push-driven refresh pass `false`, because those exist
+  /// precisely to replace what the cache holds.
+  Future<HomeDashboard> fetchDashboard({
+    bool allowCache = false,
+    bool liveOnDuty = false,
+    int settingsRevision = 0,
+  }) async {
     final userId = _uid;
+    if (allowCache && userId != null && !liveOnDuty) {
+      final cached = _cache.payload;
+      if (cached != null &&
+          _cache.isUsable(
+            uid: userId,
+            day: kuwaitDayKey(DateTime.now()),
+            settingsRevision: settingsRevision,
+          )) {
+        return HomeDashboard.fromJson(cached);
+      }
+    }
     try {
       final map = await callRiderFunction('driverGetHomeDashboard');
       _networkStatus.recordRpcSuccess();
@@ -64,6 +88,11 @@ class HomeService {
         } catch (error, stack) {
           debugPrint('saveHomeDashboardCache failed: $error\n$stack');
         }
+        _cache.remember(
+          uid: userId,
+          payload: map,
+          settingsRevision: settingsRevision,
+        );
       }
       return HomeDashboard.fromJson(map);
     } on FirebaseFunctionsException catch (e) {
@@ -91,8 +120,11 @@ class HomeService {
   Future<HomeDashboard> setDutyState({
     required bool isOnDuty,
     required bool isOnline,
+    int settingsRevision = 0,
   }) async {
     final userId = _uid;
+    // A duty transition invalidates every cached number, not just the duty flag.
+    _cache.clear();
     if (_networkStatus.isOffline && userId != null) {
       await _offlineRepo.queueDutyState(
         userId: userId,
@@ -117,6 +149,11 @@ class HomeService {
         } catch (error, stack) {
           debugPrint('saveHomeDashboardCache failed: $error\n$stack');
         }
+        _cache.remember(
+          uid: userId,
+          payload: map,
+          settingsRevision: settingsRevision,
+        );
       }
       return HomeDashboard.fromJson(map);
     } on FirebaseFunctionsException catch (e) {
@@ -165,6 +202,7 @@ final homeServiceProvider = Provider<HomeService>((ref) {
   return HomeService(
     ref.read(offlineRepoProvider),
     ref.read(networkStatusProvider.notifier),
+    ref.read(homeDashboardCacheProvider),
   );
 });
 
@@ -190,7 +228,11 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboard> {
 
   @override
   Future<HomeDashboard> build() async {
-    final dashboard = await _fetchWithRetry();
+    final coordinator = ref.read(liveDbRefreshCoordinatorProvider);
+    final dashboard = await _fetchWithRetry(
+      allowCache: true,
+      settingsRevision: coordinator.settingsRevision,
+    );
     await _ensureAccessAllowed();
     _applyForceUpdateDemand(dashboard);
     _valueRiderId = FirebaseAuth.instance.currentUser?.uid;
@@ -223,7 +265,10 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboard> {
     throw HomeServiceException('Access blocked');
   }
 
-  Future<HomeDashboard> _fetchWithRetry() async {
+  Future<HomeDashboard> _fetchWithRetry({
+    bool allowCache = false,
+    int settingsRevision = 0,
+  }) async {
     Object? lastError;
     StackTrace? lastStack;
     for (var attempt = 0; attempt < _maxAttempts; attempt++) {
@@ -231,7 +276,15 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboard> {
         await Future<void>.delayed(_retryDelay * attempt);
       }
       try {
-        return await ref.read(homeServiceProvider).fetchDashboard();
+        return await ref.read(homeServiceProvider).fetchDashboard(
+              allowCache: allowCache && attempt == 0,
+              liveOnDuty: ref
+                      .read(liveDbRefreshCoordinatorProvider)
+                      .driverLive
+                      ?.isOnDuty ==
+                  true,
+              settingsRevision: settingsRevision,
+            );
       } catch (e, st) {
         lastError = e;
         lastStack = st;
@@ -259,8 +312,10 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboard> {
   Future<void> refresh() async {
     state = await AsyncValue.guard(
       () async {
-        final dashboard =
-            await ref.read(homeServiceProvider).fetchDashboard();
+        final revision = ref.read(liveDbRefreshCoordinatorProvider).settingsRevision;
+        final dashboard = await ref
+            .read(homeServiceProvider)
+            .fetchDashboard(settingsRevision: revision);
         await _ensureAccessAllowed();
         _applyForceUpdateDemand(dashboard);
         _valueRiderId = FirebaseAuth.instance.currentUser?.uid;
@@ -278,9 +333,12 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboard> {
     }
     state = await AsyncValue.guard(
       () async {
-        final dashboard = await ref
-            .read(homeServiceProvider)
-            .setDutyState(isOnDuty: isOnDuty, isOnline: isOnline);
+        final revision = ref.read(liveDbRefreshCoordinatorProvider).settingsRevision;
+        final dashboard = await ref.read(homeServiceProvider).setDutyState(
+              isOnDuty: isOnDuty,
+              isOnline: isOnline,
+              settingsRevision: revision,
+            );
         await _ensureAccessAllowed();
         _valueRiderId = FirebaseAuth.instance.currentUser?.uid;
         return dashboard;

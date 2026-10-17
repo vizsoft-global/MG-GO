@@ -222,6 +222,7 @@ class PushNotificationController extends Notifier<bool> {
       // written. Invalidate the payout caches too, not only the live quest RPC,
       // or the Earnings tab keeps showing 0 KD for a quest that reads unlocked.
       ref.invalidate(extraEarningsProvider);
+      ref.read(homeDashboardCacheProvider).clear();
       ref.invalidate(homeDashboardProvider);
       ref.invalidate(earningsMonthProvider);
       ref.invalidate(earningsDayDetailProvider);
@@ -232,8 +233,19 @@ class PushNotificationController extends Notifier<bool> {
     // so without this an open calculator keeps the numbers from before the
     // upload until the app is restarted.
     if (payload.actionParams['record_type'] == 'compliance') {
+      ref.read(homeDashboardCacheProvider).clear();
       ref.invalidate(homeDashboardProvider);
       ref.invalidate(payCalculatorProvider);
+    }
+
+    // `home` is the server's silent "Home changed" signal from the duty writes
+    // that used to notify nothing (server auto-checkout, block, status change,
+    // admin duty correction). `delivery` is the admin verify/reject decision,
+    // which moves the week counters. Both refresh Home without a tray item.
+    const homeRefreshRecords = {'home', 'delivery'};
+    if (homeRefreshRecords.contains(payload.actionParams['record_type'])) {
+      ref.read(homeDashboardCacheProvider).clear();
+      ref.invalidate(homeDashboardProvider);
     }
 
     if (payload.actionType == NotificationActionType.silentUpdateTrigger) {

@@ -64,4 +64,35 @@ void main() {
       0,
     );
   });
+
+  test('online_seconds_base is the base, not the summed total', () {
+    final dashboard = HomeDashboard.fromJson({
+      'driver': {'full_name': 'Jhon', 'is_on_duty': true},
+      'session': {
+        'is_online': true,
+        'went_online_at': '2026-08-13T11:00:00.000Z',
+        'online_seconds_base': 3600,
+        'open_since': '2026-08-13T11:00:00.000Z',
+      },
+      'week': {},
+      'today_online_seconds': 7200,
+    });
+    // The server's summed total is base + live; the client adds live itself, so
+    // reading the total as a base would double count the open session.
+    expect(dashboard.todayAccumulatedOnlineSeconds, 3600);
+    expect(dashboard.session.openSince, isNotNull);
+  });
+
+  test('config_epoch and server_day are parsed for the phone cache key', () {
+    final dashboard = HomeDashboard.fromJson({
+      'driver': {'is_on_duty': false},
+      'session': {'is_online': false},
+      'week': {},
+      'config_epoch': 12,
+      'server_day': '2026-10-17',
+    });
+    expect(dashboard.configEpoch, 12);
+    expect(dashboard.serverDay, '2026-10-17');
+  });
+
 }
