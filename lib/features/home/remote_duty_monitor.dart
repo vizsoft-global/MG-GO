@@ -56,6 +56,8 @@ class _RemoteDutyMonitor with WidgetsBindingObserver {
   Timer? _debounce;
   bool _inFlight = false;
   bool? _lastOnDuty;
+  String? _lastZoneId;
+  String? _lastPartnerId;
 
   void start() {
     WidgetsBinding.instance.addObserver(this);
@@ -101,14 +103,44 @@ class _RemoteDutyMonitor with WidgetsBindingObserver {
 
     _inFlight = true;
     try {
-      final row = (await riderFirestore().collection('drivers').doc(userId).get())
-          .data();
-      if (row == null) return;
+      final coordinator = _ref.read(liveDbRefreshCoordinatorProvider);
 
-      final remoteOnDuty = row['is_on_duty'] == true;
+      // The legacy poll, restorable from the panel without a Play release. It
+      // is off by default: Home refreshes on events (open, resume, duty, pickup,
+      // complete, FCM), not on a timer.
+      if (coordinator.homePollEnabled) {
+        await _ref.read(homeDashboardProvider.notifier).refresh();
+      }
+
+      // The `drivers/{uid}` watcher already delivers this document. Reading it
+      // again here was one billed document per rider per minute, fleet-wide.
+      final live = coordinator.driverLive;
+      final remoteOnDuty = live?.isOnDuty ??
+          (await riderFirestore().collection('drivers').doc(userId).get())
+                  .data()?['is_on_duty'] ==
+              true;
       final wasOnDuty = _lastOnDuty ??
           _ref.read(homeDashboardProvider).asData?.value.isOnDuty ??
           false;
+
+      // A zone or partner move changes the rider's rules and targets, and a
+      // force update is an admin write that can arrive while Home sits in the
+      // phone cache. Both are on the watcher, so drop the cache and refresh —
+      // no poll needed.
+      final liveZone = live?.zoneId;
+      final livePartner = live?.partnerId;
+      final assignmentChanged =
+          (_lastZoneId != null && liveZone != _lastZoneId) ||
+              (_lastPartnerId != null && livePartner != _lastPartnerId);
+      _lastZoneId = liveZone;
+      _lastPartnerId = livePartner;
+      final current = _ref.read(homeDashboardProvider).asData?.value;
+      final forceArrived =
+          live != null && live.forceAppUpdate && current?.forceAppUpdate != true;
+      if (assignmentChanged || forceArrived) {
+        _ref.read(homeDashboardCacheProvider).clear();
+        await _ref.read(homeDashboardProvider.notifier).refresh();
+      }
 
       if (remoteOnDuty == wasOnDuty &&
           remoteOnDuty ==

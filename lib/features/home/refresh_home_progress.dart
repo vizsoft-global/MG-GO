@@ -12,6 +12,9 @@ import 'home_providers.dart';
 /// pre-verification numbers. Both families are invalidated so the next read on
 /// either surface is fresh.
 void refreshHomeProgress(WidgetRef ref) {
+  // A pickup or a completion changes the week's counters and the quest bars, so
+  // the phone cache must not answer the next read with the pre-event numbers.
+  ref.read(homeDashboardCacheProvider).clear();
   ref.invalidate(homeDashboardProvider);
   ref.invalidate(extraEarningsProvider);
   ref.invalidate(earningsMonthProvider);

@@ -59,6 +59,8 @@ class _MainShellState extends ConsumerState<MainShell>
       // Refreshing the live quest + payout caches on every foreground costs one
       // RPC and is the only signal the phone gets for those changes.
       ref.invalidate(extraEarningsProvider);
+      // Resume is an event, so the phone cache must not answer this open.
+      ref.read(homeDashboardCacheProvider).clear();
       ref.invalidate(homeDashboardProvider);
       // A compliance upload that ran while the phone was offline sends a data
       // push the phone never saw, so the calculator's prefill is refreshed on

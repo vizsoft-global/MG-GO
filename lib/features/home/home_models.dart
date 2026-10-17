@@ -160,6 +160,8 @@ class HomeDashboard {
     this.banner,
     this.forceAppUpdate = false,
     this.forceAppUpdateMinCode,
+    this.configEpoch,
+    this.serverDay,
   });
 
   final HomeDriverInfo driver;
@@ -172,6 +174,14 @@ class HomeDashboard {
   final HomeBanner? banner;
   final bool forceAppUpdate;
   final int? forceAppUpdateMinCode;
+
+  /// `auth_epochs/current.config` at the time the server built this payload.
+  /// Together with [serverDay] this is the phone cache key: a rule or banner
+  /// edit bumps the epoch, so the next open must not reuse the old payload.
+  final int? configEpoch;
+
+  /// The Kuwait shift day the payload was built for (`server_day`).
+  final String? serverDay;
 
   bool get isOnline => session.isOnline;
   bool get isOnDuty => driver.isOnDuty;
@@ -196,13 +206,14 @@ class HomeDashboard {
 
   factory HomeDashboard.fromJson(Map<String, dynamic> json) {
     final incentiveRaw = json['primary_weekly_incentive'];
+    final session = HomeSessionInfo.fromJson(
+      Map<String, dynamic>.from(json['session'] as Map? ?? {}),
+    );
     return HomeDashboard(
       driver: HomeDriverInfo.fromJson(
         Map<String, dynamic>.from(json['driver'] as Map? ?? {}),
       ),
-      session: HomeSessionInfo.fromJson(
-        Map<String, dynamic>.from(json['session'] as Map? ?? {}),
-      ),
+      session: session,
       week: HomeWeekStats.fromJson(
         Map<String, dynamic>.from(json['week'] as Map? ?? {}),
       ),
@@ -227,6 +238,10 @@ class HomeDashboard {
               Map<String, dynamic>.from(json['shift_adherence'] as Map),
             ),
       todayOnlineSecondsStored: () {
+        // Prefer the stored base. `today_online_seconds` on a new server is
+        // base + live, and the getter below adds the live interval again, so
+        // using it as the base would double count the open session.
+        if (session.onlineSecondsBase != null) return session.onlineSecondsBase;
         final raw = json['today_online_seconds'];
         if (raw is int) return raw;
         if (raw is num) return raw.toInt();
@@ -247,6 +262,8 @@ class HomeDashboard {
         if (raw is String) return int.tryParse(raw);
         return null;
       }(),
+      configEpoch: (json['config_epoch'] as num?)?.toInt(),
+      serverDay: json['server_day'] as String?,
     );
   }
 }
@@ -286,6 +303,8 @@ class HomeSessionInfo {
     this.wentOnlineAt,
     this.speedMps,
     this.distanceTodayMeters = 0,
+    this.onlineSecondsBase,
+    this.openSince,
   });
 
   final bool isOnline;
@@ -293,8 +312,20 @@ class HomeSessionInfo {
   final double? speedMps;
   final double distanceTodayMeters;
 
+  /// Closed-session seconds for today, as the server stored them.
+  ///
+  /// The server sends `elapsed_base` and the open instant instead of a summed
+  /// total precisely so this client can add the live interval itself without
+  /// double counting. Older servers omit it; [HomeDashboard] then falls back to
+  /// `today_online_seconds`, which those builds sent without the live part.
+  final int? onlineSecondsBase;
+
+  /// `went_online_at` of the session that is still open, or null when offline.
+  final DateTime? openSince;
+
   factory HomeSessionInfo.fromJson(Map<String, dynamic> json) {
     final wentOnlineRaw = json['went_online_at'] as String?;
+    final openSinceRaw = json['open_since'] as String?;
     return HomeSessionInfo(
       isOnline: json['is_online'] as bool? ?? false,
       wentOnlineAt: wentOnlineRaw != null
@@ -303,6 +334,8 @@ class HomeSessionInfo {
       speedMps: (json['speed_mps'] as num?)?.toDouble(),
       distanceTodayMeters:
           (json['distance_today_meters'] as num?)?.toDouble() ?? 0,
+      onlineSecondsBase: (json['online_seconds_base'] as num?)?.toInt(),
+      openSince: openSinceRaw != null ? DateTime.tryParse(openSinceRaw) : null,
     );
   }
 }
