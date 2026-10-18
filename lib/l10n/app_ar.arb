@@ -703,7 +703,7 @@
   "cancelProof": "إثبات الإلغاء",
   "mustCompleteActiveDeliveryFirst": "أكمل التوصيل الحالي قبل استلام طلب جديد",
   "activePickupExists": "لديك طلب قيد التنفيذ بالفعل",
-  "duplicateOrderId": "رقم الطلب موجود مسبقاً.",
+  "duplicateOrderId": "رقم الطلب مُسجَّل مسبقاً لهذا المتجر اليوم.",
   "invalidOrderId": "رقم الطلب يجب أن يكون من 1 إلى 32 رقماً.",
   "proofPhotoRequired": "صورة الإثبات مطلوبة",
   "finishAsDelivered": "إنهاء كتسليم",

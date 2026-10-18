@@ -3946,7 +3946,7 @@ abstract class AppLocalizations {
   /// No description provided for @duplicateOrderId.
   ///
   /// In en, this message translates to:
-  /// **'This Order ID already exists.'**
+  /// **'This Order ID is already logged for this store today.'**
   String get duplicateOrderId;
 
   /// No description provided for @invalidOrderId.

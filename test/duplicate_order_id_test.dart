@@ -31,12 +31,12 @@ void main() {
     );
   });
 
-  test('user-facing copy is This Order ID already exists', () {
+  test('user-facing copy names the store and the day', () {
     final l10n = AppLocalizationsEn();
     final error = DeliveryServiceException('', code: 'duplicate_order_id');
     expect(
       messageForDeliveryServiceException(error, l10n),
-      'This Order ID already exists.',
+      'This Order ID is already logged for this store today.',
     );
   });
 }

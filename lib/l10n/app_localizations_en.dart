@@ -2195,7 +2195,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activePickupExists => 'You already have an order in progress';
 
   @override
-  String get duplicateOrderId => 'This Order ID already exists.';
+  String get duplicateOrderId =>
+      'This Order ID is already logged for this store today.';
 
   @override
   String get invalidOrderId => 'Order ID must be 1–32 digits.';

@@ -457,6 +457,18 @@ class SyncController extends Notifier<SyncState> {
         );
         synced++;
       } catch (e) {
+        // The server already committed this pickup and the ack was lost (timeout,
+        // dropped connection), so every retry is refused as a duplicate. If the
+        // rider's active delivery is that same order, the pickup is done: remap
+        // the queued completion and drop the row instead of retrying forever.
+        if (await _recoverCommittedPickup(
+          row: row,
+          error: e,
+          deliveryService: deliveryService,
+        )) {
+          synced++;
+          continue;
+        }
         await OfflineDb.instance.markPendingFailure(
           table: 'pending_pickups',
           id: id,
@@ -465,6 +477,42 @@ class SyncController extends Notifier<SyncState> {
       }
     }
     return synced;
+  }
+
+  /// True when [error] is the duplicate refusal for a pickup the server already
+  /// holds. A genuinely duplicated docket (another rider's row at the same store
+  /// today) leaves the rider with no active delivery, so it still fails.
+  Future<bool> _recoverCommittedPickup({
+    required Map<String, Object?> row,
+    required Object error,
+    required DeliveryService deliveryService,
+  }) async {
+    final id = row['id'] as String?;
+    if (id == null) return false;
+    if (error is! DeliveryServiceException || error.code != 'duplicate_order_id') {
+      return false;
+    }
+    final orderId = row['order_id'] as String? ?? '';
+    if (orderId.isEmpty) return false;
+    try {
+      final active = await deliveryService.getActivePickup();
+      if (active == null || active.id.isEmpty) return false;
+      if (DeliveryService.normalizeOrderIdInput(active.externalOrderId) !=
+          DeliveryService.normalizeOrderIdInput(orderId)) {
+        return false;
+      }
+      await _remapCompletionDeliveryIds(
+        localPickupId: id,
+        serverDeliveryId: active.id,
+      );
+      await OfflineDb.instance.deletePendingById(
+        table: 'pending_pickups',
+        id: id,
+      );
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<int> _syncCompletionRows(List<Map<String, Object?>> rows) async {
