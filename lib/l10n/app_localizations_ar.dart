@@ -2181,7 +2181,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get activePickupExists => 'لديك طلب قيد التنفيذ بالفعل';
 
   @override
-  String get duplicateOrderId => 'رقم الطلب موجود مسبقاً.';
+  String get duplicateOrderId => 'رقم الطلب مُسجَّل مسبقاً لهذا المتجر اليوم.';
 
   @override
   String get invalidOrderId => 'رقم الطلب يجب أن يكون من 1 إلى 32 رقماً.';
