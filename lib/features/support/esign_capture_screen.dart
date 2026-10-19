@@ -154,6 +154,14 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
       );
       ref.invalidate(esignRequestsProvider);
       ref.invalidate(esignRequestDetailProvider(widget.requestId));
+      // Pull the list once before leaving the screen, so the documents list and
+      // the viewer already read `signed` when the rider comes back. A refresh
+      // failure is not a signature failure, so it never reaches the rider.
+      try {
+        await ref.read(esignRequestsProvider.future);
+      } catch (_) {
+        // ignored on purpose
+      }
       if (!mounted) return;
       context.go('/profile/support/sign/${widget.requestId}/confirmed');
     } catch (e) {

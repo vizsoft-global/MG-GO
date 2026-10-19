@@ -187,26 +187,31 @@ class _PendingStageFilter extends StatelessWidget {
     if (notOpened == 0 || opened == 0) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          _StageChip(
-            label: '${l10n.esignFilterAll} ($total)',
-            selected: selected == null,
-            onTap: () => onChanged(null),
-          ),
-          _StageChip(
-            label: '${l10n.esignFilterNotOpened} ($notOpened)',
-            selected: selected == EsignRecipientStage.notOpened,
-            onTap: () => onChanged(EsignRecipientStage.notOpened),
-          ),
-          _StageChip(
-            label: '${l10n.esignFilterOpened} ($opened)',
-            selected: selected == EsignRecipientStage.opened,
-            onTap: () => onChanged(EsignRecipientStage.opened),
-          ),
-        ],
+      // One line, always. `Wrap` pushed "Opened, not signed" onto a second row
+      // on a narrow phone, which made the three states look like two groups.
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            _StageChip(
+              label: '${l10n.esignFilterAll} ($total)',
+              selected: selected == null,
+              onTap: () => onChanged(null),
+            ),
+            const SizedBox(width: 8),
+            _StageChip(
+              label: '${l10n.esignFilterNotOpened} ($notOpened)',
+              selected: selected == EsignRecipientStage.notOpened,
+              onTap: () => onChanged(EsignRecipientStage.notOpened),
+            ),
+            const SizedBox(width: 8),
+            _StageChip(
+              label: '${l10n.esignFilterOpened} ($opened)',
+              selected: selected == EsignRecipientStage.opened,
+              onTap: () => onChanged(EsignRecipientStage.opened),
+            ),
+          ],
+        ),
       ),
     );
   }

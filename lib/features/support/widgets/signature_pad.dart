@@ -166,17 +166,15 @@ class _SignaturePadState extends State<SignaturePad> {
   }
 }
 
-/// Figma's in-pad guides: a signing baseline with a "x" start marker. They are
-/// painted here and deliberately not in [SignaturePadController.toPngBytes], so
-/// the stored signature is the rider's ink only.
+/// Figma's in-pad guide: a signing baseline. It is painted here and
+/// deliberately not in [SignaturePadController.toPngBytes], so the stored
+/// signature is the rider's ink only.
 const _guideColor = Color(0xFFD1D5DB);
 
 /// Ratios read off RSup/26 `4388:17186`, whose pad is 361x190: the baseline
-/// frame sits at y=145 and runs x=30..330, and the "x" marker shares the
-/// line's start x rather than standing clear of it.
+/// frame sits at y=145 and runs x=30..330.
 const _guideInsetRatio = 30 / 361;
 const _guideBaselineRatio = 145 / 190;
-const _guideMarkerSize = 8.0;
 
 class _SignaturePainter extends CustomPainter {
   _SignaturePainter({
@@ -212,39 +210,21 @@ class _SignaturePainter extends CustomPainter {
 
   void _paintGuides(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = _guideColor
-      ..strokeWidth = 1.2
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
-    final inset = size.width * _guideInsetRatio;
-    final baselineY = size.height * _guideBaselineRatio;
-    const half = _guideMarkerSize / 2;
-    // LTR: ✕ sits on the left start of the line (Figma). RTL: both the ✕ and
-    // the line's start sit on the right, so Arabic signing begins where the
-    // rest of the screen already did.
-    final startX = textDirection == TextDirection.rtl
-        ? size.width - inset
-        : inset;
-    final centerX = textDirection == TextDirection.rtl
-        ? startX - half
-        : startX + half;
-    final centerY = baselineY - half - 2;
-    canvas.drawLine(
-      Offset(centerX - half, centerY - half),
-      Offset(centerX + half, centerY + half),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(centerX - half, centerY + half),
-      Offset(centerX + half, centerY - half),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(inset, baselineY),
-      Offset(size.width - inset, baselineY),
-      paint,
-    );
-  }
+    ..color = _guideColor
+    ..strokeWidth = 1.2
+    ..strokeCap = StrokeCap.round
+    ..style = PaintingStyle.stroke;
+  final inset = size.width * _guideInsetRatio;
+  final baselineY = size.height * _guideBaselineRatio;
+  // A signing line only. The reference also drew an "x" start marker, but on a
+  // real device riders read it as ink that was already on the pad, so the guide
+  // is now the baseline alone.
+  canvas.drawLine(
+    Offset(inset, baselineY),
+    Offset(size.width - inset, baselineY),
+    paint,
+  );
+}
 
   @override
   bool shouldRepaint(covariant _SignaturePainter oldDelegate) =>

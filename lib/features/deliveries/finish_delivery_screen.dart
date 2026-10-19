@@ -25,6 +25,7 @@ import '../home/home_providers.dart';
 import '../home/refresh_home_progress.dart';
 import 'active_delivery_provider.dart';
 import 'capture_order_proof.dart';
+import 'order_proof_ocr.dart';
 import 'proof_payload.dart';
 import 'delivery_messages.dart';
 import 'delivery_models.dart';
@@ -36,11 +37,15 @@ class FinishDeliveryScreen extends ConsumerStatefulWidget {
   const FinishDeliveryScreen({
     required this.deliveryId,
     required this.outcome,
+    this.expectedOrderId,
     super.key,
   });
 
   final String deliveryId;
   final FinishOutcome outcome;
+
+  /// The order id printed on the receipt, used for the on-device OCR check.
+  final String? expectedOrderId;
 
   @override
   ConsumerState<FinishDeliveryScreen> createState() =>
@@ -56,6 +61,9 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
   double _uploadProgress = 0;
   bool _submitting = false;
   bool _uploadingProof = false;
+  bool _ocrChecking = false;
+  String? _ocrOrderId;
+  String? _ocrOverrideReason;
   String? _error;
 
   @override
@@ -83,7 +91,7 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
   bool get _requiresProof => _outcome == FinishOutcome.cancelled;
 
   bool get _canSubmit {
-    if (_submitting) return false;
+    if (_submitting || _ocrChecking) return false;
     if (_requiresProof && _proofs.isEmpty) return false;
     if (_requiresCancelReason && _cancelReason == null) return false;
     return true;
@@ -127,6 +135,29 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
       return;
     }
 
+    String? ocrOrderId;
+    final expected = widget.expectedOrderId?.trim();
+    if (_outcome == FinishOutcome.delivered &&
+        expected != null &&
+        expected.isNotEmpty) {
+      setState(() => _ocrChecking = true);
+      ocrOrderId = await readOrderIdFromImage(file);
+      if (!mounted) return;
+      if (ocrOrderId != null && !orderIdsMatch(ocrOrderId, expected)) {
+        final overrideReason = await _askOcrMismatch(ocrOrderId, expected);
+        if (!mounted) return;
+        if (overrideReason == null) {
+          setState(() => _ocrChecking = false);
+          return;
+        }
+        _ocrOverrideReason = overrideReason;
+      } else {
+        _ocrOverrideReason = null;
+      }
+      _ocrOrderId = ocrOrderId;
+      setState(() => _ocrChecking = false);
+    }
+
     final proofFile = file;
     setState(() {
       _proofs.add(
@@ -135,6 +166,54 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
       _uploadProgress = 0;
       _error = null;
     });
+  }
+
+  Future<String?> _askOcrMismatch(String readId, String expected) async {
+    final controller = TextEditingController();
+    final reason = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          title: Text(dialogContext.l10n.proofOcrMismatchTitle),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                dialogContext.l10n.proofOcrMismatchBody(readId, expected),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                maxLength: 200,
+                decoration: InputDecoration(
+                  labelText: dialogContext.l10n.proofOcrReasonLabel,
+                  hintText: dialogContext.l10n.proofOcrReasonHint,
+                ),
+                onChanged: (_) => setDialogState(() {}),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(null),
+              child: Text(dialogContext.l10n.proofOcrRescan),
+            ),
+            FilledButton(
+              onPressed: controller.text.trim().isEmpty
+                  ? null
+                  : () => Navigator.of(dialogContext).pop(
+                        controller.text.trim(),
+                      ),
+              child: Text(dialogContext.l10n.proofOcrUseAnyway),
+            ),
+          ],
+        ),
+      ),
+    );
+    controller.dispose();
+    return reason;
   }
 
   void _removeProof(int index) {
@@ -223,6 +302,8 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
               proofMime: _proofs.isEmpty ? null : _proofs.first.mime,
               latitude: position.latitude,
               longitude: position.longitude,
+              ocrOrderId: _ocrOrderId,
+              ocrOverrideReason: _ocrOverrideReason,
             )
           : await ref.read(deliveryServiceProvider).cancelDelivery(
               deliveryId: widget.deliveryId,

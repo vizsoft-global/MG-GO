@@ -3888,4 +3888,132 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get levelStandardBody => 'أنت على الهدف.';
+
+  @override
+  String get checkInPhotoTitle => 'صورة الحضور';
+
+  @override
+  String get checkInPhotoHint =>
+      'التقط صورة واضحة بالكاميرا الأمامية لنفسك داخل نطاق مطعمك.';
+
+  @override
+  String get checkInPhotoTake => 'التقاط صورة الحضور';
+
+  @override
+  String get checkInPhotoUploading => 'جارٍ الرفع…';
+
+  @override
+  String get checkInPhotoUnavailable =>
+      'الكاميرا غير متاحة. تحقق من إذن الكاميرا وحاول مجددًا.';
+
+  @override
+  String get checkInPhotoFailed => 'تعذر التقاط صورة الحضور. حاول مجددًا.';
+
+  @override
+  String get checkInPhotoRequired => 'التقط صورة الحضور قبل بدء الدوام.';
+
+  @override
+  String get checkInLocationUnavailable => 'شغّل الموقع لتسجيل الحضور.';
+
+  @override
+  String get checkInOutsideRange => 'اقترب من أحد مطاعمك ثم حاول مجددًا.';
+
+  @override
+  String checkInOutsideRangeNamed(String restaurant, int distance) {
+    return 'أنت على بعد $distance م من $restaurant. اقترب لتسجيل الحضور.';
+  }
+
+  @override
+  String get deliveryRulesTitle => 'قواعد التوصيل';
+
+  @override
+  String deliveryRulesPickup(String restaurant) {
+    return 'الاستلام: $restaurant';
+  }
+
+  @override
+  String get deliveryRulesPickupAll => 'أي مطعم معيّن';
+
+  @override
+  String deliveryRulesEarlyDrop(int meters) {
+    return 'أكمل التوصيل على مسافة $meters م على الأقل من الاستلام.';
+  }
+
+  @override
+  String deliveryRulesZone(String zone) {
+    return 'ابقَ داخل $zone.';
+  }
+
+  @override
+  String deliveryRulesDpd(int target, String rule) {
+    return 'هدف DPD $target · $rule';
+  }
+
+  @override
+  String get deliveryRulesDpdDefault => 'الهدف اليومي';
+
+  @override
+  String get proofOcrMismatchTitle => 'رقم الطلب غير مطابق';
+
+  @override
+  String proofOcrMismatchBody(String read, String expected) {
+    return 'قرأنا $read على الصورة، لكن هذا التوصيل هو $expected.';
+  }
+
+  @override
+  String get proofOcrReasonLabel => 'لماذا تختلف الصورة؟';
+
+  @override
+  String get proofOcrReasonHint => 'مطلوب إذا استخدمت هذه الصورة رغم الاختلاف';
+
+  @override
+  String get proofOcrRescan => 'إعادة التصوير';
+
+  @override
+  String get proofOcrUseAnyway => 'استخدامها رغم ذلك';
+
+  @override
+  String get timelineCreated => 'أُنشئ';
+
+  @override
+  String get timelinePickedUp => 'تم الاستلام';
+
+  @override
+  String get timelineDelivered => 'تم التسليم';
+
+  @override
+  String get timelineCancelled => 'أُلغي';
+
+  @override
+  String get timelineChecks => 'الفحوص';
+
+  @override
+  String get timelineReview => 'المراجعة';
+
+  @override
+  String get timelineEarlyDrop => 'تسليم مبكر';
+
+  @override
+  String get timelineOutsideZone => 'خارج المنطقة';
+
+  @override
+  String get timelinePhotoMismatch => 'عدم تطابق الصورة';
+
+  @override
+  String get timelineNotChecked => 'لم يُفحص';
+
+  @override
+  String get timelineNoFlags => 'لا علامات';
+
+  @override
+  String get timelineVerified => 'تم التحقق';
+
+  @override
+  String get timelineRejected => 'مرفوض';
+
+  @override
+  String get timelineUnderReview => 'قيد المراجعة';
+
+  @override
+  String get timelineAwaitingReview => 'بانتظار المراجعة';
 }

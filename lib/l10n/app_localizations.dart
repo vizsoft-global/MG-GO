@@ -7061,6 +7061,234 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You are on target.'**
   String get levelStandardBody;
+
+  /// No description provided for @checkInPhotoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check-in photo'**
+  String get checkInPhotoTitle;
+
+  /// No description provided for @checkInPhotoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a clear front-camera photo of yourself inside your restaurant range.'**
+  String get checkInPhotoHint;
+
+  /// No description provided for @checkInPhotoTake.
+  ///
+  /// In en, this message translates to:
+  /// **'Take check-in photo'**
+  String get checkInPhotoTake;
+
+  /// No description provided for @checkInPhotoUploading.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading…'**
+  String get checkInPhotoUploading;
+
+  /// No description provided for @checkInPhotoUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The camera is unavailable. Check camera permission and try again.'**
+  String get checkInPhotoUnavailable;
+
+  /// No description provided for @checkInPhotoFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not take the check-in photo. Try again.'**
+  String get checkInPhotoFailed;
+
+  /// No description provided for @checkInPhotoRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Take your check-in photo before starting duty.'**
+  String get checkInPhotoRequired;
+
+  /// No description provided for @checkInLocationUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on location to check in.'**
+  String get checkInLocationUnavailable;
+
+  /// No description provided for @checkInOutsideRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Move closer to one of your restaurants, then try again.'**
+  String get checkInOutsideRange;
+
+  /// No description provided for @checkInOutsideRangeNamed.
+  ///
+  /// In en, this message translates to:
+  /// **'You are {distance} m from {restaurant}. Move closer to check in.'**
+  String checkInOutsideRangeNamed(String restaurant, int distance);
+
+  /// No description provided for @deliveryRulesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery rules'**
+  String get deliveryRulesTitle;
+
+  /// No description provided for @deliveryRulesPickup.
+  ///
+  /// In en, this message translates to:
+  /// **'Pickup: {restaurant}'**
+  String deliveryRulesPickup(String restaurant);
+
+  /// No description provided for @deliveryRulesPickupAll.
+  ///
+  /// In en, this message translates to:
+  /// **'any assigned restaurant'**
+  String get deliveryRulesPickupAll;
+
+  /// No description provided for @deliveryRulesEarlyDrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete the delivery at least {meters} m from pickup.'**
+  String deliveryRulesEarlyDrop(int meters);
+
+  /// No description provided for @deliveryRulesZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay inside {zone}.'**
+  String deliveryRulesZone(String zone);
+
+  /// No description provided for @deliveryRulesDpd.
+  ///
+  /// In en, this message translates to:
+  /// **'DPD target {target} · {rule}'**
+  String deliveryRulesDpd(int target, String rule);
+
+  /// No description provided for @deliveryRulesDpdDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'daily target'**
+  String get deliveryRulesDpdDefault;
+
+  /// No description provided for @proofOcrMismatchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Order number does not match'**
+  String get proofOcrMismatchTitle;
+
+  /// No description provided for @proofOcrMismatchBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We read {read} on the photo, but this delivery is {expected}.'**
+  String proofOcrMismatchBody(String read, String expected);
+
+  /// No description provided for @proofOcrReasonLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Why does the photo differ?'**
+  String get proofOcrReasonLabel;
+
+  /// No description provided for @proofOcrReasonHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Required if you use this photo anyway'**
+  String get proofOcrReasonHint;
+
+  /// No description provided for @proofOcrRescan.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake photo'**
+  String get proofOcrRescan;
+
+  /// No description provided for @proofOcrUseAnyway.
+  ///
+  /// In en, this message translates to:
+  /// **'Use anyway'**
+  String get proofOcrUseAnyway;
+
+  /// No description provided for @timelineCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Created'**
+  String get timelineCreated;
+
+  /// No description provided for @timelinePickedUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Picked up'**
+  String get timelinePickedUp;
+
+  /// No description provided for @timelineDelivered.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered'**
+  String get timelineDelivered;
+
+  /// No description provided for @timelineCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get timelineCancelled;
+
+  /// No description provided for @timelineChecks.
+  ///
+  /// In en, this message translates to:
+  /// **'Checks'**
+  String get timelineChecks;
+
+  /// No description provided for @timelineReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get timelineReview;
+
+  /// No description provided for @timelineEarlyDrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Early drop'**
+  String get timelineEarlyDrop;
+
+  /// No description provided for @timelineOutsideZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Outside zone'**
+  String get timelineOutsideZone;
+
+  /// No description provided for @timelinePhotoMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo mismatch'**
+  String get timelinePhotoMismatch;
+
+  /// No description provided for @timelineNotChecked.
+  ///
+  /// In en, this message translates to:
+  /// **'Not checked'**
+  String get timelineNotChecked;
+
+  /// No description provided for @timelineNoFlags.
+  ///
+  /// In en, this message translates to:
+  /// **'No flags'**
+  String get timelineNoFlags;
+
+  /// No description provided for @timelineVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get timelineVerified;
+
+  /// No description provided for @timelineRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get timelineRejected;
+
+  /// No description provided for @timelineUnderReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Under review'**
+  String get timelineUnderReview;
+
+  /// No description provided for @timelineAwaitingReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Awaiting review'**
+  String get timelineAwaitingReview;
 }
 
 class _AppLocalizationsDelegate

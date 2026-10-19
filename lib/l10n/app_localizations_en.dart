@@ -3912,4 +3912,135 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get levelStandardBody => 'You are on target.';
+
+  @override
+  String get checkInPhotoTitle => 'Check-in photo';
+
+  @override
+  String get checkInPhotoHint =>
+      'Take a clear front-camera photo of yourself inside your restaurant range.';
+
+  @override
+  String get checkInPhotoTake => 'Take check-in photo';
+
+  @override
+  String get checkInPhotoUploading => 'Uploading…';
+
+  @override
+  String get checkInPhotoUnavailable =>
+      'The camera is unavailable. Check camera permission and try again.';
+
+  @override
+  String get checkInPhotoFailed =>
+      'Could not take the check-in photo. Try again.';
+
+  @override
+  String get checkInPhotoRequired =>
+      'Take your check-in photo before starting duty.';
+
+  @override
+  String get checkInLocationUnavailable => 'Turn on location to check in.';
+
+  @override
+  String get checkInOutsideRange =>
+      'Move closer to one of your restaurants, then try again.';
+
+  @override
+  String checkInOutsideRangeNamed(String restaurant, int distance) {
+    return 'You are $distance m from $restaurant. Move closer to check in.';
+  }
+
+  @override
+  String get deliveryRulesTitle => 'Delivery rules';
+
+  @override
+  String deliveryRulesPickup(String restaurant) {
+    return 'Pickup: $restaurant';
+  }
+
+  @override
+  String get deliveryRulesPickupAll => 'any assigned restaurant';
+
+  @override
+  String deliveryRulesEarlyDrop(int meters) {
+    return 'Complete the delivery at least $meters m from pickup.';
+  }
+
+  @override
+  String deliveryRulesZone(String zone) {
+    return 'Stay inside $zone.';
+  }
+
+  @override
+  String deliveryRulesDpd(int target, String rule) {
+    return 'DPD target $target · $rule';
+  }
+
+  @override
+  String get deliveryRulesDpdDefault => 'daily target';
+
+  @override
+  String get proofOcrMismatchTitle => 'Order number does not match';
+
+  @override
+  String proofOcrMismatchBody(String read, String expected) {
+    return 'We read $read on the photo, but this delivery is $expected.';
+  }
+
+  @override
+  String get proofOcrReasonLabel => 'Why does the photo differ?';
+
+  @override
+  String get proofOcrReasonHint => 'Required if you use this photo anyway';
+
+  @override
+  String get proofOcrRescan => 'Retake photo';
+
+  @override
+  String get proofOcrUseAnyway => 'Use anyway';
+
+  @override
+  String get timelineCreated => 'Created';
+
+  @override
+  String get timelinePickedUp => 'Picked up';
+
+  @override
+  String get timelineDelivered => 'Delivered';
+
+  @override
+  String get timelineCancelled => 'Cancelled';
+
+  @override
+  String get timelineChecks => 'Checks';
+
+  @override
+  String get timelineReview => 'Review';
+
+  @override
+  String get timelineEarlyDrop => 'Early drop';
+
+  @override
+  String get timelineOutsideZone => 'Outside zone';
+
+  @override
+  String get timelinePhotoMismatch => 'Photo mismatch';
+
+  @override
+  String get timelineNotChecked => 'Not checked';
+
+  @override
+  String get timelineNoFlags => 'No flags';
+
+  @override
+  String get timelineVerified => 'Verified';
+
+  @override
+  String get timelineRejected => 'Rejected';
+
+  @override
+  String get timelineUnderReview => 'Under review';
+
+  @override
+  String get timelineAwaitingReview => 'Awaiting review';
 }

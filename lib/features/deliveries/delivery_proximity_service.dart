@@ -173,6 +173,10 @@ class DeliveryProximityContext {
     this.zoneType,
     this.zoneGeometry,
     this.restaurants = const [],
+    this.earlyDropMeters = 50,
+    this.requiredZoneName,
+    this.dpdTarget,
+    this.ruleName,
   });
 
   final int proximityMeters;
@@ -180,6 +184,10 @@ class DeliveryProximityContext {
   final String? zoneType;
   final Map<String, dynamic>? zoneGeometry;
   final List<ProximityRestaurant> restaurants;
+  final int earlyDropMeters;
+  final String? requiredZoneName;
+  final double? dpdTarget;
+  final String? ruleName;
 
   bool get proximityEnabled => proximityMeters > 0;
 
@@ -200,6 +208,9 @@ class DeliveryProximityContext {
             .toList(growable: false)
         : const <ProximityRestaurant>[];
 
+    final rulesRaw = json['rules'];
+    final rules = rulesRaw is Map ? deepStringKeyMap(rulesRaw) : const <String, dynamic>{};
+    final requiredZone = rules['required_zone'];
     return DeliveryProximityContext(
       proximityMeters: (json['proximity_meters'] as num?)?.toInt() ?? 500,
       zoneId: json['zone_id'] as String?,
@@ -208,6 +219,12 @@ class DeliveryProximityContext {
           ? deepStringKeyMap(json['zone_geometry'] as Map)
           : null,
       restaurants: restaurants,
+      earlyDropMeters: (rules['early_drop_meters'] as num?)?.toInt() ?? 50,
+      requiredZoneName: requiredZone is Map
+          ? requiredZone['name']?.toString()
+          : null,
+      dpdTarget: (rules['dpd_target'] as num?)?.toDouble(),
+      ruleName: rules['rule_name']?.toString(),
     );
   }
 
@@ -217,6 +234,14 @@ class DeliveryProximityContext {
         'zone_type': zoneType,
         'zone_geometry': zoneGeometry,
         'restaurants': restaurants.map((r) => r.toJson()).toList(),
+        'rules': {
+          'early_drop_meters': earlyDropMeters,
+          'required_zone': requiredZoneName == null
+              ? null
+              : {'id': zoneId, 'name': requiredZoneName},
+          'dpd_target': dpdTarget,
+          'rule_name': ruleName,
+        },
       };
 
   @override
@@ -227,7 +252,11 @@ class DeliveryProximityContext {
             zoneId == other.zoneId &&
             zoneType == other.zoneType &&
             _mapEquals(zoneGeometry, other.zoneGeometry) &&
-            listEquals(restaurants, other.restaurants);
+            listEquals(restaurants, other.restaurants) &&
+            earlyDropMeters == other.earlyDropMeters &&
+            requiredZoneName == other.requiredZoneName &&
+            dpdTarget == other.dpdTarget &&
+            ruleName == other.ruleName;
   }
 
   @override
@@ -237,6 +266,10 @@ class DeliveryProximityContext {
         zoneType,
         zoneGeometry == null ? null : Object.hashAll(zoneGeometry!.entries),
         Object.hashAll(restaurants),
+        earlyDropMeters,
+        requiredZoneName,
+        dpdTarget,
+        ruleName,
       );
 
   static bool _mapEquals(

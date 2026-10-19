@@ -500,7 +500,7 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                 ),
               ],
             ),
-            bottomNavigationBar: detail.isPending
+            bottomNavigationBar: detail.isPending && detail.signedAt == null
                 ? SafeArea(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),

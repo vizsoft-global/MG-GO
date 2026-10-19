@@ -37,6 +37,7 @@ class DriverUploadService {
   static const _orderProofMaxBytes = 10 * 1024 * 1024;
   static const _driverAvatarMaxBytes = 2 * 1024 * 1024;
   static const _loginVerificationMaxBytes = 5 * 1024 * 1024;
+  static const _checkInPhotoMaxBytes = 5 * 1024 * 1024;
   static const _esignSignatureMaxBytes = 4 * 1024 * 1024;
   static const _esignAttachmentMaxBytes = 10 * 1024 * 1024;
   static const _requestAttachmentMaxBytes = 10 * 1024 * 1024;
@@ -124,6 +125,35 @@ class DriverUploadService {
       filename: filename,
       entityType: 'login_verification',
       authHeaders: authHeaders,
+      onProgress: onProgress,
+    );
+  }
+
+  /// Front-camera still captured at clock-in. One per rider per check-in; the
+  /// server binds the stored key to the rider prefix.
+  Future<DriverUploadResult> uploadCheckInPhoto({
+    required List<int> bytes,
+    required String contentType,
+    required String filename,
+    void Function(double progress)? onProgress,
+  }) async {
+    if (bytes.isEmpty) {
+      throw DriverUploadException(code: 'file_empty');
+    }
+    if (bytes.length > _checkInPhotoMaxBytes) {
+      throw DriverUploadException(code: 'file_too_large_check_in_photo');
+    }
+    if (!_isAllowedContentType(contentType)) {
+      throw DriverUploadException(code: 'invalid_content_type');
+    }
+
+    final token = await _accessToken();
+    return _uploadViaPresign(
+      bytes: bytes,
+      contentType: contentType,
+      filename: filename,
+      entityType: 'check_in_photo',
+      authHeaders: {'Authorization': 'Bearer $token'},
       onProgress: onProgress,
     );
   }

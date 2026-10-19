@@ -14,8 +14,13 @@ import 'delivery_service.dart';
 String finishDeliveryPath({
   required String deliveryId,
   required FinishOutcome outcome,
-}) =>
-    '/deliveries/finish/$deliveryId?outcome=${outcome.name}';
+  String? externalOrderId,
+}) {
+  final order = externalOrderId?.trim();
+  final suffix =
+      order == null || order.isEmpty ? '' : '&orderId=${Uri.encodeComponent(order)}';
+  return '/deliveries/finish/$deliveryId?outcome=${outcome.name}$suffix';
+}
 
 /// What the control the rider tapped promised them, before any state was read.
 ///
@@ -136,6 +141,7 @@ Future<void> openDeliveryAction(
       finishDeliveryPath(
         deliveryId: active.id,
         outcome: outcome ?? FinishOutcome.delivered,
+        externalOrderId: active.externalOrderId,
       ),
       replace: replace,
     );
@@ -152,6 +158,7 @@ Future<void> openDeliveryAction(
       finishDeliveryPath(
         deliveryId: active.id,
         outcome: outcome ?? FinishOutcome.delivered,
+        externalOrderId: active.externalOrderId,
       ),
       replace: replace,
     );
@@ -191,6 +198,7 @@ Future<void> openFinishDelivery(
   WidgetRef ref, {
   required String deliveryId,
   required FinishOutcome outcome,
+  String? externalOrderId,
   bool replace = false,
 }) async {
   final ok = await ensureOnDutyForAction(
@@ -200,7 +208,11 @@ Future<void> openFinishDelivery(
   );
   if (ok != true || !context.mounted) return;
 
-  final path = finishDeliveryPath(deliveryId: deliveryId, outcome: outcome);
+  final path = finishDeliveryPath(
+    deliveryId: deliveryId,
+    outcome: outcome,
+    externalOrderId: externalOrderId,
+  );
   if (replace) {
     context.go(path);
   } else {
