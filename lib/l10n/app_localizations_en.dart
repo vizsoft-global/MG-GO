@@ -3408,6 +3408,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get esignDeclineReasonHint => 'Reason (optional)';
 
   @override
+  String get esignAttachmentsTitle => 'Attachments';
+
+  @override
+  String get esignReviewApproved => 'Approved by management';
+
+  @override
+  String get esignReviewAcknowledged => 'Acknowledged by management';
+
+  @override
+  String get esignReviewRejected => 'Rejected by management';
+
+  @override
+  String get esignAddDocuments => 'Add documents';
+
+  @override
+  String get esignDocumentsHint => 'Up to 5 supporting documents';
+
+  @override
+  String get esignAttachmentUploaded => 'Document attached';
+
+  @override
+  String get esignAttachmentUploadFailed =>
+      'The document could not be attached';
+
+  @override
+  String get esignAttachmentLimit => 'Up to 5 documents per request';
+
+  @override
   String get esignDocumentDeclined => 'Document declined';
 
   @override
@@ -3780,4 +3808,108 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get payRefresh => 'Reload this month';
+
+  @override
+  String get orderExceptionsTitle => 'Rejected and cancelled orders';
+
+  @override
+  String get orderExceptionsHint =>
+      'File a case when an order was rejected or cancelled. You can attach up to 5 photos.';
+
+  @override
+  String get orderExceptionKindRejected => 'Rejected';
+
+  @override
+  String get orderExceptionKindCancelled => 'Cancelled';
+
+  @override
+  String get orderExceptionSourceDriver => 'I declined it';
+
+  @override
+  String get orderExceptionSourceStore => 'Store or customer';
+
+  @override
+  String get orderExceptionReason => 'Reason';
+
+  @override
+  String get orderExceptionReasonHint => 'At least 8 characters';
+
+  @override
+  String get orderExceptionOrderId => 'Order ID';
+
+  @override
+  String get orderExceptionSubmit => 'Submit';
+
+  @override
+  String get orderExceptionEmpty => 'No cases yet';
+
+  @override
+  String get orderExceptionPending => 'Under review';
+
+  @override
+  String get orderExceptionApproved => 'Approved';
+
+  @override
+  String get orderExceptionRejected => 'Rejected';
+
+  @override
+  String get orderExceptionProof => 'Photos';
+
+  @override
+  String get orderExceptionReviewNote => 'Review note';
+
+  @override
+  String get orderExceptionMenu => 'Order exceptions';
+
+  @override
+  String get orderExceptionFailed => 'Something went wrong. Try again.';
+
+  @override
+  String get orderExceptionErrorReasonRequired =>
+      'Enter a reason of at least 8 characters.';
+
+  @override
+  String get orderExceptionErrorReasonTooLong =>
+      'Reason must be 500 characters or fewer.';
+
+  @override
+  String get orderExceptionErrorProofRequired => 'Add at least one photo.';
+
+  @override
+  String get orderExceptionErrorInvalidProof =>
+      'One of the photos could not be used.';
+
+  @override
+  String get orderExceptionErrorTooManyProofs =>
+      'You can attach up to 5 photos.';
+
+  @override
+  String get orderExceptionErrorInvalidOrderId =>
+      'Order ID must be 1 to 32 digits.';
+
+  @override
+  String get orderExceptionErrorDailyLimit =>
+      'You have reached today\'s limit.';
+
+  @override
+  String get orderExceptionErrorDuplicate => 'This order already has a case.';
+
+  @override
+  String get levelDBadge => 'D';
+
+  @override
+  String get levelDTitle => 'Level D';
+
+  @override
+  String levelDBody(
+    String requiredOrders,
+    String verified,
+    String gap,
+    String activeDays,
+  ) {
+    return 'Required orders $requiredOrders. Verified $verified. Gap $gap. Active days $activeDays.';
+  }
+
+  @override
+  String get levelStandardBody => 'You are on target.';
 }

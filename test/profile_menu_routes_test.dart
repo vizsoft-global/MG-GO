@@ -37,6 +37,7 @@ void main() {
     const expected = {
       'l10n.myProfile': '/profile/details',
       'l10n.wrongAction': '/profile/wrong-actions',
+      'l10n.orderExceptionMenu': '/profile/order-exceptions',
       'l10n.paymentDetails': '/profile/payments',
       'l10n.assets': '/profile/assets',
       'l10n.termsAndConditions': '/profile/terms',
@@ -68,6 +69,8 @@ void main() {
     for (final path in const [
       '/profile/details',
       '/profile/wrong-actions',
+      '/profile/order-exceptions',
+      '/profile/performance-level',
       '/profile/payments',
       '/profile/assets',
       '/profile/terms',
@@ -89,6 +92,8 @@ void main() {
     for (final path in const [
       '/profile/details',
       '/profile/wrong-actions',
+      '/profile/order-exceptions',
+      '/profile/performance-level',
       '/profile/payments',
       '/profile/assets',
       '/profile/terms',

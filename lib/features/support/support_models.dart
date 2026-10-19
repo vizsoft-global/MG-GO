@@ -517,6 +517,8 @@ class EsignRequestSummary {
     this.categoryKey,
     this.categoryLabel,
     this.createdAt,
+    this.attachmentCount = 0,
+    this.reviewStatus,
   });
 
   final String id;
@@ -546,6 +548,17 @@ class EsignRequestSummary {
   final String? categoryKey;
   final String? categoryLabel;
   final DateTime? createdAt;
+
+  /// Supporting documents attached by the rider or by admin.
+  final int attachmentCount;
+
+  /// `approved` / `acknowledged` / `rejected` once management closes the case.
+  final String? reviewStatus;
+
+  bool get hasAttachments => attachmentCount > 0;
+  bool get isReviewApproved => reviewStatus == 'approved';
+  bool get isReviewAcknowledged => reviewStatus == 'acknowledged';
+  bool get isReviewRejected => reviewStatus == 'rejected';
 
   bool get isPending => status == 'pending';
   bool get isSigned => status == 'signed';
@@ -600,6 +613,8 @@ class EsignRequestSummary {
       categoryKey: json['category_key'] as String?,
       categoryLabel: json['category_label'] as String?,
       createdAt: _parseDateTime(json['created_at']),
+      attachmentCount: (json['attachment_count'] as num?)?.toInt() ?? 0,
+      reviewStatus: json['review_status'] as String?,
     );
   }
 }
@@ -713,6 +728,51 @@ class EsignLabeledField {
   }
 }
 
+class EsignAttachment {
+  const EsignAttachment({
+    required this.id,
+    required this.name,
+    this.contentType,
+    this.size = 0,
+    this.source,
+    this.createdAt,
+    this.url,
+  });
+
+  final String id;
+  final String name;
+  final String? contentType;
+  final int size;
+  final String? source;
+  final DateTime? createdAt;
+
+  /// Short-lived presigned R2 GET minted by `driverGetEsignRequest`.
+  final String? url;
+
+  bool get isImage {
+    final type = (contentType ?? '').toLowerCase();
+    final lower = name.toLowerCase();
+    return type.startsWith('image/') ||
+        lower.endsWith('.png') ||
+        lower.endsWith('.jpg') ||
+        lower.endsWith('.jpeg');
+  }
+
+  factory EsignAttachment.fromJson(Map<String, dynamic> json) {
+    return EsignAttachment(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? 'Attachment',
+      contentType: json['content_type']?.toString(),
+      size: (json['size'] as num?)?.toInt() ?? 0,
+      source: json['source']?.toString(),
+      createdAt: _parseDateTime(json['created_at']),
+      url: (json['url'] as String?)?.trim().isEmpty == true
+          ? null
+          : json['url'] as String?,
+    );
+  }
+}
+
 class EsignRequestDetail {
   const EsignRequestDetail({required this.raw});
 
@@ -725,6 +785,45 @@ class EsignRequestDetail {
   bool get screenshotRestricted =>
       parseScreenshotRestricted(raw['screenshot_restricted']);
   String? get categoryLabel => raw['category_label'] as String?;
+  String? get categoryKey => raw['category_key'] as String?;
+
+  /// `request_kind` from the accident template, when the send stored it.
+  String? get requestKind {
+    final values = raw['field_values'];
+    if (values is Map) {
+      final kind = values['request_kind']?.toString().trim();
+      if (kind != null && kind.isNotEmpty) return kind;
+    }
+    final labeled = raw['field_values_labeled'];
+    if (labeled is List) {
+      for (final row in labeled.whereType<Map>()) {
+        if (row['key'] == 'request_kind') return row['value']?.toString();
+      }
+    }
+    return null;
+  }
+
+  /// Supporting documents are offered for the photo-based accident kinds only.
+  bool get allowsAttachments =>
+      categoryKey == 'accident' &&
+      (requestKind == 'accident' || requestKind == 'medical_report');
+
+  List<EsignAttachment> get attachments {
+    final rows = raw['attachments'];
+    if (rows is! List) return const [];
+    return rows
+        .whereType<Map>()
+        .map((row) => EsignAttachment.fromJson(Map<String, dynamic>.from(row)))
+        .toList();
+  }
+
+  String? get reviewStatus => raw['review_status'] as String?;
+  String? get reviewNote => raw['review_note'] as String?;
+  DateTime? get reviewedAt => _parseDateTime(raw['reviewed_at']);
+
+  bool get isReviewApproved => reviewStatus == 'approved';
+  bool get isReviewAcknowledged => reviewStatus == 'acknowledged';
+  bool get isReviewRejected => reviewStatus == 'rejected';
   String? get documentStorageKey => raw['document_storage_key'] as String?;
   String? get signatureStorageKey => raw['signature_storage_key'] as String?;
   String? get signerDisplayName => raw['signer_display_name'] as String?;

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../performance_level/level_d_chip.dart';
 import '../../auth/rider_auth_service.dart';
 import '../avatar_upload_controller.dart';
 import 'profile_avatar.dart';
@@ -113,6 +114,7 @@ class ProfileHeaderCard extends ConsumerWidget {
               fontWeight: FontWeight.w700,
             ),
           ),
+          const LevelDChip(),
           const SizedBox(height: 4),
           Text(
             l10n.driverIdLabel(profile.driverCode ?? '—'),

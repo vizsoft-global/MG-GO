@@ -3391,6 +3391,33 @@ class AppLocalizationsAr extends AppLocalizations {
   String get esignDeclineReasonHint => 'السبب (اختياري)';
 
   @override
+  String get esignAttachmentsTitle => 'المرفقات';
+
+  @override
+  String get esignReviewApproved => 'تمت الموافقة من الإدارة';
+
+  @override
+  String get esignReviewAcknowledged => 'تم الإقرار من الإدارة';
+
+  @override
+  String get esignReviewRejected => 'تم الرفض من الإدارة';
+
+  @override
+  String get esignAddDocuments => 'إضافة مستندات';
+
+  @override
+  String get esignDocumentsHint => 'حتى 5 مستندات داعمة';
+
+  @override
+  String get esignAttachmentUploaded => 'تم إرفاق المستند';
+
+  @override
+  String get esignAttachmentUploadFailed => 'تعذر إرفاق المستند';
+
+  @override
+  String get esignAttachmentLimit => 'حتى 5 مستندات لكل طلب';
+
+  @override
   String get esignDocumentDeclined => 'تم رفض المستند';
 
   @override
@@ -3760,4 +3787,105 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get payRefresh => 'إعادة تحميل هذا الشهر';
+
+  @override
+  String get orderExceptionsTitle => 'الطلبات المرفوضة والملغاة';
+
+  @override
+  String get orderExceptionsHint =>
+      'سجّل حالة عندما يُرفض طلب أو يُلغى. يمكنك إرفاق حتى 5 صور.';
+
+  @override
+  String get orderExceptionKindRejected => 'مرفوض';
+
+  @override
+  String get orderExceptionKindCancelled => 'ملغى';
+
+  @override
+  String get orderExceptionSourceDriver => 'رفضته بنفسي';
+
+  @override
+  String get orderExceptionSourceStore => 'المتجر أو العميل';
+
+  @override
+  String get orderExceptionReason => 'السبب';
+
+  @override
+  String get orderExceptionReasonHint => '8 أحرف على الأقل';
+
+  @override
+  String get orderExceptionOrderId => 'رقم الطلب';
+
+  @override
+  String get orderExceptionSubmit => 'إرسال';
+
+  @override
+  String get orderExceptionEmpty => 'لا توجد حالات بعد';
+
+  @override
+  String get orderExceptionPending => 'قيد المراجعة';
+
+  @override
+  String get orderExceptionApproved => 'مقبول';
+
+  @override
+  String get orderExceptionRejected => 'مرفوض';
+
+  @override
+  String get orderExceptionProof => 'الصور';
+
+  @override
+  String get orderExceptionReviewNote => 'ملاحظة المراجعة';
+
+  @override
+  String get orderExceptionMenu => 'استثناءات الطلبات';
+
+  @override
+  String get orderExceptionFailed => 'تعذر إكمال العملية. حاول مرة أخرى.';
+
+  @override
+  String get orderExceptionErrorReasonRequired =>
+      'أدخل سببًا من 8 أحرف على الأقل.';
+
+  @override
+  String get orderExceptionErrorReasonTooLong =>
+      'يجب ألا يتجاوز السبب 500 حرفًا.';
+
+  @override
+  String get orderExceptionErrorProofRequired => 'أضف صورة واحدة على الأقل.';
+
+  @override
+  String get orderExceptionErrorInvalidProof => 'تعذر استخدام إحدى الصور.';
+
+  @override
+  String get orderExceptionErrorTooManyProofs => 'يمكنك إرفاق حتى 5 صور.';
+
+  @override
+  String get orderExceptionErrorInvalidOrderId =>
+      'رقم الطلب يجب أن يكون من 1 إلى 32 رقمًا.';
+
+  @override
+  String get orderExceptionErrorDailyLimit => 'وصلت إلى حد اليوم.';
+
+  @override
+  String get orderExceptionErrorDuplicate => 'لهذا الطلب حالة مسجّلة مسبقًا.';
+
+  @override
+  String get levelDBadge => 'D';
+
+  @override
+  String get levelDTitle => 'المستوى D';
+
+  @override
+  String levelDBody(
+    String requiredOrders,
+    String verified,
+    String gap,
+    String activeDays,
+  ) {
+    return 'الطلبات المطلوبة $requiredOrders. الموثّقة $verified. الفجوة $gap. أيام النشاط $activeDays.';
+  }
+
+  @override
+  String get levelStandardBody => 'أنت على الهدف.';
 }

@@ -148,6 +148,15 @@ class NotificationRouter {
       case 'support_appointments':
       case 'appointments':
         return '/profile/support/appointments';
+      case 'order_exceptions':
+      case 'order-exceptions':
+      case 'order_exception':
+        return '/profile/order-exceptions';
+      case 'performance_level':
+      case 'performance-level':
+      case 'driver_level':
+      case 'driver-level':
+        return '/profile/performance-level';
       default:
         return '/home';
     }
@@ -211,6 +220,13 @@ class NotificationRouter {
           return '/profile/support/appointments/$recordId';
         }
         return '/profile/support/appointments';
+      case 'order_exception':
+      case 'order_exceptions':
+        return '/profile/order-exceptions';
+      case 'performance_level':
+      case 'driver_level':
+      case 'driver-level':
+        return '/profile/performance-level';
       default:
         return _routeForScreen(params);
     }

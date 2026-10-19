@@ -165,6 +165,34 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
     );
   }
 
+  Future<void> _openAttachment(
+    EsignRequestDetail detail,
+    EsignAttachment attachment,
+  ) async {
+    final url = attachment.url;
+    if (url == null) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => EsignFullDocumentScreen(
+          url: url,
+          title: attachment.name,
+          isImage: attachment.isImage,
+          restricted: esignShouldSecureScreen(
+            screenshotRestricted: detail.screenshotRestricted,
+            screenshotsAllowed: ref.read(securityBypassProvider),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatSize(int size) {
+    if (size <= 0) return '';
+    return size >= 1024 * 1024
+        ? '${(size / (1024 * 1024)).toStringAsFixed(1)} MB'
+        : '${(size / 1024).round()} KB';
+  }
+
   String _formatDate(DateTime? value, AppLocalizations l10n) {
     if (value == null) return '—';
     return formatEsignDue(value, l10n);
@@ -269,6 +297,69 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                   ),
                   const SizedBox(height: 10),
                 ],
+                if (detail.reviewStatus != null) ...[
+                  Card(
+                    color: detail.isReviewRejected
+                        ? AppColors.rejectedRed.withValues(alpha: 0.08)
+                        : null,
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            detail.isReviewRejected
+                                ? Icons.cancel_rounded
+                                : Icons.check_circle_rounded,
+                            color: detail.isReviewRejected
+                                ? AppColors.rejectedRed
+                                : Colors.green,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  detail.isReviewRejected
+                                      ? l10n.esignReviewRejected
+                                      : detail.isReviewAcknowledged
+                                          ? l10n.esignReviewAcknowledged
+                                          : l10n.esignReviewApproved,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                if (detail.reviewNote != null) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    detail.reviewNote!,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                                if (detail.reviewedAt != null) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _formatDate(detail.reviewedAt, l10n),
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(14),
@@ -356,6 +447,41 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                     ),
                   ),
                 ),
+                if (detail.attachments.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.esignAttachmentsTitle,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          for (final attachment in detail.attachments)
+                            ListTile(
+                              dense: true,
+                              contentPadding: EdgeInsets.zero,
+                              leading: const Icon(Icons.attach_file_rounded),
+                              title: Text(attachment.name),
+                              subtitle: attachment.size > 0
+                                  ? Text(_formatSize(attachment.size))
+                                  : null,
+                              trailing: const Icon(Icons.open_in_new, size: 18),
+                              onTap: attachment.url == null
+                                  ? null
+                                  : () => _openAttachment(detail, attachment),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 10),
                 Text(
                   l10n.esignMetaLine(

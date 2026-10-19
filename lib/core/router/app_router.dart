@@ -34,6 +34,8 @@ import '../../features/profile/my_profile_details_screen.dart';
 import '../../features/profile/payments_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/profile/terms_screen.dart';
+import '../../features/order_exceptions/order_exceptions_screen.dart';
+import '../../features/performance_level/performance_level_screen.dart';
 import '../../features/profile/wrong_actions_screen.dart';
 import '../../features/shell/app_exit_scope.dart';
 import '../../features/shell/main_shell.dart';
@@ -338,6 +340,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'profile_wrong_actions',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const WrongActionsScreen(),
+      ),
+      GoRoute(
+        path: '/profile/order-exceptions',
+        name: 'profile_order_exceptions',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const OrderExceptionsScreen(),
+      ),
+      GoRoute(
+        path: '/profile/performance-level',
+        name: 'profile_performance_level',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const PerformanceLevelScreen(),
       ),
       GoRoute(
         path: '/profile/payments',
