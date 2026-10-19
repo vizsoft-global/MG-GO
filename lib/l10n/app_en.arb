@@ -1835,6 +1835,16 @@
   "esignDeclineDocument": "Decline document",
   "esignDeclineBody": "Let admin know why you cannot sign this document.",
   "esignDeclineReasonHint": "Reason (optional)",
+  "esignAttachmentsTitle": "Attachments",
+  "esignReviewApproved": "Approved by management",
+  "esignReviewAcknowledged": "Acknowledged by management",
+  "esignReviewRejected": "Rejected by management",
+  "esignAddDocuments": "Add documents",
+  "esignDocumentsHint": "Up to 5 supporting documents",
+  "esignAttachmentUploaded": "Document attached",
+  "esignAttachmentUploadFailed": "The document could not be attached",
+  "esignAttachmentLimit": "Up to 5 documents per request",
+
   "esignDocumentDeclined": "Document declined",
   "esignDocumentTitle": "Document",
   "esignReviewDocument": "Review document",
@@ -2018,5 +2028,51 @@
     }
   },
   "payReset": "Reset",
-  "payRefresh": "Reload this month"
+  "payRefresh": "Reload this month",
+  "orderExceptionsTitle": "Rejected and cancelled orders",
+  "orderExceptionsHint": "File a case when an order was rejected or cancelled. You can attach up to 5 photos.",
+  "orderExceptionKindRejected": "Rejected",
+  "orderExceptionKindCancelled": "Cancelled",
+  "orderExceptionSourceDriver": "I declined it",
+  "orderExceptionSourceStore": "Store or customer",
+  "orderExceptionReason": "Reason",
+  "orderExceptionReasonHint": "At least 8 characters",
+  "orderExceptionOrderId": "Order ID",
+  "orderExceptionSubmit": "Submit",
+  "orderExceptionEmpty": "No cases yet",
+  "orderExceptionPending": "Under review",
+  "orderExceptionApproved": "Approved",
+  "orderExceptionRejected": "Rejected",
+  "orderExceptionProof": "Photos",
+  "orderExceptionReviewNote": "Review note",
+  "orderExceptionMenu": "Order exceptions",
+  "orderExceptionFailed": "Something went wrong. Try again.",
+  "orderExceptionErrorReasonRequired": "Enter a reason of at least 8 characters.",
+  "orderExceptionErrorReasonTooLong": "Reason must be 500 characters or fewer.",
+  "orderExceptionErrorProofRequired": "Add at least one photo.",
+  "orderExceptionErrorInvalidProof": "One of the photos could not be used.",
+  "orderExceptionErrorTooManyProofs": "You can attach up to 5 photos.",
+  "orderExceptionErrorInvalidOrderId": "Order ID must be 1 to 32 digits.",
+  "orderExceptionErrorDailyLimit": "You have reached today's limit.",
+  "orderExceptionErrorDuplicate": "This order already has a case.",
+  "levelDBadge": "D",
+  "levelDTitle": "Level D",
+  "levelDBody": "Required orders {requiredOrders}. Verified {verified}. Gap {gap}. Active days {activeDays}.",
+  "@levelDBody": {
+    "placeholders": {
+      "requiredOrders": {
+        "type": "String"
+      },
+      "verified": {
+        "type": "String"
+      },
+      "gap": {
+        "type": "String"
+      },
+      "activeDays": {
+        "type": "String"
+      }
+    }
+  },
+  "levelStandardBody": "You are on target."
 }

@@ -7,6 +7,8 @@ import '../../../core/branding/branding_logo.dart';
 import '../../../core/branding/remote_image.dart';
 import '../../../core/notifications/notification_inbox_provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../performance_level/level_d_chip.dart';
+import '../../performance_level/rider_level.dart';
 
 const homePartnerBadgeKey = Key('home-partner-badge');
 
@@ -45,6 +47,8 @@ class HomeHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final unread = ref.watch(notificationsUnreadCountProvider);
+    final showLevelD =
+        ref.watch(riderLevelProvider).asData?.value.isLevelD ?? false;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -84,6 +88,11 @@ class HomeHeader extends ConsumerWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                    if (showLevelD)
+                      const WidgetSpan(
+                        alignment: PlaceholderAlignment.middle,
+                        child: LevelDChip(inline: true),
+                      ),
                   ],
                 ),
               ),

@@ -165,6 +165,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         onTap: () => context.push('/profile/wrong-actions'),
                       ),
                       ProfileMenuRow(
+                        icon: Icons.report_gmailerrorred_outlined,
+                        label: l10n.orderExceptionMenu,
+                        onTap: () => context.push('/profile/order-exceptions'),
+                      ),
+                      ProfileMenuRow(
                         icon: Icons.account_balance_wallet_outlined,
                         label: l10n.paymentDetails,
                         onTap: () => context.push('/profile/payments'),

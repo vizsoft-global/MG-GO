@@ -1085,6 +1085,16 @@
   "esignDeclineDocument": "رفض المستند",
   "esignDeclineBody": "أبلغ الإدارة بسبب عدم تمكنك من توقيع هذا المستند.",
   "esignDeclineReasonHint": "السبب (اختياري)",
+  "esignAttachmentsTitle": "المرفقات",
+  "esignReviewApproved": "تمت الموافقة من الإدارة",
+  "esignReviewAcknowledged": "تم الإقرار من الإدارة",
+  "esignReviewRejected": "تم الرفض من الإدارة",
+  "esignAddDocuments": "إضافة مستندات",
+  "esignDocumentsHint": "حتى 5 مستندات داعمة",
+  "esignAttachmentUploaded": "تم إرفاق المستند",
+  "esignAttachmentUploadFailed": "تعذر إرفاق المستند",
+  "esignAttachmentLimit": "حتى 5 مستندات لكل طلب",
+
   "esignDocumentDeclined": "تم رفض المستند",
   "esignDocumentTitle": "المستند",
   "esignReviewDocument": "مراجعة المستند",
@@ -1235,5 +1245,51 @@
     }
   },
   "payReset": "إعادة تعيين",
-  "payRefresh": "إعادة تحميل هذا الشهر"
+  "payRefresh": "إعادة تحميل هذا الشهر",
+  "orderExceptionsTitle": "الطلبات المرفوضة والملغاة",
+  "orderExceptionsHint": "سجّل حالة عندما يُرفض طلب أو يُلغى. يمكنك إرفاق حتى 5 صور.",
+  "orderExceptionKindRejected": "مرفوض",
+  "orderExceptionKindCancelled": "ملغى",
+  "orderExceptionSourceDriver": "رفضته بنفسي",
+  "orderExceptionSourceStore": "المتجر أو العميل",
+  "orderExceptionReason": "السبب",
+  "orderExceptionReasonHint": "8 أحرف على الأقل",
+  "orderExceptionOrderId": "رقم الطلب",
+  "orderExceptionSubmit": "إرسال",
+  "orderExceptionEmpty": "لا توجد حالات بعد",
+  "orderExceptionPending": "قيد المراجعة",
+  "orderExceptionApproved": "مقبول",
+  "orderExceptionRejected": "مرفوض",
+  "orderExceptionProof": "الصور",
+  "orderExceptionReviewNote": "ملاحظة المراجعة",
+  "orderExceptionMenu": "استثناءات الطلبات",
+  "orderExceptionFailed": "تعذر إكمال العملية. حاول مرة أخرى.",
+  "orderExceptionErrorReasonRequired": "أدخل سببًا من 8 أحرف على الأقل.",
+  "orderExceptionErrorReasonTooLong": "يجب ألا يتجاوز السبب 500 حرفًا.",
+  "orderExceptionErrorProofRequired": "أضف صورة واحدة على الأقل.",
+  "orderExceptionErrorInvalidProof": "تعذر استخدام إحدى الصور.",
+  "orderExceptionErrorTooManyProofs": "يمكنك إرفاق حتى 5 صور.",
+  "orderExceptionErrorInvalidOrderId": "رقم الطلب يجب أن يكون من 1 إلى 32 رقمًا.",
+  "orderExceptionErrorDailyLimit": "وصلت إلى حد اليوم.",
+  "orderExceptionErrorDuplicate": "لهذا الطلب حالة مسجّلة مسبقًا.",
+  "levelDBadge": "D",
+  "levelDTitle": "المستوى D",
+  "levelDBody": "الطلبات المطلوبة {requiredOrders}. الموثّقة {verified}. الفجوة {gap}. أيام النشاط {activeDays}.",
+  "@levelDBody": {
+    "placeholders": {
+      "requiredOrders": {
+        "type": "String"
+      },
+      "verified": {
+        "type": "String"
+      },
+      "gap": {
+        "type": "String"
+      },
+      "activeDays": {
+        "type": "String"
+      }
+    }
+  },
+  "levelStandardBody": "أنت على الهدف."
 }

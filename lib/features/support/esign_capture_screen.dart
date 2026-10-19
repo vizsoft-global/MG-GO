@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/device/device_identity_service.dart';
@@ -34,8 +35,11 @@ class EsignCaptureScreen extends ConsumerStatefulWidget {
 
 class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
   final _padController = SignaturePadController();
+  final ImagePicker _picker = ImagePicker();
   bool _legalAccepted = false;
   bool _submitting = false;
+  bool _attaching = false;
+  final List<String> _attachedNames = [];
 
   /// Stamped once when the screen opens and re-stamped at the instant the
   /// rider submits. Deriving it in build() showed the last render time, which
@@ -46,6 +50,49 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
   void dispose() {
     _padController.dispose();
     super.dispose();
+  }
+
+  Future<void> _addDocuments() async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final remaining = 5 - _attachedNames.length;
+    if (remaining <= 0) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.esignAttachmentLimit)));
+      return;
+    }
+    setState(() => _attaching = true);
+    try {
+      final files = await _picker.pickMultiImage(imageQuality: 85);
+      for (final file in files.take(remaining)) {
+        final bytes = await file.readAsBytes();
+        final contentType = file.mimeType ?? _guessMime(file.name);
+        final attachment = await ref.read(supportServiceProvider).addEsignAttachment(
+              requestId: widget.requestId,
+              bytes: bytes,
+              contentType: contentType,
+              filename: file.name.isEmpty ? 'attachment.jpg' : file.name,
+            );
+        if (!mounted) return;
+        setState(() => _attachedNames.add(attachment.name));
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.esignAttachmentUploaded)),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.esignAttachmentUploadFailed)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _attaching = false);
+    }
+  }
+
+  String _guessMime(String name) {
+    final lower = name.toLowerCase();
+    if (lower.endsWith('.png')) return 'image/png';
+    return 'image/jpeg';
   }
 
   Future<void> _submit(RiderProfile? profile) async {
@@ -133,17 +180,18 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final profile = ref.watch(riderProfileProvider).asData?.value;
+    final detail = ref
+        .watch(esignRequestDetailProvider(widget.requestId))
+        .asData
+        ?.value;
     // Fail closed: until the detail resolves we do not know whether the
     // document is restricted, and an unprotected frame is unrecoverable.
     final restricted = esignShouldSecureScreen(
-      screenshotRestricted: ref
-          .watch(esignRequestDetailProvider(widget.requestId))
-          .asData
-          ?.value
-          .screenshotRestricted,
+      screenshotRestricted: detail?.screenshotRestricted,
       screenshotsAllowed: ref.watch(securityBypassProvider),
       failClosed: true,
     );
+    final allowsAttachments = detail?.allowsAttachments ?? false;
     final scaffold = Scaffold(
       appBar: AppBar(
         title: Text(l10n.esignAddYourSignature),
@@ -188,6 +236,44 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
             ),
             controlAffinity: ListTileControlAffinity.leading,
           ),
+          const SizedBox(height: 4),
+          if (allowsAttachments) ...[
+            const SizedBox(height: 6),
+            OutlinedButton.icon(
+              onPressed: _attaching || _attachedNames.length >= 5
+                  ? null
+                  : _addDocuments,
+              icon: _attaching
+                  ? const SizedBox(
+                      height: 16,
+                      width: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.attach_file_rounded),
+              label: Text(l10n.esignAddDocuments),
+            ),
+            if (_attachedNames.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                l10n.esignDocumentsHint,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              for (final name in _attachedNames)
+                ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(
+                    Icons.check_circle_rounded,
+                    size: 18,
+                    color: Colors.green,
+                  ),
+                  title: Text(name, style: const TextStyle(fontSize: 12)),
+                ),
+            ],
+          ],
           const SizedBox(height: 4),
           Container(
             width: double.infinity,

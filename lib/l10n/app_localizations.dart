@@ -6145,6 +6145,60 @@ abstract class AppLocalizations {
   /// **'Reason (optional)'**
   String get esignDeclineReasonHint;
 
+  /// No description provided for @esignAttachmentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachments'**
+  String get esignAttachmentsTitle;
+
+  /// No description provided for @esignReviewApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved by management'**
+  String get esignReviewApproved;
+
+  /// No description provided for @esignReviewAcknowledged.
+  ///
+  /// In en, this message translates to:
+  /// **'Acknowledged by management'**
+  String get esignReviewAcknowledged;
+
+  /// No description provided for @esignReviewRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected by management'**
+  String get esignReviewRejected;
+
+  /// No description provided for @esignAddDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'Add documents'**
+  String get esignAddDocuments;
+
+  /// No description provided for @esignDocumentsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to 5 supporting documents'**
+  String get esignDocumentsHint;
+
+  /// No description provided for @esignAttachmentUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Document attached'**
+  String get esignAttachmentUploaded;
+
+  /// No description provided for @esignAttachmentUploadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The document could not be attached'**
+  String get esignAttachmentUploadFailed;
+
+  /// No description provided for @esignAttachmentLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to 5 documents per request'**
+  String get esignAttachmentLimit;
+
   /// No description provided for @esignDocumentDeclined.
   ///
   /// In en, this message translates to:
@@ -6822,6 +6876,191 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reload this month'**
   String get payRefresh;
+
+  /// No description provided for @orderExceptionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected and cancelled orders'**
+  String get orderExceptionsTitle;
+
+  /// No description provided for @orderExceptionsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'File a case when an order was rejected or cancelled. You can attach up to 5 photos.'**
+  String get orderExceptionsHint;
+
+  /// No description provided for @orderExceptionKindRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get orderExceptionKindRejected;
+
+  /// No description provided for @orderExceptionKindCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get orderExceptionKindCancelled;
+
+  /// No description provided for @orderExceptionSourceDriver.
+  ///
+  /// In en, this message translates to:
+  /// **'I declined it'**
+  String get orderExceptionSourceDriver;
+
+  /// No description provided for @orderExceptionSourceStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Store or customer'**
+  String get orderExceptionSourceStore;
+
+  /// No description provided for @orderExceptionReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get orderExceptionReason;
+
+  /// No description provided for @orderExceptionReasonHint.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 8 characters'**
+  String get orderExceptionReasonHint;
+
+  /// No description provided for @orderExceptionOrderId.
+  ///
+  /// In en, this message translates to:
+  /// **'Order ID'**
+  String get orderExceptionOrderId;
+
+  /// No description provided for @orderExceptionSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get orderExceptionSubmit;
+
+  /// No description provided for @orderExceptionEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No cases yet'**
+  String get orderExceptionEmpty;
+
+  /// No description provided for @orderExceptionPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Under review'**
+  String get orderExceptionPending;
+
+  /// No description provided for @orderExceptionApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get orderExceptionApproved;
+
+  /// No description provided for @orderExceptionRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get orderExceptionRejected;
+
+  /// No description provided for @orderExceptionProof.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get orderExceptionProof;
+
+  /// No description provided for @orderExceptionReviewNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Review note'**
+  String get orderExceptionReviewNote;
+
+  /// No description provided for @orderExceptionMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Order exceptions'**
+  String get orderExceptionMenu;
+
+  /// No description provided for @orderExceptionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Try again.'**
+  String get orderExceptionFailed;
+
+  /// No description provided for @orderExceptionErrorReasonRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a reason of at least 8 characters.'**
+  String get orderExceptionErrorReasonRequired;
+
+  /// No description provided for @orderExceptionErrorReasonTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason must be 500 characters or fewer.'**
+  String get orderExceptionErrorReasonTooLong;
+
+  /// No description provided for @orderExceptionErrorProofRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one photo.'**
+  String get orderExceptionErrorProofRequired;
+
+  /// No description provided for @orderExceptionErrorInvalidProof.
+  ///
+  /// In en, this message translates to:
+  /// **'One of the photos could not be used.'**
+  String get orderExceptionErrorInvalidProof;
+
+  /// No description provided for @orderExceptionErrorTooManyProofs.
+  ///
+  /// In en, this message translates to:
+  /// **'You can attach up to 5 photos.'**
+  String get orderExceptionErrorTooManyProofs;
+
+  /// No description provided for @orderExceptionErrorInvalidOrderId.
+  ///
+  /// In en, this message translates to:
+  /// **'Order ID must be 1 to 32 digits.'**
+  String get orderExceptionErrorInvalidOrderId;
+
+  /// No description provided for @orderExceptionErrorDailyLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'You have reached today\'s limit.'**
+  String get orderExceptionErrorDailyLimit;
+
+  /// No description provided for @orderExceptionErrorDuplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'This order already has a case.'**
+  String get orderExceptionErrorDuplicate;
+
+  /// No description provided for @levelDBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'D'**
+  String get levelDBadge;
+
+  /// No description provided for @levelDTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Level D'**
+  String get levelDTitle;
+
+  /// No description provided for @levelDBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Required orders {requiredOrders}. Verified {verified}. Gap {gap}. Active days {activeDays}.'**
+  String levelDBody(
+    String requiredOrders,
+    String verified,
+    String gap,
+    String activeDays,
+  );
+
+  /// No description provided for @levelStandardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You are on target.'**
+  String get levelStandardBody;
 }
 
 class _AppLocalizationsDelegate

@@ -103,6 +103,34 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
     }
   }
 
+  Future<void> _openAttachment(
+    EsignRequestDetail detail,
+    EsignAttachment attachment,
+  ) async {
+    final url = attachment.url;
+    if (url == null) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => EsignFullDocumentScreen(
+          url: url,
+          title: attachment.name,
+          isImage: attachment.isImage,
+          restricted: esignShouldSecureScreen(
+            screenshotRestricted: detail.screenshotRestricted,
+            screenshotsAllowed: ref.read(securityBypassProvider),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatSize(int size) {
+    if (size <= 0) return '';
+    return size >= 1024 * 1024
+        ? '${(size / (1024 * 1024)).toStringAsFixed(1)} MB'
+        : '${(size / 1024).round()} KB';
+  }
+
   bool _isImageKey(String key) {
     final lower = key.toLowerCase();
     return lower.endsWith('.png') ||
@@ -225,6 +253,106 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
                   ],
                 ),
               ),
+              if (detail.reviewStatus != null) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: detail.isReviewRejected
+                        ? AppColors.rejectedRed.withValues(alpha: 0.08)
+                        : const Color(0xFFECFDF3),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: detail.isReviewRejected
+                          ? AppColors.rejectedRed.withValues(alpha: 0.3)
+                          : const Color(0xFFABEFC6),
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        detail.isReviewRejected
+                            ? Icons.cancel_rounded
+                            : Icons.check_circle_rounded,
+                        color: detail.isReviewRejected
+                            ? AppColors.rejectedRed
+                            : AppColors.progressGreen,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              detail.isReviewRejected
+                                  ? l10n.esignReviewRejected
+                                  : detail.isReviewAcknowledged
+                                      ? l10n.esignReviewAcknowledged
+                                      : l10n.esignReviewApproved,
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            if (detail.reviewNote != null) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                detail.reviewNote!,
+                                style: const TextStyle(
+                                  fontSize: 11.5,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              if (detail.attachments.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFECEEF2)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.esignAttachmentsTitle,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                      for (final attachment in detail.attachments)
+                        ListTile(
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.attach_file_rounded),
+                          title: Text(attachment.name),
+                          subtitle: attachment.size > 0
+                              ? Text(_formatSize(attachment.size))
+                              : null,
+                          trailing: const Icon(Icons.open_in_new, size: 18),
+                          onTap: attachment.url == null
+                              ? null
+                              : () => _openAttachment(detail, attachment),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
               SizedBox(
                 height: 48,

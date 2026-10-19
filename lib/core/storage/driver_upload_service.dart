@@ -38,6 +38,7 @@ class DriverUploadService {
   static const _driverAvatarMaxBytes = 2 * 1024 * 1024;
   static const _loginVerificationMaxBytes = 5 * 1024 * 1024;
   static const _esignSignatureMaxBytes = 4 * 1024 * 1024;
+  static const _esignAttachmentMaxBytes = 10 * 1024 * 1024;
   static const _requestAttachmentMaxBytes = 10 * 1024 * 1024;
 
   Future<DriverUploadResult> uploadOrderProof({
@@ -178,6 +179,31 @@ class DriverUploadService {
       entityType: 'esign_signature',
       entityId: requestId,
       authHeaders: authHeaders,
+      onProgress: onProgress,
+    );
+  }
+
+  Future<DriverUploadResult> uploadEsignAttachment({
+    required List<int> bytes,
+    required String contentType,
+    required String filename,
+    required String requestId,
+    void Function(double progress)? onProgress,
+  }) async {
+    if (bytes.isEmpty) {
+      throw DriverUploadException(code: 'file_empty');
+    }
+    if (bytes.length > _esignAttachmentMaxBytes) {
+      throw DriverUploadException(code: 'file_too_large');
+    }
+    final token = await _accessToken();
+    return _uploadViaPresign(
+      bytes: bytes,
+      contentType: contentType,
+      filename: filename,
+      entityType: 'esign_attachment',
+      entityId: requestId,
+      authHeaders: {'Authorization': 'Bearer $token'},
       onProgress: onProgress,
     );
   }

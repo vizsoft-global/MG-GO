@@ -412,6 +412,43 @@ class SupportService {
     }
   }
 
+  /// Uploads one supporting document and registers it on the request.
+  Future<EsignAttachment> addEsignAttachment({
+    required String requestId,
+    required List<int> bytes,
+    required String contentType,
+    required String filename,
+  }) async {
+    try {
+      final uploaded = await _uploads.uploadEsignAttachment(
+        bytes: bytes,
+        contentType: contentType,
+        filename: filename,
+        requestId: requestId,
+      );
+      final map = await callRiderFunction('driverAddEsignAttachment', {
+        'p_id': requestId,
+        'p_storage_key': uploaded.objectKey,
+        'p_name': filename,
+        'p_content_type': contentType,
+        'p_size': uploaded.sizeBytes,
+      });
+      if (map['ok'] == false) {
+        throw Exception(map['error']?.toString() ?? 'attachment_failed');
+      }
+      final attachment = map['attachment'];
+      return EsignAttachment.fromJson(
+        attachment is Map
+            ? Map<String, dynamic>.from(attachment)
+            : const <String, dynamic>{},
+      );
+    } on DriverUploadException catch (e) {
+      throw EsignFailure(e.code ?? 'network', detail: e.message);
+    } on FirebaseFunctionsException catch (e) {
+      throw Exception(riderErrorCode(e));
+    }
+  }
+
   /// Compose stays on Next/R2 — there is no rider callable. Re-read the
   /// request and return an already-written signed copy, otherwise null so
   /// the viewer can still open the source document.
