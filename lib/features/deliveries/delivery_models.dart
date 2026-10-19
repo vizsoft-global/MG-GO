@@ -66,6 +66,11 @@ class DriverDelivery {
     this.partnerLogoUrl,
     this.shiftDate,
     this.createdAt,
+    this.isEarlyDrop,
+    this.isOutOfZone,
+    this.ocrMatched,
+    this.pickupDeliveryDistanceM,
+    this.zoneDistanceM,
   });
 
   final String id;
@@ -90,6 +95,13 @@ class DriverDelivery {
   /// Kuwait shift day (`deliveries.shift_date`). Null on old rows / old APKs.
   final DateTime? shiftDate;
   final DateTime? createdAt;
+
+  /// Integrity verdict written at completion. Null means "not checked".
+  final bool? isEarlyDrop;
+  final bool? isOutOfZone;
+  final bool? ocrMatched;
+  final double? pickupDeliveryDistanceM;
+  final double? zoneDistanceM;
 
   bool get isCancelled => status == 'cancelled';
   bool get isInTransit => status == 'in_transit';
@@ -174,6 +186,13 @@ class DriverDelivery {
       partnerLogoUrl: partnerMap?['logo_url']?.toString(),
       shiftDate: parseDeliveryDateOnly(json['shift_date']),
       createdAt: parseDeliveryTimestamp(json['created_at']),
+      isEarlyDrop: _optionalBool(json['is_early_drop']),
+      isOutOfZone: _optionalBool(json['is_out_of_zone']),
+      ocrMatched: _optionalBool(json['order_proof_ocr_matched']),
+      pickupDeliveryDistanceM: parseDeliveryDouble(
+        json['pickup_delivery_distance_m'],
+      ),
+      zoneDistanceM: parseDeliveryDouble(json['zone_distance_m']),
     );
   }
 }
@@ -214,6 +233,8 @@ DateTime? parseDeliveryTimestamp(Object? raw) {
   }
   return null;
 }
+
+bool? _optionalBool(Object? raw) => raw is bool ? raw : null;
 
 double? parseDeliveryDouble(Object? raw) {
   if (raw == null) return null;

@@ -255,6 +255,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return FinishDeliveryScreen(
             deliveryId: id,
             outcome: outcome,
+            expectedOrderId: state.uri.queryParameters['orderId'],
           );
         },
       ),

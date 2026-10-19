@@ -26,13 +26,16 @@ export 'home_dashboard_cache.dart'
         kuwaitDayKey;
 
 class HomeServiceException implements Exception {
-  HomeServiceException(this.message, {this.rejection});
+  HomeServiceException(this.message, {this.rejection, this.details});
 
   final String message;
 
   /// Set when the server refused the write outright, so the UI can name the
   /// reason instead of falling back to "could not update".
   final DutyRejection? rejection;
+
+  /// Optional refusal detail (nearest restaurant / distance) for the check-in gate.
+  final DutyRefusalDetail? details;
 
   @override
   String toString() => message;
@@ -43,6 +46,11 @@ DutyRejection? lastDutyRejection(Object? error) {
   if (error == null) return null;
   if (error is HomeServiceException) return error.rejection;
   return dutyRejectionFrom(error);
+}
+
+DutyRefusalDetail? lastDutyRefusalDetail(Object? error) {
+  if (error is HomeServiceException) return error.details;
+  return dutyRefusalDetail(error);
 }
 
 class HomeService {
@@ -129,6 +137,10 @@ class HomeService {
   Future<HomeDashboard> setDutyState({
     required bool isOnDuty,
     required bool isOnline,
+    String? checkInPhotoKey,
+    double? latitude,
+    double? longitude,
+    String? restaurantId,
     int settingsRevision = 0,
     int homeRev = 0,
   }) async {
@@ -150,6 +162,22 @@ class HomeService {
         'is_online': isOnline,
         'p_is_on_duty': isOnDuty,
         'p_is_online': isOnline,
+        if (checkInPhotoKey != null) ...{
+          'p_check_in_photo_key': checkInPhotoKey,
+          'check_in_photo_key': checkInPhotoKey,
+        },
+        if (latitude != null) ...{
+          'p_lat': latitude,
+          'lat': latitude,
+        },
+        if (longitude != null) ...{
+          'p_lng': longitude,
+          'lng': longitude,
+        },
+        if (restaurantId != null) ...{
+          'p_restaurant_id': restaurantId,
+          'restaurant_id': restaurantId,
+        },
       });
       _networkStatus.recordRpcSuccess();
       await _persistFirebaseIdToken();
@@ -173,7 +201,11 @@ class HomeService {
         // A refusal is not a failed round trip. Queueing it replays the same
         // refusal on every sync, and answering with the cached dashboard makes
         // the tap look like it did nothing at all.
-        throw HomeServiceException(_friendlyError(e), rejection: rejection);
+        throw HomeServiceException(
+          _friendlyError(e),
+          rejection: rejection,
+          details: dutyRefusalDetail(e),
+        );
       }
       _networkStatus.recordRpcFailure();
       if (userId != null) {
@@ -340,6 +372,10 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboard> {
   Future<void> setDutyState({
     required bool isOnDuty,
     required bool isOnline,
+    String? checkInPhotoKey,
+    double? latitude,
+    double? longitude,
+    String? restaurantId,
   }) async {
     if (!isOnDuty) {
       suppressRemoteDutyAutoCheckoutToastRef(ref);
@@ -350,6 +386,10 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboard> {
         final dashboard = await ref.read(homeServiceProvider).setDutyState(
               isOnDuty: isOnDuty,
               isOnline: isOnline,
+              checkInPhotoKey: checkInPhotoKey,
+              latitude: latitude,
+              longitude: longitude,
+              restaurantId: restaurantId,
               settingsRevision: revision,
               homeRev: _homeRev(),
             );

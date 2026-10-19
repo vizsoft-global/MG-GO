@@ -341,6 +341,7 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
     final proximityBannerMessage = preview.status != null && !preview.status!.allowed
         ? messageForProximityStatus(preview.status!, l10n)
         : contextError;
+    final proximityContext = proximityAsync.value;
 
     return Scaffold(
       backgroundColor: AppColors.pageBackground,
@@ -377,6 +378,10 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
                           ? _ProximityTone.success
                           : _ProximityTone.warning,
                     ),
+                    const SizedBox(height: 12),
+                  ],
+                  if (proximityContext != null) ...[
+                    _DeliveryRulesCard(proximity: proximityContext),
                     const SizedBox(height: 12),
                   ],
                   _FormCard(
@@ -524,6 +529,82 @@ class _FormCard extends StatelessWidget {
         ],
       ),
       child: child,
+    );
+  }
+}
+
+class _DeliveryRulesCard extends StatelessWidget {
+  const _DeliveryRulesCard({required this.proximity});
+
+  final DeliveryProximityContext proximity;
+
+  @override
+  Widget build(BuildContext buildContext) {
+    final l10n = buildContext.l10n;
+    final restaurant = proximity.restaurants.length == 1
+        ? proximity.restaurants.first.name
+        : l10n.deliveryRulesPickupAll;
+    final zone = proximity.requiredZoneName?.trim();
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.cardBlue,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.primaryBlue.withValues(alpha: 0.18),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.deliveryRulesTitle,
+            style: Theme.of(buildContext).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primaryBlue,
+                ),
+          ),
+          const SizedBox(height: 6),
+          _ruleLine(Icons.storefront_outlined, l10n.deliveryRulesPickup(restaurant)),
+          _ruleLine(
+            Icons.social_distance_outlined,
+            l10n.deliveryRulesEarlyDrop(proximity.earlyDropMeters),
+          ),
+          if (zone != null && zone.isNotEmpty)
+            _ruleLine(Icons.map_outlined, l10n.deliveryRulesZone(zone)),
+          if (proximity.dpdTarget != null)
+            _ruleLine(
+              Icons.speed_outlined,
+              l10n.deliveryRulesDpd(
+                proximity.dpdTarget!.round(),
+                proximity.ruleName ?? l10n.deliveryRulesDpdDefault,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _ruleLine(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 15, color: AppColors.textSecondary),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+                height: 1.35,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

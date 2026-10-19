@@ -251,6 +251,8 @@ class _DeliveryDetailSheetState extends ConsumerState<DeliveryDetailSheet> {
                 ],
               ),
               const SizedBox(height: 16),
+              _DeliveryTimeline(delivery: delivery),
+              const SizedBox(height: 16),
               Text(
                 proofLabel,
                 style: Theme.of(
@@ -281,6 +283,118 @@ class _DeliveryDetailSheetState extends ConsumerState<DeliveryDetailSheet> {
       return '${hours}h ${minutes}m';
     }
     return '${minutes}m';
+  }
+}
+
+class _DeliveryTimeline extends StatelessWidget {
+  const _DeliveryTimeline({required this.delivery});
+
+  final DriverDelivery delivery;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final checksKnown = delivery.isEarlyDrop != null ||
+        delivery.isOutOfZone != null ||
+        delivery.ocrMatched != null;
+    final checks = <String>[
+      if (delivery.isEarlyDrop == true) l10n.timelineEarlyDrop,
+      if (delivery.isOutOfZone == true) l10n.timelineOutsideZone,
+      if (delivery.ocrMatched == false) l10n.timelinePhotoMismatch,
+    ];
+    final checkText = !checksKnown
+        ? l10n.timelineNotChecked
+        : checks.isEmpty
+            ? l10n.timelineNoFlags
+            : checks.join(' · ');
+    final review = switch (delivery.status) {
+      'verified' => l10n.timelineVerified,
+      'rejected' => l10n.timelineRejected,
+      'under_review' => l10n.timelineUnderReview,
+      'cancelled' => l10n.timelineCancelled,
+      _ => l10n.timelineAwaitingReview,
+    };
+
+    final steps = <(IconData, String, String?)>[
+      (
+        Icons.receipt_long_outlined,
+        l10n.timelineCreated,
+        delivery.createdAt == null
+            ? null
+            : formatDeliveryDateTime(delivery.createdAt!, l10n),
+      ),
+      (
+        Icons.two_wheeler_outlined,
+        l10n.timelinePickedUp,
+        delivery.pickupAt == null
+            ? null
+            : formatDeliveryDateTime(delivery.pickupAt!, l10n),
+      ),
+      (
+        Icons.place_outlined,
+        delivery.isCancelled ? l10n.timelineCancelled : l10n.timelineDelivered,
+        (delivery.isCancelled ? delivery.cancelledAt : delivery.deliveredAt) ==
+                null
+            ? null
+            : formatDeliveryDateTime(
+                (delivery.isCancelled
+                        ? delivery.cancelledAt
+                        : delivery.deliveredAt)!,
+                l10n,
+              ),
+      ),
+      (Icons.fact_check_outlined, l10n.timelineChecks, checkText),
+      (Icons.verified_user_outlined, l10n.timelineReview, review),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.pageBackground,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        children: [
+          for (var index = 0; index < steps.length; index++)
+            Padding(
+              padding: EdgeInsets.only(
+                top: index == 0 ? 0 : 8,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    steps[index].$1,
+                    size: 17,
+                    color: steps[index].$3 == null
+                        ? AppColors.textSecondary
+                        : AppColors.primaryBlue,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      steps[index].$2,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ),
+                  Flexible(
+                    child: Text(
+                      steps[index].$3 ?? l10n.notProvided,
+                      textAlign: TextAlign.end,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }
 

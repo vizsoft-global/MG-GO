@@ -1291,5 +1291,94 @@
       }
     }
   },
-  "levelStandardBody": "أنت على الهدف."
+  "levelStandardBody": "أنت على الهدف.",
+  "checkInPhotoTitle": "صورة الحضور",
+  "checkInPhotoHint": "التقط صورة واضحة بالكاميرا الأمامية لنفسك داخل نطاق مطعمك.",
+  "checkInPhotoTake": "التقاط صورة الحضور",
+  "checkInPhotoUploading": "جارٍ الرفع…",
+  "checkInPhotoUnavailable": "الكاميرا غير متاحة. تحقق من إذن الكاميرا وحاول مجددًا.",
+  "checkInPhotoFailed": "تعذر التقاط صورة الحضور. حاول مجددًا.",
+  "checkInPhotoRequired": "التقط صورة الحضور قبل بدء الدوام.",
+  "checkInLocationUnavailable": "شغّل الموقع لتسجيل الحضور.",
+  "checkInOutsideRange": "اقترب من أحد مطاعمك ثم حاول مجددًا.",
+  "checkInOutsideRangeNamed": "أنت على بعد {distance} م من {restaurant}. اقترب لتسجيل الحضور.",
+  "@checkInOutsideRangeNamed": {
+    "placeholders": {
+      "restaurant": {
+        "type": "String"
+      },
+      "distance": {
+        "type": "int"
+      }
+    }
+  },
+  "deliveryRulesTitle": "قواعد التوصيل",
+  "deliveryRulesPickup": "الاستلام: {restaurant}",
+  "@deliveryRulesPickup": {
+    "placeholders": {
+      "restaurant": {
+        "type": "String"
+      }
+    }
+  },
+  "deliveryRulesPickupAll": "أي مطعم معيّن",
+  "deliveryRulesEarlyDrop": "أكمل التوصيل على مسافة {meters} م على الأقل من الاستلام.",
+  "@deliveryRulesEarlyDrop": {
+    "placeholders": {
+      "meters": {
+        "type": "int"
+      }
+    }
+  },
+  "deliveryRulesZone": "ابقَ داخل {zone}.",
+  "@deliveryRulesZone": {
+    "placeholders": {
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
+  "deliveryRulesDpd": "هدف DPD {target} · {rule}",
+  "@deliveryRulesDpd": {
+    "placeholders": {
+      "target": {
+        "type": "int"
+      },
+      "rule": {
+        "type": "String"
+      }
+    }
+  },
+  "deliveryRulesDpdDefault": "الهدف اليومي",
+  "proofOcrMismatchTitle": "رقم الطلب غير مطابق",
+  "proofOcrMismatchBody": "قرأنا {read} على الصورة، لكن هذا التوصيل هو {expected}.",
+  "@proofOcrMismatchBody": {
+    "placeholders": {
+      "read": {
+        "type": "String"
+      },
+      "expected": {
+        "type": "String"
+      }
+    }
+  },
+  "proofOcrReasonLabel": "لماذا تختلف الصورة؟",
+  "proofOcrReasonHint": "مطلوب إذا استخدمت هذه الصورة رغم الاختلاف",
+  "proofOcrRescan": "إعادة التصوير",
+  "proofOcrUseAnyway": "استخدامها رغم ذلك",
+  "timelineCreated": "أُنشئ",
+  "timelinePickedUp": "تم الاستلام",
+  "timelineDelivered": "تم التسليم",
+  "timelineCancelled": "أُلغي",
+  "timelineChecks": "الفحوص",
+  "timelineReview": "المراجعة",
+  "timelineEarlyDrop": "تسليم مبكر",
+  "timelineOutsideZone": "خارج المنطقة",
+  "timelinePhotoMismatch": "عدم تطابق الصورة",
+  "timelineNotChecked": "لم يُفحص",
+  "timelineNoFlags": "لا علامات",
+  "timelineVerified": "تم التحقق",
+  "timelineRejected": "مرفوض",
+  "timelineUnderReview": "قيد المراجعة",
+  "timelineAwaitingReview": "بانتظار المراجعة"
 }

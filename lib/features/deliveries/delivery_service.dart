@@ -215,6 +215,8 @@ class DeliveryService {
     String? proofMime,
     required double latitude,
     required double longitude,
+    String? ocrOrderId,
+    String? ocrOverrideReason,
     String? deviceIdOverride,
   }) async {
     final userId = _uid;
@@ -239,6 +241,9 @@ class DeliveryService {
         'p_delivered_lat': latitude,
         'p_delivered_lng': longitude,
         'p_device_id': deviceId,
+        if (ocrOrderId != null) 'p_order_proof_ocr_order_id': ocrOrderId,
+        if (ocrOverrideReason != null && ocrOverrideReason.trim().isNotEmpty)
+          'p_order_proof_ocr_override_reason': ocrOverrideReason.trim(),
       });
       _networkStatus.recordRpcSuccess();
       if (userId != null) {

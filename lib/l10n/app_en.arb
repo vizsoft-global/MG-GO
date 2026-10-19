@@ -2074,5 +2074,94 @@
       }
     }
   },
-  "levelStandardBody": "You are on target."
+  "levelStandardBody": "You are on target.",
+  "checkInPhotoTitle": "Check-in photo",
+  "checkInPhotoHint": "Take a clear front-camera photo of yourself inside your restaurant range.",
+  "checkInPhotoTake": "Take check-in photo",
+  "checkInPhotoUploading": "Uploading…",
+  "checkInPhotoUnavailable": "The camera is unavailable. Check camera permission and try again.",
+  "checkInPhotoFailed": "Could not take the check-in photo. Try again.",
+  "checkInPhotoRequired": "Take your check-in photo before starting duty.",
+  "checkInLocationUnavailable": "Turn on location to check in.",
+  "checkInOutsideRange": "Move closer to one of your restaurants, then try again.",
+  "checkInOutsideRangeNamed": "You are {distance} m from {restaurant}. Move closer to check in.",
+  "@checkInOutsideRangeNamed": {
+    "placeholders": {
+      "restaurant": {
+        "type": "String"
+      },
+      "distance": {
+        "type": "int"
+      }
+    }
+  },
+  "deliveryRulesTitle": "Delivery rules",
+  "deliveryRulesPickup": "Pickup: {restaurant}",
+  "@deliveryRulesPickup": {
+    "placeholders": {
+      "restaurant": {
+        "type": "String"
+      }
+    }
+  },
+  "deliveryRulesPickupAll": "any assigned restaurant",
+  "deliveryRulesEarlyDrop": "Complete the delivery at least {meters} m from pickup.",
+  "@deliveryRulesEarlyDrop": {
+    "placeholders": {
+      "meters": {
+        "type": "int"
+      }
+    }
+  },
+  "deliveryRulesZone": "Stay inside {zone}.",
+  "@deliveryRulesZone": {
+    "placeholders": {
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
+  "deliveryRulesDpd": "DPD target {target} · {rule}",
+  "@deliveryRulesDpd": {
+    "placeholders": {
+      "target": {
+        "type": "int"
+      },
+      "rule": {
+        "type": "String"
+      }
+    }
+  },
+  "deliveryRulesDpdDefault": "daily target",
+  "proofOcrMismatchTitle": "Order number does not match",
+  "proofOcrMismatchBody": "We read {read} on the photo, but this delivery is {expected}.",
+  "@proofOcrMismatchBody": {
+    "placeholders": {
+      "read": {
+        "type": "String"
+      },
+      "expected": {
+        "type": "String"
+      }
+    }
+  },
+  "proofOcrReasonLabel": "Why does the photo differ?",
+  "proofOcrReasonHint": "Required if you use this photo anyway",
+  "proofOcrRescan": "Retake photo",
+  "proofOcrUseAnyway": "Use anyway",
+  "timelineCreated": "Created",
+  "timelinePickedUp": "Picked up",
+  "timelineDelivered": "Delivered",
+  "timelineCancelled": "Cancelled",
+  "timelineChecks": "Checks",
+  "timelineReview": "Review",
+  "timelineEarlyDrop": "Early drop",
+  "timelineOutsideZone": "Outside zone",
+  "timelinePhotoMismatch": "Photo mismatch",
+  "timelineNotChecked": "Not checked",
+  "timelineNoFlags": "No flags",
+  "timelineVerified": "Verified",
+  "timelineRejected": "Rejected",
+  "timelineUnderReview": "Under review",
+  "timelineAwaitingReview": "Awaiting review"
 }

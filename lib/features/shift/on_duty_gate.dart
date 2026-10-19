@@ -11,7 +11,13 @@ import '../../l10n/app_localizations.dart';
 import '../../core/permissions/duty_battery_exemption.dart';
 import '../../core/permissions/duty_permissions_service.dart';
 import '../../core/permissions/duty_session_gate.dart';
+import '../../core/geo/device_location_resolver.dart';
+import '../../core/storage/driver_upload_messages.dart';
+import '../../core/storage/driver_upload_provider.dart';
+import '../../core/storage/driver_upload_service.dart';
+import '../duty/check_in_photo_capture.dart';
 import '../duty/duty_session_gate_provider.dart';
+import '../profile/avatar_picker_errors.dart';
 import '../duty/on_duty_permission_gate.dart';
 import '../duty/widgets/duty_readiness_sheet.dart';
 import '../home/home_duty_errors.dart';
@@ -203,9 +209,49 @@ Future<DutyStartResult> _applyOnDuty(
     final report = await DutyPermissionsService().audit(l10n);
     if (!report.canStartDuty) return const DutyStartResult.blocked();
   }
-  await ref
-      .read(homeDashboardProvider.notifier)
-      .setDutyState(isOnDuty: true, isOnline: true);
+
+  final alreadyOnDuty = ref.read(homeDashboardProvider).value?.isOnDuty == true;
+  String? checkInPhotoKey;
+  double? latitude;
+  double? longitude;
+  if (!alreadyOnDuty) {
+    try {
+      if (!context.mounted) return const DutyStartResult.blocked();
+      final photo = await captureCheckInPhoto(context);
+      if (photo == null) return const DutyStartResult.blocked();
+      final bytes = await photo.readAsBytes();
+      final uploaded = await ref
+          .read(driverUploadServiceProvider)
+          .uploadCheckInPhoto(
+            bytes: bytes,
+            contentType: photo.mimeType ?? 'image/jpeg',
+            filename: photo.name.isNotEmpty ? photo.name : 'check-in.jpg',
+          );
+      checkInPhotoKey = uploaded.objectKey;
+      final position = await DeviceLocationResolver.instance.resolve(
+        highAccuracy: true,
+      );
+      latitude = position.latitude;
+      longitude = position.longitude;
+    } on CameraPermissionDenied catch (error) {
+      final message = userMessageIfCameraPermissionDenied(error, l10n);
+      return DutyStartResult.refused(message ?? l10n.checkInPhotoFailed);
+    } on DriverUploadException catch (error) {
+      return DutyStartResult.refused(
+        messageForDriverUploadException(error, l10n),
+      );
+    } catch (_) {
+      return DutyStartResult.refused(l10n.checkInLocationUnavailable);
+    }
+  }
+
+  await ref.read(homeDashboardProvider.notifier).setDutyState(
+        isOnDuty: true,
+        isOnline: true,
+        checkInPhotoKey: checkInPhotoKey,
+        latitude: latitude,
+        longitude: longitude,
+      );
   unawaited(batteryExemptionRequester.ensureStockBatteryExemption());
   return dutyStartResultFrom(
     ref,
@@ -230,7 +276,13 @@ DutyStartResult dutyStartResultFrom(
     rejection: rejection,
   )) {
     case DutyStartKind.refused:
-      return DutyStartResult.refused(dutyRejectionMessage(l10n, rejection!));
+      return DutyStartResult.refused(
+        dutyRejectionMessage(
+          l10n,
+          rejection!,
+          detail: lastDutyRefusalDetail(ref.read(homeDashboardProvider).error),
+        ),
+      );
     case DutyStartKind.started:
       return const DutyStartResult.started();
     case DutyStartKind.blocked:
