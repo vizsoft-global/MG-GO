@@ -2095,6 +2095,18 @@
       }
     }
   },
+  "checkInCheckingRange": "Checking your location…",
+  "checkInNoRestaurant": "No restaurant is assigned to you yet. Contact your administrator to clock in.",
+  "checkInRangeConfirmed": "You are inside {restaurant}. Continue to take your photo.",
+  "@checkInRangeConfirmed": {
+    "placeholders": {
+      "restaurant": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadKeyConflict": "That photo was already uploaded. Trying again…",
+
   "deliveryRulesTitle": "Delivery rules",
   "deliveryRulesPickup": "Pickup: {restaurant}",
   "@deliveryRulesPickup": {

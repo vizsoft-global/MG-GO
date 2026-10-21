@@ -3951,6 +3951,22 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get checkInCheckingRange => 'Checking your location…';
+
+  @override
+  String get checkInNoRestaurant =>
+      'No restaurant is assigned to you yet. Contact your administrator to clock in.';
+
+  @override
+  String checkInRangeConfirmed(String restaurant) {
+    return 'You are inside $restaurant. Continue to take your photo.';
+  }
+
+  @override
+  String get uploadKeyConflict =>
+      'That photo was already uploaded. Trying again…';
+
+  @override
   String get deliveryRulesTitle => 'Delivery rules';
 
   @override

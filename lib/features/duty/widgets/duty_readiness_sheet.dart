@@ -44,6 +44,7 @@ Future<bool?> showDutyReadinessSheet(
   BuildContext context, {
   required DutyReadinessCallback onContinue,
   DutyReadinessFlow flow = DutyReadinessFlow.startDuty,
+  String? progressLabel,
 }) async {
   if (!Platform.isAndroid) {
     return (await onContinue()).started;
@@ -61,6 +62,7 @@ Future<bool?> showDutyReadinessSheet(
     builder: (context) => DutyReadinessSheet(
       flow: flow,
       onContinue: onContinue,
+      progressLabel: progressLabel,
     ),
   );
 
@@ -71,12 +73,17 @@ class DutyReadinessSheet extends StatefulWidget {
   const DutyReadinessSheet({
     required this.onContinue,
     this.flow = DutyReadinessFlow.startDuty,
+    this.progressLabel,
     this.service,
     super.key,
   });
 
   final DutyReadinessCallback onContinue;
   final DutyReadinessFlow flow;
+
+  /// Shown beside the spinner while [onContinue] runs, so a clock-in that is
+  /// waiting on the GPS and the range precheck does not look frozen.
+  final String? progressLabel;
 
   /// Injected by tests only; the audit is platform-channel bound.
   final DutyPermissionsService? service;
@@ -315,6 +322,17 @@ class _DutyReadinessSheetState extends State<DutyReadinessSheet>
             onPressed: _loading ? null : _load,
             child: Text(l10n.refreshChecks),
           ),
+          if (_continuing && widget.progressLabel != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                widget.progressLabel!,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+              ),
+            ),
         ],
       ),
     );

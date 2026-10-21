@@ -7122,6 +7122,30 @@ abstract class AppLocalizations {
   /// **'You are {distance} m from {restaurant}. Move closer to check in.'**
   String checkInOutsideRangeNamed(String restaurant, int distance);
 
+  /// No description provided for @checkInCheckingRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking your location…'**
+  String get checkInCheckingRange;
+
+  /// No description provided for @checkInNoRestaurant.
+  ///
+  /// In en, this message translates to:
+  /// **'No restaurant is assigned to you yet. Contact your administrator to clock in.'**
+  String get checkInNoRestaurant;
+
+  /// No description provided for @checkInRangeConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'You are inside {restaurant}. Continue to take your photo.'**
+  String checkInRangeConfirmed(String restaurant);
+
+  /// No description provided for @uploadKeyConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'That photo was already uploaded. Trying again…'**
+  String get uploadKeyConflict;
+
   /// No description provided for @deliveryRulesTitle.
   ///
   /// In en, this message translates to:

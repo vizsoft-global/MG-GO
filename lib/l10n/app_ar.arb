@@ -1312,6 +1312,18 @@
       }
     }
   },
+  "checkInCheckingRange": "جارٍ التحقق من موقعك…",
+  "checkInNoRestaurant": "لا يوجد مطعم مخصص لك بعد. تواصل مع المسؤول لتسجيل الحضور.",
+  "checkInRangeConfirmed": "أنت داخل {restaurant}. تابع لالتقاط صورتك.",
+  "@checkInRangeConfirmed": {
+    "placeholders": {
+      "restaurant": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadKeyConflict": "تم رفع هذه الصورة مسبقًا. جارٍ إعادة المحاولة…",
+
   "deliveryRulesTitle": "قواعد التوصيل",
   "deliveryRulesPickup": "الاستلام: {restaurant}",
   "@deliveryRulesPickup": {
