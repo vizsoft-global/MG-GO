@@ -11,6 +11,7 @@ String messageForDriverUploadException(
     'file_too_large_avatar' => l10n.fileTooLarge2Mb,
     'invalid_content_type' => l10n.imagesAllowedOnly,
     'presign_failed' => l10n.couldNotStartUpload,
+    'key_conflict' => l10n.uploadKeyConflict,
     'confirm_failed' => l10n.couldNotConfirmUpload,
     'proxy_network' => l10n.networkErrorReachingAdminUploadServer,
     'not_authenticated' => l10n.notSignedIn,

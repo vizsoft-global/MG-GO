@@ -3924,6 +3924,22 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get checkInCheckingRange => 'جارٍ التحقق من موقعك…';
+
+  @override
+  String get checkInNoRestaurant =>
+      'لا يوجد مطعم مخصص لك بعد. تواصل مع المسؤول لتسجيل الحضور.';
+
+  @override
+  String checkInRangeConfirmed(String restaurant) {
+    return 'أنت داخل $restaurant. تابع لالتقاط صورتك.';
+  }
+
+  @override
+  String get uploadKeyConflict =>
+      'تم رفع هذه الصورة مسبقًا. جارٍ إعادة المحاولة…';
+
+  @override
   String get deliveryRulesTitle => 'قواعد التوصيل';
 
   @override

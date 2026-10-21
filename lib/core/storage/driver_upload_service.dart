@@ -247,23 +247,60 @@ class DriverUploadService {
     String? entityId,
     void Function(double progress)? onProgress,
   }) async {
-    final presignRes = await http.post(
-      Uri.parse('${Env.adminApiBaseUrl}/api/driver-uploads/presign'),
-      headers: {...authHeaders, 'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'entityType': entityType,
-        'entityId': entityId,
-        'contentType': contentType,
-        'filename': filename,
-        'sizeBytes': bytes.length,
-      }),
-    );
+    Future<http.Response> requestPresign() async {
+      return http.post(
+        Uri.parse('${Env.adminApiBaseUrl}/api/driver-uploads/presign'),
+        headers: {...authHeaders, 'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'entityType': entityType,
+          'entityId': entityId,
+          'contentType': contentType,
+          'filename': filename,
+          'sizeBytes': bytes.length,
+        }),
+      );
+    }
+
+    var presignRes = await requestPresign();
+
+    // The server mints a fresh object key per attempt, so a `key_conflict` is a
+    // race with an earlier request rather than a stored photo. One retry is all
+    // it takes; without it the rider saw "Could not start upload" on a retry
+    // that would have succeeded.
+    if (presignRes.statusCode == 409 && _errorCode(presignRes) == 'key_conflict') {
+      presignRes = await requestPresign();
+    }
 
     if (presignRes.statusCode != 200) {
-      throw DriverUploadException(
-        message: _errorMessage(presignRes, ''),
-        code: 'presign_failed',
-      );
+      if (_errorCode(presignRes) == 'key_conflict') {
+        throw DriverUploadException(
+          message: _errorMessage(presignRes, ''),
+          code: 'key_conflict',
+        );
+      }
+      // `503 not_configured`, a 5xx or a proxy-less deployment: the multipart
+      // route is the one that still works there, so try it before failing.
+      try {
+        return await _uploadViaProxy(
+          bytes: bytes,
+          contentType: contentType,
+          filename: filename,
+          entityType: entityType,
+          entityId: entityId,
+          authHeaders: authHeaders,
+          onProgress: onProgress,
+        );
+      } on DriverUploadException catch (proxyError) {
+        if (proxyError.code != 'proxy_failed' &&
+            proxyError.code != 'proxy_network') {
+          rethrow;
+        }
+        // Both paths are down: the presign response is the honest reason.
+        throw DriverUploadException(
+          message: _errorMessage(presignRes, proxyError.message),
+          code: 'presign_failed',
+        );
+      }
     }
 
     final presign = jsonDecode(presignRes.body) as Map<String, dynamic>;
@@ -458,6 +495,17 @@ class DriverUploadService {
 
   String _errorMessage(http.Response res, String fallback) {
     return _parseErrorBody(res.body) ?? fallback;
+  }
+
+  /// The raw `error` code the upload routes send (`key_conflict`,
+  /// `not_configured`, …), before it is turned into display copy.
+  String? _errorCode(http.Response res) {
+    try {
+      final json = jsonDecode(res.body) as Map<String, dynamic>;
+      final err = json['error'];
+      if (err is String && err.trim().isNotEmpty) return err.trim();
+    } catch (_) {}
+    return null;
   }
 
   String? _parseErrorBody(String body) {

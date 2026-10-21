@@ -15,6 +15,7 @@ import '../../core/geo/device_location_resolver.dart';
 import '../../core/storage/driver_upload_messages.dart';
 import '../../core/storage/driver_upload_provider.dart';
 import '../../core/storage/driver_upload_service.dart';
+import '../duty/check_in_context.dart';
 import '../duty/check_in_photo_capture.dart';
 import '../duty/duty_session_gate_provider.dart';
 import '../profile/avatar_picker_errors.dart';
@@ -171,6 +172,7 @@ Future<bool?> _goInWithReadiness(
     return showDutyReadinessSheet(
       context,
       flow: DutyReadinessFlow.startDuty,
+      progressLabel: context.l10n.checkInCheckingRange,
       onContinue: () => _applyOnDuty(ref, context),
     );
   }
@@ -211,46 +213,106 @@ Future<DutyStartResult> _applyOnDuty(
   }
 
   final alreadyOnDuty = ref.read(homeDashboardProvider).value?.isOnDuty == true;
-  String? checkInPhotoKey;
-  double? latitude;
-  double? longitude;
-  if (!alreadyOnDuty) {
-    try {
-      if (!context.mounted) return const DutyStartResult.blocked();
-      final photo = await captureCheckInPhoto(context);
-      if (photo == null) return const DutyStartResult.blocked();
-      final bytes = await photo.readAsBytes();
-      final uploaded = await ref
-          .read(driverUploadServiceProvider)
-          .uploadCheckInPhoto(
-            bytes: bytes,
-            contentType: photo.mimeType ?? 'image/jpeg',
-            filename: photo.name.isNotEmpty ? photo.name : 'check-in.jpg',
-          );
-      checkInPhotoKey = uploaded.objectKey;
-      final position = await DeviceLocationResolver.instance.resolve(
-        highAccuracy: true,
-      );
-      latitude = position.latitude;
-      longitude = position.longitude;
-    } on CameraPermissionDenied catch (error) {
-      final message = userMessageIfCameraPermissionDenied(error, l10n);
-      return DutyStartResult.refused(message ?? l10n.checkInPhotoFailed);
-    } on DriverUploadException catch (error) {
-      return DutyStartResult.refused(
-        messageForDriverUploadException(error, l10n),
-      );
-    } catch (_) {
-      return DutyStartResult.refused(l10n.checkInLocationUnavailable);
-    }
+  if (alreadyOnDuty) {
+    return _writeDutyState(ref, l10n);
   }
 
+  // 1. GPS first. Opening the camera before the server's proximity gate is what
+  //    made an out-of-range rider spend a selfie and an upload to be told, after
+  //    the fact, that they were 800 m from their restaurant.
+  double? latitude;
+  double? longitude;
+  try {
+    final position = await DeviceLocationResolver.instance.resolve(
+      highAccuracy: true,
+    );
+    latitude = position.latitude;
+    longitude = position.longitude;
+  } catch (_) {
+    return DutyStartResult.refused(l10n.checkInLocationUnavailable);
+  }
+
+  // 2. The precheck. A same-day repeat (clocked out, back in today) owes no
+  //    check-in at all, so it skips both the camera and the range gate.
+  CheckInContext? checkInContext;
+  try {
+    checkInContext = await ref
+        .read(checkInContextServiceProvider)
+        .load(latitude: latitude, longitude: longitude);
+  } catch (_) {
+    // Offline, or an answer we cannot use: keep the legacy order below so an
+    // unreachable precheck never blocks clock-in — the write still validates.
+    checkInContext = null;
+  }
+
+  switch (decideCheckInStep(checkInContext)) {
+    case CheckInStep.skipCheckIn:
+      return _writeDutyState(ref, l10n);
+    case CheckInStep.blocked:
+      return DutyStartResult.refused(
+        checkInBlockedMessage(l10n, checkInContext!),
+      );
+    case CheckInStep.capturePhoto:
+    case CheckInStep.fallback:
+      break;
+  }
+
+  // 3. Only an in-range (or unknown) rider reaches the camera.
+  String? checkInPhotoKey;
+  try {
+    if (!context.mounted) return const DutyStartResult.blocked();
+    final photo = await captureCheckInPhoto(
+      context,
+      restaurantName: checkInContext?.restaurant?.name,
+    );
+    if (photo == null) return const DutyStartResult.blocked();
+    final bytes = await photo.readAsBytes();
+    final uploaded = await ref
+        .read(driverUploadServiceProvider)
+        .uploadCheckInPhoto(
+          bytes: bytes,
+          contentType: photo.mimeType ?? 'image/jpeg',
+          filename: photo.name.isNotEmpty ? photo.name : 'check-in.jpg',
+        );
+    checkInPhotoKey = uploaded.objectKey;
+  } on CameraPermissionDenied catch (error) {
+    final message = userMessageIfCameraPermissionDenied(error, l10n);
+    return DutyStartResult.refused(message ?? l10n.checkInPhotoFailed);
+  } on DriverUploadException catch (error) {
+    return DutyStartResult.refused(
+      messageForDriverUploadException(error, l10n),
+    );
+  } catch (_) {
+    return DutyStartResult.refused(l10n.checkInPhotoFailed);
+  }
+
+  return _writeDutyState(
+    ref,
+    l10n,
+    checkInPhotoKey: checkInPhotoKey,
+    latitude: latitude,
+    longitude: longitude,
+    restaurantId: checkInContext?.restaurant?.id,
+  );
+}
+
+/// The duty write itself. The precheck never bypasses it: the server re-runs
+/// the range gate, so a changed client still cannot clock in from anywhere.
+Future<DutyStartResult> _writeDutyState(
+  WidgetRef ref,
+  AppLocalizations l10n, {
+  String? checkInPhotoKey,
+  double? latitude,
+  double? longitude,
+  String? restaurantId,
+}) async {
   await ref.read(homeDashboardProvider.notifier).setDutyState(
         isOnDuty: true,
         isOnline: true,
         checkInPhotoKey: checkInPhotoKey,
         latitude: latitude,
         longitude: longitude,
+        restaurantId: restaurantId,
       );
   unawaited(batteryExemptionRequester.ensureStockBatteryExemption());
   return dutyStartResultFrom(

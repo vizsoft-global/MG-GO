@@ -77,7 +77,16 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
     try {
       final url =
           await ref.read(supportServiceProvider).signedEsignDocumentUrl(storageKey);
-      if (url == null) throw Exception('download_unavailable');
+      if (url == null) {
+        // Not composed yet: say so instead of reporting an error for a document
+        // that is still being written.
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(context.l10n.esignSignedCopyPending)),
+          );
+        }
+        return;
+      }
       if (!mounted) return;
       await Navigator.of(context).push(
         MaterialPageRoute<void>(

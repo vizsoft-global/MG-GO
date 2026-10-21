@@ -7,20 +7,29 @@ import '../profile/avatar_picker_errors.dart';
 
 /// Front-camera still for clock-in. Deliberately not the rear-camera proof
 /// picker: the photo identifies the rider, not the delivery.
-Future<XFile?> captureCheckInPhoto(BuildContext context) async {
+///
+/// [restaurantName] is the restaurant the precheck confirmed the rider is
+/// standing in, so the hint can say "you are inside X" instead of the generic
+/// "get inside your range" — the rider has already satisfied that.
+Future<XFile?> captureCheckInPhoto(
+  BuildContext context, {
+  String? restaurantName,
+}) async {
   final allowed = await ensureCameraPermission();
   if (!allowed) throw const CameraPermissionDenied();
   if (!context.mounted) return null;
   return Navigator.of(context, rootNavigator: true).push<XFile>(
     MaterialPageRoute(
       fullscreenDialog: true,
-      builder: (_) => const CheckInPhotoScreen(),
+      builder: (_) => CheckInPhotoScreen(restaurantName: restaurantName),
     ),
   );
 }
 
 class CheckInPhotoScreen extends StatefulWidget {
-  const CheckInPhotoScreen({super.key});
+  const CheckInPhotoScreen({this.restaurantName, super.key});
+
+  final String? restaurantName;
 
   @override
   State<CheckInPhotoScreen> createState() => _CheckInPhotoScreenState();
@@ -152,7 +161,9 @@ class _CheckInPhotoScreenState extends State<CheckInPhotoScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    l10n.checkInPhotoHint,
+                    widget.restaurantName != null
+                        ? l10n.checkInRangeConfirmed(widget.restaurantName!)
+                        : l10n.checkInPhotoHint,
                     textAlign: TextAlign.center,
                     style: const TextStyle(color: Colors.white70, fontSize: 12),
                   ),
