@@ -469,6 +469,13 @@ class SupportService {
       final resolved = await _uploads.resolveReadUrl(storageKey);
       return resolved.readUrl;
     } on DriverUploadException catch (e) {
+      // A copy that is not there yet is a state, not a failure. The download is
+      // composed server-side once HR has countersigned, so 404/403 here mean
+      // "not written yet" and the caller shows the pending copy instead of an
+      // error. Anything else is a real failure.
+      if (e.code == 'proof_not_found' || e.code == 'proof_forbidden') {
+        return null;
+      }
       throw EsignFailure(e.code ?? 'network', detail: e.message);
     }
   }
