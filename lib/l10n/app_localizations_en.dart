@@ -3958,6 +3958,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'No restaurant is assigned to you yet. Contact your administrator to clock in.';
 
   @override
+  String get checkInOutsideZone =>
+      'Move inside your assigned zone to check in.';
+
+  @override
+  String checkInOutsideZoneNamed(String zone) {
+    return 'You are outside $zone. Move inside your zone to check in.';
+  }
+
+  @override
+  String get checkInNoZone =>
+      'No zone is assigned to you yet. Contact your administrator to clock in.';
+
+  @override
   String checkInRangeConfirmed(String restaurant) {
     return 'You are inside $restaurant. Continue to take your photo.';
   }

@@ -7134,6 +7134,24 @@ abstract class AppLocalizations {
   /// **'No restaurant is assigned to you yet. Contact your administrator to clock in.'**
   String get checkInNoRestaurant;
 
+  /// No description provided for @checkInOutsideZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Move inside your assigned zone to check in.'**
+  String get checkInOutsideZone;
+
+  /// No description provided for @checkInOutsideZoneNamed.
+  ///
+  /// In en, this message translates to:
+  /// **'You are outside {zone}. Move inside your zone to check in.'**
+  String checkInOutsideZoneNamed(String zone);
+
+  /// No description provided for @checkInNoZone.
+  ///
+  /// In en, this message translates to:
+  /// **'No zone is assigned to you yet. Contact your administrator to clock in.'**
+  String get checkInNoZone;
+
   /// No description provided for @checkInRangeConfirmed.
   ///
   /// In en, this message translates to:

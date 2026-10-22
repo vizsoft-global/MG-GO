@@ -248,6 +248,16 @@ Future<DutyStartResult> _applyOnDuty(
   switch (decideCheckInStep(checkInContext)) {
     case CheckInStep.skipCheckIn:
       return _writeDutyState(ref, l10n);
+    case CheckInStep.skipPhoto:
+      // The server answered `photo_required: false` (the safety toggle is off),
+      // so write straight away. The location gate is still re-checked server
+      // side, so a tampered client cannot clock in from outside.
+      return _writeDutyState(
+        ref,
+        l10n,
+        latitude: latitude,
+        longitude: longitude,
+      );
     case CheckInStep.blocked:
       return DutyStartResult.refused(
         checkInBlockedMessage(l10n, checkInContext!),
@@ -263,7 +273,10 @@ Future<DutyStartResult> _applyOnDuty(
     if (!context.mounted) return const DutyStartResult.blocked();
     final photo = await captureCheckInPhoto(
       context,
-      restaurantName: checkInContext?.restaurant?.name,
+      // A zone-gated rider has no restaurant; name the zone so the prompt still
+      // reads "You are inside {name}" instead of a blank.
+      restaurantName:
+          checkInContext?.restaurant?.name ?? checkInContext?.zone?.name,
     );
     if (photo == null) return const DutyStartResult.blocked();
     final bytes = await photo.readAsBytes();

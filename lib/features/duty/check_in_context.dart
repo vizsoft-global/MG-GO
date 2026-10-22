@@ -28,6 +28,28 @@ class CheckInRestaurant {
   }
 }
 
+/// The zone a zone-gated rider must be inside to clock in (Keeta).
+///
+/// Keeta riders have no store assignment to prove, so the server answers with
+/// the assigned zone instead of a restaurant.
+class CheckInZone {
+  const CheckInZone({required this.id, this.name});
+
+  final String id;
+  final String? name;
+
+  static CheckInZone? fromJson(Object? raw) {
+    if (raw is! Map) return null;
+    final id = raw['id'];
+    if (id is! String || id.trim().isEmpty) return null;
+    final name = raw['name'];
+    return CheckInZone(
+      id: id.trim(),
+      name: name is String && name.trim().isNotEmpty ? name.trim() : null,
+    );
+  }
+}
+
 /// The server's answer to "what does clocking in cost me right now?".
 ///
 /// Every field mirrors `driverCheckInContext`; the write itself stays
@@ -44,6 +66,8 @@ class CheckInContext {
     required this.requiresLocation,
     this.restaurant,
     this.nearest,
+    this.zoneGate = false,
+    this.zone,
   });
 
   /// Kuwait day the answer is for (`YYYY-MM-DD`).
@@ -69,6 +93,13 @@ class CheckInContext {
   /// The closest assigned restaurant when out of range, for the refusal copy.
   final CheckInRestaurant? nearest;
 
+  /// True when the server gates clock-in on the assigned zone (Keeta) instead of
+  /// a restaurant. [restaurant] is always null in that case.
+  final bool zoneGate;
+
+  /// The zone the server named for a zone gate; null means "no zone assigned".
+  final CheckInZone? zone;
+
   factory CheckInContext.fromJson(Map<String, dynamic> json) {
     final proximity = json['proximity_meters'];
     final candidates = json['candidates'];
@@ -83,6 +114,8 @@ class CheckInContext {
       requiresLocation: json['requires_location'] == true,
       restaurant: CheckInRestaurant.fromJson(json['restaurant']),
       nearest: CheckInRestaurant.fromJson(json['nearest']),
+      zoneGate: json['gate'] == 'zone',
+      zone: CheckInZone.fromJson(json['zone']),
     );
   }
 }
@@ -92,10 +125,14 @@ enum CheckInStep {
   /// Already checked in today: no camera, no proximity, straight to the write.
   skipCheckIn,
 
+  /// In range and the server does not require a photo: write now.
+  skipPhoto,
+
   /// Out of range (or no restaurant / no fix): stop before the camera.
   blocked,
 
-  /// In range: take the selfie, then write with the restaurant bound.
+  /// In range at a restaurant or inside the assigned zone: take the selfie,
+  /// then write. The zone is a location gate, not a photo exemption.
   capturePhoto,
 
   /// The precheck could not answer (no callable, offline): keep the legacy
@@ -108,7 +145,11 @@ enum CheckInStep {
 CheckInStep decideCheckInStep(CheckInContext? context) {
   if (context == null) return CheckInStep.fallback;
   if (!context.requiresCheckIn) return CheckInStep.skipCheckIn;
-  if (context.inRange && context.restaurant != null) {
+  // A photo is skipped only when the server itself says it is not required
+  // (`photo_required == false`). A zone gate is a location gate, not a photo
+  // exemption: Keeta riders inside their zone still take the selfie.
+  if (context.inRange && !context.photoRequired) return CheckInStep.skipPhoto;
+  if (context.inRange && (context.restaurant != null || context.zoneGate)) {
     return CheckInStep.capturePhoto;
   }
   return CheckInStep.blocked;
@@ -117,9 +158,16 @@ CheckInStep decideCheckInStep(CheckInContext? context) {
 /// Rider-facing copy for a precheck that refused before the camera.
 ///
 /// Every branch names the next action: turn location on, walk to the named
-/// restaurant, or ask an administrator for an assignment.
+/// restaurant or zone, or ask an administrator for an assignment.
 String checkInBlockedMessage(AppLocalizations l10n, CheckInContext context) {
   if (context.requiresLocation) return l10n.checkInLocationUnavailable;
+  if (context.zoneGate) {
+    final zoneName = context.zone?.name;
+    if (zoneName != null) return l10n.checkInOutsideZoneNamed(zoneName);
+    // A zone document with no name still means "you are outside it"; only a
+    // missing zone sends the rider to an administrator.
+    return context.zone == null ? l10n.checkInNoZone : l10n.checkInOutsideZone;
+  }
   final nearest = context.nearest;
   if (nearest?.name != null && nearest?.distanceM != null) {
     return l10n.checkInOutsideRangeNamed(nearest!.name!, nearest.distanceM!);
