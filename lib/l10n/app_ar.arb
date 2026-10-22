@@ -1314,6 +1314,16 @@
   },
   "checkInCheckingRange": "جارٍ التحقق من موقعك…",
   "checkInNoRestaurant": "لا يوجد مطعم مخصص لك بعد. تواصل مع المسؤول لتسجيل الحضور.",
+  "checkInOutsideZone": "ادخل داخل منطقتك المخصصة لتسجيل الحضور.",
+  "checkInOutsideZoneNamed": "أنت خارج {zone}. ادخل داخل منطقتك لتسجيل الحضور.",
+  "@checkInOutsideZoneNamed": {
+    "placeholders": {
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
+  "checkInNoZone": "لا توجد منطقة مخصصة لك بعد. تواصل مع المسؤول لتسجيل الحضور.",
   "checkInRangeConfirmed": "أنت داخل {restaurant}. تابع لالتقاط صورتك.",
   "@checkInRangeConfirmed": {
     "placeholders": {

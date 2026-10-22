@@ -13,17 +13,23 @@ enum DutyRejection {
   checkInPhotoRequired,
   checkInLocationRequired,
   checkInOutsideRestaurantRange,
+  checkInOutsideZone,
+  checkInNoZone,
   notAuthenticated,
   serverOutdated,
 }
 
 /// Server details on a refusal, when it sent any. The check-in gate names the
-/// nearest restaurant and its distance so the rider can act on it.
+/// nearest restaurant and its distance — or, for a Keeta rider, the zone — so
+/// the rider can act on it.
 class DutyRefusalDetail {
-  const DutyRefusalDetail({this.restaurant, this.distanceM});
+  const DutyRefusalDetail({this.restaurant, this.distanceM, this.zone});
 
   final String? restaurant;
   final int? distanceM;
+
+  /// The zone named by a zone-gated refusal (`check_in_outside_zone`).
+  final String? zone;
 }
 
 DutyRefusalDetail? dutyRefusalDetail(Object? error) {
@@ -34,11 +40,13 @@ DutyRefusalDetail? dutyRefusalDetail(Object? error) {
     if (raw is! Map) return null;
     final restaurant = raw['nearest_restaurant'];
     final distance = raw['distance_m'];
+    final zone = raw['zone_name'];
     return DutyRefusalDetail(
       restaurant: restaurant is String && restaurant.trim().isNotEmpty
           ? restaurant.trim()
           : null,
       distanceM: distance is num ? distance.round() : null,
+      zone: zone is String && zone.trim().isNotEmpty ? zone.trim() : null,
     );
   } catch (_) {
     return null;
@@ -68,6 +76,12 @@ DutyRejection? dutyRejectionFrom(Object? error) {
   if (msg.contains('check_in_outside_restaurant_range')) {
     return DutyRejection.checkInOutsideRestaurantRange;
   }
+  if (msg.contains('check_in_outside_zone')) {
+    return DutyRejection.checkInOutsideZone;
+  }
+  if (msg.contains('check_in_zone_unassigned')) {
+    return DutyRejection.checkInNoZone;
+  }
   if (msg.contains('inactive') || msg.contains('driver_suspended')) {
     return DutyRejection.accountNotActive;
   }
@@ -87,7 +101,9 @@ bool isPermanentDutyQueueRejection(String? message) {
     DutyRejection.shiftRequired ||
     DutyRejection.checkInPhotoRequired ||
     DutyRejection.checkInLocationRequired ||
-    DutyRejection.checkInOutsideRestaurantRange => true,
+    DutyRejection.checkInOutsideRestaurantRange ||
+    DutyRejection.checkInOutsideZone ||
+    DutyRejection.checkInNoZone => true,
     DutyRejection.notAuthenticated ||
     DutyRejection.serverOutdated ||
     null => false,
@@ -110,6 +126,10 @@ String friendlyHomeDutyError(String message) {
       return 'Turn on location to check in.';
     case DutyRejection.checkInOutsideRestaurantRange:
       return 'Move closer to one of your restaurants, then try again.';
+    case DutyRejection.checkInOutsideZone:
+      return 'Move inside your assigned zone, then try again.';
+    case DutyRejection.checkInNoZone:
+      return 'No zone is assigned to you yet. Contact your administrator to clock in.';
     case DutyRejection.accountNotActive:
       return 'Your account is inactive or suspended. Please contact your administrator.';
     case DutyRejection.driverArchived:
@@ -139,6 +159,11 @@ String dutyRejectionMessage(
               detail.distanceM!,
             )
           : l10n.checkInOutsideRange,
+    DutyRejection.checkInOutsideZone =>
+      detail?.zone != null
+          ? l10n.checkInOutsideZoneNamed(detail!.zone!)
+          : l10n.checkInOutsideZone,
+    DutyRejection.checkInNoZone => l10n.checkInNoZone,
     DutyRejection.notAuthenticated => l10n.sessionExpired,
     DutyRejection.serverOutdated => l10n.serverUpdateRequired,
   };

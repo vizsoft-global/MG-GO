@@ -14,11 +14,21 @@ void main() {
       dutyRejectionFrom('check_in_outside_restaurant_range'),
       DutyRejection.checkInOutsideRestaurantRange,
     );
+    expect(
+      dutyRejectionFrom('check_in_outside_zone'),
+      DutyRejection.checkInOutsideZone,
+    );
+    expect(
+      dutyRejectionFrom('check_in_zone_unassigned'),
+      DutyRejection.checkInNoZone,
+    );
     expect(isPermanentDutyQueueRejection('check_in_photo_required'), isTrue);
     expect(
       isPermanentDutyQueueRejection('check_in_outside_restaurant_range'),
       isTrue,
     );
+    expect(isPermanentDutyQueueRejection('check_in_outside_zone'), isTrue);
+    expect(isPermanentDutyQueueRejection('check_in_zone_unassigned'), isTrue);
   });
 
   test('reads the nearest restaurant detail', () {
@@ -30,6 +40,32 @@ void main() {
     );
     expect(detail?.restaurant, 'Salmiya');
     expect(detail?.distanceM, 820);
+  });
+
+  test('reads the zone detail a Keeta refusal carries', () {
+    final detail = dutyRefusalDetail(
+      _Refusal('check_in_outside_zone', {'zone_name': 'Salmiya'}),
+    );
+    expect(detail?.zone, 'Salmiya');
+  });
+
+  test('the zone backstop names the zone, and no-zone sends to the admin', () {
+    final en = AppLocalizationsEn();
+    final named = dutyRejectionMessage(
+      en,
+      DutyRejection.checkInOutsideZone,
+      detail: const DutyRefusalDetail(zone: 'Salmiya'),
+    );
+    expect(named, contains('Salmiya'));
+    expect(named, isNot(contains('{')));
+    expect(
+      dutyRejectionMessage(en, DutyRejection.checkInOutsideZone),
+      en.checkInOutsideZone,
+    );
+    expect(
+      dutyRejectionMessage(en, DutyRejection.checkInNoZone),
+      en.checkInNoZone,
+    );
   });
 
   test('the server backstop names the restaurant when the precheck was bypassed',

@@ -2097,6 +2097,16 @@
   },
   "checkInCheckingRange": "Checking your location…",
   "checkInNoRestaurant": "No restaurant is assigned to you yet. Contact your administrator to clock in.",
+  "checkInOutsideZone": "Move inside your assigned zone to check in.",
+  "checkInOutsideZoneNamed": "You are outside {zone}. Move inside your zone to check in.",
+  "@checkInOutsideZoneNamed": {
+    "placeholders": {
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
+  "checkInNoZone": "No zone is assigned to you yet. Contact your administrator to clock in.",
   "checkInRangeConfirmed": "You are inside {restaurant}. Continue to take your photo.",
   "@checkInRangeConfirmed": {
     "placeholders": {

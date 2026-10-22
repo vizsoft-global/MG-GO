@@ -3931,6 +3931,18 @@ class AppLocalizationsAr extends AppLocalizations {
       'لا يوجد مطعم مخصص لك بعد. تواصل مع المسؤول لتسجيل الحضور.';
 
   @override
+  String get checkInOutsideZone => 'ادخل داخل منطقتك المخصصة لتسجيل الحضور.';
+
+  @override
+  String checkInOutsideZoneNamed(String zone) {
+    return 'أنت خارج $zone. ادخل داخل منطقتك لتسجيل الحضور.';
+  }
+
+  @override
+  String get checkInNoZone =>
+      'لا توجد منطقة مخصصة لك بعد. تواصل مع المسؤول لتسجيل الحضور.';
+
+  @override
   String checkInRangeConfirmed(String restaurant) {
     return 'أنت داخل $restaurant. تابع لالتقاط صورتك.';
   }
