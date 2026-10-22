@@ -26,14 +26,19 @@ import 'package:dpd_userapp/l10n/app_localizations.dart';
 /// goldens are here so clipped or ellipsised text can be seen too.
 const _pixel9 = Size(412, 915);
 
-Future<void> _loadNotoSansArabic() async {
-  final file = File('test/fonts/NotoSansArabic-Variable.ttf');
+Future<void> _loadBrandFonts() async {
+  const gePath = 'assets/fonts/GE SS Two Medium/GE SS Two Medium.otf';
+  const gothamPath = 'assets/fonts/Gotham/Gotham-Book.otf';
+  final file = File(gePath);
   if (!file.existsSync()) {
     fail('missing test/fonts/NotoSansArabic-Variable.ttf — see that folder\'s README');
   }
-  final loader = FontLoader('Noto Sans Arabic')
+  final arabic = FontLoader('GE SS TWO')
     ..addFont(Future.value(ByteData.sublistView(file.readAsBytesSync())));
-  await loader.load();
+  await arabic.load();
+  final latin = FontLoader('Gotham')
+    ..addFont(Future.value(ByteData.sublistView(File(gothamPath).readAsBytesSync())));
+  await latin.load();
 }
 
 const _customType = 'equipment_swap';
@@ -400,7 +405,7 @@ Widget _harness(Widget home, {List<RequestTypeDefinition>? types}) {
     ],
     child: MaterialApp(
       locale: const Locale('ar'),
-      theme: ThemeData(fontFamily: 'Noto Sans Arabic'),
+      theme: ThemeData(fontFamily: 'GE SS TWO'),
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -444,7 +449,7 @@ void _stubSecurityChannel() {
 }
 
 void main() {
-  setUpAll(_loadNotoSansArabic);
+  setUpAll(_loadBrandFonts);
   setUp(_stubSecurityChannel);
 
   testWidgets('support hub tiles in Arabic', (tester) async {
