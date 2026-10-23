@@ -291,6 +291,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get employeeId => 'رقم الموظف';
 
   @override
+  String get nationality => 'الجنسية';
+
+  @override
   String get mobileNumber => 'رقم الجوال';
 
   @override
@@ -1880,6 +1883,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String get vehicleDocumentsEmpty => 'لا توجد مستندات بعد.';
 
   @override
+  String get vehicleDocRegistration => 'التسجيل';
+
+  @override
+  String get vehicleDocHealthCard => 'بطاقة صحية';
+
+  @override
+  String get vehicleDocBaladiyaCard => 'بطاقة البلدية';
+
+  @override
+  String get vehicleDocInsuranceLegacy => 'تأمين (قديم)';
+
+  @override
+  String get vehicleDocOtherLegacy => 'أخرى (قديم)';
+
+  @override
   String get vehicleService => 'الصيانة';
 
   @override
@@ -2130,6 +2148,49 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get cancelReasonRequired => 'سبب الإلغاء مطلوب';
+
+  @override
+  String get cancelReasonItemUnavailable =>
+      'الأصناف غير متوفرة / أطباق غير كافية';
+
+  @override
+  String get cancelReasonRestaurantCanceled => 'المطعم ألغى الطلب';
+
+  @override
+  String get cancelReasonLongPreparation => 'وقت التحضير طويل';
+
+  @override
+  String get cancelReasonHighwayOrder => 'طلب على الطريق السريع';
+
+  @override
+  String get cancelReasonAutoAcceptUnconfirmed =>
+      'لم يتم تأكيد القبول التلقائي للطلب';
+
+  @override
+  String get cancelReasonCustomerCanceled => 'العميل ألغى الطلب';
+
+  @override
+  String get cancelReasonFoodTheft =>
+      'سرقة الطعام (أُخذ أو وُضع في مكان خاطئ داخل المطعم)';
+
+  @override
+  String get cancelReasonNavigationIssue => 'مشكلة في الملاحة / الخريطة';
+
+  @override
+  String get cancelReasonDeliveryDelayed => 'تأخر التوصيل';
+
+  @override
+  String get cancelReasonFoodTooLarge => 'حجم الطعام كبير جداً للتوصيل';
+
+  @override
+  String get cancelReasonMerchantClosed => 'المتجر مغلق';
+
+  @override
+  String get cancelReasonOrderReassigned =>
+      'أُعيد تعيين الطلب (تأخر الوصول إلى المطعم)';
+
+  @override
+  String get cancelReasonVehicleBreakdown => 'تعطل المركبة';
 
   @override
   String get cancelReasonCustomerNoShow => 'العميل لم يحضر';

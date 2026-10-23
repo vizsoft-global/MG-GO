@@ -288,6 +288,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get employeeId => 'Employee ID';
 
   @override
+  String get nationality => 'Nationality';
+
+  @override
   String get mobileNumber => 'Mobile number';
 
   @override
@@ -1893,6 +1896,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get vehicleDocumentsEmpty => 'No documents yet.';
 
   @override
+  String get vehicleDocRegistration => 'Registration';
+
+  @override
+  String get vehicleDocHealthCard => 'Health Card';
+
+  @override
+  String get vehicleDocBaladiyaCard => 'Baladiya Card';
+
+  @override
+  String get vehicleDocInsuranceLegacy => 'Insurance (legacy)';
+
+  @override
+  String get vehicleDocOtherLegacy => 'Other (legacy)';
+
+  @override
   String get vehicleService => 'Service';
 
   @override
@@ -2144,6 +2162,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cancelReasonRequired => 'Cancel reason is required';
+
+  @override
+  String get cancelReasonItemUnavailable =>
+      'Item unavailable / Insufficient dishes';
+
+  @override
+  String get cancelReasonRestaurantCanceled => 'Restaurant canceled the order';
+
+  @override
+  String get cancelReasonLongPreparation => 'Long Preparation Time';
+
+  @override
+  String get cancelReasonHighwayOrder => 'Highway order';
+
+  @override
+  String get cancelReasonAutoAcceptUnconfirmed =>
+      'Automatic order acceptance not confirmed';
+
+  @override
+  String get cancelReasonCustomerCanceled => 'Customer canceled the order';
+
+  @override
+  String get cancelReasonFoodTheft =>
+      'Food theft (taken/misplaced inside the restaurant)';
+
+  @override
+  String get cancelReasonNavigationIssue => 'Navigation/map issues';
+
+  @override
+  String get cancelReasonDeliveryDelayed => 'Delivery Delayed';
+
+  @override
+  String get cancelReasonFoodTooLarge => 'Food size too large for delivery';
+
+  @override
+  String get cancelReasonMerchantClosed => 'Merchant is closed';
+
+  @override
+  String get cancelReasonOrderReassigned =>
+      'Order reassigned (delayed arrival at restaurant)';
+
+  @override
+  String get cancelReasonVehicleBreakdown => 'Vehicle Break Down';
 
   @override
   String get cancelReasonCustomerNoShow => 'Customer no-show';

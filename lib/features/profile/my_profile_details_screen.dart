@@ -5,6 +5,7 @@ import '../../core/l10n/l10n.dart';
 import '../../core/theme/app_colors.dart';
 import '../auth/rider_auth_service.dart';
 import 'avatar_upload_controller.dart';
+import 'nationality_label.dart';
 import 'avatar_upload_feedback.dart';
 import 'rider_contact.dart';
 import 'widgets/profile_header_card.dart';
@@ -44,6 +45,11 @@ class MyProfileDetailsScreen extends ConsumerWidget {
             );
           }
           final phone = driverPhoneFromEmail(profile.email);
+          final nationality = riderNationalityLabel(
+            categoryKeys: profile.nationalityCategoryKeys,
+            storedCountry: profile.nationality,
+            arabic: Localizations.localeOf(context).languageCode == 'ar',
+          );
           return RefreshIndicator(
             onRefresh: () async {
               refreshRiderAvatar(ref);
@@ -95,13 +101,20 @@ class MyProfileDetailsScreen extends ConsumerWidget {
                           icon: Icons.badge_outlined,
                           label: l10n.employeeId,
                           value: profile.employeeId ?? '—',
-                          showDivider: phone != null,
+                          showDivider: phone != null || nationality != null,
                         ),
                         if (phone != null)
                           ProfileDetailRow(
                             icon: Icons.phone_outlined,
                             label: l10n.mobileNumber,
                             value: phone,
+                            showDivider: nationality != null,
+                          ),
+                        if (nationality != null)
+                          ProfileDetailRow(
+                            icon: Icons.public_outlined,
+                            label: l10n.nationality,
+                            value: nationality,
                             showDivider: false,
                           ),
                       ],

@@ -3,11 +3,24 @@ import 'order_id.dart';
 
 /// Known cancel reason codes stored in `deliveries.cancel_reason`.
 enum CancelReason {
+  itemUnavailable('item_unavailable'),
+  restaurantCanceled('restaurant_canceled'),
+  longPreparation('long_preparation'),
+  highwayOrder('highway_order'),
+  autoAcceptUnconfirmed('auto_accept_unconfirmed'),
+  customerCanceled('customer_canceled'),
+  foodTheft('food_theft'),
+  navigationIssue('navigation_issue'),
+  deliveryDelayed('delivery_delayed'),
+  foodTooLarge('food_too_large'),
+  merchantClosed('merchant_closed'),
+  orderReassigned('order_reassigned'),
+  accident('accident'),
+  wrongAddress('wrong_address'),
+  vehicleBreakdown('vehicle_breakdown'),
   customerNoShow('customer_no_show'),
   customerRefused('customer_refused'),
-  wrongAddress('wrong_address'),
   restaurantIssue('restaurant_issue'),
-  accident('accident'),
   other('other');
 
   const CancelReason(this.apiValue);
@@ -15,11 +28,24 @@ enum CancelReason {
   final String apiValue;
 
   String label(AppLocalizations l10n) => switch (this) {
+    CancelReason.itemUnavailable => l10n.cancelReasonItemUnavailable,
+    CancelReason.restaurantCanceled => l10n.cancelReasonRestaurantCanceled,
+    CancelReason.longPreparation => l10n.cancelReasonLongPreparation,
+    CancelReason.highwayOrder => l10n.cancelReasonHighwayOrder,
+    CancelReason.autoAcceptUnconfirmed => l10n.cancelReasonAutoAcceptUnconfirmed,
+    CancelReason.customerCanceled => l10n.cancelReasonCustomerCanceled,
+    CancelReason.foodTheft => l10n.cancelReasonFoodTheft,
+    CancelReason.navigationIssue => l10n.cancelReasonNavigationIssue,
+    CancelReason.deliveryDelayed => l10n.cancelReasonDeliveryDelayed,
+    CancelReason.foodTooLarge => l10n.cancelReasonFoodTooLarge,
+    CancelReason.merchantClosed => l10n.cancelReasonMerchantClosed,
+    CancelReason.orderReassigned => l10n.cancelReasonOrderReassigned,
+    CancelReason.accident => l10n.cancelReasonAccident,
+    CancelReason.wrongAddress => l10n.cancelReasonWrongAddress,
+    CancelReason.vehicleBreakdown => l10n.cancelReasonVehicleBreakdown,
     CancelReason.customerNoShow => l10n.cancelReasonCustomerNoShow,
     CancelReason.customerRefused => l10n.cancelReasonCustomerRefused,
-    CancelReason.wrongAddress => l10n.cancelReasonWrongAddress,
     CancelReason.restaurantIssue => l10n.cancelReasonRestaurantIssue,
-    CancelReason.accident => l10n.cancelReasonAccident,
     CancelReason.other => l10n.cancelReasonOther,
   };
 

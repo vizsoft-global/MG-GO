@@ -563,6 +563,7 @@ class _EsignDetailsCard extends StatelessWidget {
     final company = detail.snapshotValue('company_name');
     final name = detail.snapshotValue('employee_name');
     final employeeId = detail.snapshotValue('employee_id');
+    final nationality = detail.snapshotValue('nationality');
     final position = detail.snapshotValue('position');
     final sponsor = detail.snapshotValue('sponsor');
     final payThrough = detail.snapshotValue('pay_through');
@@ -575,6 +576,8 @@ class _EsignDetailsCard extends StatelessWidget {
         (joinBilingualLabels('Employee name', 'اسم الموظف'), name),
       if (employeeId.isNotEmpty)
         (joinBilingualLabels('Employee ID', 'رقم الموظف'), employeeId),
+      if (nationality.isNotEmpty)
+        (joinBilingualLabels('Nationality', 'الجنسية'), nationality),
       if (position.isNotEmpty)
         (joinBilingualLabels('Position', 'الوظيفة'), position),
       if (sponsor.isNotEmpty)

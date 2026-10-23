@@ -13,6 +13,7 @@ CheckInContext _context({
   CheckInRestaurant? restaurant,
   CheckInRestaurant? nearest,
   bool zoneGate = false,
+  bool noGate = false,
   CheckInZone? zone,
 }) {
   return CheckInContext(
@@ -27,6 +28,7 @@ CheckInContext _context({
     restaurant: restaurant,
     nearest: nearest,
     zoneGate: zoneGate,
+    noGate: noGate,
     zone: zone,
   );
 }
@@ -123,6 +125,21 @@ void main() {
             zoneGate: true,
             zone: const CheckInZone(id: 'z1', name: 'Salmiya'),
           ),
+        ),
+        CheckInStep.skipPhoto,
+      );
+    });
+
+    test('office staff have no location gate but still take the selfie', () {
+      // The server answers gate: "none" for a non-operational section: there is
+      // no zone and no store, so in_range is true and only the photo applies.
+      expect(
+        decideCheckInStep(_context(inRange: true, candidates: 0, noGate: true)),
+        CheckInStep.capturePhoto,
+      );
+      expect(
+        decideCheckInStep(
+          _context(inRange: true, candidates: 0, noGate: true, photoRequired: false),
         ),
         CheckInStep.skipPhoto,
       );

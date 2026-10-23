@@ -451,12 +451,17 @@ class _FinishDeliveryScreenState extends ConsumerState<FinishDeliveryScreen> {
                     const SizedBox(height: 8),
                     DropdownButtonFormField<CancelReason>(
                       initialValue: _cancelReason,
+                      isExpanded: true,
                       decoration: InputDecoration(hintText: l10n.selectReason),
                       items: CancelReason.values
                           .map(
                             (reason) => DropdownMenuItem(
                               value: reason,
-                              child: Text(reason.label(l10n)),
+                              child: Text(
+                                reason.label(l10n),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           )
                           .toList(),

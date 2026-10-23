@@ -67,6 +67,7 @@ class CheckInContext {
     this.restaurant,
     this.nearest,
     this.zoneGate = false,
+    this.noGate = false,
     this.zone,
   });
 
@@ -97,6 +98,11 @@ class CheckInContext {
   /// a restaurant. [restaurant] is always null in that case.
   final bool zoneGate;
 
+  /// True when the rider's HR section is non-operational (MG Head Office): there
+  /// is no zone and no store to prove, so the server admits the clock-in from
+  /// anywhere. The selfie rule still applies — [photoRequired] answers for it.
+  final bool noGate;
+
   /// The zone the server named for a zone gate; null means "no zone assigned".
   final CheckInZone? zone;
 
@@ -115,6 +121,7 @@ class CheckInContext {
       restaurant: CheckInRestaurant.fromJson(json['restaurant']),
       nearest: CheckInRestaurant.fromJson(json['nearest']),
       zoneGate: json['gate'] == 'zone',
+      noGate: json['gate'] == 'none',
       zone: CheckInZone.fromJson(json['zone']),
     );
   }
@@ -149,7 +156,7 @@ CheckInStep decideCheckInStep(CheckInContext? context) {
   // (`photo_required == false`). A zone gate is a location gate, not a photo
   // exemption: Keeta riders inside their zone still take the selfie.
   if (context.inRange && !context.photoRequired) return CheckInStep.skipPhoto;
-  if (context.inRange && (context.restaurant != null || context.zoneGate)) {
+  if (context.inRange && (context.restaurant != null || context.zoneGate || context.noGate)) {
     return CheckInStep.capturePhoto;
   }
   return CheckInStep.blocked;
