@@ -2164,6 +2164,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancelReasonRequired => 'Cancel reason is required';
 
   @override
+  String get cancelReasonItemUnavailable =>
+      'Item unavailable / Insufficient dishes';
+
+  @override
+  String get cancelReasonRestaurantCanceled => 'Restaurant canceled the order';
+
+  @override
+  String get cancelReasonLongPreparation => 'Long Preparation Time';
+
+  @override
+  String get cancelReasonHighwayOrder => 'Highway order';
+
+  @override
+  String get cancelReasonAutoAcceptUnconfirmed =>
+      'Automatic order acceptance not confirmed';
+
+  @override
+  String get cancelReasonCustomerCanceled => 'Customer canceled the order';
+
+  @override
+  String get cancelReasonFoodTheft =>
+      'Food theft (taken/misplaced inside the restaurant)';
+
+  @override
+  String get cancelReasonNavigationIssue => 'Navigation/map issues';
+
+  @override
+  String get cancelReasonDeliveryDelayed => 'Delivery Delayed';
+
+  @override
+  String get cancelReasonFoodTooLarge => 'Food size too large for delivery';
+
+  @override
+  String get cancelReasonMerchantClosed => 'Merchant is closed';
+
+  @override
+  String get cancelReasonOrderReassigned =>
+      'Order reassigned (delayed arrival at restaurant)';
+
+  @override
+  String get cancelReasonVehicleBreakdown => 'Vehicle Break Down';
+
+  @override
   String get cancelReasonCustomerNoShow => 'Customer no-show';
 
   @override

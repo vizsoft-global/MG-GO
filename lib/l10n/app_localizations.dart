@@ -3883,6 +3883,84 @@ abstract class AppLocalizations {
   /// **'Cancel reason is required'**
   String get cancelReasonRequired;
 
+  /// No description provided for @cancelReasonItemUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Item unavailable / Insufficient dishes'**
+  String get cancelReasonItemUnavailable;
+
+  /// No description provided for @cancelReasonRestaurantCanceled.
+  ///
+  /// In en, this message translates to:
+  /// **'Restaurant canceled the order'**
+  String get cancelReasonRestaurantCanceled;
+
+  /// No description provided for @cancelReasonLongPreparation.
+  ///
+  /// In en, this message translates to:
+  /// **'Long Preparation Time'**
+  String get cancelReasonLongPreparation;
+
+  /// No description provided for @cancelReasonHighwayOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Highway order'**
+  String get cancelReasonHighwayOrder;
+
+  /// No description provided for @cancelReasonAutoAcceptUnconfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic order acceptance not confirmed'**
+  String get cancelReasonAutoAcceptUnconfirmed;
+
+  /// No description provided for @cancelReasonCustomerCanceled.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer canceled the order'**
+  String get cancelReasonCustomerCanceled;
+
+  /// No description provided for @cancelReasonFoodTheft.
+  ///
+  /// In en, this message translates to:
+  /// **'Food theft (taken/misplaced inside the restaurant)'**
+  String get cancelReasonFoodTheft;
+
+  /// No description provided for @cancelReasonNavigationIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Navigation/map issues'**
+  String get cancelReasonNavigationIssue;
+
+  /// No description provided for @cancelReasonDeliveryDelayed.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Delayed'**
+  String get cancelReasonDeliveryDelayed;
+
+  /// No description provided for @cancelReasonFoodTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Food size too large for delivery'**
+  String get cancelReasonFoodTooLarge;
+
+  /// No description provided for @cancelReasonMerchantClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Merchant is closed'**
+  String get cancelReasonMerchantClosed;
+
+  /// No description provided for @cancelReasonOrderReassigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Order reassigned (delayed arrival at restaurant)'**
+  String get cancelReasonOrderReassigned;
+
+  /// No description provided for @cancelReasonVehicleBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Vehicle Break Down'**
+  String get cancelReasonVehicleBreakdown;
+
   /// No description provided for @cancelReasonCustomerNoShow.
   ///
   /// In en, this message translates to:
