@@ -3373,6 +3373,36 @@ abstract class AppLocalizations {
   /// **'No documents yet.'**
   String get vehicleDocumentsEmpty;
 
+  /// No description provided for @vehicleDocRegistration.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration'**
+  String get vehicleDocRegistration;
+
+  /// No description provided for @vehicleDocHealthCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Health Card'**
+  String get vehicleDocHealthCard;
+
+  /// No description provided for @vehicleDocBaladiyaCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Baladiya Card'**
+  String get vehicleDocBaladiyaCard;
+
+  /// No description provided for @vehicleDocInsuranceLegacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Insurance (legacy)'**
+  String get vehicleDocInsuranceLegacy;
+
+  /// No description provided for @vehicleDocOtherLegacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Other (legacy)'**
+  String get vehicleDocOtherLegacy;
+
   /// No description provided for @vehicleService.
   ///
   /// In en, this message translates to:

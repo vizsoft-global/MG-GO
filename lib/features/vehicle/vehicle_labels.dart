@@ -16,6 +16,24 @@ String vehicleStatusLabel(AppLocalizations l10n, String? raw) {
   return mapVehicleValueLabel(l10n, raw);
 }
 
+/// The vehicle document ledger's `kind`, in the rider's language.
+///
+/// Admin now uploads only Registration / Health Card / Baladiya Card. The two
+/// retired kinds (`insurance`, `other`) stay readable on old rows and say they
+/// are legacy; an unknown value prints as-is rather than disappearing.
+String vehicleDocumentKindLabel(AppLocalizations l10n, String? raw) {
+  final value = raw?.trim();
+  if (value == null || value.isEmpty) return '—';
+  return switch (value.toLowerCase()) {
+    'registration' => l10n.vehicleDocRegistration,
+    'health_card' => l10n.vehicleDocHealthCard,
+    'baladiya_card' => l10n.vehicleDocBaladiyaCard,
+    'insurance' => l10n.vehicleDocInsuranceLegacy,
+    'other' => l10n.vehicleDocOtherLegacy,
+    _ => value,
+  };
+}
+
 String mapVehicleValueLabel(AppLocalizations l10n, String? raw) {
   final value = raw?.trim();
   if (value == null || value.isEmpty) return '—';

@@ -1893,6 +1893,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get vehicleDocumentsEmpty => 'No documents yet.';
 
   @override
+  String get vehicleDocRegistration => 'Registration';
+
+  @override
+  String get vehicleDocHealthCard => 'Health Card';
+
+  @override
+  String get vehicleDocBaladiyaCard => 'Baladiya Card';
+
+  @override
+  String get vehicleDocInsuranceLegacy => 'Insurance (legacy)';
+
+  @override
+  String get vehicleDocOtherLegacy => 'Other (legacy)';
+
+  @override
   String get vehicleService => 'Service';
 
   @override

@@ -1880,6 +1880,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String get vehicleDocumentsEmpty => 'لا توجد مستندات بعد.';
 
   @override
+  String get vehicleDocRegistration => 'التسجيل';
+
+  @override
+  String get vehicleDocHealthCard => 'بطاقة صحية';
+
+  @override
+  String get vehicleDocBaladiyaCard => 'بطاقة البلدية';
+
+  @override
+  String get vehicleDocInsuranceLegacy => 'تأمين (قديم)';
+
+  @override
+  String get vehicleDocOtherLegacy => 'أخرى (قديم)';
+
+  @override
   String get vehicleService => 'الصيانة';
 
   @override

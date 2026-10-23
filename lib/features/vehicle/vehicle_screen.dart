@@ -182,6 +182,9 @@ class _AssignedCard extends StatelessWidget {
           title: l10n.vehicleDocuments,
           empty: l10n.vehicleDocumentsEmpty,
           entries: vehicle.documents,
+          // Document kinds are a closed vocabulary the Admin owns; the other
+          // ledgers keep their free-text kind.
+          kindLabel: vehicleDocumentKindLabel,
         ),
         const SizedBox(height: 12),
         _LedgerSection(
@@ -221,11 +224,15 @@ class _LedgerSection extends StatelessWidget {
     required this.title,
     required this.empty,
     required this.entries,
+    this.kindLabel,
   });
 
   final String title;
   final String empty;
   final List<VehicleLedgerEntry> entries;
+
+  /// Optional translation for the row's `kind`; omitted means "print it raw".
+  final String Function(AppLocalizations, String?)? kindLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -257,7 +264,7 @@ class _LedgerSection extends StatelessWidget {
             )
           else
             for (final entry in entries) ...[
-              _LedgerRow(entry: entry, fileLabel: l10n.vehicleHasFile),
+              _LedgerRow(entry: entry, fileLabel: l10n.vehicleHasFile, kindLabel: kindLabel),
               const SizedBox(height: 8),
             ],
         ],
@@ -267,16 +274,23 @@ class _LedgerSection extends StatelessWidget {
 }
 
 class _LedgerRow extends StatelessWidget {
-  const _LedgerRow({required this.entry, required this.fileLabel});
+  const _LedgerRow({required this.entry, required this.fileLabel, this.kindLabel});
 
   final VehicleLedgerEntry entry;
   final String fileLabel;
 
+  /// Optional translation for `entry.kind`; omitted means "print it raw".
+  final String Function(AppLocalizations, String?)? kindLabel;
+
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final kind = entry.kind == null
+        ? null
+        : (kindLabel?.call(l10n, entry.kind) ?? entry.kind!);
     final parts = [
       if (entry.at != null) entry.at!,
-      if (entry.kind != null) entry.kind!,
+      ?kind,
       if (entry.notes != null) entry.notes!,
     ];
     return Row(
