@@ -584,6 +584,12 @@ abstract class AppLocalizations {
   /// **'Employee ID'**
   String get employeeId;
 
+  /// No description provided for @nationality.
+  ///
+  /// In en, this message translates to:
+  /// **'Nationality'**
+  String get nationality;
+
   /// No description provided for @mobileNumber.
   ///
   /// In en, this message translates to:

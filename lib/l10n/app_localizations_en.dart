@@ -288,6 +288,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get employeeId => 'Employee ID';
 
   @override
+  String get nationality => 'Nationality';
+
+  @override
   String get mobileNumber => 'Mobile number';
 
   @override

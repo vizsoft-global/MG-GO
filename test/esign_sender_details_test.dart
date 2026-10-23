@@ -3,6 +3,28 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dpd_userapp/features/support/support_models.dart';
 
 void main() {
+  test('nationality on the snapshot is enough to show sender details', () {
+    final detail = EsignRequestDetail(raw: const {
+      'id': 'a',
+      'request_code': 'SIG-9',
+      'title': 'Policy',
+      'status': 'pending',
+      'employee_snapshot': {'nationality': 'Indian'},
+    });
+    expect(detail.hasSenderDetails, isTrue);
+    expect(detail.snapshotValue('nationality'), 'Indian');
+
+    final blank = EsignRequestDetail(raw: const {
+      'id': 'b',
+      'request_code': 'SIG-10',
+      'title': 'Policy',
+      'status': 'pending',
+      'employee_snapshot': {'nationality': '  '},
+    });
+    expect(blank.hasSenderDetails, isFalse);
+    expect(blank.snapshotValue('nationality'), '');
+  });
+
   test('legacy file-upload request hides the sender details card', () {
     final detail = EsignRequestDetail(raw: const {
       'id': 'a',

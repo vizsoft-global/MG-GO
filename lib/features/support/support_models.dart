@@ -925,6 +925,7 @@ class EsignRequestDetail {
       'company_name',
       'employee_name',
       'employee_id',
+      'nationality',
       'position',
       'sponsor',
       'pay_through',

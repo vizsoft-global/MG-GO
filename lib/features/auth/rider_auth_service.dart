@@ -113,6 +113,8 @@ class RiderProfile {
     required this.role,
     this.driverCode,
     this.employeeId,
+    this.nationalityCategoryKeys = const [],
+    this.nationality,
     this.avatarObjectKey,
     this.avatarUrl,
     this.avatarUpdatedAt,
@@ -124,6 +126,9 @@ class RiderProfile {
   final String role;
   final String? driverCode;
   final String? employeeId;
+
+  final List<String> nationalityCategoryKeys;
+  final String? nationality;
   final String? avatarObjectKey;
 
   /// Direct http(s) URL only. R2 object keys are resolved lazily via
@@ -467,6 +472,8 @@ class RiderAuthService {
 
     final driverCode = row['driver_code'] as String?;
     final employeeId = row['employee_id'] as String?;
+    final nationalityCategoryKeys = _stringList(row['nationality_category_keys']);
+    final nationality = _optionalText(row['nationality']);
     final keyRaw = (row['avatar_object_key'] as String?)?.trim();
     final avatarObjectKey = (keyRaw == null || keyRaw.isEmpty) ? null : keyRaw;
     final avatarUpdatedAt = _asDateTime(row['avatar_updated_at']);
@@ -489,6 +496,8 @@ class RiderAuthService {
       role: 'rider',
       driverCode: driverCode,
       employeeId: employeeId,
+      nationalityCategoryKeys: nationalityCategoryKeys,
+      nationality: nationality,
       avatarObjectKey: avatarObjectKey,
       avatarUrl: immediateAvatarUrl,
       avatarUpdatedAt: avatarUpdatedAt,
@@ -559,6 +568,20 @@ Map<String, dynamic>? _normalizeDriverRow(Map<String, dynamic>? raw) {
   row['frozen_from'] = _asYmd(row['frozen_from']);
   row['frozen_until'] = _asYmd(row['frozen_until']);
   return row;
+}
+
+List<String> _stringList(dynamic value) {
+  if (value is! List) return const [];
+  return value
+      .map((item) => item.toString().trim())
+      .where((item) => item.isNotEmpty)
+      .toList();
+}
+
+String? _optionalText(dynamic value) {
+  if (value is! String) return null;
+  final trimmed = value.trim();
+  return trimmed.isEmpty ? null : trimmed;
 }
 
 String? _asYmd(dynamic value) {

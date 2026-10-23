@@ -172,6 +172,7 @@
   "signIn": "Sign in",
   "driverId": "Driver ID",
   "employeeId": "Employee ID",
+  "nationality": "Nationality",
   "mobileNumber": "Mobile number",
   "trainingSharedVideoHint": "Both entries play the same video for now",
   "supportSalaryAmountRequired": "Enter at least one amount — expected or received",

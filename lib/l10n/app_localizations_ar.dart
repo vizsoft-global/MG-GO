@@ -291,6 +291,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get employeeId => 'رقم الموظف';
 
   @override
+  String get nationality => 'الجنسية';
+
+  @override
   String get mobileNumber => 'رقم الجوال';
 
   @override

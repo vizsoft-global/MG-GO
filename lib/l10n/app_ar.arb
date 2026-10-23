@@ -81,6 +81,7 @@
   "signIn": "تسجيل الدخول",
   "driverId": "رقم السائق",
   "employeeId": "رقم الموظف",
+  "nationality": "الجنسية",
   "mobileNumber": "رقم الجوال",
   "trainingSharedVideoHint": "كلا المدخلين يعرض الفيديو نفسه حالياً",
   "supportSalaryAmountRequired": "أدخل مبلغاً واحداً على الأقل — المتوقع أو المستلم",
