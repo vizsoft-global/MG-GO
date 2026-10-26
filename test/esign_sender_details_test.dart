@@ -75,7 +75,7 @@ void main() {
     expect(joinBilingualLabels('  ', null), '');
   });
 
-  test('awaiting countersignature opens the source document, not a final copy', () {
+  test('awaiting countersignature opens the composed copy once it is ready', () {
     final awaiting = EsignRequestDetail(raw: const {
       'id': 'a',
       'request_code': 'SIG-9',
@@ -88,8 +88,8 @@ void main() {
       'download_storage_key': 'src/signed.pdf',
     });
     expect(awaiting.isAwaitingCounterSignature, isTrue);
-    expect(awaiting.showsSignedCopyReady, isFalse);
-    expect(awaiting.openDocumentStorageKey, 'src/original.pdf');
+    expect(awaiting.showsSignedCopyReady, isTrue);
+    expect(awaiting.openDocumentStorageKey, 'src/signed.pdf');
 
     final complete = EsignRequestDetail(raw: const {
       'id': 'b',

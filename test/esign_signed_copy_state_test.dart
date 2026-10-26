@@ -2,14 +2,13 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dpd_userapp/features/support/support_models.dart';
 
-/// The signed copy the rider downloads depends on where the counter-signature
-/// stands: a composed PDF must never be offered while HR still owes a signature,
-/// and a missing copy has to read as "pending", not as a broken document.
+/// The signed copy the rider downloads is the composed PDF as soon as the
+/// server has written it, including while HR still owes a countersignature.
 void main() {
   EsignRequestDetail detail(Map<String, dynamic> raw) =>
       EsignRequestDetail(raw: raw);
 
-  test('a signed request awaiting HR never opens the composed copy', () {
+  test('a signed request awaiting HR still opens the composed copy', () {
     final row = detail({
       'id': 'req-1',
       'status': 'signed',
@@ -26,8 +25,8 @@ void main() {
     });
 
     expect(row.isAwaitingCounterSignature, isTrue);
-    expect(row.showsSignedCopyReady, isFalse);
-    expect(row.openDocumentStorageKey, 'admin/source.pdf');
+    expect(row.showsSignedCopyReady, isTrue);
+    expect(row.openDocumentStorageKey, 'signed/req-1/RQ-1-signed.pdf');
   });
 
   test('a fully signed request opens the composed copy', () {
