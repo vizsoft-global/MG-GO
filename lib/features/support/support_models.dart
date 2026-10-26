@@ -803,10 +803,21 @@ class EsignRequestDetail {
     return null;
   }
 
-  /// Supporting documents are offered for the photo-based accident kinds only.
-  bool get allowsAttachments =>
-      categoryKey == 'accident' &&
-      (requestKind == 'accident' || requestKind == 'medical_report');
+  /// Supporting documents stay available for every accident kind except declaration.
+  bool get allowsAttachments {
+    if (categoryKey != 'accident') return false;
+    switch (requestKind) {
+      case 'accident':
+      case 'sick_leave':
+      case 'medical_report':
+        return true;
+      case 'declaration':
+      case null:
+        return false;
+      default:
+        return false;
+    }
+  }
 
   List<EsignAttachment> get attachments {
     final rows = raw['attachments'];
@@ -838,14 +849,18 @@ class EsignRequestDetail {
   String? get downloadStorageKey =>
       raw['download_storage_key'] as String? ?? documentStorageKey;
 
-  /// File the rider should open. While staff countersignature is still
-  /// pending, never prefer a composed "final" copy.
-  String? get openDocumentStorageKey =>
-      isAwaitingCounterSignature ? documentStorageKey : downloadStorageKey;
+  /// File the rider should open. A composed copy that is ready wins even
+  /// while HR has not countersigned, so the rider can download their own ink.
+  String? get openDocumentStorageKey {
+    final signed = downloadStorageKey;
+    if (signedDocumentReady && signed != null && signed.isNotEmpty) {
+      return signed;
+    }
+    return documentStorageKey ?? downloadStorageKey;
+  }
 
-  /// The composed copy is only "ready" once staff is not still pending.
-  bool get showsSignedCopyReady =>
-      signedDocumentReady && !isAwaitingCounterSignature;
+  /// The composed copy is ready as soon as the server has written it.
+  bool get showsSignedCopyReady => signedDocumentReady;
 
   bool get signedDocumentReady => raw['signed_document_ready'] as bool? ?? false;
 
