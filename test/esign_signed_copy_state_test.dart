@@ -64,4 +64,49 @@ void main() {
     // The original is still openable while the composed copy is written.
     expect(row.openDocumentStorageKey, 'admin/source.pdf');
   });
+
+  test('management review is only approved, acknowledged, or rejected', () {
+    EsignRequestDetail row(Object? status) => EsignRequestDetail(raw: {
+          'id': 'req',
+          'status': 'signed',
+          'review_status': status,
+        });
+
+    expect(row('approved').showsManagementReview, isTrue);
+    expect(row('acknowledged').showsManagementReview, isTrue);
+    expect(row('rejected').showsManagementReview, isTrue);
+    expect(row(null).showsManagementReview, isFalse);
+    expect(row('signed').showsManagementReview, isFalse);
+
+    EsignRequestSummary summary(String? status) => EsignRequestSummary(
+          id: 'req',
+          requestCode: 'SIG-1',
+          title: 'Payslip',
+          status: 'signed',
+          reviewStatus: status,
+        );
+
+    expect(summary('approved').showsManagementReview, isTrue);
+    expect(summary('acknowledged').showsManagementReview, isTrue);
+    expect(summary('rejected').showsManagementReview, isTrue);
+    expect(summary(null).showsManagementReview, isFalse);
+  });
+
+  test('attachment parses storage_key and reads an image from the key', () {
+    final image = EsignAttachment.fromJson({
+      'id': 'a1',
+      'name': 'scan',
+      'storage_key': 'riders/u/photo.PNG',
+    });
+    expect(image.storageKey, 'riders/u/photo.PNG');
+    expect(image.isImage, isTrue);
+
+    final blank = EsignAttachment.fromJson({
+      'id': 'a2',
+      'name': 'note.pdf',
+      'storage_key': '  ',
+    });
+    expect(blank.storageKey, isNull);
+    expect(blank.isImage, isFalse);
+  });
 }

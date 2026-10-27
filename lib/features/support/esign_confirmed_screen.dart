@@ -116,8 +116,24 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
     EsignRequestDetail detail,
     EsignAttachment attachment,
   ) async {
-    final url = attachment.url;
-    if (url == null) return;
+    final key = attachment.storageKey;
+    if (key == null || key.trim().isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.esignPreviewLoadFailed)),
+        );
+      }
+      return;
+    }
+    final url =
+        await ref.read(supportServiceProvider).signedEsignDocumentUrl(key);
+    if (!mounted) return;
+    if (url == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.esignPreviewLoadFailed)),
+      );
+      return;
+    }
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => EsignFullDocumentScreen(
@@ -262,7 +278,7 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
                   ],
                 ),
               ),
-              if (detail.reviewStatus != null) ...[
+              if (detail.showsManagementReview) ...[
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -354,7 +370,7 @@ class _EsignConfirmedScreenState extends ConsumerState<EsignConfirmedScreen> {
                               ? Text(_formatSize(attachment.size))
                               : null,
                           trailing: const Icon(Icons.open_in_new, size: 18),
-                          onTap: attachment.url == null
+                          onTap: (attachment.storageKey ?? '').isEmpty
                               ? null
                               : () => _openAttachment(detail, attachment),
                         ),
