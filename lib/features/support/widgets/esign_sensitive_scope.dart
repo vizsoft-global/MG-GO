@@ -16,6 +16,17 @@ class EsignSensitiveScope extends StatefulWidget {
   final bool restricted;
   final Widget child;
 
+  /// Gallery (and any other system picker) backgrounds the app. Without this
+  /// pause, inactive/paused would paint "Content hidden" over the picker.
+  static Future<T> runWithoutObscure<T>(
+    BuildContext context,
+    Future<T> Function() action,
+  ) async {
+    final state = context.findAncestorStateOfType<_EsignSensitiveScopeState>();
+    if (state == null) return action();
+    return state.runWithoutObscure(action);
+  }
+
   @override
   State<EsignSensitiveScope> createState() => _EsignSensitiveScopeState();
 }
@@ -25,6 +36,7 @@ class _EsignSensitiveScopeState extends State<EsignSensitiveScope>
   final ScreenProtectorService _protector = ScreenProtectorService.instance;
   bool _sessionActive = false;
   bool _obscureContent = false;
+  bool _picking = false;
 
   bool get _protect =>
       widget.restricted && !SecurityBypassStore.isEnabled;
@@ -53,8 +65,24 @@ class _EsignSensitiveScopeState extends State<EsignSensitiveScope>
     super.dispose();
   }
 
+  Future<T> runWithoutObscure<T>(Future<T> Function() action) async {
+    _picking = true;
+    if (mounted) setState(() => _obscureContent = false);
+    if (_sessionActive) {
+      await _protector.endSensitiveSession();
+      _sessionActive = false;
+    }
+    try {
+      return await action();
+    } finally {
+      _picking = false;
+      await _startProtection();
+    }
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_picking) return;
     if (!_protect) return;
     if (state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused ||

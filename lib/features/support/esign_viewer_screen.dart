@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -37,7 +39,17 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
   void _markViewed() {
     if (_viewedMarked) return;
     _viewedMarked = true;
-    ref.read(supportServiceProvider).markEsignViewed(widget.requestId).ignore();
+    unawaited(_markViewedOnce());
+  }
+
+  Future<void> _markViewedOnce() async {
+    try {
+      await ref.read(supportServiceProvider).markEsignViewed(widget.requestId);
+    } catch (_) {
+      try {
+        await ref.read(supportServiceProvider).markEsignViewed(widget.requestId);
+      } catch (_) {}
+    }
   }
 
   Future<void> _decline() async {
@@ -169,8 +181,24 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
     EsignRequestDetail detail,
     EsignAttachment attachment,
   ) async {
-    final url = attachment.url;
-    if (url == null) return;
+    final key = attachment.storageKey;
+    if (key == null || key.trim().isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.esignPreviewLoadFailed)),
+        );
+      }
+      return;
+    }
+    final url =
+        await ref.read(supportServiceProvider).signedEsignDocumentUrl(key);
+    if (!mounted) return;
+    if (url == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.esignPreviewLoadFailed)),
+      );
+      return;
+    }
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => EsignFullDocumentScreen(
@@ -297,7 +325,7 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                   ),
                   const SizedBox(height: 10),
                 ],
-                if (detail.reviewStatus != null) ...[
+                if (detail.showsManagementReview) ...[
                   Card(
                     color: detail.isReviewRejected
                         ? AppColors.rejectedRed.withValues(alpha: 0.08)
@@ -473,7 +501,7 @@ class _EsignViewerScreenState extends ConsumerState<EsignViewerScreen> {
                                   ? Text(_formatSize(attachment.size))
                                   : null,
                               trailing: const Icon(Icons.open_in_new, size: 18),
-                              onTap: attachment.url == null
+                              onTap: (attachment.storageKey ?? '').isEmpty
                                   ? null
                                   : () => _openAttachment(detail, attachment),
                             ),

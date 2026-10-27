@@ -62,7 +62,10 @@ class _EsignCaptureScreenState extends ConsumerState<EsignCaptureScreen> {
     }
     setState(() => _attaching = true);
     try {
-      final files = await _picker.pickMultiImage(imageQuality: 85);
+      final files = await EsignSensitiveScope.runWithoutObscure(
+        context,
+        () => _picker.pickMultiImage(imageQuality: 85),
+      );
       for (final file in files.take(remaining)) {
         final bytes = await file.readAsBytes();
         final contentType = file.mimeType ?? _guessMime(file.name);

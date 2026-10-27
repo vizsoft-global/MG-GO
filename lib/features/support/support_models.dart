@@ -560,6 +560,10 @@ class EsignRequestSummary {
   bool get isReviewAcknowledged => reviewStatus == 'acknowledged';
   bool get isReviewRejected => reviewStatus == 'rejected';
 
+  /// Management closed the case. A signature alone leaves `review_status` null.
+  bool get showsManagementReview =>
+      isReviewApproved || isReviewAcknowledged || isReviewRejected;
+
   bool get isPending => status == 'pending';
   bool get isSigned => status == 'signed';
 
@@ -737,6 +741,7 @@ class EsignAttachment {
     this.source,
     this.createdAt,
     this.url,
+    this.storageKey,
   });
 
   final String id;
@@ -749,16 +754,24 @@ class EsignAttachment {
   /// Short-lived presigned R2 GET minted by `driverGetEsignRequest`.
   final String? url;
 
+  /// R2 object key. The viewer signs this; the presigned [url] can expire.
+  final String? storageKey;
+
   bool get isImage {
     final type = (contentType ?? '').toLowerCase();
     final lower = name.toLowerCase();
+    final key = (storageKey ?? '').toLowerCase();
     return type.startsWith('image/') ||
         lower.endsWith('.png') ||
         lower.endsWith('.jpg') ||
-        lower.endsWith('.jpeg');
+        lower.endsWith('.jpeg') ||
+        key.endsWith('.png') ||
+        key.endsWith('.jpg') ||
+        key.endsWith('.jpeg');
   }
 
   factory EsignAttachment.fromJson(Map<String, dynamic> json) {
+    final rawKey = json['storage_key']?.toString().trim();
     return EsignAttachment(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? 'Attachment',
@@ -769,6 +782,7 @@ class EsignAttachment {
       url: (json['url'] as String?)?.trim().isEmpty == true
           ? null
           : json['url'] as String?,
+      storageKey: rawKey == null || rawKey.isEmpty ? null : rawKey,
     );
   }
 }
@@ -835,6 +849,11 @@ class EsignRequestDetail {
   bool get isReviewApproved => reviewStatus == 'approved';
   bool get isReviewAcknowledged => reviewStatus == 'acknowledged';
   bool get isReviewRejected => reviewStatus == 'rejected';
+
+  /// Management closed the case. A signature alone leaves `review_status` null.
+  bool get showsManagementReview =>
+      isReviewApproved || isReviewAcknowledged || isReviewRejected;
+
   String? get documentStorageKey => raw['document_storage_key'] as String?;
   String? get signatureStorageKey => raw['signature_storage_key'] as String?;
   String? get signerDisplayName => raw['signer_display_name'] as String?;
