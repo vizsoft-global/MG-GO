@@ -32,9 +32,10 @@ class DutyLocationState {
   /// not [lastReport.zoneStatus] (that field is restaurant delivery range).
   final bool hasAssignedZone;
 
-  /// Strict inside/outside the assigned polygon (0 m buffer). Survives
+  /// In/out of the rider's work area: the assigned zone polygon **or** the
+  /// delivery range of an assigned store. Survives
   /// [DutyLocationNotifier.applyReport] so a delivery heartbeat cannot
-  /// overwrite it with restaurant `in_zone`.
+  /// overwrite it with a stale value.
   final String? assignedZoneStatus;
 
   bool get isOutsideZone {
@@ -110,8 +111,10 @@ class DutyLocationNotifier extends Notifier<DutyLocationState> {
     );
   }
 
-  /// Assigned-zone in/out. Must not be folded into [applyReport] or
-  /// [applyLocalZoneStatus] — those write restaurant / buffered range.
+  /// Work-area in/out: assigned zone polygon or an assigned store's range.
+  /// Must not be folded into [applyReport] or [applyLocalZoneStatus] — those
+  /// write restaurant / buffered range, and a heartbeat must not clear an
+  /// episode the rider is still inside.
   void applyAssignedZoneStatus(
     String? zoneStatus, {
     required bool hasAssignedZone,

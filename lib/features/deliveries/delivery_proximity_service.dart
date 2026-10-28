@@ -354,10 +354,9 @@ class DeliveryProximityService {
     final hasAssignedZone =
         context.zoneId != null && context.zoneId!.trim().isNotEmpty;
     final zone = context.zoneShape;
+    final restaurants = context.restaurants;
 
-    // A zone with a real shape is enough. An empty restaurant list must not
-    // refuse the rider before that zone is checked — that is what left Confirm
-    // Pickup grey for a zone-only rider who was already inside the zone.
+    // Neither the assigned zone nor an assigned store can be evaluated.
     if (context.restaurants.isEmpty && zone == null) {
       return DeliveryProximityStatus(
         allowed: false,
@@ -373,57 +372,58 @@ class DeliveryProximityService {
 
     final proximityMeters = context.proximityMeters;
 
-    if (hasAssignedZone) {
-      if (zone == null) {
-        return DeliveryProximityStatus(
-          allowed: false,
-          reason: DeliveryProximityBlockReason.contextUnavailable,
-          proximityMeters: proximityMeters,
-          zoneTarget: true,
-        );
-      }
-
-      if (isWithinZoneProximity(
-        lat: latitude,
-        lng: longitude,
-        zone: zone,
-        bufferMeters: proximityMeters,
-      )) {
-        return DeliveryProximityStatus.allowedInRange(
-          proximityMeters: proximityMeters,
-        );
-      }
-
-      final boundaryDist = distanceToZoneBoundaryMeters(
-        lat: latitude,
-        lng: longitude,
-        zone: zone,
-      );
-      final beyond = boundaryDist.isFinite
-          ? (boundaryDist - proximityMeters)
-              .clamp(0.0, double.infinity)
-              .toDouble()
-          : double.infinity;
-
-      return DeliveryProximityStatus(
-        allowed: false,
-        reason: DeliveryProximityBlockReason.outOfRange,
+    // One rule for the whole app, and it matches `driver_report_location`: a
+    // rider is in range when they are inside the assigned zone **or** inside
+    // one of their assigned stores' delivery range.
+    //
+    // The store is where the rider works. A store whose pin sits outside the
+    // zone polygon used to read as "you are outside your delivery area", which
+    // greyed out Confirm Pickup and started the 45-minute checkout window for
+    // a rider standing at the counter.
+    if (zone != null &&
+        isWithinZoneProximity(
+          lat: latitude,
+          lng: longitude,
+          zone: zone,
+          bufferMeters: proximityMeters,
+        )) {
+      return DeliveryProximityStatus.allowedInRange(
         proximityMeters: proximityMeters,
-        distanceBeyondRangeMeters: beyond,
-        zoneTarget: true,
       );
     }
 
-    final restaurants = context.restaurants;
-    if (restaurants.isEmpty) {
-      return DeliveryProximityStatus(
-        allowed: false,
-        reason: DeliveryProximityBlockReason.contextUnavailable,
+    if (_allowedAtAnyRestaurant(
+      restaurants: restaurants,
+      latitude: latitude,
+      longitude: longitude,
+      proximityMeters: proximityMeters,
+    )) {
+      return DeliveryProximityStatus.allowedInRange(
         proximityMeters: proximityMeters,
-        zoneTarget: false,
       );
     }
 
+    return DeliveryProximityStatus(
+      allowed: false,
+      reason: DeliveryProximityBlockReason.outOfRange,
+      proximityMeters: proximityMeters,
+      distanceBeyondRangeMeters: _distanceBeyondAnyRangeMeters(
+        zone: zone,
+        restaurants: restaurants,
+        latitude: latitude,
+        longitude: longitude,
+        proximityMeters: proximityMeters,
+      ),
+      zoneTarget: hasAssignedZone && zone != null,
+    );
+  }
+
+  bool _allowedAtAnyRestaurant({
+    required List<ProximityRestaurant> restaurants,
+    required double latitude,
+    required double longitude,
+    required int proximityMeters,
+  }) {
     for (final restaurant in restaurants) {
       if (_restaurantDeliveryAllowed(
         restaurant: restaurant,
@@ -431,26 +431,44 @@ class DeliveryProximityService {
         longitude: longitude,
         proximityMeters: proximityMeters,
       )) {
-        return DeliveryProximityStatus.allowedInRange(
-          proximityMeters: proximityMeters,
-        );
+        return true;
       }
     }
+    return false;
+  }
 
-    final beyond = _distanceBeyondRestaurantRangeMeters(
-      restaurants: restaurants,
-      latitude: latitude,
-      longitude: longitude,
-      proximityMeters: proximityMeters,
-    );
-
-    return DeliveryProximityStatus(
-      allowed: false,
-      reason: DeliveryProximityBlockReason.outOfRange,
-      proximityMeters: proximityMeters,
-      distanceBeyondRangeMeters: beyond,
-      zoneTarget: false,
-    );
+  /// How far past the nearest allowed area the fix is, so the banner can name a
+  /// distance whether the target is the zone or a store.
+  double _distanceBeyondAnyRangeMeters({
+    required ZoneShape? zone,
+    required List<ProximityRestaurant> restaurants,
+    required double latitude,
+    required double longitude,
+    required int proximityMeters,
+  }) {
+    var beyond = double.infinity;
+    if (zone != null) {
+      final boundaryDist = distanceToZoneBoundaryMeters(
+        lat: latitude,
+        lng: longitude,
+        zone: zone,
+      );
+      if (boundaryDist.isFinite) {
+        beyond = (boundaryDist - proximityMeters)
+            .clamp(0.0, double.infinity)
+            .toDouble();
+      }
+    }
+    if (restaurants.isNotEmpty) {
+      final restaurantBeyond = _distanceBeyondRestaurantRangeMeters(
+        restaurants: restaurants,
+        latitude: latitude,
+        longitude: longitude,
+        proximityMeters: proximityMeters,
+      );
+      if (restaurantBeyond < beyond) beyond = restaurantBeyond;
+    }
+    return beyond;
   }
 
   bool _restaurantDeliveryAllowed({

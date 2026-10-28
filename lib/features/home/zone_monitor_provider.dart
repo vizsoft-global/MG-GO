@@ -57,6 +57,11 @@ String? zoneStatusForIdleTimer({
   required String? assignedZoneStatus,
   required String? deliveryRangeStatus,
 }) {
+  // A fix inside an assigned store's delivery range is still the workplace.
+  // The store pin can sit outside the zone polygon, and reading that as
+  // "outside your delivery area" checked riders out while they were standing
+  // at the counter. The server already treats store range as in-zone.
+  if (deliveryRangeStatus == 'in_zone') return 'in_zone';
   if (hasAssignedZone) return assignedZoneStatus;
   return deliveryRangeStatus;
 }
