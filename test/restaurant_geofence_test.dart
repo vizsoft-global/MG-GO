@@ -351,6 +351,49 @@ void main() {
       expect(status.zoneTarget, isTrue);
     });
 
+    test('zone outside range still allows a rider standing at an assigned store', () {
+      // The store pin can sit outside the zone polygon. The rider is at the
+      // counter, so this must not read as "outside your delivery area".
+      final status = service.evaluate(
+        context: DeliveryProximityContext(
+          proximityMeters: 500,
+          zoneId: 'zone-1',
+          zoneType: 'polygon',
+          zoneGeometry: _polygonGeometry(ring: _largeRing),
+          restaurants: const [
+            ProximityRestaurant(
+              id: 'r1',
+              name: 'KFC ALREQA',
+              latitude: 29.30,
+              longitude: 47.90,
+            ),
+          ],
+        ),
+        latitude: 29.30,
+        longitude: 47.90,
+      );
+
+      expect(status.allowed, isTrue);
+      expect(status.reason, DeliveryProximityBlockReason.inRange);
+    });
+
+    test('a zone outside range on its own still blocks', () {
+      final status = service.evaluate(
+        context: DeliveryProximityContext(
+          proximityMeters: 500,
+          zoneId: 'zone-1',
+          zoneType: 'polygon',
+          zoneGeometry: _polygonGeometry(ring: _largeRing),
+        ),
+        latitude: 29.30,
+        longitude: 47.90,
+      );
+
+      expect(status.allowed, isFalse);
+      expect(status.reason, DeliveryProximityBlockReason.outOfRange);
+      expect(status.zoneTarget, isTrue);
+    });
+
     test('no zone and no restaurant still blocks', () {
       final status = service.evaluate(
         context: const DeliveryProximityContext(proximityMeters: 500),

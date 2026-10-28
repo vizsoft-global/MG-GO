@@ -124,13 +124,37 @@ void main() {
     });
   });
 
-  group('designated zone drives the idle timer, not restaurant range', () {
-    test('an open pickup in delivery range still starts the timer outside the assigned zone', () {
+  group('the work area is the assigned zone or an assigned store', () {
+    test('an assigned store outside the zone polygon still counts as inside', () {
+      // This is the reported bug: the store pin sits outside the zone shape,
+      // the rider is standing at the counter, and the phone checked them out.
       expect(
         zoneStatusForIdleTimer(
           hasAssignedZone: true,
           assignedZoneStatus: 'out_of_zone',
           deliveryRangeStatus: 'in_zone',
+        ),
+        'in_zone',
+      );
+      expect(
+        zoneCountdownDrive(
+          zoneStatus: zoneStatusForIdleTimer(
+            hasAssignedZone: true,
+            assignedZoneStatus: 'out_of_zone',
+            deliveryRangeStatus: 'in_zone',
+          ),
+          hasActiveDelivery: true,
+        ),
+        ZoneCountdownDrive.clear,
+      );
+    });
+
+    test('outside both the zone and every store still starts the timer', () {
+      expect(
+        zoneStatusForIdleTimer(
+          hasAssignedZone: true,
+          assignedZoneStatus: 'out_of_zone',
+          deliveryRangeStatus: 'out_of_zone',
         ),
         'out_of_zone',
       );
@@ -139,7 +163,7 @@ void main() {
           zoneStatus: zoneStatusForIdleTimer(
             hasAssignedZone: true,
             assignedZoneStatus: 'out_of_zone',
-            deliveryRangeStatus: 'in_zone',
+            deliveryRangeStatus: 'out_of_zone',
           ),
           hasActiveDelivery: true,
         ),
@@ -147,17 +171,14 @@ void main() {
       );
     });
 
-    test('a restaurant heartbeat cannot clear a designated-zone episode', () {
+    test('inside the zone clears the timer without any store fix', () {
       expect(
-        zoneCountdownDrive(
-          zoneStatus: zoneStatusForIdleTimer(
-            hasAssignedZone: true,
-            assignedZoneStatus: 'out_of_zone',
-            deliveryRangeStatus: 'in_zone',
-          ),
-          hasActiveDelivery: true,
+        zoneStatusForIdleTimer(
+          hasAssignedZone: true,
+          assignedZoneStatus: 'in_zone',
+          deliveryRangeStatus: 'out_of_zone',
         ),
-        isNot(ZoneCountdownDrive.clear),
+        'in_zone',
       );
     });
 

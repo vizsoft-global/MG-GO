@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../../core/geo/location_sampler.dart';
-import '../../core/geo/zone_geometry.dart';
 import '../deliveries/delivery_proximity_service.dart';
 import '../home/home_models.dart';
 import '../home/home_providers.dart';
@@ -121,8 +120,9 @@ class _LocalZoneMonitorController {
           latitude: position.latitude,
           longitude: position.longitude,
         );
-    if (proximity.reason !=
-        DeliveryProximityBlockReason.contextUnavailable) {
+    final unknown = proximity.reason ==
+        DeliveryProximityBlockReason.contextUnavailable;
+    if (!unknown) {
       final status = proximity.allowed ? 'in_zone' : 'out_of_zone';
       _ref.read(dutyLocationProvider.notifier).applyLocalZoneStatus(
             status,
@@ -130,29 +130,17 @@ class _LocalZoneMonitorController {
           );
     }
 
-    // 0-buffer assigned polygon — same rule as `out_of_zone_since`.
-    // Delivery-range `evaluate()` uses Allowed Distance and must not drive
-    // the 45-minute timer (or a pickup in restaurant range would hide it).
+    // The 45-minute window follows the same rule the server writes to
+    // `driver_report_location`: inside the assigned zone **or** inside an
+    // assigned store's delivery range. A store whose pin sits outside the zone
+    // polygon is still where the rider works, so it must not read as "outside
+    // your delivery area" and must not start or hold a checkout countdown.
     final hasAssignedZone =
         context.zoneId != null && context.zoneId!.trim().isNotEmpty;
-    final zone = context.zoneShape;
-    final duty = _ref.read(dutyLocationProvider.notifier);
-    if (hasAssignedZone && zone != null) {
-      final inside = isPointInsideZoneShape(
-        lat: position.latitude,
-        lng: position.longitude,
-        shape: zone,
-      );
-      duty.applyAssignedZoneStatus(
-        inside ? 'in_zone' : 'out_of_zone',
-        hasAssignedZone: true,
-      );
-    } else {
-      duty.applyAssignedZoneStatus(
-        null,
-        hasAssignedZone: hasAssignedZone,
-      );
-    }
+    _ref.read(dutyLocationProvider.notifier).applyAssignedZoneStatus(
+          unknown ? null : (proximity.allowed ? 'in_zone' : 'out_of_zone'),
+          hasAssignedZone: hasAssignedZone,
+        );
   }
 
   Future<void> _stop() async {
