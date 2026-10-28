@@ -318,7 +318,7 @@ void main() {
       expect(status.distanceBeyondRangeMeters!, greaterThan(0));
     });
 
-    test('zone inside range still blocks when no restaurant is assigned', () {
+    test('zone inside range allows pickup when no restaurant is assigned', () {
       final status = service.evaluate(
         context: DeliveryProximityContext(
           proximityMeters: 500,
@@ -326,6 +326,34 @@ void main() {
           zoneType: 'polygon',
           zoneGeometry: _polygonGeometry(ring: _largeRing),
         ),
+        latitude: 29.38,
+        longitude: 47.98,
+      );
+
+      expect(status.allowed, isTrue);
+      expect(status.reason, DeliveryProximityBlockReason.inRange);
+    });
+
+    test('zone outside range blocks a rider with no restaurant', () {
+      final status = service.evaluate(
+        context: DeliveryProximityContext(
+          proximityMeters: 500,
+          zoneId: 'zone-1',
+          zoneType: 'polygon',
+          zoneGeometry: _polygonGeometry(ring: _largeRing),
+        ),
+        latitude: 29.30,
+        longitude: 47.90,
+      );
+
+      expect(status.allowed, isFalse);
+      expect(status.reason, DeliveryProximityBlockReason.outOfRange);
+      expect(status.zoneTarget, isTrue);
+    });
+
+    test('no zone and no restaurant still blocks', () {
+      final status = service.evaluate(
+        context: const DeliveryProximityContext(proximityMeters: 500),
         latitude: 29.38,
         longitude: 47.98,
       );

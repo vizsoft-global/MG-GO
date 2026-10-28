@@ -351,12 +351,19 @@ class DeliveryProximityService {
     required double latitude,
     required double longitude,
   }) {
-    if (context.restaurants.isEmpty) {
+    final hasAssignedZone =
+        context.zoneId != null && context.zoneId!.trim().isNotEmpty;
+    final zone = context.zoneShape;
+
+    // A zone with a real shape is enough. An empty restaurant list must not
+    // refuse the rider before that zone is checked — that is what left Confirm
+    // Pickup grey for a zone-only rider who was already inside the zone.
+    if (context.restaurants.isEmpty && zone == null) {
       return DeliveryProximityStatus(
         allowed: false,
         reason: DeliveryProximityBlockReason.contextUnavailable,
         proximityMeters: context.proximityMeters,
-        zoneTarget: false,
+        zoneTarget: hasAssignedZone,
       );
     }
 
@@ -365,9 +372,6 @@ class DeliveryProximityService {
     }
 
     final proximityMeters = context.proximityMeters;
-    final hasAssignedZone =
-        context.zoneId != null && context.zoneId!.trim().isNotEmpty;
-    final zone = context.zoneShape;
 
     if (hasAssignedZone) {
       if (zone == null) {
