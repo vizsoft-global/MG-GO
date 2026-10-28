@@ -474,8 +474,23 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
           ),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: SizedBox(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (_hasOrderId() && proximityBannerMessage != null) ...[
+                    Text(
+                      proximityBannerMessage,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.rejectedRed,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  SizedBox(
                 width: double.infinity,
                 height: 52,
                 child: FilledButton(
@@ -498,6 +513,8 @@ class _PickupScreenState extends ConsumerState<PickupScreen> {
                           style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
                 ),
+              ),
+                ],
               ),
             ),
           ),
