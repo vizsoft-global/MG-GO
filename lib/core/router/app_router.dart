@@ -56,6 +56,7 @@ import '../../features/support/request_detail_screen.dart';
 import '../../features/support/request_submitted_screen.dart';
 import '../../features/support/support_hub_screen.dart';
 import '../../features/support/visit_booking_flow_screen.dart';
+import '../../features/vehicle/accident_report_screen.dart';
 import '../../features/vehicle/fuel_fill_screen.dart';
 import '../../features/vehicle/vehicle_screen.dart';
 import '../app_update/force_update_gate.dart';
@@ -377,6 +378,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'vehicle_fuel_fill',
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const FuelFillScreen(),
+      ),
+      GoRoute(
+        path: '/vehicle/accident',
+        name: 'vehicle_accident_report',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const AccidentReportScreen(),
       ),
       GoRoute(
         path: '/profile/support',

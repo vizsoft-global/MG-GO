@@ -1929,6 +1929,124 @@ class AppLocalizationsEn extends AppLocalizations {
   String get vehicleLogFuel => 'Log fuel';
 
   @override
+  String get vehicleReportAccident => 'Report accident';
+
+  @override
+  String get accidentReportTitle => 'Report an accident';
+
+  @override
+  String get accidentReportHint =>
+      'Record what happened, add a photo or a video, and the fleet desk takes it from there. You can report an accident from any earlier date.';
+
+  @override
+  String get accidentWhen => 'When it happened';
+
+  @override
+  String get accidentWhere => 'Where it happened';
+
+  @override
+  String get accidentLocating => 'Reading your location…';
+
+  @override
+  String get accidentOtherParty => 'Other party name';
+
+  @override
+  String get accidentOtherPlate => 'Other party plate';
+
+  @override
+  String get accidentOtherPhone => 'Other party phone';
+
+  @override
+  String get accidentDescription => 'What happened';
+
+  @override
+  String accidentAttachmentsHint(int count, int max, int mb) {
+    return '$count of $max files · up to $mb MB each';
+  }
+
+  @override
+  String get accidentAddPhoto => 'Add photo';
+
+  @override
+  String get accidentAddVideo => 'Add video';
+
+  @override
+  String get accidentSubmit => 'Report accident';
+
+  @override
+  String get accidentUploaded => 'Uploaded';
+
+  @override
+  String get accidentPendingUpload => 'Uploads when you report';
+
+  @override
+  String get accidentRemoveFile => 'Remove file';
+
+  @override
+  String get accidentReported => 'Accident reported';
+
+  @override
+  String accidentReportedRef(String reference) {
+    return 'Accident $reference reported';
+  }
+
+  @override
+  String get accidentMyReports => 'My accident reports';
+
+  @override
+  String get accidentCaseClose => 'Close';
+
+  @override
+  String get accidentCasePending => 'Pending';
+
+  @override
+  String get accidentCaseDelay => 'Delay';
+
+  @override
+  String get accidentCaptureFailed => 'The camera could not be opened';
+
+  @override
+  String get accidentErrorDateRequired => 'Choose when the accident happened';
+
+  @override
+  String get accidentErrorFutureDate => 'An accident cannot be in the future';
+
+  @override
+  String get accidentErrorLocationRequired =>
+      'Enter where the accident happened';
+
+  @override
+  String get accidentErrorAttachmentRequired =>
+      'Add at least one photo or video';
+
+  @override
+  String get accidentErrorTooMany => 'You can attach up to 10 files';
+
+  @override
+  String get accidentErrorFileEmpty => 'That file is empty';
+
+  @override
+  String get accidentErrorFileTooLarge => 'That file is larger than 50 MB';
+
+  @override
+  String get accidentErrorContentType =>
+      'Only images, PDF, MP4 and MOV are accepted';
+
+  @override
+  String get accidentErrorNoVehicle => 'No vehicle is assigned to you';
+
+  @override
+  String get accidentErrorAttachmentRejected =>
+      'One of the files could not be accepted. Remove it and capture it again.';
+
+  @override
+  String get accidentErrorNotDriver => 'This account is not a driver';
+
+  @override
+  String get accidentErrorReportFailed =>
+      'The report was not sent. Your files are kept — try again.';
+
+  @override
   String get vehicleFuelFillTitle => 'Log fuel';
 
   @override
@@ -2204,6 +2322,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Order reassigned (delayed arrival at restaurant)';
 
   @override
+  String get cancelReasonAccident => 'Accident';
+
+  @override
+  String get cancelReasonWrongAddress => 'Wrong address';
+
+  @override
   String get cancelReasonVehicleBreakdown => 'Vehicle Break Down';
 
   @override
@@ -2213,13 +2337,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancelReasonCustomerRefused => 'Customer refused';
 
   @override
-  String get cancelReasonWrongAddress => 'Wrong address';
-
-  @override
   String get cancelReasonRestaurantIssue => 'Restaurant issue';
-
-  @override
-  String get cancelReasonAccident => 'Accident';
 
   @override
   String get cancelReasonOther => 'Other';

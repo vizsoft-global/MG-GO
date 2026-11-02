@@ -1916,6 +1916,122 @@ class AppLocalizationsAr extends AppLocalizations {
   String get vehicleLogFuel => 'تسجيل تعبئة';
 
   @override
+  String get vehicleReportAccident => 'الإبلاغ عن حادث';
+
+  @override
+  String get accidentReportTitle => 'الإبلاغ عن حادث';
+
+  @override
+  String get accidentReportHint =>
+      'سجّل ما حدث وأضف صورة أو مقطع فيديو، وسيتابع فريق الأسطول الحالة. يمكنك الإبلاغ عن حادث بتاريخ سابق.';
+
+  @override
+  String get accidentWhen => 'وقت الحادث';
+
+  @override
+  String get accidentWhere => 'مكان الحادث';
+
+  @override
+  String get accidentLocating => 'جارٍ تحديد موقعك…';
+
+  @override
+  String get accidentOtherParty => 'اسم الطرف الآخر';
+
+  @override
+  String get accidentOtherPlate => 'لوحة الطرف الآخر';
+
+  @override
+  String get accidentOtherPhone => 'هاتف الطرف الآخر';
+
+  @override
+  String get accidentDescription => 'ما الذي حدث';
+
+  @override
+  String accidentAttachmentsHint(int count, int max, int mb) {
+    return '$count من $max ملفات · حتى $mb ميجابايت لكل ملف';
+  }
+
+  @override
+  String get accidentAddPhoto => 'إضافة صورة';
+
+  @override
+  String get accidentAddVideo => 'إضافة فيديو';
+
+  @override
+  String get accidentSubmit => 'إرسال البلاغ';
+
+  @override
+  String get accidentUploaded => 'تم الرفع';
+
+  @override
+  String get accidentPendingUpload => 'يُرفع عند الإرسال';
+
+  @override
+  String get accidentRemoveFile => 'إزالة الملف';
+
+  @override
+  String get accidentReported => 'تم الإبلاغ عن الحادث';
+
+  @override
+  String accidentReportedRef(String reference) {
+    return 'تم الإبلاغ عن الحادث $reference';
+  }
+
+  @override
+  String get accidentMyReports => 'بلاغات الحوادث الخاصة بي';
+
+  @override
+  String get accidentCaseClose => 'مغلق';
+
+  @override
+  String get accidentCasePending => 'قيد الانتظار';
+
+  @override
+  String get accidentCaseDelay => 'متأخر';
+
+  @override
+  String get accidentCaptureFailed => 'تعذّر فتح الكاميرا';
+
+  @override
+  String get accidentErrorDateRequired => 'اختر وقت الحادث';
+
+  @override
+  String get accidentErrorFutureDate => 'لا يمكن أن يكون الحادث في المستقبل';
+
+  @override
+  String get accidentErrorLocationRequired => 'أدخل مكان الحادث';
+
+  @override
+  String get accidentErrorAttachmentRequired =>
+      'أضف صورة أو مقطع فيديو واحدًا على الأقل';
+
+  @override
+  String get accidentErrorTooMany => 'يمكنك إرفاق 10 ملفات كحد أقصى';
+
+  @override
+  String get accidentErrorFileEmpty => 'الملف فارغ';
+
+  @override
+  String get accidentErrorFileTooLarge => 'حجم الملف أكبر من 50 ميجابايت';
+
+  @override
+  String get accidentErrorContentType => 'تُقبل الصور وPDF وMP4 وMOV فقط';
+
+  @override
+  String get accidentErrorNoVehicle => 'لا توجد مركبة معيّنة لك';
+
+  @override
+  String get accidentErrorAttachmentRejected =>
+      'تعذّر قبول أحد الملفات. أزله والتقطه مرة أخرى.';
+
+  @override
+  String get accidentErrorNotDriver => 'هذا الحساب ليس حساب سائق';
+
+  @override
+  String get accidentErrorReportFailed =>
+      'لم يتم إرسال البلاغ. ملفاتك محفوظة — حاول مرة أخرى.';
+
+  @override
   String get vehicleFuelFillTitle => 'تسجيل تعبئة';
 
   @override
@@ -2190,6 +2306,12 @@ class AppLocalizationsAr extends AppLocalizations {
       'أُعيد تعيين الطلب (تأخر الوصول إلى المطعم)';
 
   @override
+  String get cancelReasonAccident => 'حادث';
+
+  @override
+  String get cancelReasonWrongAddress => 'عنوان خاطئ';
+
+  @override
   String get cancelReasonVehicleBreakdown => 'تعطل المركبة';
 
   @override
@@ -2199,13 +2321,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get cancelReasonCustomerRefused => 'العميل رفض الطلب';
 
   @override
-  String get cancelReasonWrongAddress => 'عنوان خاطئ';
-
-  @override
   String get cancelReasonRestaurantIssue => 'مشكلة في المطعم';
-
-  @override
-  String get cancelReasonAccident => 'حادث';
 
   @override
   String get cancelReasonOther => 'أخرى';

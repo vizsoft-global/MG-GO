@@ -3445,6 +3445,222 @@ abstract class AppLocalizations {
   /// **'Log fuel'**
   String get vehicleLogFuel;
 
+  /// No description provided for @vehicleReportAccident.
+  ///
+  /// In en, this message translates to:
+  /// **'Report accident'**
+  String get vehicleReportAccident;
+
+  /// No description provided for @accidentReportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Report an accident'**
+  String get accidentReportTitle;
+
+  /// No description provided for @accidentReportHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Record what happened, add a photo or a video, and the fleet desk takes it from there. You can report an accident from any earlier date.'**
+  String get accidentReportHint;
+
+  /// No description provided for @accidentWhen.
+  ///
+  /// In en, this message translates to:
+  /// **'When it happened'**
+  String get accidentWhen;
+
+  /// No description provided for @accidentWhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Where it happened'**
+  String get accidentWhere;
+
+  /// No description provided for @accidentLocating.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading your location…'**
+  String get accidentLocating;
+
+  /// No description provided for @accidentOtherParty.
+  ///
+  /// In en, this message translates to:
+  /// **'Other party name'**
+  String get accidentOtherParty;
+
+  /// No description provided for @accidentOtherPlate.
+  ///
+  /// In en, this message translates to:
+  /// **'Other party plate'**
+  String get accidentOtherPlate;
+
+  /// No description provided for @accidentOtherPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Other party phone'**
+  String get accidentOtherPhone;
+
+  /// No description provided for @accidentDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'What happened'**
+  String get accidentDescription;
+
+  /// No description provided for @accidentAttachmentsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} of {max} files · up to {mb} MB each'**
+  String accidentAttachmentsHint(int count, int max, int mb);
+
+  /// No description provided for @accidentAddPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photo'**
+  String get accidentAddPhoto;
+
+  /// No description provided for @accidentAddVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Add video'**
+  String get accidentAddVideo;
+
+  /// No description provided for @accidentSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Report accident'**
+  String get accidentSubmit;
+
+  /// No description provided for @accidentUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded'**
+  String get accidentUploaded;
+
+  /// No description provided for @accidentPendingUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploads when you report'**
+  String get accidentPendingUpload;
+
+  /// No description provided for @accidentRemoveFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove file'**
+  String get accidentRemoveFile;
+
+  /// No description provided for @accidentReported.
+  ///
+  /// In en, this message translates to:
+  /// **'Accident reported'**
+  String get accidentReported;
+
+  /// No description provided for @accidentReportedRef.
+  ///
+  /// In en, this message translates to:
+  /// **'Accident {reference} reported'**
+  String accidentReportedRef(String reference);
+
+  /// No description provided for @accidentMyReports.
+  ///
+  /// In en, this message translates to:
+  /// **'My accident reports'**
+  String get accidentMyReports;
+
+  /// No description provided for @accidentCaseClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get accidentCaseClose;
+
+  /// No description provided for @accidentCasePending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get accidentCasePending;
+
+  /// No description provided for @accidentCaseDelay.
+  ///
+  /// In en, this message translates to:
+  /// **'Delay'**
+  String get accidentCaseDelay;
+
+  /// No description provided for @accidentCaptureFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The camera could not be opened'**
+  String get accidentCaptureFailed;
+
+  /// No description provided for @accidentErrorDateRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose when the accident happened'**
+  String get accidentErrorDateRequired;
+
+  /// No description provided for @accidentErrorFutureDate.
+  ///
+  /// In en, this message translates to:
+  /// **'An accident cannot be in the future'**
+  String get accidentErrorFutureDate;
+
+  /// No description provided for @accidentErrorLocationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter where the accident happened'**
+  String get accidentErrorLocationRequired;
+
+  /// No description provided for @accidentErrorAttachmentRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one photo or video'**
+  String get accidentErrorAttachmentRequired;
+
+  /// No description provided for @accidentErrorTooMany.
+  ///
+  /// In en, this message translates to:
+  /// **'You can attach up to 10 files'**
+  String get accidentErrorTooMany;
+
+  /// No description provided for @accidentErrorFileEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'That file is empty'**
+  String get accidentErrorFileEmpty;
+
+  /// No description provided for @accidentErrorFileTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'That file is larger than 50 MB'**
+  String get accidentErrorFileTooLarge;
+
+  /// No description provided for @accidentErrorContentType.
+  ///
+  /// In en, this message translates to:
+  /// **'Only images, PDF, MP4 and MOV are accepted'**
+  String get accidentErrorContentType;
+
+  /// No description provided for @accidentErrorNoVehicle.
+  ///
+  /// In en, this message translates to:
+  /// **'No vehicle is assigned to you'**
+  String get accidentErrorNoVehicle;
+
+  /// No description provided for @accidentErrorAttachmentRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'One of the files could not be accepted. Remove it and capture it again.'**
+  String get accidentErrorAttachmentRejected;
+
+  /// No description provided for @accidentErrorNotDriver.
+  ///
+  /// In en, this message translates to:
+  /// **'This account is not a driver'**
+  String get accidentErrorNotDriver;
+
+  /// No description provided for @accidentErrorReportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The report was not sent. Your files are kept — try again.'**
+  String get accidentErrorReportFailed;
+
   /// No description provided for @vehicleFuelFillTitle.
   ///
   /// In en, this message translates to:
@@ -3955,6 +4171,18 @@ abstract class AppLocalizations {
   /// **'Order reassigned (delayed arrival at restaurant)'**
   String get cancelReasonOrderReassigned;
 
+  /// No description provided for @cancelReasonAccident.
+  ///
+  /// In en, this message translates to:
+  /// **'Accident'**
+  String get cancelReasonAccident;
+
+  /// No description provided for @cancelReasonWrongAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong address'**
+  String get cancelReasonWrongAddress;
+
   /// No description provided for @cancelReasonVehicleBreakdown.
   ///
   /// In en, this message translates to:
@@ -3973,23 +4201,11 @@ abstract class AppLocalizations {
   /// **'Customer refused'**
   String get cancelReasonCustomerRefused;
 
-  /// No description provided for @cancelReasonWrongAddress.
-  ///
-  /// In en, this message translates to:
-  /// **'Wrong address'**
-  String get cancelReasonWrongAddress;
-
   /// No description provided for @cancelReasonRestaurantIssue.
   ///
   /// In en, this message translates to:
   /// **'Restaurant issue'**
   String get cancelReasonRestaurantIssue;
-
-  /// No description provided for @cancelReasonAccident.
-  ///
-  /// In en, this message translates to:
-  /// **'Accident'**
-  String get cancelReasonAccident;
 
   /// No description provided for @cancelReasonOther.
   ///

@@ -41,6 +41,7 @@ class DriverUploadService {
   static const _esignSignatureMaxBytes = 4 * 1024 * 1024;
   static const _esignAttachmentMaxBytes = 10 * 1024 * 1024;
   static const _requestAttachmentMaxBytes = 10 * 1024 * 1024;
+  static const _accidentAttachmentMaxBytes = 50 * 1024 * 1024;
 
   Future<DriverUploadResult> uploadOrderProof({
     required List<int> bytes,
@@ -184,6 +185,37 @@ class DriverUploadService {
       entityType: 'request_attachment',
       entityId: entityId,
       authHeaders: authHeaders,
+      onProgress: onProgress,
+    );
+  }
+
+  /// Accident evidence: images, PDF, MP4 and MOV, up to 50 MB each.
+  ///
+  /// The key is built server-side from the rider's own uid
+  /// (`drivers/{uid}/accident_attachment/…`), so a rider cannot choose a path.
+  Future<DriverUploadResult> uploadAccidentAttachment({
+    required List<int> bytes,
+    required String contentType,
+    required String filename,
+    void Function(double progress)? onProgress,
+  }) async {
+    if (bytes.isEmpty) {
+      throw DriverUploadException(code: 'file_empty');
+    }
+    if (bytes.length > _accidentAttachmentMaxBytes) {
+      throw DriverUploadException(code: 'file_too_large');
+    }
+    if (!_isAllowedAccidentType(contentType)) {
+      throw DriverUploadException(code: 'invalid_content_type');
+    }
+
+    final token = await _accessToken();
+    return _uploadViaPresign(
+      bytes: bytes,
+      contentType: contentType,
+      filename: filename,
+      entityType: 'accident_attachment',
+      authHeaders: {'Authorization': 'Bearer $token'},
       onProgress: onProgress,
     );
   }
@@ -438,6 +470,14 @@ class DriverUploadService {
   bool _isAllowedRequestAttachmentType(String contentType) {
     final ct = contentType.toLowerCase();
     return ct.startsWith('image/') || ct == 'application/pdf';
+  }
+
+  /// Accident evidence. Video is named explicitly, mirroring the server's
+  /// `accident_attachment` rule in `driver-upload-keys.ts`.
+  bool _isAllowedAccidentType(String contentType) {
+    final ct = contentType.toLowerCase();
+    if (ct.startsWith('image/')) return true;
+    return ct == 'application/pdf' || ct == 'video/mp4' || ct == 'video/quicktime';
   }
 
   Future<OrderProofReadUrl> resolveOrderProofReadUrl(String objectKey) async {
