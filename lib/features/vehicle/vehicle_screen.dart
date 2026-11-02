@@ -10,6 +10,7 @@ import '../../core/theme/app_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../home/widgets/kd_note.dart';
 import 'assigned_vehicle.dart';
+import 'my_accident.dart';
 import 'vehicle_labels.dart';
 import 'vehicle_providers.dart';
 
@@ -165,7 +166,15 @@ class _AssignedCard extends StatelessWidget {
           onPressed: () => context.push('/vehicle/fuel-fill'),
           child: Text(l10n.vehicleLogFuel),
         ),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          onPressed: () => context.push('/vehicle/accident'),
+          icon: const Icon(Icons.report_gmailerrorred_outlined),
+          label: Text(l10n.vehicleReportAccident),
+        ),
         const SizedBox(height: 16),
+        const _MyAccidentsCard(),
+        const SizedBox(height: 12),
         _LedgerSection(
           title: l10n.vehicleHandover,
           empty: l10n.vehicleHandoverEmpty,
@@ -216,6 +225,120 @@ class _AssignedCard extends StatelessWidget {
       'card' => l10n.vehicleFuelCard,
       _ => type ?? '—',
     };
+  }
+}
+
+/// The rider's own accident cases, with the Close / Pending / Delay chip the
+/// fleet desk sets. Read-only: a rider files a report, the fleet desk runs the case.
+class _MyAccidentsCard extends ConsumerWidget {
+  const _MyAccidentsCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final cases = ref.watch(myAccidentsProvider);
+    return cases.when(
+      loading: () => const SizedBox(
+        height: 56,
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (_, _) => const SizedBox.shrink(),
+      data: (rows) {
+        if (rows.isEmpty) return const SizedBox.shrink();
+        return Container(
+          padding: const EdgeInsets.fromLTRB(15, 14, 15, 10),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.cardBorder, width: 0.7),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                l10n.accidentMyReports,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 10),
+              for (final row in rows) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        [
+                          row.reference ?? '—',
+                          if (row.occurredAt != null) row.occurredAt!.split('T').first,
+                        ].join(' · '),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    _CaseChip(status: row.status),
+                  ],
+                ),
+                if (row.locationText != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      row.locationText!,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 8),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Close green, Pending amber, Delay red — the admin list's semantic colours.
+const _accidentCaseClose = Color(0xFF15803D);
+const _accidentCasePending = Color(0xFFB45309);
+const _accidentCaseDelay = Color(0xFFB91C1C);
+
+/// Close / Pending / Delay, in the same words the admin list prints.
+class _CaseChip extends StatelessWidget {
+  const _CaseChip({required this.status});
+
+  final AccidentCaseStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final label = switch (status) {
+      AccidentCaseStatus.close => l10n.accidentCaseClose,
+      AccidentCaseStatus.pending => l10n.accidentCasePending,
+      AccidentCaseStatus.delay => l10n.accidentCaseDelay,
+    };
+    final color = switch (status) {
+      AccidentCaseStatus.close => _accidentCaseClose,
+      AccidentCaseStatus.pending => _accidentCasePending,
+      AccidentCaseStatus.delay => _accidentCaseDelay,
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.35), width: 0.8),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color),
+      ),
+    );
   }
 }
 
