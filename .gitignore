@@ -59,3 +59,11 @@ test/failures/
 
 # Local Cursor rules (Kannada)
 .cursor/rules/KA.mdc
+
+# Agent tooling state — regenerated per machine, not part of the product
+.serena/
+.agents/mcp/
+
+# Coverage and profile dumps a local test run can leave behind
+*.lcov
+coverage/
