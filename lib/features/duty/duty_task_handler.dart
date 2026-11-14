@@ -70,6 +70,8 @@ class DutyTaskHandler extends TaskHandler {
   int? _dutyStateVersion;
   bool _streamStateChangePending = false;
   DateTime? _lastEdgeFallbackAt;
+  String? _lastDeliveryDirectId;
+  DateTime? _lastDeliveryDirectAt;
 
   Future<AppLocalizations> _localizations() async {
     return _l10n ??= await loadSavedLocalizations();
@@ -93,6 +95,8 @@ class DutyTaskHandler extends TaskHandler {
     _cachedBatteryPct = null;
     _cachedBatteryAt = null;
     _streamStateChangePending = false;
+    _lastDeliveryDirectId = null;
+    _lastDeliveryDirectAt = null;
     _heading.reset();
     _authBackoff.clear();
     // This isolate may be a reused one whose preferences cache predates the clock-out
@@ -374,7 +378,13 @@ class DutyTaskHandler extends TaskHandler {
           _scheduler.needsInitialReport ||
           _scheduler.movementJustStarted ||
           _streamStateChangePending ||
-          reportStatus == TrackingStatus.deliverySubmit;
+          (reportStatus == TrackingStatus.deliverySubmit &&
+              deliveryDirectReportDue(
+                deliveryId: deliveryId,
+                lastDirectDeliveryId: _lastDeliveryDirectId,
+                lastDirectAt: _lastDeliveryDirectAt,
+                now: now,
+              ));
       if (!mustReportDirectly && _edgeCoveringDurableWrite(now)) {
         await _updateNotification(
           l10n.onDutyStatusLabel(
@@ -445,6 +455,10 @@ class DutyTaskHandler extends TaskHandler {
 
       _authBackoff.clear();
       _scheduler.markSampled(now);
+      if (reportStatus == TrackingStatus.deliverySubmit) {
+        _lastDeliveryDirectId = deliveryId;
+        _lastDeliveryDirectAt = now;
+      }
 
       final zoneLabel = switch (report.zoneStatus) {
         'in_zone' => l10n.inZone,
