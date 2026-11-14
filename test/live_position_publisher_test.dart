@@ -215,6 +215,23 @@ void main() {
       );
     });
 
+    test('an open delivery reports directly once, then every five minutes', () {
+      bool due(String? id, String? lastId, DateTime? lastAt, Duration after) =>
+          deliveryDirectReportDue(
+            deliveryId: id,
+            lastDirectDeliveryId: lastId,
+            lastDirectAt: lastAt,
+            now: now.add(after),
+          );
+      expect(due('d1', null, null, Duration.zero), isTrue, reason: 'first report');
+      expect(due('d1', 'd1', now, const Duration(seconds: 15)), isFalse);
+      expect(due('d1', 'd1', now, const Duration(minutes: 4, seconds: 59)), isFalse);
+      expect(due('d1', 'd1', now, kDeliveryDirectKeepAlive), isTrue);
+      expect(due('d2', 'd1', now, const Duration(seconds: 15)), isTrue, reason: 'another delivery');
+      expect(due(null, 'd1', now, const Duration(seconds: 15)), isTrue);
+      expect(due('d1', 'd1', now, const Duration(minutes: -2)), isTrue, reason: 'clock moved back');
+    });
+
     test('an empty buffer never publishes, whatever else is true', () {
       expect(
         cadence.shouldPublish(

@@ -200,6 +200,30 @@ EdgeDurableFallback edgeDurableFallback({
   return EdgeDurableFallback.skip;
 }
 
+/// How often an open delivery still reports directly while the edge is healthy.
+const kDeliveryDirectKeepAlive = Duration(minutes: 5);
+
+/// Whether the watchdog must call `driverReportLocation` for an open delivery
+/// although the edge is covering the durable write.
+///
+/// It used to call on every 15-second tick of every open delivery. The edge
+/// already holds those fixes and the server answers such a call without
+/// saving anything, so the call only cost an invocation. The first report of
+/// each delivery still goes direct, and one every [kDeliveryDirectKeepAlive]
+/// after it. A real pickup or drop-off submission is forced and never comes
+/// through here.
+bool deliveryDirectReportDue({
+  required String? deliveryId,
+  required String? lastDirectDeliveryId,
+  required DateTime? lastDirectAt,
+  required DateTime now,
+}) {
+  if (deliveryId == null || deliveryId != lastDirectDeliveryId) return true;
+  if (lastDirectAt == null) return true;
+  final age = now.difference(lastDirectAt);
+  return age.isNegative || age >= kDeliveryDirectKeepAlive;
+}
+
 /// Sends batches of GPS fixes to the `dpd-live` edge rail — over the room's
 /// ingest WebSocket when it is up, `POST /ingest` otherwise.
 ///
