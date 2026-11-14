@@ -99,6 +99,14 @@ dev_dependencies:
   # where the sqflite plugin itself is unavailable.
   sqflite_common_ffi: ^2.3.4
 
+# Local fork of disable_battery_optimization 1.1.2.
+# The published package's android/build.gradle still calls jcenter(), which
+# Gradle 9 (Flutter 3.47+) removed — the build fails while configuring the
+# plugin project. The fork is byte-identical apart from that repository entry.
+dependency_overrides:
+  disable_battery_optimization:
+    path: packages/disable_battery_optimization
+
 flutter_launcher_icons:
   android: true
   ios: false
