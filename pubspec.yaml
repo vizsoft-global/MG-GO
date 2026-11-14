@@ -106,6 +106,10 @@ dev_dependencies:
 dependency_overrides:
   disable_battery_optimization:
     path: packages/disable_battery_optimization
+  # cloud_functions 6.3.1 skips `kotlin-android` when it detects AGP 9+, which
+  # leaves its Kotlin classes uncompiled under this app's legacy-Kotlin setup.
+  cloud_functions:
+    path: packages/cloud_functions
 
 flutter_launcher_icons:
   android: true
